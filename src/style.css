@@ -6,12 +6,37 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
+body {
+  display: grid;
+  place-items: center;
+}
 canvas {
   display: block;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  image-rendering: pixelated;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+}
+/* Zero-size probe whose padding carries the device safe-area insets for JS to read. */
+#safe-probe {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.dev-meter {
+  position: fixed;
+  left: 4px;
+  top: 4px;
+  margin: 0;
+  padding: 2px 4px;
+  font: 11px monospace;
+  color: #e8e8e8;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
 }

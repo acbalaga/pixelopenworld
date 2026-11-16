@@ -1,19 +1,10 @@
 import './style.css';
-import { startInputDemo } from './demo/inputDemo';
+import { startScene } from './demo/scene';
 
 function start(): void {
   const el = document.getElementById('game');
   if (!(el instanceof HTMLCanvasElement)) throw new Error('canvas missing');
-  const ctx = el.getContext('2d');
-  if (!ctx) throw new Error('2d context unavailable');
-
-  const fit = (): void => {
-    el.width = window.innerWidth;
-    el.height = window.innerHeight;
-  };
-  window.addEventListener('resize', fit);
-  fit();
-  startInputDemo(el, ctx);
+  startScene(el);
 }
 
 start();
