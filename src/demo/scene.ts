@@ -3,6 +3,7 @@ import manifest from '../../baked/manifest.json';
 import coreUrl from '../../baked/atlas-core.png?url';
 import { randomDoll, type DollSpec } from '../content/dolls/parts';
 import { BIOMES, type Biome, type Weighted } from '../content/nature/biomes';
+import type { DevOverlay } from '../dev/overlay';
 import { attachInput } from '../platform/input/dom';
 import { toCommands } from '../platform/input/sampler';
 import { startBrowserLoop } from '../platform/loop';
@@ -217,29 +218,35 @@ export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
   let facing: keyof typeof FACING = 'S';
   let moving = false;
 
-  let meter: { begin(t: number): void; end(t: number): void } | null = null;
+  let meter: DevOverlay | null = null;
   if (import.meta.env.DEV) {
-    void import('../dev/frameMeter').then((m) => {
-      const fm = new m.FrameMeter();
-      fm.show();
-      meter = fm;
+    void import('../dev/overlay').then((m) => {
+      meter = new m.DevOverlay(() => ({
+        entities: state.entities.comps.pos.length,
+        drawCalls: renderer.drawCalls,
+        logicalWidth: renderer.width,
+        logicalHeight: renderer.height,
+        scale: vp.current.scale,
+      }));
     });
   }
 
   let lastFrame = performance.now();
   startBrowserLoop({
     tick: () => {
+      meter?.tickBegin(performance.now());
       interp.capture(state.entities.comps.pos);
       const rec = input.sampler.sample(performance.now());
       step(state, { commands: toCommands(rec, prevDir) });
       prevDir = rec.moveDir;
       moving = rec.moveDir !== null;
       if (rec.moveDir !== null) facing = facingOf(rec.moveDir);
+      meter?.tickEnd(performance.now());
     },
     render: (alpha) => {
       const now = performance.now();
       clock = now;
-      meter?.begin(now);
+      meter?.frameBegin(now);
       const { pos } = state.entities.comps;
       const p0 = pos[0];
       if (p0)
@@ -276,7 +283,7 @@ export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
         if (p.canopy !== undefined) renderer.drawSprite(Layer.Overhead, p.canopy, p.x, p.y - 8);
       }
       renderer.end();
-      meter?.end(performance.now());
+      meter?.frameEnd(performance.now());
     },
   });
 }
