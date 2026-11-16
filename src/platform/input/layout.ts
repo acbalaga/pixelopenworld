@@ -28,17 +28,27 @@ const BUTTON: ButtonId[] = ['tech1', 'tech2', 'tech3', 'tech4'];
  * default, buttons on the right. `leftHanded` mirrors horizontally. Every button is at least
  * the minimum touch target.
  */
-export function computeLayout(width: number, height: number, leftHanded: boolean): ControlLayout {
+export function computeLayout(
+  width: number,
+  height: number,
+  leftHanded: boolean,
+  opts: {
+    hudScale?: number;
+    insets?: { top: number; right: number; bottom: number; left: number };
+  } = {},
+): ControlLayout {
   const min = INPUT_TUNABLES.minTargetPx;
-  const size = Math.max(min, Math.round(Math.min(width, height) * 0.14));
+  const size = Math.max(min, Math.round(Math.min(width, height) * 0.14 * (opts.hudScale ?? 1)));
   const gap = Math.round(size * 0.2);
   const margin = 12;
+  const ins = opts.insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
+  // Right side and top are mirrored together with the buttons, so insets are applied before mirroring.
   const mirror = (r: Rect): Rect => (leftHanded ? { ...r, x: width - r.x - r.w } : r);
 
   const buttons = {} as Record<ButtonId, Rect>;
   // Technique buttons in an arc above the right thumb rest.
-  const baseX = width - margin - size;
-  const baseY = height - margin - size;
+  const baseX = width - margin - ins.right - size;
+  const baseY = height - margin - ins.bottom - size;
   const arc: [number, number][] = [
     [0, -(size + gap) * 2],
     [-(size + gap) * 0.75, -(size + gap) * 1.5],
@@ -51,8 +61,18 @@ export function computeLayout(width: number, height: number, leftHanded: boolean
   });
   buttons.dodge = mirror({ x: baseX, y: baseY - (size + gap), w: size, h: size });
   buttons.context = mirror({ x: baseX, y: baseY, w: size, h: size });
-  buttons.menu = mirror({ x: width - margin - min, y: margin, w: min, h: min });
-  buttons.bag = mirror({ x: width - margin - min * 2 - gap, y: margin, w: min, h: min });
+  buttons.menu = mirror({
+    x: width - margin - ins.right - min,
+    y: margin + ins.top,
+    w: min,
+    h: min,
+  });
+  buttons.bag = mirror({
+    x: width - margin - ins.right - min * 2 - gap,
+    y: margin + ins.top,
+    w: min,
+    h: min,
+  });
 
   const zoneH = Math.round(height * INPUT_TUNABLES.stickZoneFraction);
   const stickZone: Rect = { x: 0, y: height - zoneH, w: width, h: zoneH };

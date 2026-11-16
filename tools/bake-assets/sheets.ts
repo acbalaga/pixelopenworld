@@ -4,6 +4,7 @@ import { GLYPHS } from './font3x5';
 import { layersFor, type DollSpec } from '../../src/content/dolls/parts';
 import { gridFromDef, TRANSPARENT } from '../../src/content/sprites/grid';
 import { composeFrame } from '../../src/render/doll';
+import { FONTS, glyphFrame } from '../../src/content/fonts';
 import { fill, hex, newImage, put, type Rgba } from './png';
 
 const LIGHT = hex('#e6e0d2');
@@ -263,5 +264,75 @@ export function characterSheet(
       });
     }
   });
+  return img;
+}
+
+const SAMPLE = [
+  'THE QUICK BROWN FOX JUMPS',
+  'the quick brown fox jumps over',
+  'the lazy dog 0123456789',
+  'HP 120/120 +5 x3 \u00d7 \u2665 \u2192 \u2022 ?!%&@#$',
+];
+
+/** Font sheet: sample lines and every glyph, at 1x and 3x, on light and dark. */
+export function fontSheet(fonts: readonly SpriteDef[]): Rgba {
+  const SC = 3;
+  const rows = fonts.map((f) => {
+    const codes = Object.keys(f.frames).sort();
+    return { f, codes };
+  });
+  const width = 6 + 2 * 620 + 6;
+  const lineH = (f: SpriteDef): number => f.size[1] * SC + 6;
+  const height =
+    6 +
+    rows.reduce(
+      (s, { f, codes }) =>
+        s +
+        14 +
+        SAMPLE.length * lineH(f) +
+        Math.ceil(codes.length / 16) * (f.size[1] * SC + 4) +
+        24,
+      0,
+    );
+  const img = newImage(width, height);
+  fill(img, 0, 0, width, height, hex('#9a9488'));
+  let y = 6;
+  for (const { f, codes } of rows) {
+    text(img, f.id, 6, y, 2, hex('#f1ebdf'));
+    y += 14;
+    const info = FONTS[f.id === 'font.small' ? 'small' : 'large'];
+    const bandH =
+      SAMPLE.length * lineH(f) + Math.ceil(codes.length / 16) * (f.size[1] * SC + 4) + 14;
+    for (const [bi, bg] of [LIGHT, DARK].entries()) {
+      const bx = 6 + bi * 626;
+      fill(img, bx, y, 620, bandH, bg);
+      const ink = bi === 0 ? hex('#1a1614') : hex('#f1ebdf');
+      let cy = y + 6;
+      const drawChar = (code: number, x: number, yy: number): number => {
+        const name = glyphFrame(code);
+        if (!f.frames[name]) return x;
+        const gi = renderFrame(f, name);
+        for (let j = 0; j < gi.height; j++)
+          for (let i = 0; i < gi.width; i++)
+            if (gi.data[(j * gi.width + i) * 4 + 3] !== 0)
+              fill(img, x + i * SC, yy + j * SC, SC, SC, ink);
+        return x + (info.advances[code] ?? f.size[0] + 1) * SC;
+      };
+      for (const line of SAMPLE) {
+        let x = bx + 6;
+        for (const ch of line) x = drawChar(ch.codePointAt(0) as number, x, cy);
+        cy += lineH(f);
+      }
+      codes.forEach((name, n) => {
+        const code = parseInt(name.slice(1), 16);
+        drawChar(
+          code,
+          bx + 6 + (n % 16) * (f.size[0] + 2) * SC,
+          cy + 4 + Math.floor(n / 16) * (f.size[1] * SC + 4),
+        );
+      });
+    }
+    y += bandH + 10;
+  }
   return img;
 }

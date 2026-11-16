@@ -67,3 +67,102 @@ canvas {
   background: rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
+
+/* ---- DOM UI layer (clear text, DOM buttons). Colors come from palette variables set in JS. ---- */
+.ui-root {
+  --px: 2px;
+  --text-scale: 1;
+  --hud-scale: 1;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: calc(var(--px) * 4);
+  padding: calc(env(safe-area-inset-top, 0px) + calc(var(--px) * 4))
+    calc(env(safe-area-inset-right, 0px) + calc(var(--px) * 4))
+    calc(env(safe-area-inset-bottom, 0px) + calc(var(--px) * 4))
+    calc(env(safe-area-inset-left, 0px) + calc(var(--px) * 4));
+  box-sizing: border-box;
+  pointer-events: none;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+}
+.pow-panel {
+  pointer-events: auto;
+  box-sizing: border-box;
+  width: min(100%, 34rem);
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  color: var(--pal-3);
+  background-color: var(--pal-16);
+  background-clip: padding-box;
+  border-style: solid;
+  border-width: calc(var(--px) * 2);
+  border-image-source: var(--panel-img);
+  border-image-slice: 2 fill;
+  border-image-width: calc(var(--px) * 2);
+  border-image-repeat: stretch;
+  image-rendering: pixelated;
+  padding: calc(var(--px) * 3);
+  font-size: calc(1rem * var(--text-scale));
+  line-height: 1.5;
+}
+.pow-panel h2 {
+  margin: 0 0 0.4em;
+  font-size: 1.1em;
+  line-height: 1.25;
+  color: var(--pal-47);
+}
+.pow-clear-body p {
+  margin: 0 0 0.7em;
+}
+.pow-clear-body p:last-child {
+  margin-bottom: 0;
+}
+.pow-button {
+  pointer-events: auto;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 calc(var(--px) * 5);
+  color: var(--pal-3);
+  background-color: var(--pal-16);
+  background-clip: padding-box;
+  border-style: solid;
+  border-width: calc(var(--px) * 2);
+  border-image-source: var(--panel-img);
+  border-image-slice: 2 fill;
+  border-image-width: calc(var(--px) * 2);
+  image-rendering: pixelated;
+  font: inherit;
+  font-size: calc(1rem * var(--text-scale));
+  cursor: pointer;
+}
+.pow-button:active {
+  border-image-source: var(--panel-pressed-img);
+  padding-top: var(--px);
+}
+.pow-button:focus-visible,
+.pow-panel:focus-visible {
+  outline: 2px solid var(--pal-47);
+  outline-offset: 2px;
+}
+.pow-dialogue {
+  margin-top: calc(var(--px) * 40);
+}
+.pow-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--px) * 3);
+}

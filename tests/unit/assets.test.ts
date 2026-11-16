@@ -119,20 +119,23 @@ describe('bake', () => {
 
   it('frames do not overlap in the atlas and stay inside it', () => {
     const m = JSON.parse(bakeAll(SPRITES, TILES).get('manifest.json') as string) as Manifest;
-    const rects: { x: number; y: number; w: number; h: number }[] = [];
-    for (const s of Object.values(m.sprites)) rects.push(...Object.values(s.frames));
-    const a = m.atlases.core as { width: number; height: number };
-    for (const r of rects) {
-      expect(r.x + r.w).toBeLessThanOrEqual(a.width);
-      expect(r.y + r.h).toBeLessThanOrEqual(a.height);
-    }
-    for (let i = 0; i < rects.length; i++) {
-      for (let j = i + 1; j < rects.length; j++) {
-        const p = rects[i] as (typeof rects)[number];
-        const q = rects[j] as (typeof rects)[number];
-        expect(p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y).toBe(
-          true,
-        );
+    for (const [group, a] of Object.entries(m.atlases)) {
+      const rects: { x: number; y: number; w: number; h: number }[] = [];
+      for (const s of Object.values(m.sprites))
+        if (s.group === group) rects.push(...Object.values(s.frames));
+      expect(rects.length, group).toBeGreaterThan(0);
+      for (const r of rects) {
+        expect(r.x + r.w).toBeLessThanOrEqual(a.width);
+        expect(r.y + r.h).toBeLessThanOrEqual(a.height);
+      }
+      for (let i = 0; i < rects.length; i++) {
+        for (let j = i + 1; j < rects.length; j++) {
+          const p = rects[i] as (typeof rects)[number];
+          const q = rects[j] as (typeof rects)[number];
+          expect(p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y).toBe(
+            true,
+          );
+        }
       }
     }
   });
@@ -140,7 +143,7 @@ describe('bake', () => {
 
 describe('runtime atlas', () => {
   const m = JSON.parse(bakeAll(SPRITES, TILES).get('manifest.json') as string) as Manifest;
-  const atlas = new Atlas(m, { core: {} as CanvasImageSource });
+  const atlas = new Atlas(m, { core: {} as CanvasImageSource, ui: {} as CanvasImageSource });
 
   it('resolves handles and rejects unknown names', () => {
     const h = atlas.frame('doll.body_a', 'walk_down_0');
