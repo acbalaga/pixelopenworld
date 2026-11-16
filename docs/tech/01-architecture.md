@@ -2,17 +2,17 @@
 
 ## Stack
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Language | TypeScript, `strict` | One language for client, Worker, tools |
-| Build | Vite | Dev server, production bundle, code splitting |
-| Rendering | Canvas 2D on a low-resolution logical canvas | Renderer sits behind an interface so a WebGL backend can replace it without touching game code |
-| UI | Canvas for HUD and pixel text. DOM for Menu, dialogue, and all clear text | No UI framework. Small hand-written view helpers. |
-| Audio | Web Audio API, synthesized | No audio files |
-| Storage | IndexedDB | Saves, baked chunk cache, settings |
-| Backend | One small Cloudflare Worker serving static assets, `/api/health`, and `/api/time` | No secrets, no database, no bindings beyond static assets |
-| Tests | Vitest (unit, sim), Playwright (smoke, screenshots) | |
-| Lint | ESLint with custom rules for sim purity | |
+| Layer     | Choice                                                                            | Notes                                                                                          |
+| --------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Language  | TypeScript, `strict`                                                              | One language for client, Worker, tools                                                         |
+| Build     | Vite                                                                              | Dev server, production bundle, code splitting                                                  |
+| Rendering | Canvas 2D on a low-resolution logical canvas                                      | Renderer sits behind an interface so a WebGL backend can replace it without touching game code |
+| UI        | Canvas for HUD and pixel text. DOM for Menu, dialogue, and all clear text         | No UI framework. Small hand-written view helpers.                                              |
+| Audio     | Web Audio API, synthesized                                                        | No audio files                                                                                 |
+| Storage   | IndexedDB                                                                         | Saves, baked chunk cache, settings                                                             |
+| Backend   | One small Cloudflare Worker serving static assets, `/api/health`, and `/api/time` | No secrets, no database, no bindings beyond static assets                                      |
+| Tests     | Vitest (unit, sim), Playwright (smoke, screenshots)                               |                                                                                                |
+| Lint      | ESLint with custom rules for sim purity                                           |                                                                                                |
 
 Runtime dependencies in the client: none. Dev dependencies are kept short: `vite`, `typescript`, `vitest`, `@playwright/test`, `eslint` and its TypeScript plugin, `wrangler`, `zod` (build-time content validation only), `pngjs` (atlas bake only).
 
@@ -88,11 +88,11 @@ Sim emits events (`damageDealt`, `skillRankUp`, `itemLooted`, `travelerSpoke`) i
 
 ### Levels of detail
 
-| Zone | What runs |
-|---|---|
-| Active chunks (3 x 3 around the player) | Full entity simulation at 30 Hz |
-| Loaded but distant | Creatures frozen, Travelers abstract |
-| Rest of world | Abstract only: Travelers, market, crops, Routines, world events, at one tick per in-game minute (every 2 real seconds) |
+| Zone                                    | What runs                                                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Active chunks (3 x 3 around the player) | Full entity simulation at 30 Hz                                                                                        |
+| Loaded but distant                      | Creatures frozen, Travelers abstract                                                                                   |
+| Rest of world                           | Abstract only: Travelers, market, crops, Routines, world events, at one tick per in-game minute (every 2 real seconds) |
 
 ## Content pipeline
 
@@ -120,10 +120,10 @@ Sim emits events (`damageDealt`, `skillRankUp`, `itemLooted`, `travelerSpoke`) i
 
 The client talks only to its own origin.
 
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/health` | Liveness |
-| `GET /api/time` | Trusted time |
+| Endpoint          | Purpose      |
+| ----------------- | ------------ |
+| `GET /api/health` | Liveness     |
+| `GET /api/time`   | Trusted time |
 
 The game works fully without either. Network failure is a normal state, not an error screen.
 

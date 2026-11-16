@@ -8,15 +8,15 @@ Two schemes ship. Gate G1 decides the default. Both are always available in sett
 
 ### Flow (one thumb, portrait default candidate)
 
-| Gesture | Action |
-|---|---|
-| Touch and drag anywhere in the lower zone | Floating stick appears under the thumb. Move. |
-| Basic attack | Automatic. While an enemy is in weapon reach and in the facing arc, the avatar attacks on the weapon's cadence, including while moving. |
-| Tap an enemy | Lock target. Avatar faces it. Tap empty ground to unlock. |
-| Flick (fast short swipe) | Dodge in the flick direction. Costs Stamina. Has invulnerable frames. |
-| Tap one of four technique buttons | Use technique. Buttons sit in an arc above the thumb rest. When the thumb leaves the stick the avatar keeps its heading for 200 ms so a tap does not stop movement dead. |
-| Hold a technique button | Aim (shows a cone or line), release to fire. |
-| Tap the context button | Interact, gather, talk, pick up. Appears only when something is in range. |
+| Gesture                                   | Action                                                                                                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Touch and drag anywhere in the lower zone | Floating stick appears under the thumb. Move.                                                                                                                            |
+| Basic attack                              | Automatic. While an enemy is in weapon reach and in the facing arc, the avatar attacks on the weapon's cadence, including while moving.                                  |
+| Tap an enemy                              | Lock target. Avatar faces it. Tap empty ground to unlock.                                                                                                                |
+| Flick (fast short swipe)                  | Dodge in the flick direction. Costs Stamina. Has invulnerable frames.                                                                                                    |
+| Tap one of four technique buttons         | Use technique. Buttons sit in an arc above the thumb rest. When the thumb leaves the stick the avatar keeps its heading for 200 ms so a tap does not stop movement dead. |
+| Hold a technique button                   | Aim (shows a cone or line), release to fire.                                                                                                                             |
+| Tap the context button                    | Interact, gather, talk, pick up. Appears only when something is in range.                                                                                                |
 
 Skill in Flow is positioning, dodge timing, and technique choice. Not button mashing.
 
@@ -36,13 +36,13 @@ Both schemes get: left-handed mirror, adjustable button size and opacity, haptic
 
 Five weapon families, each tied to an Arms skill, each with a distinct cadence, reach, and one built-in property.
 
-| Family | Skill | Feel | Property |
-|---|---|---|---|
-| Swords, daggers | Blades | Fast, short reach | Bonus damage from behind and on staggered targets |
-| Hammers, axes, greatswords | Heavy Arms | Slow, wide arc | Builds stagger fast, breaks guards |
-| Spears, staves | Polearms | Medium, long reach | Hits two tiles deep, keeps enemies out |
-| Bows, slings | Archery | Ranged, needs space | Charge by standing still |
-| Fists, claws | Unarmed | Very fast, tiny reach | Hits refund Stamina |
+| Family                     | Skill      | Feel                  | Property                                          |
+| -------------------------- | ---------- | --------------------- | ------------------------------------------------- |
+| Swords, daggers            | Blades     | Fast, short reach     | Bonus damage from behind and on staggered targets |
+| Hammers, axes, greatswords | Heavy Arms | Slow, wide arc        | Builds stagger fast, breaks guards                |
+| Spears, staves             | Polearms   | Medium, long reach    | Hits two tiles deep, keeps enemies out            |
+| Bows, slings               | Archery    | Ranged, needs space   | Charge by standing still                          |
+| Fists, claws               | Unarmed    | Very fast, tiny reach | Hits refund Stamina                               |
 
 Off-hand: shield (Shieldcraft, hold to block, timed block parries), focus orb (magic strength), tool (lantern, instrument), or nothing (faster dodge recovery).
 
@@ -52,14 +52,14 @@ Two loadouts can be saved and swapped with one tap out of combat, with a short l
 
 Six schools. Each is a skill. Spells are techniques.
 
-| School | Role | Interacts with world |
-|---|---|---|
-| Ember | Damage over time, area | Burns brush, lights torches, melts ice |
-| Tide | Control, pushes, soaking | Douses fire, fills basins, grows crops |
-| Gale | Mobility, knockback, ranged | Spins windmills, clears fog and sand |
-| Stone | Defense, walls, heavy single hits | Makes platforms, blocks beams, holds plates |
-| Mending | Heals, cleanses, wards | Revives withered plants, soothes creatures |
-| Hexing | Debuffs, drains, summons | Reveals hidden things, speaks with echoes |
+| School  | Role                              | Interacts with world                        |
+| ------- | --------------------------------- | ------------------------------------------- |
+| Ember   | Damage over time, area            | Burns brush, lights torches, melts ice      |
+| Tide    | Control, pushes, soaking          | Douses fire, fills basins, grows crops      |
+| Gale    | Mobility, knockback, ranged       | Spins windmills, clears fog and sand        |
+| Stone   | Defense, walls, heavy single hits | Makes platforms, blocks beams, holds plates |
+| Mending | Heals, cleanses, wards            | Revives withered plants, soothes creatures  |
+| Hexing  | Debuffs, drains, summons          | Reveals hidden things, speaks with echoes   |
 
 ### Reactions
 
@@ -88,6 +88,7 @@ Time-to-kill targets at par: common enemy 4 to 8 seconds, elite 20 to 40 seconds
 About 160 creatures built from 12 behavior archetypes: Chaser, Skirmisher, Charger, Shooter, Lobber, Guard, Burrower, Flyer, Swarm, Caster, Mimic, Summoner. A creature is an archetype plus stats, element, telegraph timings, drops, and one quirk.
 
 Rules:
+
 - Every attack has a telegraph. Ground markers for area attacks, a flash and wind-up for melee. Minimum 350 ms at tier 1, tightening to 200 ms at tier 8.
 - No more than six active attackers engage at once. Others circle.
 - Enemies leash to their zone and reset if pulled too far.

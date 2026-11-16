@@ -10,28 +10,28 @@ The world is one continuous map with no loading screens between outdoor areas. T
 
 ## Units
 
-| Thing | Value |
-|---|---|
-| Tile | 16 x 16 px |
-| Chunk | 32 x 32 tiles |
-| Region | 12 x 12 chunks typical (384 x 384 tiles). About 4 to 5 minutes to cross on foot. |
-| Continent | About 40 x 40 chunks including sea and mountains |
-| View | About 11 to 14 tiles wide in portrait (see 09-ui-ux) |
+| Thing     | Value                                                                            |
+| --------- | -------------------------------------------------------------------------------- |
+| Tile      | 16 x 16 px                                                                       |
+| Chunk     | 32 x 32 tiles                                                                    |
+| Region    | 12 x 12 chunks typical (384 x 384 tiles). About 4 to 5 minutes to cross on foot. |
+| Continent | About 40 x 40 chunks including sea and mountains                                 |
+| View      | About 11 to 14 tiles wide in portrait (see 09-ui-ux)                             |
 
 ## Regions
 
 Tier sets creature strength, material tier, and gear tier. Tiers are fixed (decision A3).
 
-| # | Region | Tier | Biome | Hub | Identity and signature activity |
-|---|---|---|---|---|---|
-| 1 | Dawnmeadow | 1 | Farmland, gentle hills, river | Hearthford (town) | Home. Farming, cooking, first everything. |
-| 2 | Whisperwood | 2 | Old forest, fog, giant roots | Mossgate (tree village) | Foraging, taming, archery. Easy to get lost in. |
-| 3 | Saltreach | 3 | Coast, cliffs, islands | Port Brine (harbor city) | Fishing, sailing between islands, the main market. |
-| 4 | Ironvale | 4 | Foothills, mines, quarries | Anvil Rest (mining town) | Mining, smithing, tinkering. First guild halls. |
-| 5 | Sunken Mire | 5 | Swamp, drowned ruins | Stiltwater (stilt village) | Alchemy, hexing, stealth. Ruins start to look wrong. |
-| 6 | Frostspine | 6 | Alpine, snow, ice caves | Highhearth (monastery) | Survival, athletics, climbing. Weather can kill. |
-| 7 | Glass Desert | 7 | Dunes, glass flats, buried city | Mirage (caravan city) | Deciphering, enchanting. The hidden layer is closest to the surface here. |
-| 8 | The Crown | 8 | Central highland, floating stone | None (a ruined capital) | Endgame. No hub by design. |
+| #   | Region       | Tier | Biome                            | Hub                        | Identity and signature activity                                           |
+| --- | ------------ | ---- | -------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
+| 1   | Dawnmeadow   | 1    | Farmland, gentle hills, river    | Hearthford (town)          | Home. Farming, cooking, first everything.                                 |
+| 2   | Whisperwood  | 2    | Old forest, fog, giant roots     | Mossgate (tree village)    | Foraging, taming, archery. Easy to get lost in.                           |
+| 3   | Saltreach    | 3    | Coast, cliffs, islands           | Port Brine (harbor city)   | Fishing, sailing between islands, the main market.                        |
+| 4   | Ironvale     | 4    | Foothills, mines, quarries       | Anvil Rest (mining town)   | Mining, smithing, tinkering. First guild halls.                           |
+| 5   | Sunken Mire  | 5    | Swamp, drowned ruins             | Stiltwater (stilt village) | Alchemy, hexing, stealth. Ruins start to look wrong.                      |
+| 6   | Frostspine   | 6    | Alpine, snow, ice caves          | Highhearth (monastery)     | Survival, athletics, climbing. Weather can kill.                          |
+| 7   | Glass Desert | 7    | Dunes, glass flats, buried city  | Mirage (caravan city)      | Deciphering, enchanting. The hidden layer is closest to the surface here. |
+| 8   | The Crown    | 8    | Central highland, floating stone | None (a ruined capital)    | Endgame. No hub by design.                                                |
 
 Each region contains, as a budget (see 10-content-budget for totals):
 
@@ -68,6 +68,7 @@ Handcrafted room graphs. Each room is one chunk or smaller and fits the portrait
 Building blocks (framework in POW-M4-08): locked doors and keys, switches and pressure plates, pushable blocks, light and dark rooms, timed gates, breakable walls, one-way drops, element puzzles (burn, freeze, grow, conduct), combat arenas, a mid-point shortcut back to the entrance, a boss room.
 
 Rules:
+
 - Every dungeon teaches one idea, twists it, then tests it at the boss.
 - Every dungeon has one secret that cannot be reached on a first visit with tier-appropriate skills. Reasons to return.
 - Leaving and re-entering keeps solved puzzles solved. Enemies respawn daily.

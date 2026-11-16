@@ -6,11 +6,11 @@ A mobile, browser-based, open world pixel RPG where you become whatever you deci
 
 ## Start here
 
-| If you are | Read |
-|---|---|
-| The owner | [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md) |
-| An implementing agent | [CLAUDE.md](CLAUDE.md), then the ticket you were assigned in [docs/tickets/](docs/tickets/README.md) |
-| Curious about the design | [docs/design/](docs/design/) (note: `08-lore-SPOILERS.md` spoils the whole game) |
+| If you are               | Read                                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| The owner                | [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)                                                           |
+| An implementing agent    | [CLAUDE.md](CLAUDE.md), then the ticket you were assigned in [docs/tickets/](docs/tickets/README.md) |
+| Curious about the design | [docs/design/](docs/design/) (note: `08-lore-SPOILERS.md` spoils the whole game)                     |
 
 ## Fixed decisions
 
