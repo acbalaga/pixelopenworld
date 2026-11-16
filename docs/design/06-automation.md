@@ -4,11 +4,11 @@ Automation is the reward for mastery. You automate what you have already proven 
 
 ## Three kinds
 
-| Kind | What it does | Runs when |
-|---|---|---|
+| Kind         | What it does                                                     | Runs when           |
+| ------------ | ---------------------------------------------------------------- | ------------------- |
 | **Routines** | A worker repeats a gathering, farming, crafting, or selling loop | Game open or closed |
-| **Tactics** | Rule-based control of the avatar and companions in combat | Game open |
-| **Patrol** | The avatar auto-fights in a cleared zone using Tactics | Game open or closed |
+| **Tactics**  | Rule-based control of the avatar and companions in combat        | Game open           |
+| **Patrol**   | The avatar auto-fights in a cleared zone using Tactics           | Game open or closed |
 
 ## Requirements (all must hold)
 
@@ -43,14 +43,14 @@ Worker slots start at 1 and grow to 8 through Leadership ranks, homestead upgrad
 
 Automation is always worse than doing it yourself.
 
-| Item | Rule |
-|---|---|
-| Output rate | 60% of the player's own measured manual rate for that activity, rising to 80% with worker upgrades |
-| Skill XP | 25% of manual. Banks at the next mastery threshold like all XP. |
-| Quality | Rolls one tier lower than the player's typical result, capped at Superior |
-| Costs | Wages, fuel, feed, tool wear, and input materials are consumed. A Routine that runs out of inputs stops. |
-| Patrol loot | Common drop tables only. Coin and materials. |
-| Patrol risk | None. Patrol in a qualifying zone cannot kill the player. |
+| Item        | Rule                                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| Output rate | 60% of the player's own measured manual rate for that activity, rising to 80% with worker upgrades       |
+| Skill XP    | 25% of manual. Banks at the next mastery threshold like all XP.                                          |
+| Quality     | Rolls one tier lower than the player's typical result, capped at Superior                                |
+| Costs       | Wages, fuel, feed, tool wear, and input materials are consumed. A Routine that runs out of inputs stops. |
+| Patrol loot | Common drop tables only. Coin and materials.                                                             |
+| Patrol risk | None. Patrol in a qualifying zone cannot kill the player.                                                |
 
 The "measured manual rate" is recorded when the player does the activity by hand. Getting better by hand makes your Routines better. That is the loop.
 

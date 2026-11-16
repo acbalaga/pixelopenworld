@@ -37,8 +37,8 @@ Authored as text grids so they diff cleanly and so an agent can write and revise
 export const mossling: SpriteDef = {
   id: 'creature.mossling',
   size: [16, 16],
-  origin: [8, 14],            // feet position
-  key: { '.': null, 'k': 0, 'g': 9, 'G': 10, 'l': 11, 'w': 3 },   // char -> palette index
+  origin: [8, 14], // feet position
+  key: { '.': null, k: 0, g: 9, G: 10, l: 11, w: 3 }, // char -> palette index
   frames: {
     idle_0: [
       '................',
@@ -46,7 +46,7 @@ export const mossling: SpriteDef = {
       '....kGGGGGGk....',
       // ... 16 rows
     ],
-    idle_1: [ /* ... */ ],
+    idle_1: [/* ... */],
   },
   anims: { idle: { frames: ['idle_0', 'idle_1'], fps: 2 } },
 };
@@ -104,8 +104,16 @@ Synthesized at runtime from parameter presets in the style of sfxr: waveform, en
 
 ```ts
 export const sfxHitLight: SfxDef = {
-  id: 'sfx.hit_light', wave: 'noise', attack: 0, sustain: 0.03, decay: 0.08,
-  freq: 440, slide: -0.3, lowpass: 0.6, gain: 0.5, variance: 0.08,
+  id: 'sfx.hit_light',
+  wave: 'noise',
+  attack: 0,
+  sustain: 0.03,
+  decay: 0.08,
+  freq: 440,
+  slide: -0.3,
+  lowpass: 0.6,
+  gain: 0.5,
+  variance: 0.08,
 };
 ```
 

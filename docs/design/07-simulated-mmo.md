@@ -8,17 +8,17 @@ The world must feel like an online game with real people in it. It is single-pla
 
 Each Traveler has:
 
-| Field | Notes |
-|---|---|
-| Handle | Gamer-style names in several naming cultures. Some plain, some silly. |
-| Look | Paper-doll avatar from the same parts the player uses |
-| Build | Skill ranks that grow over time. They have Paths too. |
-| Archetype | Grinder, Explorer, Socializer, Crafter, Trader, Roleplayer, Completionist, Casual, Newbie, Veteran |
-| Schedule | When they are "online", in real local time. A student type plays evenings and weekends. A night-shift type plays mornings. Some are almost always on. One never logs out. |
-| Home region and guild | Where they hang out, who they run with |
-| Voice | A phrase set and style: terse, emoji-heavy, formal, jokes, lowercase |
-| Memory | What the player did with or near them: fought together, traded, gifted, beat them in a duel, stood them up |
-| Regard | Stranger, Acquaintance, Friend, Close Friend (and Rival as a separate flag) |
+| Field                 | Notes                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Handle                | Gamer-style names in several naming cultures. Some plain, some silly.                                                                                                     |
+| Look                  | Paper-doll avatar from the same parts the player uses                                                                                                                     |
+| Build                 | Skill ranks that grow over time. They have Paths too.                                                                                                                     |
+| Archetype             | Grinder, Explorer, Socializer, Crafter, Trader, Roleplayer, Completionist, Casual, Newbie, Veteran                                                                        |
+| Schedule              | When they are "online", in real local time. A student type plays evenings and weekends. A night-shift type plays mornings. Some are almost always on. One never logs out. |
+| Home region and guild | Where they hang out, who they run with                                                                                                                                    |
+| Voice                 | A phrase set and style: terse, emoji-heavy, formal, jokes, lowercase                                                                                                      |
+| Memory                | What the player did with or near them: fought together, traded, gifted, beat them in a duel, stood them up                                                                |
+| Regard                | Stranger, Acquaintance, Friend, Close Friend (and Rival as a separate flag)                                                                                               |
 
 Travelers progress at roughly the pace of a moderately active player, keyed to the save's total playtime and to real days elapsed. Some are always ahead of the player, some behind. A Newbie the player helps in hour 5 can be a Master smith in hour 80 and remember who helped.
 
@@ -78,14 +78,14 @@ See 05-life-systems for the economy rules. From the MMO side: listings show sell
 
 On a real-time schedule, shown on a calendar in the menu.
 
-| Event | Cadence | What happens |
-|---|---|---|
-| Field raid | Several per real day | A field boss spawns in a region. Travelers converge. The player can join the zerg. |
-| Invasion | Daily | Creatures attack a settlement. Defending raises Renown. |
-| Market day | Weekly | Port Brine fills up. Rare goods. |
-| Festival | Each in-game season | See 05-life-systems. |
-| Meteor night, aurora, eclipse | Rare | Rare spawns and gathering. Chat goes wild. |
-| "Maintenance" | Rare | A system message announces brief maintenance. Nothing happens. Or something small does. (Lore.) |
+| Event                         | Cadence              | What happens                                                                                    |
+| ----------------------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| Field raid                    | Several per real day | A field boss spawns in a region. Travelers converge. The player can join the zerg.              |
+| Invasion                      | Daily                | Creatures attack a settlement. Defending raises Renown.                                         |
+| Market day                    | Weekly               | Port Brine fills up. Rare goods.                                                                |
+| Festival                      | Each in-game season  | See 05-life-systems.                                                                            |
+| Meteor night, aurora, eclipse | Rare                 | Rare spawns and gathering. Chat goes wild.                                                      |
+| "Maintenance"                 | Rare                 | A system message announces brief maintenance. Nothing happens. Or something small does. (Lore.) |
 
 Events run on the world clock, so they can be missed. They recur.
 

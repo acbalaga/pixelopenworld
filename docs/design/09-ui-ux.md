@@ -37,9 +37,9 @@ This is how "pixel where it reads, something else where it does not" is enforced
 
 Two text renderers:
 
-| Renderer | Used for | How |
-|---|---|---|
-| **Pixel text** | HUD numbers, button labels, names over heads, damage numbers, short labels up to about 24 characters | Bitmap font on the canvas. Two sizes: 5x7 and 7x9 glyph cells. |
+| Renderer       | Used for                                                                                                                                                  | How                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Pixel text** | HUD numbers, button labels, names over heads, damage numbers, short labels up to about 24 characters                                                      | Bitmap font on the canvas. Two sizes: 5x7 and 7x9 glyph cells.                                            |
 | **Clear text** | Anything read as sentences: dialogue, chat log, letters, lore fragments, item and technique descriptions, settings, request text, tooltips over two lines | DOM overlay using the system UI font stack, sized in CSS, inside pixel-art frames (9-slice border images) |
 
 Hard rules:
@@ -79,16 +79,16 @@ Minimal by default. Elements fade when unchanged for a few seconds, return on ch
 
 Presented in-fiction as the game's system menu (the player is "in a VR game"). Opens with the menu button or a swipe up from the bottom edge. Full-height sheet in portrait with a tab bar at the bottom.
 
-| Tab | Contents |
-|---|---|
-| Character | Avatar, gear, worn Paths, Forms, pools, loadouts |
-| Skills | 36 skills by family, rank, next Trial hint, techniques |
-| Bag | Inventory grid, filters, quick-use slots |
-| Map | World map with fog, Waystones, player notes, rumor marks |
+| Tab       | Contents                                                                          |
+| --------- | --------------------------------------------------------------------------------- |
+| Character | Avatar, gear, worn Paths, Forms, pools, loadouts                                  |
+| Skills    | 36 skills by family, rank, next Trial hint, techniques                            |
+| Bag       | Inventory grid, filters, quick-use slots                                          |
+| Map       | World map with fog, Waystones, player notes, rumor marks                          |
 | Chronicle | Completion by category, bestiary, recipes, fish, fragments as found, Theory Board |
-| Social | Friends, party finder, guild, rankings, mail, full chat log |
-| Routines | Workers, assignments, offline cap, Tactics editor |
-| System | Settings, save status and export, calendar, help, **Log Out** |
+| Social    | Friends, party finder, guild, rankings, mail, full chat log                       |
+| Routines  | Workers, assignments, offline cap, Tactics editor                                 |
+| System    | Settings, save status and export, calendar, help, **Log Out**                     |
 
 Log Out returns to the login screen. It always works. (It matters to the lore that it does.)
 

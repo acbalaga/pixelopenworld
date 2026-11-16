@@ -7,7 +7,8 @@ Starts only after Gate G1 passes. All tickets DRAFT until M3-01 merges.
 ---
 
 ### POW-M3-01 Refinement: M3 specs to READY
-Size: M      Depends: Gate G1      Status: DRAFT (design authority)
+
+Size: M Depends: Gate G1 Status: DRAFT (design authority)
 Refs: all design docs, G1 playtest notes
 
 Goal: turn every M3 ticket into a READY spec using what G1 taught.
@@ -15,7 +16,8 @@ Scope: fix the default control scheme. Write the full skill table (36 skills, XP
 Acceptance: owner approves the docs PR. Every M3 ticket is READY.
 
 ### POW-M3-02 Full skill framework
-Size: L      Depends: M3-01      Status: DRAFT
+
+Size: L Depends: M3-01 Status: DRAFT
 Refs: design/03-progression
 
 Goal: all 36 skills exist with XP sources, curves, and rank effects.
@@ -23,7 +25,8 @@ Scope: skill data for all six families. Event-to-XP mapping for every skill. Cha
 Acceptance: every skill can gain XP from at least one implemented action (test enumerates skills). XP-per-hour report from scripted play is within the budget in design/10 for 3 sampled skills.
 
 ### POW-M3-03 Trials framework and first Trials
-Size: L      Depends: M3-02      Status: DRAFT
+
+Size: L Depends: M3-02 Status: DRAFT
 Refs: design/03-progression (Mastery ranks and Trials)
 
 Goal: mastery thresholds are gated by authored manual tests.
@@ -31,7 +34,8 @@ Scope: Trial definition format (giver, conditions, objective types: craft at qua
 Acceptance: banking and release tested per threshold. Each of the 36 Trials is completable in a scripted run. No Trial is completable by an automated worker (test attempts it through the Routine code path once M7 exists, flagged as a follow-up test).
 
 ### POW-M3-04 Techniques and loadouts
-Size: L      Depends: M3-02      Status: DRAFT
+
+Size: L Depends: M3-02 Status: DRAFT
 Refs: design/03-progression (Techniques), design/04-combat
 
 Goal: any technique from any skill can be slotted, and two loadouts swap.
@@ -39,7 +43,8 @@ Scope: technique data format (cost, cooldown, hit data, aim type, effects). Impl
 Acceptance: each weapon family meets its described feel in a scenario test (reach, cadence, property). A mixed loadout (spell, weapon technique, song, command) works. Time-to-kill per family within 15% of each other at par.
 
 ### POW-M3-05 Items, equipment, quality, durability
-Size: L      Depends: M3-01      Status: DRAFT
+
+Size: L Depends: M3-01 Status: DRAFT
 Refs: design/05-life-systems (Crafting)
 
 Goal: the full item model.
@@ -47,7 +52,8 @@ Scope: quality tiers on crafted items. Maker's mark. Durability and repair. Up t
 Acceptance: save migration from M1 items with fixture. Stat calculation tests across tier, quality, affix. Icons contact sheet.
 
 ### POW-M3-06 Gathering: nodes, tools, variants
-Size: M      Depends: M3-05      Status: DRAFT
+
+Size: M Depends: M3-05 Status: DRAFT
 Refs: design/05-life-systems (Gathering)
 
 Goal: Mining, Logging, Foraging, and Fishing spots work with tools, timing, respawn, and conditions.
@@ -55,7 +61,8 @@ Scope: node types and tiers. Tool requirement rules (slow, not blocked). Timing 
 Acceptance: yield and quality tests for tool tier below, at, above node tier. Respawn timers persist across save and offline time.
 
 ### POW-M3-07 Crafting: stations, recipes, experimentation
-Size: L      Depends: M3-05, M3-06      Status: DRAFT
+
+Size: L Depends: M3-05, M3-06 Status: DRAFT
 Refs: design/05-life-systems (Crafting)
 
 Goal: all seven crafts are playable through tier 2.
@@ -63,7 +70,8 @@ Scope: station types. Recipe data and the experiment flow generalized. The manua
 Acceptance: quality distribution tests against skill and material inputs. Experimenting with a valid unknown combination discovers the recipe once. Each manual step is playable one-handed (screenshots plus input tests).
 
 ### POW-M3-08 Paths and deeds
-Size: L      Depends: M3-02      Status: DRAFT
+
+Size: L Depends: M3-02 Status: DRAFT
 Refs: design/03-progression (Paths)
 
 Goal: the world recognizes what the player has become.
@@ -71,7 +79,8 @@ Scope: deed counters fed by sim events. Path definition format (requirements, gi
 Acceptance: each of the 16 Paths is earned in a scripted run. Gifts apply only while worn. Dialogue uses the worn title.
 
 ### POW-M3-09 Statuses, elements, reactions, magic
-Size: L      Depends: M3-04      Status: DRAFT
+
+Size: L Depends: M3-04 Status: DRAFT
 Refs: design/04-combat (Magic, Reactions, Statuses)
 
 Goal: the six schools and the reaction table work on enemies, the player, and the environment.
@@ -79,7 +88,8 @@ Scope: status system (one rule each, max four shown). Element tags on tiles and 
 Acceptance: a test per reaction. A test per world interaction. Statuses on the player follow the same rules as on enemies.
 
 ### POW-M3-10 Economy: coin, shops, bartering
-Size: M      Depends: M3-05      Status: DRAFT
+
+Size: M Depends: M3-05 Status: DRAFT
 Refs: design/05-life-systems (Economy)
 
 Goal: stable NPC trade with a skill behind it.
@@ -87,7 +97,8 @@ Scope: shop inventories with restock on the world clock. Regional price modifier
 Acceptance: price bounds tested (Bartering can never produce a buy-below-sell loop). Restock survives offline time.
 
 ### POW-M3-11 Requests engine, boards, dialogue v2
-Size: L      Depends: M3-08, M3-10      Status: DRAFT
+
+Size: L Depends: M3-08, M3-10 Status: DRAFT
 Refs: design/05-life-systems (Requests), design/01-experience (No main quest), design/02-world (Secrets and discovery)
 
 Goal: boards post jobs, and jobs accept more than one solution.
@@ -95,7 +106,8 @@ Scope: request data format with objective graph, alternative solutions, and rewa
 Acceptance: each authored request completes in a scripted run by each of its solutions. No objective arrow or auto-path exists in the build. Generator never posts an impossible request (property test).
 
 ### POW-M3-12 Balance harness
-Size: L      Depends: M3-04, M3-07      Status: DRAFT
+
+Size: L Depends: M3-04, M3-07 Status: DRAFT
 Refs: tech/04-quality (Balance workflow), design/10-content-budget (Verification)
 
 Goal: numbers are checked by machines.

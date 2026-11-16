@@ -11,14 +11,14 @@
 
 Thirty-six skills in six families. Each runs 0 to 100.
 
-| Family | Skills |
-|---|---|
-| Arms (7) | Blades, Heavy Arms, Polearms, Archery, Unarmed, Shieldcraft, Evasion |
-| Magic (6) | Ember, Tide, Gale, Stone, Mending, Hexing |
-| Gathering (6) | Mining, Logging, Foraging, Fishing, Farming, Husbandry |
-| Crafting (7) | Smithing, Woodworking, Tailoring, Cooking, Alchemy, Enchanting, Tinkering |
-| Social (5) | Bartering, Performance, Leadership, Taming, Stealth |
-| Exploration (5) | Cartography, Survival, Athletics, Deciphering, Delving |
+| Family          | Skills                                                                    |
+| --------------- | ------------------------------------------------------------------------- |
+| Arms (7)        | Blades, Heavy Arms, Polearms, Archery, Unarmed, Shieldcraft, Evasion      |
+| Magic (6)       | Ember, Tide, Gale, Stone, Mending, Hexing                                 |
+| Gathering (6)   | Mining, Logging, Foraging, Fishing, Farming, Husbandry                    |
+| Crafting (7)    | Smithing, Woodworking, Tailoring, Cooking, Alchemy, Enchanting, Tinkering |
+| Social (5)      | Bartering, Performance, Leadership, Taming, Stealth                       |
+| Exploration (5) | Cartography, Survival, Athletics, Deciphering, Delving                    |
 
 ### Earning skill XP
 
@@ -29,14 +29,14 @@ Thirty-six skills in six families. Each runs 0 to 100.
 
 ### Mastery ranks and Trials
 
-| Points | Rank | Unlocks |
-|---|---|---|
-| 0 | Novice | Basics |
-| 15 | Apprentice | Second technique tier, tier 2 to 3 materials and recipes |
-| 30 | Journeyman | Third technique tier, tier 4 to 5 content |
-| 50 | Expert | **Routines for this skill** (see 06-automation), tier 6 content |
-| 75 | Master | Signature technique, tier 7 to 8 content, can teach (Leadership) |
-| 100 | Grandmaster | Capstone, unique title, cosmetic aura |
+| Points | Rank        | Unlocks                                                          |
+| ------ | ----------- | ---------------------------------------------------------------- |
+| 0      | Novice      | Basics                                                           |
+| 15     | Apprentice  | Second technique tier, tier 2 to 3 materials and recipes         |
+| 30     | Journeyman  | Third technique tier, tier 4 to 5 content                        |
+| 50     | Expert      | **Routines for this skill** (see 06-automation), tier 6 content  |
+| 75     | Master      | Signature technique, tier 7 to 8 content, can teach (Leadership) |
+| 100    | Grandmaster | Capstone, unique title, cosmetic aura                            |
 
 Crossing 15, 30, 50, 75, and 100 requires a **Trial**: a short, authored, manual test for that skill given by a specific person or place in the world. A smith asks for a blade of a given quality. A river spirit wants a fish caught at night in rain. Skill XP is banked at the threshold until the Trial is passed. Trials cannot be automated. This keeps every rank a moment the player remembers.
 
@@ -50,11 +50,11 @@ Any technique from any skill can be slotted together. A Tide spell, a Blades com
 
 Three pools, derived, never allocated.
 
-| Pool | Used for | Grows from |
-|---|---|---|
-| Health | Staying alive | Sum of Arms, Survival, Athletics, Husbandry ranks, plus food |
-| Stamina | Sprint, dodge, weapon techniques, gathering | Arms, Gathering, Athletics ranks |
-| Focus | Magic, crafting precision, social techniques | Magic, Crafting, Social, Deciphering ranks |
+| Pool    | Used for                                     | Grows from                                                   |
+| ------- | -------------------------------------------- | ------------------------------------------------------------ |
+| Health  | Staying alive                                | Sum of Arms, Survival, Athletics, Husbandry ranks, plus food |
+| Stamina | Sprint, dodge, weapon techniques, gathering  | Arms, Gathering, Athletics ranks                             |
+| Focus   | Magic, crafting precision, social techniques | Magic, Crafting, Social, Deciphering ranks                   |
 
 A pure crafter still gains Health slowly and has a large Focus pool. A pure fighter has little Focus. This is the whole "build" system and it needs no menu.
 
@@ -71,16 +71,16 @@ A Path is an identity the world recognizes. Paths are earned, not chosen, and th
 
 Examples (full list is authored in POW-M3-08 and extended per region):
 
-| Path | Requirement sketch | Gift |
-|---|---|---|
-| Spellblade | Blades 30 and any Magic 30, land 200 spell-then-strike combos | Weapon strikes carry the last element cast |
-| Wandering Chef | Cooking 50, cook in 6 regions, feed 30 different Travelers | Camp meals buff the whole party longer |
-| Beast Warden | Taming 50, Husbandry 30, 12 species tamed | Second active companion |
-| Merchant Prince | Bartering 75, own 3 shops, 1,000,000 coin lifetime trade | Market fee waived, caravan Routine |
-| Hermit | 20 in-game nights outdoors alone, Survival 50, no party for 10 hours | Strong solo buffs away from towns |
-| Cartographer Royal | Cartography 75, map every continental chunk | Sell maps, see rumor marks precisely |
-| Pacifist | Reach tier 5 region with zero kills | Creatures do not aggro first (hidden Path) |
-| Night Mayor | Leadership 50, be elected in a hub, hold office through one season | Town services discount, town projects |
+| Path               | Requirement sketch                                                   | Gift                                       |
+| ------------------ | -------------------------------------------------------------------- | ------------------------------------------ |
+| Spellblade         | Blades 30 and any Magic 30, land 200 spell-then-strike combos        | Weapon strikes carry the last element cast |
+| Wandering Chef     | Cooking 50, cook in 6 regions, feed 30 different Travelers           | Camp meals buff the whole party longer     |
+| Beast Warden       | Taming 50, Husbandry 30, 12 species tamed                            | Second active companion                    |
+| Merchant Prince    | Bartering 75, own 3 shops, 1,000,000 coin lifetime trade             | Market fee waived, caravan Routine         |
+| Hermit             | 20 in-game nights outdoors alone, Survival 50, no party for 10 hours | Strong solo buffs away from towns          |
+| Cartographer Royal | Cartography 75, map every continental chunk                          | Sell maps, see rumor marks precisely       |
+| Pacifist           | Reach tier 5 region with zero kills                                  | Creatures do not aggro first (hidden Path) |
+| Night Mayor        | Leadership 50, be elected in a hub, hold office through one season   | Town services discount, town projects      |
 
 Design rule: for every Path there is a different Path that plays opposite to it. No Path is strictly best.
 

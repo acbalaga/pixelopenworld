@@ -21,17 +21,17 @@ Because the game is single-player and free, this is proportionate. A failed chec
 
 ## Threat model
 
-| # | Threat | Control | Residual |
-|---|---|---|---|
-| T1 | Edit the local save in IndexedDB | AES-GCM with a non-extractable device key. Any change fails authentication. | None for file edits |
-| T2 | Edit an export file in a hex or text editor | AES-GCM over a compressed binary payload, header bound as authenticated data | None for blind edits |
-| T3 | Decrypt, edit, and re-seal an export | Key is derived at runtime from material split across the code, never stored whole. Integrity validator on every load. | Possible for a programmer who studies the bundle. Accepted. |
-| T4 | Copy someone else's export | Allowed. It is a backup feature. | Accepted |
-| T5 | Roll back to an older snapshot to redo a roll | Hash chain across local snapshots detects a broken sequence. Importing an older export is a legitimate restore. | Accepted |
-| T6 | Change the device clock to farm offline gains | Trusted time from `/api/time` when online, monotonic guard offline, one cap period of accrual between time syncs | Bounded to one cap period |
-| T7 | Modify live memory, then save | Integrity validator: internal consistency, ledgers, plausibility against play time | Small edits inside plausible bounds pass. Accepted. |
-| T8 | XSS or a third-party script reads or alters saves | Strict CSP, no third-party origins, no inline script, no `eval`. Clear text rendered with `textContent`. | Low |
-| T9 | Browser evicts storage | Persistent storage request, export reminders, 3 rotating snapshots | The player can still lose data if they never export. The UI says so. |
+| #   | Threat                                            | Control                                                                                                               | Residual                                                             |
+| --- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| T1  | Edit the local save in IndexedDB                  | AES-GCM with a non-extractable device key. Any change fails authentication.                                           | None for file edits                                                  |
+| T2  | Edit an export file in a hex or text editor       | AES-GCM over a compressed binary payload, header bound as authenticated data                                          | None for blind edits                                                 |
+| T3  | Decrypt, edit, and re-seal an export              | Key is derived at runtime from material split across the code, never stored whole. Integrity validator on every load. | Possible for a programmer who studies the bundle. Accepted.          |
+| T4  | Copy someone else's export                        | Allowed. It is a backup feature.                                                                                      | Accepted                                                             |
+| T5  | Roll back to an older snapshot to redo a roll     | Hash chain across local snapshots detects a broken sequence. Importing an older export is a legitimate restore.       | Accepted                                                             |
+| T6  | Change the device clock to farm offline gains     | Trusted time from `/api/time` when online, monotonic guard offline, one cap period of accrual between time syncs      | Bounded to one cap period                                            |
+| T7  | Modify live memory, then save                     | Integrity validator: internal consistency, ledgers, plausibility against play time                                    | Small edits inside plausible bounds pass. Accepted.                  |
+| T8  | XSS or a third-party script reads or alters saves | Strict CSP, no third-party origins, no inline script, no `eval`. Clear text rendered with `textContent`.              | Low                                                                  |
+| T9  | Browser evicts storage                            | Persistent storage request, export reminders, 3 rotating snapshots                                                    | The player can still lose data if they never export. The UI says so. |
 
 ## Save anatomy
 
@@ -79,10 +79,10 @@ When a system is added that creates value (a new income source, a new item sourc
 
 ### Trust states
 
-| State | Meaning | Shown as |
-|---|---|---|
-| Intact | Decrypted cleanly, hash chain continuous, validator passed | Solid seal glyph |
-| Flagged | The validator failed, or the snapshot chain is broken | Cracked seal, with a plain explanation on tap |
+| State   | Meaning                                                    | Shown as                                      |
+| ------- | ---------------------------------------------------------- | --------------------------------------------- |
+| Intact  | Decrypted cleanly, hash chain continuous, validator passed | Solid seal glyph                              |
+| Flagged | The validator failed, or the snapshot chain is broken      | Cracked seal, with a plain explanation on tap |
 
 Flagged has no gameplay effect. It is stored inside the save, it is permanent, and it travels with exports.
 

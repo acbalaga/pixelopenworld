@@ -35,25 +35,25 @@ A soft spine exists for players who want one: each region has a Waystone network
 
 Target experience, minute by minute. Ticket POW-M1-10 and POW-M12-05 implement and polish it.
 
-| Minute | Beat |
-|---|---|
-| 0 | Title screen is a login screen. One button: Log In. |
-| 0 to 2 | Avatar setup, presented as the game's own setup screen. Name, body, hair, colors. No class, no stats. |
-| 2 | You appear at a Waystone in Hearthford square at whatever time of day it is. World chat is already scrolling. Two Travelers run past. |
-| 2 to 5 | No tutorial pop-ups. A Traveler nearby is hitting a training dummy. Controls are learned from one-line contextual hints that appear the first time an action is possible and never again. |
-| 5 to 15 | The request board has three starter jobs (gather, deliver, clear pests). Doing any of them teaches gathering, combat, and the cook pot by use. |
-| 15 to 30 | First skill rank-ups. First piece of crafted gear. A Traveler sends a friend request after you fight near them. |
-| 30 to 60 | First cave. First miniboss. First odd thing: a tablet you cannot read, and a line in chat that does not fit. |
+| Minute   | Beat                                                                                                                                                                                      |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0        | Title screen is a login screen. One button: Log In.                                                                                                                                       |
+| 0 to 2   | Avatar setup, presented as the game's own setup screen. Name, body, hair, colors. No class, no stats.                                                                                     |
+| 2        | You appear at a Waystone in Hearthford square at whatever time of day it is. World chat is already scrolling. Two Travelers run past.                                                     |
+| 2 to 5   | No tutorial pop-ups. A Traveler nearby is hitting a training dummy. Controls are learned from one-line contextual hints that appear the first time an action is possible and never again. |
+| 5 to 15  | The request board has three starter jobs (gather, deliver, clear pests). Doing any of them teaches gathering, combat, and the cook pot by use.                                            |
+| 15 to 30 | First skill rank-ups. First piece of crafted gear. A Traveler sends a friend request after you fight near them.                                                                           |
+| 30 to 60 | First cave. First miniboss. First odd thing: a tablet you cannot read, and a line in chat that does not fit.                                                                              |
 
 Rule: in the first hour the player is never stopped by a modal they did not open.
 
 ## Session shapes the design must serve
 
-| Session | Must be able to |
-|---|---|
+| Session                       | Must be able to                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------- |
 | 3 minutes, one hand, standing | Collect Routine output, replant, sell, answer a friend, queue the next Routine. |
-| 20 minutes | Finish one request or one mini-dungeon and bank the progress. |
-| 2 hours | Clear a dungeon, reach a new region, or reorganize a homestead. |
+| 20 minutes                    | Finish one request or one mini-dungeon and bank the progress.                   |
+| 2 hours                       | Clear a dungeon, reach a new region, or reorganize a homestead.                 |
 
 Autosave is continuous. Quitting mid-anything loses nothing but position inside a dungeon room.
 

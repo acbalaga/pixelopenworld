@@ -9,12 +9,14 @@ Dependency graph: 01 first. Then 02, 03, 04, 05, 06, 08, 10 in parallel. 07 need
 ---
 
 ### POW-M0-01 Repo scaffold
-Size: M      Depends: none      Status: READY
+
+Size: M Depends: none Status: READY
 Refs: CLAUDE.md, tech/01-architecture (Stack, Repository layout), tech/04-quality (Code standards)
 
 Goal: a TypeScript project with the agreed layout and one command that verifies everything.
 
 Scope:
+
 - Vite + TypeScript (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`). Node version pinned in `.nvmrc` and `package.json` `engines`.
 - Directory skeleton from tech/01 with a short `README.md` in `src/sim`, `src/content`, `src/shared`, and `worker` stating that folder's rule.
 - ESLint with TypeScript plugin. Import-boundary rules from tech/01 ("Import rules"). Banned in `src/sim/**`: `Math.random`, `Date`, `performance`, `window`, `document`, `fetch`, `indexedDB`, `localStorage`. Banned everywhere: `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `eval`, `new Function`, string arguments to timers.
@@ -27,6 +29,7 @@ Scope:
 Out of scope: game loop, renderer, CI, deploy.
 
 Acceptance:
+
 - `npm ci && npm run verify` passes from a clean clone.
 - A test file under `src/sim/` that calls `Math.random()` fails lint. A file in `src/render/` importing from `worker/` fails lint. Both shown in the PR (then removed).
 - `npm run build` output contains no third-party runtime code. `package.json` has an empty or absent `dependencies`.
@@ -35,12 +38,14 @@ Acceptance:
 ---
 
 ### POW-M0-02 Continuous integration
-Size: S      Depends: M0-01      Status: READY
+
+Size: S Depends: M0-01 Status: READY
 Refs: tech/04-quality (CI)
 
 Goal: every PR is checked automatically.
 
 Scope:
+
 - GitHub Actions workflow on pull requests and on pushes to `main`: `npm ci`, lint, typecheck, test, build.
 - Bundle budget check: a small script in `tools/` that fails if the gzip size of boot JS exceeds the budget in tech/04. Budget values live in one JSON file.
 - `npm audit --audit-level=high` step.
@@ -50,18 +55,21 @@ Scope:
 Out of scope: deploy (M0-03), e2e (M0-11), bake drift check (added by M0-06).
 
 Acceptance:
+
 - A PR with a lint error fails CI. A clean PR passes in under 5 minutes.
 - Raising a file over the bundle budget in a test branch fails CI with a message naming the file and sizes.
 
 ---
 
 ### POW-M0-03 Cloudflare deployment
-Size: M      Depends: M0-01      Status: READY
+
+Size: M Depends: M0-01 Status: READY
 Refs: tech/01-architecture (Stack, Networking), tech/02-save-security (Client hardening)
 
 Goal: the built site and a Worker deploy to Cloudflare, with previews per PR.
 
 Scope:
+
 - Check the current Cloudflare documentation for Workers with static assets and for the Vite integration before writing config. Name the pages followed in the PR.
 - `wrangler` config: one Worker that serves `dist/` as static assets and handles `/api/*` itself. SPA-style fallback to `index.html` for non-asset, non-API paths.
 - `worker/index.ts` with a tiny router. `GET /api/health` returns `{ ok: true, version }` where version is the git SHA injected at build. Unknown `/api/*` returns 404 JSON.
@@ -75,6 +83,7 @@ Scope:
 Out of scope: `/api/time` (M2-04).
 
 Acceptance:
+
 - Locally, `/api/health` responds, `/api/nope` returns 404 JSON, and `/` serves the app with every header from tech/02 present (shown with `curl -I` output).
 - The page loads with zero CSP violations in the console.
 - The build command in `docs/ops/deploy.md` produces a deployable Worker from a clean clone with no environment variables set. GitHub CI passes with no Cloudflare credentials.
@@ -83,12 +92,14 @@ Acceptance:
 ---
 
 ### POW-M0-04 Sim kernel
-Size: L      Depends: M0-01      Status: READY
+
+Size: L Depends: M0-01 Status: READY
 Refs: tech/01-architecture (The simulation), tech/04-quality (Testing)
 
 Goal: the deterministic core that all gameplay will run on.
 
 Scope:
+
 - `sim/kernel/rng.ts`: seeded PRNG with named independent streams, serializable state. Functions: `next`, `int(min, max)`, `chance(p)`, `pick(array)`, `weighted(table)`.
 - `sim/kernel/entities.ts`: entity ids, component storage as typed arrays or dense arrays keyed by id, create and destroy with id reuse rules that are deterministic, queries returning ids in ascending order.
 - `sim/kernel/scheduler.ts`: ordered list of systems, `tick(state, input)`.
@@ -103,6 +114,7 @@ Scope:
 Out of scope: any real gameplay system, rendering of entities (M0-05 draws them).
 
 Acceptance:
+
 - Determinism test: two runs of 10,000 ticks with the same seed and command script give identical `hashState`. A different seed gives a different hash.
 - Serialize then deserialize at tick 5,000 and continue to 10,000: same final hash as an uninterrupted run.
 - RNG stream independence test: drawing extra values from stream A does not change stream B's sequence.
@@ -112,12 +124,14 @@ Acceptance:
 ---
 
 ### POW-M0-05 Renderer and viewport
-Size: L      Depends: M0-01      Status: READY
+
+Size: L Depends: M0-01 Status: READY
 Refs: design/09-ui-ux (Screen model), tech/01-architecture (Performance approach), tech/04-quality (budgets)
 
 Goal: a crisp, integer-scaled pixel canvas that fits any phone, with a camera and draw layers.
 
 Scope:
+
 - `render/viewport.ts`: compute logical size and integer scale from the visual viewport and device pixel ratio per design/09 (logical width 180 to 239). Handle rotation, address bar resize, and safe-area insets. Expose logical size, scale, safe rect, and physical mm per logical pixel (best estimate from CSS px, used by the text rule).
 - `render/renderer.ts`: a `Renderer` interface (`begin`, `drawSprite`, `drawRect`, `drawTiles`, `end`) and a Canvas 2D implementation. Smoothing off. Draw to a logical-size backbuffer, present with one scaled blit.
 - `render/camera.ts`: follow target with the portrait offset (target sits in the center of the upper 62%), clamp to world bounds, pixel-snapped position, optional small smoothing that never produces sub-pixel shimmer.
@@ -129,6 +143,7 @@ Scope:
 Out of scope: atlases (M0-06), tile chunks (M0-07), lighting and weather content.
 
 Acceptance:
+
 - Screenshots at 360x800, 390x844, 412x915, 844x390 (landscape), and 1440x900 show square, unblurred pixels and correct letterboxing or extension, with logical width inside 180 to 239 in portrait.
 - Rotating the device or resizing re-fits without a reload and without stretching.
 - Nothing draws inside safe-area insets that is interactive.
@@ -137,12 +152,14 @@ Acceptance:
 ---
 
 ### POW-M0-06 Asset pipeline v1 and master palette
-Size: L      Depends: M0-01      Status: READY
+
+Size: L Depends: M0-01 Status: READY
 Refs: tech/03-asset-pipeline (all)
 
 Goal: sprites authored as text grids become atlases the renderer can draw, under one approved palette.
 
 Scope:
+
 - `content/sprites/palette.ts`: the 32-color master palette per tech/03, with ramp names. Include a short note per ramp on intended use.
 - `SpriteDef` and `TileDef` types and zod schemas.
 - `tools/bake-assets`: validate, composite, pack atlases by load group, write PNG and JSON manifest to `baked/`, write contact sheets (1x and 4x, light and dark backgrounds, labeled with ids). Deterministic output.
@@ -157,6 +174,7 @@ Scope:
 Out of scope: paper-doll layering (M1-01), autotiling (M0-07), generators beyond flip.
 
 Acceptance:
+
 - A sprite with a wrong row width, an unknown key character, or an out-of-palette index fails the bake with a message naming the sprite, frame, and row.
 - Running the bake twice gives byte-identical output.
 - Contact sheets and swatch sheet are attached to the PR. The executor states what they checked against the art bible rules.
@@ -165,12 +183,14 @@ Acceptance:
 ---
 
 ### POW-M0-07 Tilemaps and chunk rendering
-Size: L      Depends: M0-05, M0-06      Status: READY
+
+Size: L Depends: M0-05, M0-06 Status: READY
 Refs: design/02-world (Units, Authoring model), tech/01-architecture (World streaming), tech/03-asset-pipeline (Tiles, Generators)
 
 Goal: a multi-chunk tile world renders at constant cost and has collision.
 
 Scope:
+
 - Chunk data structure: 32x32 tiles, layers (ground, detail, object, overhead), collision grid, object list. Binary encode and decode.
 - Autotile: 47-tile blob set resolution for at least grass-to-dirt and land-to-water, generated from authored edge pieces at bake time.
 - Chunk renderer: each chunk's static layers drawn once to an offscreen canvas, re-used every frame. Animated tiles drawn on top. Overhead layer fades when a given entity is beneath it.
@@ -181,6 +201,7 @@ Scope:
 Out of scope: streaming from network (M4), region specs (M4), entity collision between entities (M1).
 
 Acceptance:
+
 - The 3x3 test map renders with correct autotile transitions (screenshot).
 - Scrolling across all nine chunks holds 60 fps with 4x CPU throttle. Per-frame draw calls for terrain do not grow with tile count (evidence: counter in dev overlay).
 - Collision unit tests: box cannot enter solid tiles, slides along walls, does not tunnel at maximum speed, does not catch on tile seams.
@@ -189,12 +210,14 @@ Acceptance:
 ---
 
 ### POW-M0-08 Input
-Size: M      Depends: M0-01      Status: READY
+
+Size: M Depends: M0-01 Status: READY
 Refs: design/04-combat (Control schemes), design/09-ui-ux (Touch rules)
 
 Goal: touch, keyboard, and gamepad all produce the same abstract actions.
 
 Scope:
+
 - `platform/input/actions.ts`: abstract actions (move vector, technique 1 to 4, dodge with direction, context, target tap at world position, menu, bag).
 - Touch: floating stick in the lower zone (appears under the first touch, dead zone, max radius, 8-way and analog output), tap detection, flick detection (distance and time thresholds as tunables), hold detection, on-screen button hit-testing with 44 px minimum targets.
 - The 200 ms heading coast when the stick thumb lifts (design/04).
@@ -206,6 +229,7 @@ Scope:
 Out of scope: drawing the controls (M0-09 draws a basic version, M1-06 the real HUD), combat meaning of actions.
 
 Acceptance:
+
 - Unit tests with synthetic pointer sequences: drag gives the expected vector, a fast short swipe is a flick with the right direction, a slow drag is not, a tap on a button region fires that button, coast lasts 200 ms.
 - On a phone-sized emulated touch device the demo entity moves with the stick, and the page does not scroll, zoom, or select.
 - Keyboard and gamepad move the same entity through the same action layer.
@@ -213,12 +237,14 @@ Acceptance:
 ---
 
 ### POW-M0-09 UI foundation: pixel text, clear text, panels
-Size: L      Depends: M0-05, M0-06      Status: READY
+
+Size: L Depends: M0-05, M0-06 Status: READY
 Refs: design/09-ui-ux (The text rule, Touch rules, Art direction for UI), tech/03-asset-pipeline (Fonts)
 
 Goal: both text renderers exist and one function decides which to use.
 
 Scope:
+
 - Bitmap fonts 5x7 and 7x9 authored in the sprite text format (printable ASCII plus the symbols listed in the file). Canvas pixel-text drawing with outline option, alignment, and measurement.
 - `ui/text/rule.ts`: `chooseTextRenderer({ text, lines, physicalMmPerLogicalPx })` implementing the rule in design/09 (2.0 mm capital height, 24 characters, single line). Pure and unit tested.
 - 9-slice pixel panel drawing on canvas, and the same frame exported as a CSS `border-image` for DOM panels.
@@ -230,6 +256,7 @@ Scope:
 Out of scope: the real HUD and Menu (M1), dialogue system (M1).
 
 Acceptance:
+
 - Unit tests for the text rule covering both thresholds and the automatic fallback on a simulated small-scale device.
 - Screenshot at 360x800 showing pixel HUD text and a clear-text panel together, both legible, panel framed in pixel art.
 - Text scale at 80%, 100%, and 160% reflows the sample panel without clipping.
@@ -238,12 +265,14 @@ Acceptance:
 ---
 
 ### POW-M0-10 Audio foundation
-Size: M      Depends: M0-01      Status: READY
+
+Size: M Depends: M0-01 Status: READY
 Refs: tech/03-asset-pipeline (Audio)
 
 Goal: synthesized effects and looping tracker music play on phones.
 
 Scope:
+
 - `platform/audio/engine.ts`: audio context created on first user gesture, resume and suspend on visibility, master, music, effects, ambience, and UI gain buses, a limiter, 16-voice cap with priority.
 - Effect synth from `SfxDef` presets (wave types, envelope, slide, vibrato, noise, filter, variance).
 - Tracker player: instruments, patterns, order list, tempo, seamless looping, crossfade between tracks.
@@ -254,6 +283,7 @@ Scope:
 Out of scope: per-region music, ducking under dialogue (M1), dev audio page (M0-11).
 
 Acceptance:
+
 - No audio context is created before a user gesture (asserted in a test with a mocked `AudioContext`).
 - Voice cap test: firing 40 effects in one tick never exceeds 16 voices.
 - The theme loops with no gap or click. A short recording or a written check description is in the PR.
@@ -262,12 +292,14 @@ Acceptance:
 ---
 
 ### POW-M0-11 Dev tools and smoke test
-Size: M      Depends: M0-04, M0-05, M0-06, M0-07, M0-08, M0-09, M0-10      Status: READY
+
+Size: M Depends: M0-04, M0-05, M0-06, M0-07, M0-08, M0-09, M0-10 Status: READY
 Refs: tech/04-quality (Testing, CI), tech/03-asset-pipeline (Review workflow)
 
 Goal: the tools that let agents and the owner see what they built, and an automated check that the app boots.
 
 Scope:
+
 - Dev overlay (dev builds only, toggled by a key and a three-finger tap): fps, frame and tick ms, entity count, draw calls, logical size and scale, memory if available.
 - `/dev/sprites`: browse every sprite and animation at 1x, 2x, 4x on light, dark, and terrain backgrounds.
 - `/dev/audio`: play any effect or track.
@@ -279,6 +311,7 @@ Scope:
 **Owner action:** run the G0 checklist on real phones.
 
 Acceptance:
+
 - `npm run e2e` passes locally and in CI, with screenshots attached as artifacts.
 - Production bundle contains no dev routes (build check output in the PR).
 - The G0 checklist exists and is specific.

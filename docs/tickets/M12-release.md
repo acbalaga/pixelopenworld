@@ -7,13 +7,15 @@ No new features in this milestone. Anything that looks like a feature is a Desig
 ---
 
 ### POW-M12-01 Refinement: M12 specs to READY
-Size: M      Depends: M11 complete      Status: DRAFT (design authority)
+
+Size: M Depends: M11 complete Status: DRAFT (design authority)
 
 Goal: READY specs built from the accumulated follow-ups, known issues, and gate notes. A prioritized defect list.
 Acceptance: owner approves.
 
 ### POW-M12-02 Accessibility pass
-Size: L      Depends: M12-01      Status: DRAFT
+
+Size: L Depends: M12-01 Status: DRAFT
 Refs: design/09-ui-ux (Accessibility)
 
 Goal: every item in the accessibility section is true.
@@ -21,7 +23,8 @@ Scope: audit each line. Colorblind presets checked with simulation screenshots. 
 Acceptance: a checklist in the PR with evidence per item. Zero information conveyed by color alone (audit list).
 
 ### POW-M12-03 Balance pass
-Size: L      Depends: M12-01      Status: DRAFT
+
+Size: L Depends: M12-01 Status: DRAFT
 Refs: tech/04-quality (Balance workflow), design/10-content-budget
 
 Goal: curves hold from hour 1 to hour 200.
@@ -29,7 +32,8 @@ Scope: full bot campaign. Reports for time-to-kill by tier, XP per hour per skil
 Acceptance: before and after reports. Every target in design/04, design/06, and design/10 met or the deviation approved by the owner.
 
 ### POW-M12-04 Performance pass
-Size: L      Depends: M12-01      Status: DRAFT
+
+Size: L Depends: M12-01 Status: DRAFT
 Refs: tech/04-quality (budgets)
 
 Goal: every budget met on the device matrix.
@@ -37,7 +41,8 @@ Scope: profile worst scenes (Port Brine market day, field raid, storm, festival,
 Acceptance: budget table with measured numbers per device class.
 
 ### POW-M12-05 First hour polish
-Size: M      Depends: M12-01      Status: DRAFT
+
+Size: M Depends: M12-01 Status: DRAFT
 Refs: design/01-experience (The first hour)
 
 Goal: the first hour matches its beat table.
@@ -45,7 +50,8 @@ Scope: timing and pacing of the opening against the table. Hint wording. The fir
 Acceptance: three fresh-profile recorded runs hit each beat inside its window.
 
 ### POW-M12-06 Audio pass
-Size: M      Depends: M12-01      Status: DRAFT
+
+Size: M Depends: M12-01 Status: DRAFT
 Refs: tech/03-asset-pipeline (Audio)
 
 Goal: complete, mixed, pleasant on a phone speaker.
@@ -53,7 +59,8 @@ Scope: coverage audit (every event that should sound does). Mix levels across bu
 Acceptance: coverage list with zero gaps. Track list matches the budget in design/10.
 
 ### POW-M12-07 Art consistency pass
-Size: L      Depends: M12-01      Status: DRAFT
+
+Size: L Depends: M12-01 Status: DRAFT
 Refs: tech/03-asset-pipeline (Art bible)
 
 Goal: it looks like one game.
@@ -61,7 +68,8 @@ Scope: review every contact sheet against the art bible. Redraw outliers (owner 
 Acceptance: before and after sheets for every redrawn asset. Owner sign-off.
 
 ### POW-M12-08 Device matrix QA
-Size: L      Depends: M12-02 to M12-07      Status: DRAFT
+
+Size: L Depends: M12-02 to M12-07 Status: DRAFT
 Refs: tech/04-quality (Device matrix)
 
 Goal: it works on the phones people have.
@@ -69,7 +77,8 @@ Scope: `docs/ops/qa-matrix.md` test script covering install, offline, audio inte
 Acceptance: owner action: run the matrix. All blocking findings fixed and re-verified.
 
 ### POW-M12-09 Save safety drills
-Size: M      Depends: M12-01      Status: DRAFT
+
+Size: M Depends: M12-01 Status: DRAFT
 Refs: tech/02-save-security
 
 Goal: no path loses a player's save.
@@ -77,7 +86,8 @@ Scope: migration test from every prior schema fixture to final. Recovery drills:
 Acceptance: every drill documented with its result. Zero known save-loss defects.
 
 ### POW-M12-10 Release 1.0
-Size: M      Depends: all      Status: DRAFT
+
+Size: M Depends: all Status: DRAFT
 Refs: tech/04-quality (Release criteria)
 
 Goal: ship.

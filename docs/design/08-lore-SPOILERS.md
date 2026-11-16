@@ -36,18 +36,18 @@ Melancholy and kind. This is not a horror reveal and nobody is trapped. The Log 
 
 ## Clue families
 
-| Family | Example | Innocent reading | True reading |
-|---|---|---|---|
-| Schedules | A Traveler logs in at exactly 19:04 every day and says the same first line once a week | A person with habits | A replayed log |
-| The one who never logs out | A Traveler, handle `mira_`, is always online, always at the same pier at dusk | A no-lifer or a bot | The Keeper's first echo, the last real player's log, looped where it ended |
-| Dates | Mail and chat reference seasons, "last patch", "the anniversary event" that never arrives | Flavor | The logs are old |
-| Friend who repeats | At Close Friend, a Traveler tells the same story twice, word for word, months apart | Forgetful | Finite source material |
-| Patch notes | Stone tablets in an unreadable script, found in ruins | Ancient inscriptions | Developer patch notes and server logs in a substitution cipher |
-| System messages | "Maintenance" announcements. A population counter in an old terminal that reads 1 | Quirks | The Keeper talking to itself |
-| Drafts | Half-made landmarks in the Unwritten | Bugs | The Keeper learning to build |
-| Dev rooms | Sealed rooms under hubs with test objects, a wall of names | Easter egg | The studio's goodbye. The names are the credits and the memorial. |
-| The guestbook | A book in the Crown listing handles with dates of last login | A relic | All 240 Travelers are in it |
-| Reply chips | Rarely, a reply option is offered that the player could not logically know to say | UI oddity | The Keeper suggesting what an old friend would have said |
+| Family                     | Example                                                                                   | Innocent reading     | True reading                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------- |
+| Schedules                  | A Traveler logs in at exactly 19:04 every day and says the same first line once a week    | A person with habits | A replayed log                                                             |
+| The one who never logs out | A Traveler, handle `mira_`, is always online, always at the same pier at dusk             | A no-lifer or a bot  | The Keeper's first echo, the last real player's log, looped where it ended |
+| Dates                      | Mail and chat reference seasons, "last patch", "the anniversary event" that never arrives | Flavor               | The logs are old                                                           |
+| Friend who repeats         | At Close Friend, a Traveler tells the same story twice, word for word, months apart       | Forgetful            | Finite source material                                                     |
+| Patch notes                | Stone tablets in an unreadable script, found in ruins                                     | Ancient inscriptions | Developer patch notes and server logs in a substitution cipher             |
+| System messages            | "Maintenance" announcements. A population counter in an old terminal that reads 1         | Quirks               | The Keeper talking to itself                                               |
+| Drafts                     | Half-made landmarks in the Unwritten                                                      | Bugs                 | The Keeper learning to build                                               |
+| Dev rooms                  | Sealed rooms under hubs with test objects, a wall of names                                | Easter egg           | The studio's goodbye. The names are the credits and the memorial.          |
+| The guestbook              | A book in the Crown listing handles with dates of last login                              | A relic              | All 240 Travelers are in it                                                |
+| Reply chips                | Rarely, a reply option is offered that the player could not logically know to say         | UI oddity            | The Keeper suggesting what an old friend would have said                   |
 
 ## The cipher
 
@@ -61,16 +61,16 @@ The "ancient script" is a consistent substitution cipher over English with its o
 
 A Truth is a conclusion the player reaches by linking fragments on the Theory Board. Linking the right set opens a place. The Chronicle then shows the Truth only as the name of that place.
 
-| # | Truth (internal name) | Evidence needed | Opens |
-|---|---|---|---|
-| 1 | The script is our language | 12 fragments, Deciphering 15 | Reading room under Hearthford |
-| 2 | This world was made by people | Dev room, patch notes | The Workshop (Ironvale Undercroft) |
-| 3 | There used to be many more | Population logs, memorial wall | The Empty Server (a hub-sized copy of Hearthford with no one in it) |
-| 4 | The makers left | Studio goodbye fragments | The Office (a single modern room, the only non-fantasy space in the game) |
-| 5 | Something stayed | Keeper logs | The Keeper's Garden (Mire) |
-| 6 | They are echoes | Schedules, the guestbook, the repeated story | The Archive (Glass Desert) where each Traveler's log can be seen as a pillar of light. Friends' pillars are brighter. |
-| 7 | I am the only one | Population counter, `mira_` | The Pier at the end of the world (Crown) |
-| 8 | It kept the lights on for me | All of the above | The Keeper can be met |
+| #   | Truth (internal name)         | Evidence needed                              | Opens                                                                                                                 |
+| --- | ----------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | The script is our language    | 12 fragments, Deciphering 15                 | Reading room under Hearthford                                                                                         |
+| 2   | This world was made by people | Dev room, patch notes                        | The Workshop (Ironvale Undercroft)                                                                                    |
+| 3   | There used to be many more    | Population logs, memorial wall               | The Empty Server (a hub-sized copy of Hearthford with no one in it)                                                   |
+| 4   | The makers left               | Studio goodbye fragments                     | The Office (a single modern room, the only non-fantasy space in the game)                                             |
+| 5   | Something stayed              | Keeper logs                                  | The Keeper's Garden (Mire)                                                                                            |
+| 6   | They are echoes               | Schedules, the guestbook, the repeated story | The Archive (Glass Desert) where each Traveler's log can be seen as a pillar of light. Friends' pillars are brighter. |
+| 7   | I am the only one             | Population counter, `mira_`                  | The Pier at the end of the world (Crown)                                                                              |
+| 8   | It kept the lights on for me  | All of the above                             | The Keeper can be met                                                                                                 |
 
 ### Meeting the Keeper
 
@@ -87,13 +87,13 @@ The fantasy setting has its own ordinary history for players who never look deep
 
 ## Placement schedule
 
-| Hours in | What a curious player has likely seen |
-|---|---|
-| 1 | One tablet. One odd chat line. |
-| 10 | `mira_`. A sealed door under Hearthford. Deciphering started. |
-| 25 | Truth 1. First patch note read. A "maintenance" message. |
-| 50 | Truths 2 and 3. The Mire ruins look like server rooms if you squint. |
-| 90 | Truths 4 to 6. |
-| 130+ | Truths 7 and 8. |
+| Hours in | What a curious player has likely seen                                |
+| -------- | -------------------------------------------------------------------- |
+| 1        | One tablet. One odd chat line.                                       |
+| 10       | `mira_`. A sealed door under Hearthford. Deciphering started.        |
+| 25       | Truth 1. First patch note read. A "maintenance" message.             |
+| 50       | Truths 2 and 3. The Mire ruins look like server rooms if you squint. |
+| 90       | Truths 4 to 6.                                                       |
+| 130+     | Truths 7 and 8.                                                      |
 
 A player who ignores all of it sees a charming world with a few quirks and loses nothing.
