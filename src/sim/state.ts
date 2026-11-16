@@ -21,7 +21,7 @@ export interface SimState {
 }
 
 /** Demo box size in sub-pixel units. */
-export const DEMO_BOX: Vec = { x: px(160), y: px(240) };
+export const DEMO_BOX: Vec = { x: px(1024), y: px(1024) };
 
 /** Creates a demo state with `entityCount` entities drifting in the box. */
 export function createDemoState(seed: number, entityCount: number): SimState {
