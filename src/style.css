@@ -155,3 +155,31 @@ canvas {
   justify-content: center;
   gap: calc(var(--px) * 3);
 }
+
+/* Subtle control scheme switch (demo): a small translucent icon button. */
+.scheme-icon {
+  position: fixed;
+  right: calc(env(safe-area-inset-right, 0px) + 8px);
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  width: 44px;
+  height: 44px;
+  padding: 9px;
+  box-sizing: border-box;
+  color: #f1ebdf;
+  background: rgba(20, 18, 31, 0.45);
+  border: 1px solid rgba(241, 235, 223, 0.5);
+  border-radius: 0;
+  cursor: pointer;
+}
+.scheme-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+.scheme-icon:active {
+  background: rgba(20, 18, 31, 0.75);
+}
