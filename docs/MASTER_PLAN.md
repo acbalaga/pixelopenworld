@@ -28,8 +28,8 @@ Decisions made with the owner on 2026-11-16. Changing one needs a planning PR.
 | D4 | Assets | All art and audio generated from data in the repo. |
 | D5 | Progression | Classless, learn by doing. Emergent Paths and titles. |
 | D6 | Automation | In-world automation earned through mastery. Offline gains, capped. |
-| D7 | Hosting | Cloudflare Worker with static assets. |
-| D8 | Saves | Encrypted on device, signed by the Worker, not hand-editable. No accounts. |
+| D7 | Hosting | Cloudflare Worker with static assets, deployed through Cloudflare's own Git integration. No deploy tokens stored in GitHub. |
+| D8 | Saves | Client-only. Encrypted on device, sealed export files, integrity-checked on load. Not hand-editable and not easy to crack. No accounts, no secrets, no server-side save service. (Revised 2026-11-16: the owner declined Worker signing to avoid managing secrets.) |
 | D9 | Setting | Fantasy game-world with a discoverable hidden layer. |
 | D10 | Orientation | Portrait first, one-thumb. Landscape and desktop supported. |
 | D11 | Business model | Free. No ads, purchases, accounts, or analytics. |
@@ -39,13 +39,13 @@ Decisions made by the design authority (owner may overrule):
 
 | # | Topic | Decision | Why |
 |---|---|---|---|
-| A1 | Engine | Custom TypeScript engine on Canvas 2D. No game framework. | Internal resolution is about 180 px wide, so Canvas 2D is fast enough. A pure deterministic sim is required for offline settlement and Worker plausibility checks, and frameworks fight that. |
+| A1 | Engine | Custom TypeScript engine on Canvas 2D. No game framework. | Internal resolution is about 180 px wide, so Canvas 2D is fast enough. A pure deterministic sim is required for offline settlement and save plausibility checks, and frameworks fight that. |
 | A2 | Sim rate | Fixed 30 Hz simulation, interpolated rendering. | Halves CPU on phones. Pixel-art motion does not benefit from 60 Hz logic. |
 | A3 | No character level | Power comes from skills, gear, and food. Regions have fixed difficulty tiers. | Level scaling kills the feeling of becoming strong. Fixed tiers make the map itself the difficulty curve. |
 | A4 | Traveler chat | Template-driven from real sim events. Player replies with choice chips. No free text, no language model. | Runs offline, costs nothing, cannot say anything unsafe, and every line is tied to something that actually happened in the sim. |
 | A5 | World authoring | Regions are spec files plus hand-authored stamps, baked at build time. | Agents cannot paint maps in an editor. Specs and stamps are reviewable in a diff and deterministic. |
 | A6 | Time | One in-game day is 48 real minutes. A season is 7 days. A year is 28 days (about 22 hours of play). | Short enough that a session sees dawn and dusk. Long enough that seasons matter. |
-| A7 | Failed integrity | A save that fails verification is marked Unverified. It is never deleted or blocked. | Single-player and free. Punishing false positives would cost more than cheating does. |
+| A7 | Failed integrity | A save that fails the integrity check is marked Flagged. It is never deleted or blocked. | Single-player and free. Punishing false positives would cost more than cheating does. |
 
 ## 4. Document map
 
@@ -69,7 +69,7 @@ Decisions made by the design authority (owner may overrule):
 | Doc | Covers |
 |---|---|
 | [01-architecture](tech/01-architecture.md) | Stack, layout, sim/render split, data, streaming |
-| [02-save-security](tech/02-save-security.md) | Save format, encryption, Worker signing, threat model |
+| [02-save-security](tech/02-save-security.md) | Save format, encryption, sealed exports, integrity validator, threat model |
 | [03-asset-pipeline](tech/03-asset-pipeline.md) | Sprite, tile, and audio formats and the bake |
 | [04-quality](tech/04-quality.md) | Testing, performance budgets, CI, device matrix |
 
@@ -83,7 +83,7 @@ Thirteen milestones. Each ends with a playable build on the Cloudflare preview U
 |---|---|---|---|
 | M0 | Foundation | A character-less test map renders and scrolls on a phone, deployed. | 11 |
 | M1 | First Login | A 20 minute slice: create an avatar, fight, forage, cook, talk, save. | 11 |
-| M2 | Trust | Encrypted saves, Worker signing, export and import, installable offline PWA. | 9 |
+| M2 | Trust | Encrypted saves, integrity checks, sealed export and import, installable offline PWA. | 6 |
 | M3 | Core RPG | All 36 skills, gear, crafting, shops, requests, Paths. | 12 |
 | M4 | World I | Chunk streaming, the full first region, map, dungeons, bosses, weather. | 12 |
 | M5 | The Crowd | Travelers, chat, parties, guilds, rankings, market, world events. | 12 |
@@ -105,7 +105,7 @@ A milestone does not close until its gate passes. Gates are owner decisions, mad
 |---|---|---|
 | G0 (end M0) | Does the test map hold 60 fps on a mid-range phone? | Fix renderer before any gameplay. |
 | G1 (end M1) | Is one-thumb combat fun for 20 minutes? | Iterate controls. This gate matters most. Nothing downstream survives bad feel. |
-| G2 (end M2) | Can a save be tampered with by editing a file? Does offline play survive a week? | Fix before systems multiply save complexity. |
+| G2 (end M2) | Can a save be opened or edited by hand? Does offline play survive a week? | Fix before systems multiply save complexity. |
 | G4 (end M4) | Does one region deliver its hours budget (see content budget)? | Re-plan region counts before M8. |
 | G7 (end M7) | Does automation feel earned, and does it leave the game worth playing by hand? | Retune gates and caps. |
 | G10 (end M10) | Can a blind playtester find the first Truth with no prompts? Can they ignore it and still have a full game? | Adjust clue density. |
@@ -117,10 +117,10 @@ A milestone does not close until its gate passes. Gates are owner decisions, mad
 | Text-authored pixel art looks amateur | The game is judged in the first screenshot | Strict art bible, small master palette, procedural generators for tiles and variations, screenshot review in every art PR (tech/03). Owner art review at G1. |
 | One-thumb real-time combat feels bad | Core loop fails | Prototype in M1 with two control schemes, decided at G1 before more combat content. |
 | Scope: 150+ hours of content | Never ships | Systems first on one region. Content is data produced from templates. Budget doc has a cut order. Every milestone ends playable. |
-| Save tampering through the live client | Owner asked for tamper-proof saves | Files are not hand-editable (signed, encrypted). Live memory edits cannot be prevented in a browser. Plausibility checks flag them. The threat model states this plainly (tech/02). |
+| Save tampering | Owner asked for saves that are not easy to crack | Files are encrypted binary and fail to load if edited. A re-sealed edit must still pass the integrity validator. The scheme is client-only, so a programmer who studies the code can defeat it, and live memory edits cannot be prevented in any browser game. The threat model states this plainly (tech/02). |
 | Simulated crowd feels fake | The VRMMO fantasy fails | Chat lines come only from real sim events. Travelers persist, progress, and remember the player. Fewer, deeper Travelers beat many shallow ones. |
 | Offline gains trivialize play | Game plays itself | Automation needs manual mastery first, yields less than manual play, cannot produce firsts, rare drops, or rank-ups. |
-| Mobile browser limits (storage eviction, audio unlock, iOS quirks) | Lost saves, silent game | Persistent storage request, export reminders, Worker-held checkpoint digest, device matrix in M0 and M12. |
+| Mobile browser limits (storage eviction, audio unlock, iOS quirks) | Lost saves, silent game | Persistent storage request, export reminders, three rotating local snapshots, device matrix in M0 and M12. |
 
 ## 8. What is deliberately out of scope
 

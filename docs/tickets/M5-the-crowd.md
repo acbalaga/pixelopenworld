@@ -21,7 +21,7 @@ Scope: Traveler record (handle, look, build, archetype, schedule, home, guild, v
 Acceptance: generation is deterministic from the seed. No duplicate handles. 240 Travelers cost under the stated save budget share. A gallery image of 60 generated avatars with handles.
 
 ### POW-M5-03 Schedules, presence, abstract simulation
-Size: L      Depends: M5-02, M2-07      Status: DRAFT
+Size: L      Depends: M5-02, M2-04      Status: DRAFT
 Refs: design/07-simulated-mmo (Presence, Technical shape), design/08-lore-SPOILERS
 
 Goal: Travelers are online at believable real-world hours and progress while away.
@@ -81,7 +81,7 @@ Size: L      Depends: M5-03, M3-10      Status: DRAFT
 Refs: design/05-life-systems (Economy), design/07-simulated-mmo (Market)
 
 Goal: a living auction house.
-Scope: per-item supply and demand model with seasonal and event drivers. Listings with seller handles, undercutting behavior. Buy, list, cancel. Fees. Proceeds by mail. Price history sparkline. Chat reacts to price moves. Player flooding depresses price, cornering raises it, both bounded. Plausibility rule for market income.
+Scope: per-item supply and demand model with seasonal and event drivers. Listings with seller handles, undercutting behavior. Buy, list, cancel. Fees. Proceeds by mail. Price history sparkline. Chat reacts to price moves. Player flooding depresses price, cornering raises it, both bounded. Ledger entries and integrity rule for market income.
 Acceptance: property tests: prices stay within bounds, no infinite-coin loop between market and NPC shops, flooding recovers over time.
 
 ### POW-M5-11 World events and calendar

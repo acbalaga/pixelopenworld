@@ -25,10 +25,10 @@ CI enforces bundle size and runs a headless sim benchmark (tick cost over a reco
 
 | Level | Tool | What it covers |
 |---|---|---|
-| Unit | Vitest | Pure functions: formulas, plausibility rules, settlement, migrations, text rule, RNG |
+| Unit | Vitest | Pure functions: formulas, integrity rules, settlement, migrations, text rule, RNG |
 | Sim | Vitest | Scripted scenarios run headless: a fight plays out as expected, a Routine yields the right amount, a Traveler schedule holds. Determinism test: same seed and commands give identical state hash. |
 | Content | `tools/validate-content` | Schema and cross-reference integrity for all data |
-| Worker | Vitest with the Workers test pool | Every endpoint: success, each rejection, rate limit, tamper cases |
+| Save | Vitest | Encryption round trips, seal and import, every integrity rule, the tamper cases in tech/02 |
 | E2E smoke | Playwright, mobile viewport, touch emulation | Boot, log in, move, fight, open Menu, save, reload, state persists. Runs against the built site with the Worker. |
 | Visual | Playwright screenshots | Key screens captured and attached to PRs. Not pixel-diff gated early on. From M12, golden images for UI panels. |
 | Soak | Sim bot | Hours of simulated play for memory growth, save size growth, plausibility false positives, pacing numbers |
@@ -49,12 +49,12 @@ On every PR:
 3. Typecheck.
 4. Validate content.
 5. Bake, then fail if `baked/` differs from the commit.
-6. Unit, sim, and Worker tests.
+6. Unit, sim, and save tests.
 7. Build. Check bundle budgets.
 8. E2E smoke with screenshots uploaded as artifacts.
 9. `npm audit` at high severity.
 
-On merge to `main`: deploy to Cloudflare production. On PR: deploy a preview and post the URL.
+Deployment is not done by GitHub Actions. Cloudflare's Git integration builds and deploys `main` to production and gives each PR branch a preview URL. No Cloudflare credentials are stored in GitHub.
 
 ## Device matrix
 

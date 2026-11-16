@@ -91,6 +91,6 @@ A **Routines** tab in the menu: a list of workers, each a card showing what, whe
 
 ## Abuse limits
 
-- All rates are bounded by constants shared between client and Worker. The Worker's plausibility check rejects a checkpoint whose gains exceed what the Routines on record could produce in the elapsed trusted time.
+- All rates are bounded by named constants. The save integrity validator flags a save whose gains exceed what the Routines on record could produce in the elapsed trusted time.
 - Market sales from player shops are bounded by simulated demand, so infinite production does not mean infinite coin.
-- Settlement is idempotent: it is keyed to the last settled timestamp stored in the signed save.
+- Settlement is idempotent: it is keyed to the last settled timestamp stored in the save.

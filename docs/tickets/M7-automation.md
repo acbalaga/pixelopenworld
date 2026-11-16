@@ -55,19 +55,19 @@ Scope: requirement checks (boss resolved, bestiary complete at 10 each, gear tie
 Acceptance: Patrol unavailable until every requirement holds (test each). Online and offline yields agree within tolerance.
 
 ### POW-M7-07 Offline settlement and welcome-back
-Size: L      Depends: M7-04, M7-06, M2-07      Status: DRAFT
+Size: L      Depends: M7-04, M7-06, M2-04      Status: DRAFT
 Refs: design/06-automation (Offline gains), tech/02-save-security (Trusted time)
 
 Goal: correct, bounded gains for time away, presented well.
 Scope: settlement function in `sim/settle/`: pure, idempotent, keyed to last settled trusted time. Cap (8 to 12 hours) and efficiency (50 to 75%). Limits by inputs, storage, wages. Integrates crops, animals, market sales, mail, Traveler catch-up. One-cap-per-sync rule. Welcome-back panel with per-worker results, stop reasons, Collect all.
 Acceptance: settlement unit tests across gaps of 5 minutes, 8 hours, 3 days, and a backwards clock. Running settlement twice yields nothing the second time. Panel screenshot.
 
-### POW-M7-08 Plausibility rules for automation
-Size: M      Depends: M7-07, M2-04      Status: DRAFT
-Refs: tech/02-save-security (Plausibility rules), design/06-automation (Abuse limits)
+### POW-M7-08 Integrity rules for automation
+Size: M      Depends: M7-07, M2-02      Status: DRAFT
+Refs: tech/02-save-security (Integrity validator), design/06-automation (Abuse limits)
 
-Goal: the Worker can bound automated gains.
-Scope: summary gains Routine assignments, rates, worker counts, last settlement time. New rules bounding gains by recorded Routines and elapsed trusted time. Rule version bump with previous-version acceptance. Recorded sessions with heavy automation added to the zero-flag suite.
+Goal: the integrity validator can bound automated gains.
+Scope: summary gains Routine assignments, rates, worker counts, last settlement time. Ledger entries for Routine output. New rules bounding gains by recorded Routines and elapsed trusted time. Recorded sessions with heavy automation added to the zero-flag suite.
 Acceptance: legitimate automated sessions produce zero flags. An edited Routine rate is flagged.
 
 ### POW-M7-09 Routines UI and Gate G7

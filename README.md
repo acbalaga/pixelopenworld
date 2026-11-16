@@ -21,4 +21,4 @@ A mobile, browser-based, open world pixel RPG where you become whatever you deci
 - Handcrafted continent plus an endless procedural frontier.
 - All art and audio generated from data in this repo. No external asset packs.
 - Deployed on Cloudflare (Worker with static assets). Free. No ads, no purchases, no accounts, no analytics.
-- Saves are encrypted on device and signed by the Worker. Offline play works.
+- Saves are encrypted on device and integrity-checked on load. Export files are sealed. Everything is client-side, with no secrets to manage. Offline play works.

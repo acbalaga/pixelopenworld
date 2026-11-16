@@ -54,4 +54,4 @@ Executors do not edit ticket specs. Raise a Design Query (see CLAUDE.md). The de
 
 ## Owner actions
 
-Some tickets need something only the owner can do (create a Cloudflare resource, set a secret, play a build on a phone). These are marked **Owner action** inside the ticket. The executor prepares everything up to that point and lists the exact steps.
+Some tickets need something only the owner can do (connect the repo in the Cloudflare dashboard, approve art, play a build on a phone). These are marked **Owner action** inside the ticket. The executor prepares everything up to that point and lists the exact steps.

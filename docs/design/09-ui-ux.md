@@ -107,7 +107,7 @@ Clear text in a bottom sheet with the speaker's pixel portrait. Tap to advance, 
 
 ## Save status
 
-A small glyph in the System tab and on the login screen shows trust state: Verified, Pending (played offline, will verify on reconnect), Unverified. See tech/02. An export reminder appears after every 5 hours of play since the last export, dismissible.
+A small glyph in the System tab and on the login screen shows trust state: Intact or Flagged. See tech/02. An export reminder appears after every 5 hours of play since the last export, dismissible.
 
 ## Accessibility
 

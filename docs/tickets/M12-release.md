@@ -73,7 +73,7 @@ Size: M      Depends: M12-01      Status: DRAFT
 Refs: tech/02-save-security
 
 Goal: no path loses a player's save.
-Scope: migration test from every prior schema fixture to final. Recovery drills: corrupted latest, corrupted all local with a valid export, storage evicted, crash mid-save, import over existing. Key rotation rehearsal on a staging Worker. Export reminder and storage persistence messaging reviewed for clarity. Ops runbooks final.
+Scope: migration test from every prior schema fixture to final. Recovery drills: corrupted latest, corrupted all local with a valid export, storage evicted, crash mid-save, import over existing. Seal version rotation rehearsal (old exports still import). Integrity validator zero-flag suite on final balance. Export reminder and storage persistence messaging reviewed for clarity. Ops runbooks final.
 Acceptance: every drill documented with its result. Zero known save-loss defects.
 
 ### POW-M12-10 Release 1.0

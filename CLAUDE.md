@@ -35,7 +35,7 @@ These exist because breaking them causes damage that is expensive to find later.
 - **Zero runtime dependencies.** The shipped client has no npm runtime dependencies. Dev dependencies need a line of justification in the PR.
 - **Save compatibility.** Any change to saved state bumps the save schema version and ships a migration with a test that loads a fixture from the previous version.
 - **Never destroy player data.** A save that fails a check is marked, backed up, and recovered from. It is never deleted.
-- **No secrets in the client.** Signing and export keys live only in Worker secrets.
+- **Save seal discipline.** The export seal key is derived at runtime from split material and never appears as a literal, in logs, or on `window`. Any system that creates value adds its ledger entries and integrity rules (see `docs/tech/02-save-security.md`).
 - **Lore is found, not told.** No UI string, quest text, or NPC line explains the hidden layer. See `docs/design/08-lore-SPOILERS.md` section "Delivery rules" when a ticket touches lore.
 - **Readable text.** Follow the text rules in `docs/design/09-ui-ux.md`. Long text never uses the bitmap font.
 - **No em dashes** in player-facing strings or docs.

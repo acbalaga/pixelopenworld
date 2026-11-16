@@ -87,5 +87,5 @@ Size: M      Depends: M5-10, M6-07      Status: DRAFT
 Refs: design/05-life-systems (Economy)
 
 Goal: sell your work from your own counter.
-Scope: stall license, then storefront. Stock and price UI. Foot-traffic sales model bounded by simulated demand. Clerk hire. Maker's mark reputation effects. Travelers mention purchases. Plausibility rule for shop income.
-Acceptance: sales over time match the demand model. Overpricing reduces sales to zero smoothly. Income bound tested against plausibility.
+Scope: stall license, then storefront. Stock and price UI. Foot-traffic sales model bounded by simulated demand. Clerk hire. Maker's mark reputation effects. Travelers mention purchases. Ledger entries and integrity rule for shop income.
+Acceptance: sales over time match the demand model. Overpricing reduces sales to zero smoothly. Income bound tested against the integrity validator.

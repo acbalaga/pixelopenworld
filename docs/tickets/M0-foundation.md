@@ -67,17 +67,18 @@ Scope:
 - `worker/index.ts` with a tiny router. `GET /api/health` returns `{ ok: true, version }` where version is the git SHA injected at build. Unknown `/api/*` returns 404 JSON.
 - Security headers from tech/02 on all static responses, including the CSP. API responses get `Cache-Control: no-store`. Hashed assets get long-lived immutable caching. `index.html` is not cached.
 - `npm run dev` runs client and Worker together locally.
-- GitHub Actions: deploy production on merge to `main`. Deploy a preview on PRs and comment the URL. Deploy steps are skipped cleanly (not failed) when Cloudflare secrets are absent.
-- `docs/ops/deploy.md`: the exact owner steps and what each secret is for.
+- Deployment through Cloudflare's Git integration (Workers Builds), not GitHub Actions: the repo carries the build command and `wrangler` config so that connecting it in the Cloudflare dashboard is enough. `main` deploys to production. Other branches get preview URLs. No Cloudflare token or account id is stored in GitHub and none is needed by CI.
+- `docs/ops/deploy.md`: the exact owner steps with the build settings to enter, and a fallback (`npx wrangler deploy` from a local machine).
 
-**Owner action:** create the Cloudflare API token and account id, add them as GitHub Actions secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Optionally attach a custom domain.
+**Owner action:** connect this repository once in the Cloudflare dashboard, following `docs/ops/deploy.md`. No secrets. Optionally attach a custom domain.
 
-Out of scope: D1, rate limiting, save endpoints (M2).
+Out of scope: `/api/time` (M2-04).
 
 Acceptance:
 - Locally, `/api/health` responds, `/api/nope` returns 404 JSON, and `/` serves the app with every header from tech/02 present (shown with `curl -I` output).
 - The page loads with zero CSP violations in the console.
-- With secrets set, a PR gets a preview URL and merging to `main` updates production. Without secrets, CI still passes.
+- The build command in `docs/ops/deploy.md` produces a deployable Worker from a clean clone with no environment variables set. GitHub CI passes with no Cloudflare credentials.
+- After the owner connects the repo: a PR branch gets a preview URL and merging to `main` updates production.
 
 ---
 
@@ -223,7 +224,7 @@ Scope:
 - 9-slice pixel panel drawing on canvas, and the same frame exported as a CSS `border-image` for DOM panels.
 - `ui/dom/`: an overlay root above the canvas, a `ClearTextPanel` helper that builds DOM with `textContent` only, uses the system font stack, honors the text scale setting and OS font size, and is styled from palette colors via CSS custom properties (no inline style attributes, to satisfy the CSP).
 - A canvas button component and a DOM button component with shared visual language.
-- Settings store (not part of the signed save): text scale, HUD scale, handedness, reduced motion (initialized from the OS preference).
+- Settings store (not part of the save): text scale, HUD scale, handedness, reduced motion (initialized from the OS preference).
 - Demo: a HUD row in pixel text, a temporary on-screen stick and buttons, and a sample dialogue sheet in clear text with a paragraph of prose.
 
 Out of scope: the real HUD and Menu (M1), dialogue system (M1).

@@ -209,10 +209,10 @@ Scope:
 - Autosave triggers from tech/02 (timer, transitions, hidden, pagehide).
 - Load on boot with fallback through snapshots.
 - Migration framework: ordered migration functions by schema number, a fixture of schema 1 committed under `tests/fixtures/saves/`.
-- Storage and crypto calls behind an interface so M2 can insert compression and encryption without touching callers.
+- Serialization, storage, and crypto calls behind an interface so M2 can swap in binary encoding, compression, and encryption without touching callers.
 - Save indicator glyph (brief, unobtrusive).
 
-Out of scope: encryption, signing, export (M2).
+Out of scope: encryption, integrity checks, export (M2).
 
 Acceptance:
 - E2E: play, gain an item and XP, reload the page, state is identical (`hashState` equal).

@@ -10,7 +10,7 @@
 | UI | Canvas for HUD and pixel text. DOM for Menu, dialogue, and all clear text | No UI framework. Small hand-written view helpers. |
 | Audio | Web Audio API, synthesized | No audio files |
 | Storage | IndexedDB | Saves, baked chunk cache, settings |
-| Backend | One Cloudflare Worker serving static assets and `/api/*` | D1 for save lineage. Rate limiting binding. |
+| Backend | One small Cloudflare Worker serving static assets, `/api/health`, and `/api/time` | No secrets, no database, no bindings beyond static assets |
 | Tests | Vitest (unit, sim), Playwright (smoke, screenshots) | |
 | Lint | ESLint with custom rules for sim purity | |
 
@@ -42,14 +42,11 @@ Cloudflare platform details change. Any ticket touching `wrangler` config, bindi
       dom/                  Menu, dialogue, clear-text panels
       text/                 the text rule (pixel vs clear decision)
     platform/               input, audio engine, storage, clock, network, haptics, pwa
-    save/                   envelope, crypto, migrations, checkpoint client
-    shared/                 code used by BOTH client and Worker (plausibility rules, save schema, constants)
+    save/                   envelope, crypto, seal, integrity validator, migrations
+    shared/                 code used by BOTH client and Worker (constants, small helpers)
     dev/                    debug overlay, viewers, editors. Stripped from production.
   worker/
-    index.ts                routes, static asset fallthrough
-    api/                    save checkpoint, export, import, time, health
-    lib/                    crypto, validation, rate limit, d1
-    migrations/             D1 SQL
+    index.ts                routes (health, time), static asset fallthrough
   tools/                    bake-assets, bake-world, validate-content, pacing-ledger, sim-bot
   baked/                    committed bake output (atlases, chunks, manifests)
   tests/
@@ -74,7 +71,7 @@ Import rules, enforced by lint:
 
 ### Determinism
 
-Given the same initial state, the same seed, and the same command stream, the sim produces the same state. Required for tests, for settlement correctness, and for the Worker to bound results.
+Given the same initial state, the same seed, and the same command stream, the sim produces the same state. Required for tests, for settlement correctness, and for the integrity validator to bound results.
 
 - All randomness from a seeded PRNG owned by sim state (a small, fast generator such as sfc32 or xoshiro128). Separate streams per concern (combat, loot, world, travelers) so adding a roll in one does not shift another.
 - No `Math.random`, `Date`, `performance.now` inside `sim/`. Time enters as tick count and as a trusted wall-clock value passed in by the platform layer.
@@ -116,8 +113,8 @@ Sim emits events (`damageDealt`, `skillRankUp`, `itemLooted`, `travelerSpoke`) i
 ## State and saves
 
 - `SimState` is the whole truth and is serializable. Nothing gameplay-relevant lives outside it.
-- Save format, encryption, and signing are in tech/02.
-- Settings and UI preferences are stored separately and are not signed.
+- Save format, encryption, sealing, and integrity checks are in tech/02.
+- Settings and UI preferences are stored separately, outside the save.
 
 ## Networking
 
@@ -127,11 +124,8 @@ The client talks only to its own origin.
 |---|---|
 | `GET /api/health` | Liveness |
 | `GET /api/time` | Trusted time |
-| `POST /api/save/checkpoint` | Verify and sign a save digest |
-| `POST /api/save/export` | Produce a portable signed save file |
-| `POST /api/save/import` | Verify and unwrap a save file |
 
-Everything else works offline. Network failure is a normal state, not an error screen.
+The game works fully without either. Network failure is a normal state, not an error screen.
 
 ## PWA
 

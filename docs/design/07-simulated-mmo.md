@@ -111,4 +111,4 @@ A mailbox at home and in hubs. Travelers and NPCs send letters, gifts, invitatio
 
 - Abstract simulation tick: once per in-game minute for all online Travelers not near the player.
 - Catch-up on login: Traveler progress since last session is computed by formula from elapsed time, like offline settlement. Chat history for the gap is not generated, except a few "while you were away" lines.
-- Deterministic from the save seed plus event history, so the Worker can bound it.
+- Deterministic from the save seed plus event history, so the integrity validator can bound it.

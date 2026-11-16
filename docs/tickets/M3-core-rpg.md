@@ -51,7 +51,7 @@ Size: M      Depends: M3-05      Status: DRAFT
 Refs: design/05-life-systems (Gathering)
 
 Goal: Mining, Logging, Foraging, and Fishing spots work with tools, timing, respawn, and conditions.
-Scope: node types and tiers. Tool requirement rules (slow, not blocked). Timing input per skill. Weather, season, and time-of-day variants hook (uses the clock from M2-07, weather arrives in M4). Fishing spot placeholder with a simple catch (full minigame in M6).
+Scope: node types and tiers. Tool requirement rules (slow, not blocked). Timing input per skill. Weather, season, and time-of-day variants hook (uses the clock from M2-04, weather arrives in M4). Fishing spot placeholder with a simple catch (full minigame in M6).
 Acceptance: yield and quality tests for tool tier below, at, above node tier. Respawn timers persist across save and offline time.
 
 ### POW-M3-07 Crafting: stations, recipes, experimentation

@@ -54,7 +54,7 @@ Size: M      Depends: M11-02      Status: DRAFT
 Refs: tech/04-quality (budgets), tech/01-architecture (World streaming)
 
 Goal: an endless world does not mean an endless save.
-Scope: delta storage for player-changed frontier chunks with compaction. Fog storage for the frontier as coarse visited regions rather than per-tile. Respawned resources drop their deltas. A save size monitor in System. Plausibility rules for frontier counters.
+Scope: delta storage for player-changed frontier chunks with compaction. Fog storage for the frontier as coarse visited regions rather than per-tile. Respawned resources drop their deltas. A save size monitor in System. Integrity rules for frontier counters.
 Acceptance: a bot campaign of 300 simulated hours including heavy frontier exploration stays inside a stated save size ceiling and save time budget.
 
 ### POW-M11-08 Endless activities and soak
