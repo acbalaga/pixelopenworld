@@ -1,3 +1,4 @@
+import type { Atlas } from './atlas';
 import type { ViewportInfo } from './viewport';
 
 /** Draw layers, back to front. World layers are offset by the camera, Hud is screen space. */
@@ -19,10 +20,10 @@ export interface TileGrid {
   cols: number;
   rows: number;
   size: number;
-  /** Row-major tile indices into `colors`. */
+  /** Row-major tile kinds. */
   tiles: Uint8Array;
-  /** Placeholder fill per tile index, until atlases land (M0-06). */
-  colors: readonly string[];
+  /** Atlas frame handle to draw for a tile kind right now (animated tiles vary over time). */
+  frameOf: (kind: number) => number;
   /** World position of the top-left tile. */
   x: number;
   y: number;
@@ -35,16 +36,8 @@ export interface Renderer {
   /** Starts a frame with the camera's whole-pixel position. */
   begin(camX: number, camY: number): void;
   drawRect(layer: LayerId, x: number, y: number, w: number, h: number, color: string): void;
-  /** Placeholder: a colored rect derived from the id until M0-06 provides atlases. */
-  drawSprite(
-    layer: LayerId,
-    id: string,
-    frame: number,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-  ): void;
+  /** Draws an atlas frame with its origin at world (x, y). Get handles from the atlas once. */
+  drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX?: boolean): void;
   drawTiles(layer: LayerId, grid: TileGrid): void;
   /** Sorts the Objects layer by y, draws every layer in order, presents with one scaled blit. */
   end(): void;
@@ -59,6 +52,10 @@ class Commands {
   w: number[] = [];
   h: number[] = [];
   color: string[] = [];
+  /** Atlas handle for sprites, -1 for rects. */
+  handle: number[] = [];
+  flip: number[] = [];
+  sortY: number[] = [];
   push(layer: number, x: number, y: number, w: number, h: number, color: string): void {
     const i = this.n++;
     this.layer[i] = layer;
@@ -67,6 +64,21 @@ class Commands {
     this.w[i] = w;
     this.h[i] = h;
     this.color[i] = color;
+    this.handle[i] = -1;
+    this.flip[i] = 0;
+    this.sortY[i] = y + h;
+  }
+  pushSprite(layer: number, handle: number, x: number, y: number, flip: boolean): void {
+    const i = this.n++;
+    this.layer[i] = layer;
+    this.x[i] = x;
+    this.y[i] = y;
+    this.w[i] = 0;
+    this.h[i] = 0;
+    this.color[i] = '';
+    this.handle[i] = handle;
+    this.flip[i] = flip ? 1 : 0;
+    this.sortY[i] = y;
   }
 }
 
@@ -85,12 +97,10 @@ export class Canvas2DRenderer implements Renderer {
   private camX = 0;
   private camY = 0;
   private scale = 1;
-  private spriteColors = new Map<string, string>();
+  private atlas: Atlas | null = null;
   private byBottomEdge = (a: number, b: number): number => {
     const c = this.cmds;
-    return (
-      (c.y[a] as number) + (c.h[a] as number) - ((c.y[b] as number) + (c.h[b] as number)) || a - b
-    );
+    return (c.sortY[a] as number) - (c.sortY[b] as number) || a - b;
   };
   /** Draw calls in the last completed frame. */
   drawCalls = 0;
@@ -102,6 +112,11 @@ export class Canvas2DRenderer implements Renderer {
     if (!sctx || !bctx) throw new Error('2d context unavailable');
     this.sctx = sctx;
     this.bctx = bctx;
+  }
+
+  /** Sets the atlas used by `drawSprite` and `drawTiles`. */
+  setAtlas(atlas: Atlas): void {
+    this.atlas = atlas;
   }
 
   /** Re-fits to a new viewport. Safe to call any time; the next frame draws at the new size. */
@@ -130,23 +145,8 @@ export class Canvas2DRenderer implements Renderer {
     this.cmds.push(layer, x, y, w, h, color);
   }
 
-  drawSprite(
-    layer: LayerId,
-    id: string,
-    _frame: number,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-  ): void {
-    let c = this.spriteColors.get(id);
-    if (c === undefined) {
-      let hash = 0;
-      for (let i = 0; i < id.length; i++) hash = (Math.imul(hash, 31) + id.charCodeAt(i)) | 0;
-      c = `hsl(${((hash % 360) + 360) % 360} 60% 60%)`;
-      this.spriteColors.set(id, c);
-    }
-    this.cmds.push(layer, x, y, w, h, c);
+  drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX = false): void {
+    this.cmds.pushSprite(layer, handle, x, y, flipX);
   }
 
   drawTiles(layer: LayerId, grid: TileGrid): void {
@@ -181,13 +181,15 @@ export class Canvas2DRenderer implements Renderer {
       }
       for (let k = 0; k < m; k++) {
         const i = this.order[k] as number;
-        b.fillStyle = c.color[i] as string;
-        b.fillRect(
-          Math.round(c.x[i] as number) - ox,
-          Math.round(c.y[i] as number) - oy,
-          c.w[i] as number,
-          c.h[i] as number,
-        );
+        const handle = c.handle[i] as number;
+        const sx = Math.round(c.x[i] as number) - ox;
+        const sy = Math.round(c.y[i] as number) - oy;
+        if (handle >= 0) {
+          this.blitSprite(handle, sx, sy, c.flip[i] === 1);
+        } else {
+          b.fillStyle = c.color[i] as string;
+          b.fillRect(sx, sy, c.w[i] as number, c.h[i] as number);
+        }
         calls++;
       }
     }
@@ -196,7 +198,6 @@ export class Canvas2DRenderer implements Renderer {
   }
 
   private drawGrid(g: TileGrid, ox: number, oy: number): number {
-    const b = this.bctx;
     const c0 = Math.max(0, Math.floor((ox - g.x) / g.size));
     const r0 = Math.max(0, Math.floor((oy - g.y) / g.size));
     const c1 = Math.min(g.cols - 1, Math.floor((ox + this.width - 1 - g.x) / g.size));
@@ -204,11 +205,33 @@ export class Canvas2DRenderer implements Renderer {
     let calls = 0;
     for (let r = r0; r <= r1; r++) {
       for (let col = c0; col <= c1; col++) {
-        b.fillStyle = g.colors[g.tiles[r * g.cols + col] as number] as string;
-        b.fillRect(g.x + col * g.size - ox, g.y + r * g.size - oy, g.size, g.size);
+        const handle = g.frameOf(g.tiles[r * g.cols + col] as number);
+        this.blitFrame(handle, g.x + col * g.size - ox, g.y + r * g.size - oy, false);
         calls++;
       }
     }
     return calls;
+  }
+
+  /** Draws a frame with its origin at screen (x, y). */
+  private blitSprite(handle: number, x: number, y: number, flip: boolean): void {
+    const a = this.atlas;
+    if (!a) return;
+    const w = a.width(handle);
+    const ox = a.originX(handle);
+    const oy = a.originY(handle);
+    this.blitFrame(handle, x - (flip ? w - ox : ox), y - oy, flip);
+  }
+
+  /** Draws a frame with its top-left at screen (dx, dy). */
+  private blitFrame(handle: number, dx: number, dy: number, flip: boolean): void {
+    const a = this.atlas;
+    if (!a) return;
+    const b = this.bctx;
+    const w = a.width(handle);
+    const h = a.height(handle);
+    if (flip) b.setTransform(-1, 0, 0, 1, 2 * dx + w, 0);
+    b.drawImage(a.image(handle), a.srcX(handle), a.srcY(handle), w, h, dx, dy, w, h);
+    if (flip) b.setTransform(1, 0, 0, 1, 0, 0);
   }
 }

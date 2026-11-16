@@ -1,0 +1,457 @@
+{
+  "version": 1,
+  "atlases": {
+    "core": {
+      "height": 84,
+      "image": "atlas-core.png",
+      "width": 256
+    }
+  },
+  "sprites": {
+    "char.placeholder_humanoid": {
+      "anims": {
+        "idle_down": {
+          "fps": 2,
+          "frames": [
+            "idle_down_0",
+            "idle_down_1"
+          ]
+        },
+        "idle_left": {
+          "fps": 2,
+          "flipX": true,
+          "frames": [
+            "idle_right_0",
+            "idle_right_1"
+          ]
+        },
+        "idle_right": {
+          "fps": 2,
+          "frames": [
+            "idle_right_0",
+            "idle_right_1"
+          ]
+        },
+        "idle_up": {
+          "fps": 2,
+          "frames": [
+            "idle_up_0",
+            "idle_up_1"
+          ]
+        },
+        "walk_down": {
+          "fps": 8,
+          "frames": [
+            "walk_down_0",
+            "walk_down_1",
+            "walk_down_2",
+            "walk_down_3"
+          ]
+        },
+        "walk_left": {
+          "fps": 8,
+          "flipX": true,
+          "frames": [
+            "walk_right_0",
+            "walk_right_1",
+            "walk_right_2",
+            "walk_right_3"
+          ]
+        },
+        "walk_right": {
+          "fps": 8,
+          "frames": [
+            "walk_right_0",
+            "walk_right_1",
+            "walk_right_2",
+            "walk_right_3"
+          ]
+        },
+        "walk_up": {
+          "fps": 8,
+          "frames": [
+            "walk_up_0",
+            "walk_up_1",
+            "walk_up_2",
+            "walk_up_3"
+          ]
+        }
+      },
+      "frames": {
+        "idle_down_0": {
+          "x": 34,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "idle_down_1": {
+          "x": 59,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "idle_right_0": {
+          "x": 84,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "idle_right_1": {
+          "x": 109,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "idle_up_0": {
+          "x": 134,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "idle_up_1": {
+          "x": 159,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "walk_down_0": {
+          "x": 184,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "walk_down_1": {
+          "x": 209,
+          "y": 1,
+          "w": 24,
+          "h": 32
+        },
+        "walk_down_2": {
+          "x": 1,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_down_3": {
+          "x": 26,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_right_0": {
+          "x": 51,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_right_1": {
+          "x": 76,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_right_2": {
+          "x": 101,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_right_3": {
+          "x": 126,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_up_0": {
+          "x": 151,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_up_1": {
+          "x": 176,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_up_2": {
+          "x": 201,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        },
+        "walk_up_3": {
+          "x": 226,
+          "y": 34,
+          "w": 24,
+          "h": 32
+        }
+      },
+      "group": "core",
+      "origin": [
+        12,
+        28
+      ],
+      "size": [
+        24,
+        32
+      ]
+    },
+    "prop.rock": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.tree_canopy": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1,
+          "y": 1,
+          "w": 32,
+          "h": 32
+        }
+      },
+      "group": "core",
+      "origin": [
+        16,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ]
+    },
+    "prop.tree_trunk": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 18,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.dirt": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 35,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        0,
+        0
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.grass_0": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 52,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        0,
+        0
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.grass_1": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 69,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        0,
+        0
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.grass_2": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 86,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        0,
+        0
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.water": {
+      "anims": {
+        "flow": {
+          "fps": 2,
+          "frames": [
+            "flow_0",
+            "flow_1"
+          ]
+        }
+      },
+      "frames": {
+        "flow_0": {
+          "x": 103,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        },
+        "flow_1": {
+          "x": 120,
+          "y": 67,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        0,
+        0
+      ],
+      "size": [
+        16,
+        16
+      ]
+    }
+  },
+  "tiles": {
+    "tile.dirt": {
+      "layer": "ground",
+      "collision": "none",
+      "tags": [
+        "diggable"
+      ],
+      "id": "tile.dirt",
+      "sprite": "tile.dirt",
+      "frame": "base"
+    },
+    "tile.grass_0": {
+      "layer": "ground",
+      "collision": "none",
+      "tags": [
+        "diggable",
+        "flammable"
+      ],
+      "id": "tile.grass_0",
+      "sprite": "tile.grass_0",
+      "frame": "base"
+    },
+    "tile.grass_1": {
+      "layer": "ground",
+      "collision": "none",
+      "tags": [
+        "diggable",
+        "flammable"
+      ],
+      "id": "tile.grass_1",
+      "sprite": "tile.grass_1",
+      "frame": "base"
+    },
+    "tile.grass_2": {
+      "layer": "ground",
+      "collision": "none",
+      "tags": [
+        "diggable",
+        "flammable"
+      ],
+      "id": "tile.grass_2",
+      "sprite": "tile.grass_2",
+      "frame": "base"
+    },
+    "tile.rock": {
+      "id": "tile.rock",
+      "sprite": "prop.rock",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.tree_canopy": {
+      "id": "tile.tree_canopy",
+      "sprite": "prop.tree_canopy",
+      "frame": "base",
+      "layer": "overhead",
+      "collision": "none",
+      "tags": [
+        "flammable"
+      ]
+    },
+    "tile.tree_trunk": {
+      "id": "tile.tree_trunk",
+      "sprite": "prop.tree_trunk",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": [
+        "flammable"
+      ]
+    },
+    "tile.water": {
+      "layer": "ground",
+      "collision": "water",
+      "tags": [],
+      "id": "tile.water",
+      "sprite": "tile.water",
+      "frame": "flow",
+      "animated": true
+    }
+  }
+}

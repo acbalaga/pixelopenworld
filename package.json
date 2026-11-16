@@ -15,23 +15,28 @@
     "typecheck": "tsc --noEmit",
     "bench": "vitest run --config vitest.bench.config.ts",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "bake": "node tools/stub.mjs bake",
+    "bake": "tsx tools/bake-assets/index.ts",
+    "bake:check": "tsx tools/bake-assets/index.ts --check",
     "e2e": "node tools/stub.mjs e2e",
-    "validate": "node tools/stub.mjs validate"
+    "validate": "tsx tools/bake-assets/index.ts --validate"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",
     "@cloudflare/workers-types": "^5.20261116.1",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
+    "@types/pngjs": "^6.0.5",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",
+    "pngjs": "^7.0.0",
     "prettier": "^3.10.1",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0",
-    "wrangler": "^4.163.0"
+    "wrangler": "^4.163.0",
+    "zod": "^4.6.7"
   }
 }
