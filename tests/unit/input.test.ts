@@ -144,8 +144,10 @@ describe('layout', () => {
     const a = computeLayout(360, 800, false);
     const b = computeLayout(360, 800, true);
     for (const id of Object.keys(a.buttons) as (keyof typeof a.buttons)[]) {
-      expect(b.buttons[id].x).toBe(360 - a.buttons[id].x - a.buttons[id].w);
-      expect(b.buttons[id].y).toBe(a.buttons[id].y);
+      const ra = a.buttons[id]!;
+      const rb = b.buttons[id]!;
+      expect(rb.x).toBe(360 - ra.x - ra.w);
+      expect(rb.y).toBe(ra.y);
     }
     const r = a.buttons.context;
     expect(buttonAt(a, { x: r.x + 1, y: r.y + 1 })).toBe('context');

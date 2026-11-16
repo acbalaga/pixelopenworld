@@ -2,6 +2,9 @@ import { MOVEMENT as M } from '../content/balance/movement';
 import { Dir, px } from './kernel/fixed';
 import { setComp, spawn, type EntityId } from './kernel/entities';
 import type { Command } from './kernel/commands';
+import { applyFighterCommand } from './combat/commands';
+import { newFighter, newPools } from './combat/fighter';
+import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
@@ -12,7 +15,7 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
   setComp(state.entities, id, 'body', {
     w: px(M.bodyW),
     h: px(M.bodyH),
-    solid: false,
+    solid: true,
   });
   setComp(state.entities, id, 'avatar', {
     facing: Dir.S,
@@ -20,9 +23,23 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
     full: false,
     fullTicks: 0,
     sprinting: false,
-    stamina: M.staminaMax,
-    staminaMax: M.staminaMax,
+    coin: 0,
+    respawn: { x, y },
     winded: false,
+  });
+  setComp(state.entities, id, 'pools', newPools(state.tick));
+  setComp(
+    state.entities,
+    id,
+    'fighter',
+    newFighter(0, ['technique.blades_lunge', 'technique.ember_bolt']),
+  );
+  setComp(state.entities, id, 'combatant', {
+    weapon: 'sword',
+    power: WEAPONS.sword?.power ?? 10,
+    defense: 0,
+    skillRank: 0,
+    name: 'You',
   });
   return id;
 }
@@ -34,7 +51,9 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   if (c.type === 'move') {
     a.intent = c.dir;
     a.full = c.dir !== null && c.full === true;
+    return;
   }
+  applyFighterCommand(state, who, c);
 }
 
 /** Feet position for a tile corner plus offset, in sub-pixel units. For spawning and tests. */

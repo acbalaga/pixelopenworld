@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { COMBAT } from '../../src/content/balance/combat';
 import { MOVEMENT as M } from '../../src/content/balance/movement';
 import { applyAvatarCommand, createAvatar, feetAt } from '../../src/sim/avatar';
 import { createDemoState, hashState, type SimState } from '../../src/sim/state';
@@ -154,7 +155,8 @@ describe('sprint', () => {
     expect(avatar(s, id).sprinting).toBe(true);
     for (let i = 0; i < 5; i++) stepWorld(s, id, { commands: [] });
     expect(vel(s, id).x).toBe(Math.round((M.walkSpeed * M.sprintFactor256) / 256));
-    expect(avatar(s, id).stamina).toBeLessThan(M.staminaMax);
+    const pools = s.entities.comps.pools[id];
+    expect(pools?.sta).toBeLessThan(pools?.staMax ?? 0);
   });
 
   it('a partial stick never sprints, and letting go resets the hold', () => {
@@ -170,13 +172,22 @@ describe('sprint', () => {
   it('running dry ends sprint and it stays off until stamina recovers', () => {
     const { s, id } = world(OPEN, 3, 20);
     // Keep stamina from being the only limit: walls are far enough at 38 tiles for 5 s of sprint.
-    press(s, id, Dir.E, true, M.sprintHoldTicks + 1000 / M.sprintDrain + 2);
+    press(s, id, Dir.E, true, M.sprintHoldTicks + COMBAT.pools.staMax / M.sprintDrain + 2);
     const a = avatar(s, id);
     expect(a.winded).toBe(true);
     expect(a.sprinting).toBe(false);
     press(s, id, Dir.E, true, 5);
     expect(a.sprinting).toBe(false);
-    press(s, id, Dir.E, true, Math.ceil(M.sprintResume / M.staminaRegen) + M.sprintHoldTicks + 2);
+    press(
+      s,
+      id,
+      Dir.E,
+      true,
+      COMBAT.pools.staRegenDelay +
+        Math.ceil(M.sprintResume / COMBAT.pools.staRegen) +
+        M.sprintHoldTicks +
+        2,
+    );
     expect(a.winded).toBe(false);
   });
 });

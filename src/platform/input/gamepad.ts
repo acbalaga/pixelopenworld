@@ -14,6 +14,7 @@ const PAD_BUTTONS: readonly [number, ButtonId][] = [
   [3, 'tech2'], // Y
   [1, 'tech3'], // B
   [5, 'tech4'], // right bumper
+  [7, 'attack'], // right trigger
   [4, 'context'], // left bumper
   [9, 'menu'], // start
   [8, 'bag'], // select

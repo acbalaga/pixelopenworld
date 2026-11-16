@@ -54,6 +54,7 @@ const KEY_BUTTONS: Record<string, ButtonId> = {
   Digit3: 'tech3',
   Digit4: 'tech4',
   Space: 'dodge',
+  KeyJ: 'attack',
   KeyE: 'context',
   Escape: 'menu',
   KeyB: 'bag',

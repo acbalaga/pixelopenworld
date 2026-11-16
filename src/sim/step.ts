@@ -5,7 +5,10 @@ import type { Command } from './kernel/commands';
 import { driftSystem } from './systems/drift';
 import type { SimState } from './state';
 import { applyAvatarCommand } from './avatar';
+import { combatSystem } from './systems/combat';
 import { movementSystem } from './systems/movement';
+import { knockSystem, poolsSystem } from './systems/pools';
+import { projectileSystem } from './systems/projectile';
 import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
@@ -25,7 +28,13 @@ export function step(state: SimState, input: TickInput): number {
 }
 
 /** Systems for a world with an avatar, in run order. */
-export const WORLD_SYSTEMS: readonly System<SimState>[] = [movementSystem];
+export const WORLD_SYSTEMS: readonly System<SimState>[] = [
+  combatSystem,
+  movementSystem,
+  knockSystem,
+  projectileSystem,
+  poolsSystem,
+];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */
 export function stepWorld(state: SimState, who: EntityId, input: TickInput): number {

@@ -4,6 +4,7 @@
  */
 
 export type Handedness = 'right' | 'left';
+export type ControlScheme = 'flow' | 'classic';
 
 export interface Settings {
   /** Clear text scale, 0.8 to 1.6. */
@@ -12,6 +13,10 @@ export interface Settings {
   hudScale: number;
   handedness: Handedness;
   reducedMotion: boolean;
+  /** Flow plays on its own swings; Classic has an attack button and a three hit combo. */
+  controlScheme: ControlScheme;
+  /** Haptic ticks on hit and perfect dodge, where the device supports them. */
+  haptics: boolean;
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -36,6 +41,8 @@ export class SettingsStore {
       hudScale: 1,
       handedness: 'right',
       reducedMotion: env.prefersReducedMotion(),
+      controlScheme: 'flow',
+      haptics: true,
     };
   }
 
@@ -52,7 +59,9 @@ export class SettingsStore {
       next.textScale === this.value.textScale &&
       next.hudScale === this.value.hudScale &&
       next.handedness === this.value.handedness &&
-      next.reducedMotion === this.value.reducedMotion
+      next.reducedMotion === this.value.reducedMotion &&
+      next.controlScheme === this.value.controlScheme &&
+      next.haptics === this.value.haptics
     )
       return;
     this.value = next;
