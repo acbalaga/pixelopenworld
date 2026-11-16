@@ -1,12 +1,12 @@
 // Fails if the gzip size of boot JS exceeds the budget in tools/budgets.json.
-// Boot JS = JS files referenced from dist/index.html (script and modulepreload).
+// Boot JS = JS files referenced from dist/client/index.html (script and modulepreload).
 import { readFileSync, existsSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const dist = process.env.DIST_DIR ?? join(root, 'dist');
+const dist = process.env.DIST_DIR ?? join(root, 'dist', 'client');
 const budgets = JSON.parse(readFileSync(join(root, 'tools', 'budgets.json'), 'utf8'));
 const limit = Number(process.env.BOOT_JS_BUDGET ?? budgets.bootJsGzipBytes);
 
@@ -16,7 +16,7 @@ for (const m of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+\.js)
   files.add(m[1].replace(/^\//, ''));
 }
 if (files.size === 0) {
-  console.error('check-bundle: no boot JS found in dist/index.html');
+  console.error('check-bundle: no boot JS found in dist/client/index.html');
   process.exit(1);
 }
 

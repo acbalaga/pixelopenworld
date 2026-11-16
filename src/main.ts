@@ -1,3 +1,4 @@
+import './style.css';
 import { startInputDemo } from './demo/inputDemo';
 
 function start(): void {
