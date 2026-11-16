@@ -1,3 +1,5 @@
+import './style.css';
+
 function start(): void {
   const el = document.getElementById('game');
   if (!(el instanceof HTMLCanvasElement)) throw new Error('canvas missing');

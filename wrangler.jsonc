@@ -1,0 +1,15 @@
+{
+  // Docs followed: developers.cloudflare.com/workers/static-assets/ (binding, run_worker_first,
+  // not_found_handling), /workers/static-assets/routing/single-page-application/,
+  // /workers/vite-plugin/ (get-started, tutorial), /workers/static-assets/headers/.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pixelopenworld",
+  "compatibility_date": "2026-11-01",
+  "main": "./worker/index.ts",
+  "assets": {
+    "not_found_handling": "single-page-application",
+    // /api/* always goes to the Worker. Everything else is static assets with SPA fallback.
+    "run_worker_first": ["/api/*"],
+    "binding": "ASSETS",
+  },
+}
