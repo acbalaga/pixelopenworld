@@ -150,7 +150,9 @@ export function startAttack(
   if (!aim) aim = av ? dirStep(av.facing) : f.aim;
   f.aim = aim;
   f.state = 'attack';
-  f.t = 0;
+  // The tick count is bumped later this same tick, so -1 makes the windup exactly `windup` ticks
+  // from the tick that started it to the first active tick.
+  f.t = -1;
   f.atk = attackId;
   f.hit = [];
   f.queued = false;

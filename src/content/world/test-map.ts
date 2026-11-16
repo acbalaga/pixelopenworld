@@ -150,5 +150,12 @@ export const TEST_MAP: Stamp = {
   id: 'test',
   legend: LEGEND,
   rows: ROWS,
-  objects: [{ x: 48, y: 40, kind: 'spawn.player' }],
+  objects: [
+    { x: 48, y: 40, kind: 'spawn.player' },
+    // Tier 1 creatures near the start. The miniboss waits farther out for the cave (M1-07).
+    { x: 56, y: 40, kind: 'spawner.mossling' },
+    { x: 52, y: 47, kind: 'spawner.spitbloom' },
+    { x: 62, y: 46, kind: 'spawner.bramble_boar' },
+    { x: 74, y: 56, kind: 'spawner.old_bramblehide' },
+  ],
 };

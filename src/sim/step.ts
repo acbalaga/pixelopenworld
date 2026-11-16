@@ -5,7 +5,9 @@ import type { Command } from './kernel/commands';
 import { driftSystem } from './systems/drift';
 import type { SimState } from './state';
 import { applyAvatarCommand } from './avatar';
+import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
+import { spawnerSystem } from './systems/spawner';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
@@ -29,6 +31,8 @@ export function step(state: SimState, input: TickInput): number {
 
 /** Systems for a world with an avatar, in run order. */
 export const WORLD_SYSTEMS: readonly System<SimState>[] = [
+  spawnerSystem,
+  aiSystem,
   combatSystem,
   movementSystem,
   knockSystem,

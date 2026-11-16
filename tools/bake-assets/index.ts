@@ -5,19 +5,37 @@ import { fileURLToPath } from 'node:url';
 import { SPRITES, TILES } from '../../src/content/sprites';
 import { bakeAll } from './bake';
 import { decodePng } from './png';
+import { ATTACKS } from '../../src/content/combat/attacks';
+import { CREATURES, SPAWNERS } from '../../src/content/creatures';
+import { SFX } from '../../src/content/audio/sfx';
 import { validateDefs } from './validate';
+import { validateCreatures } from './validateCreatures';
+
+/** Sprite, creature and spawner validation together. */
+function validateAll(): string[] {
+  return [
+    ...validateDefs(SPRITES, TILES),
+    ...validateCreatures(CREATURES, SPAWNERS, {
+      attacks: ATTACKS,
+      sprites: new Set(SPRITES.map((s) => s.id)),
+      sfx: new Set(SFX.map((s) => s.id)),
+    }),
+  ];
+}
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'baked');
 const mode = process.argv[2];
 
 if (mode === '--validate') {
-  const errors = validateDefs(SPRITES, TILES);
+  const errors = validateAll();
   if (errors.length > 0) {
     console.error(`validate: ${errors.length} error(s)\n${errors.map((e) => `  ${e}`).join('\n')}`);
     process.exit(1);
   }
-  console.log(`validate: ${SPRITES.length} sprites, ${TILES.length} tiles ok`);
+  console.log(
+    `validate: ${SPRITES.length} sprites, ${TILES.length} tiles, ${Object.keys(CREATURES).length} creatures, ${Object.keys(SPAWNERS).length} spawners ok`,
+  );
   process.exit(0);
 }
 

@@ -2,7 +2,7 @@ import type { SfxDef } from './types';
 
 const base = { attack: 0, slide: 0, variance: 0.05, gain: 0.5, bus: 'effects' } as const;
 
-/** The eight starter effects. */
+/** The starter effects and the creature set. */
 export const SFX: readonly SfxDef[] = [
   {
     ...base,
@@ -96,5 +96,75 @@ export const SFX: readonly SfxDef[] = [
     vibratoRate: 6,
     gain: 0.35,
     variance: 0,
+  },
+  // Creatures. Notice is a short rising chirp, a telegraph is a low warning growl, die falls away.
+  {
+    ...base,
+    id: 'sfx.creature_notice',
+    wave: 'square',
+    sustain: 0.05,
+    decay: 0.1,
+    freq: 330,
+    slide: 0.4,
+    gain: 0.3,
+    lowpass: 0.5,
+    variance: 0.1,
+  },
+  {
+    ...base,
+    id: 'sfx.creature_growl',
+    wave: 'sawtooth',
+    sustain: 0.12,
+    decay: 0.16,
+    freq: 110,
+    slide: -0.2,
+    vibratoDepth: 0.08,
+    vibratoRate: 24,
+    lowpass: 0.3,
+    gain: 0.35,
+  },
+  {
+    ...base,
+    id: 'sfx.creature_die',
+    wave: 'triangle',
+    sustain: 0.08,
+    decay: 0.3,
+    freq: 300,
+    slide: -0.7,
+    gain: 0.4,
+  },
+  {
+    ...base,
+    id: 'sfx.spit',
+    wave: 'noise',
+    sustain: 0.04,
+    decay: 0.12,
+    freq: 900,
+    slide: 0.3,
+    lowpass: 0.8,
+    gain: 0.3,
+  },
+  {
+    ...base,
+    id: 'sfx.charge',
+    wave: 'sawtooth',
+    attack: 0.02,
+    sustain: 0.2,
+    decay: 0.15,
+    freq: 90,
+    slide: 0.5,
+    lowpass: 0.25,
+    gain: 0.4,
+  },
+  {
+    ...base,
+    id: 'sfx.slam',
+    wave: 'noise',
+    sustain: 0.1,
+    decay: 0.35,
+    freq: 70,
+    slide: -0.6,
+    lowpass: 0.2,
+    gain: 0.6,
   },
 ];
