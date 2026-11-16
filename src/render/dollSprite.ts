@@ -1,4 +1,5 @@
 import {
+  DOLL_ANIMS,
   DOLL_FRAMES,
   DOLL_ORIGIN,
   DOLL_SIZE,
@@ -11,7 +12,7 @@ import { Atlas, type Manifest } from './atlas';
 import { composeFrame } from './doll';
 
 const [W, H] = DOLL_SIZE;
-const COLS = 5;
+const COLS = 8;
 
 const RGB_TO_INDEX = new Map<number, number>(
   PALETTE.map((hex, i) => [
@@ -84,7 +85,6 @@ export class DollFactory {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('2d context unavailable');
 
-    const walkFrames = (d: string): string[] => [0, 1, 2, 3].map((n) => `walk_${d}_${n}`);
     const frames: Manifest['sprites'][string]['frames'] = {};
     DOLL_FRAMES.forEach((name, i) => {
       frames[name] = { x: (i % COLS) * W, y: Math.floor(i / COLS) * H, w: W, h: H };
@@ -94,16 +94,9 @@ export class DollFactory {
       size: [W, H],
       origin: [DOLL_ORIGIN[0], DOLL_ORIGIN[1]],
       frames,
-      anims: {
-        walk_down: { fps: 8, frames: walkFrames('down') },
-        walk_up: { fps: 8, frames: walkFrames('up') },
-        walk_right: { fps: 8, frames: walkFrames('right') },
-        walk_left: { fps: 8, flipX: true, frames: walkFrames('right') },
-        idle_down: { fps: 2, frames: ['idle_down', 'walk_down_1'] },
-        idle_up: { fps: 2, frames: ['idle_up', 'walk_up_1'] },
-        idle_right: { fps: 2, frames: ['idle_right', 'walk_right_1'] },
-        idle_left: { fps: 2, flipX: true, frames: ['idle_right', 'walk_right_1'] },
-      },
+      anims: Object.fromEntries(
+        Object.entries(DOLL_ANIMS).map(([k, v]) => [k, { ...v, frames: [...v.frames] }]),
+      ),
     });
 
     const draw = (s: DollSpec): void => {

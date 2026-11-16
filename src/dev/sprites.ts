@@ -10,7 +10,9 @@ const manifest = manifestJson as unknown as Manifest;
 const SCALES = [1, 2, 4] as const;
 const BACKGROUNDS = ['light', 'dark', 'terrain'] as const;
 type Background = (typeof BACKGROUNDS)[number];
-const CHAR_ANIMS = ['idle_down', 'idle_up', 'idle_left', 'idle_right', 'walk_down', 'walk_up'];
+const CHAR_ANIMS = (['idle', 'walk', 'attack', 'hurt', 'dodge'] as const).flatMap((a) =>
+  (['down', 'up', 'left', 'right'] as const).map((d) => `${a}_${d}`),
+);
 const CHAR_COUNT = 6;
 
 interface Card {

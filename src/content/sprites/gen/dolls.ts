@@ -1,4 +1,4 @@
-import { DOLL_ORIGIN, type BodyType } from '../../dolls/parts';
+import { DOLL_ANIMS, DOLL_DRAWN_DIRS, DOLL_ORIGIN, type BodyType } from '../../dolls/parts';
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
 
@@ -23,6 +23,11 @@ interface Pose {
   /** Profile only: arm swing and leg x positions (back, front). */
   armDx: number;
   legX: [number, number];
+  /** What the arms are doing. Held items read it to pick their angle. */
+  stance: 'rest' | 'windup' | 'strike' | 'recover' | 'hurt' | 'dodge';
+  /** Whole figure shift in px, applied to every layer alike so they stay registered. */
+  shiftX: number;
+  shiftY: number;
 }
 
 function poseOf(dir: Dir, step: number | 'idle'): Pose {
@@ -34,7 +39,56 @@ function poseOf(dir: Dir, step: number | 'idle'): Pose {
     armDy: step === 0 ? [-1, 1] : step === 2 ? [1, -1] : [0, 0],
     armDx: !walking ? 0 : step === 0 ? -2 : step === 2 ? 2 : 0,
     legX: step === 0 ? [8, 14] : step === 2 ? [14, 8] : [10, 11],
+    stance: 'rest',
+    shiftX: 0,
+    shiftY: 0,
   };
+}
+
+type Action = 'attack' | 'hurt' | 'dodge';
+
+/** Poses for attack (3 frames), hurt (1) and dodge (2). `toward` is the way the figure lunges. */
+function actionPose(dir: Dir, action: Action, n: number): Pose {
+  const side = dir === 'right';
+  const toward = dir === 'up' ? -1 : 1;
+  const p = poseOf(dir, 'idle');
+  if (action === 'attack') {
+    p.stance = (['windup', 'strike', 'recover'] as const)[n] ?? 'rest';
+    if (side) {
+      p.armDx = [-3, 4, 1][n] ?? 0;
+      p.legX = [9, 13];
+      p.shiftX = n === 1 ? 1 : 0;
+    } else {
+      p.armDy = [
+        [0, -4],
+        [0, 3],
+        [0, 1],
+      ][n] as [number, number];
+      p.legDy = [0, 0];
+      p.shiftY = n === 1 ? toward : 0;
+    }
+  } else if (action === 'hurt') {
+    p.stance = 'hurt';
+    if (side) {
+      p.armDx = -2;
+      p.legX = [8, 14];
+      p.shiftX = -2;
+    } else {
+      p.armDy = [-2, -2];
+      p.legDy = [1, -1];
+      p.shiftY = -toward;
+    }
+  } else {
+    p.stance = 'dodge';
+    p.bob = n === 0 ? 2 : 3;
+    p.legX = [8, 14];
+    p.armDy = [-1, -1];
+    if (side) {
+      p.armDx = -2;
+      p.shiftX = n === 0 ? 1 : 3;
+    } else p.shiftY = n === 0 ? 0 : toward;
+  }
+  return p;
 }
 
 /** Body geometry. B is slimmer through shoulders, waist and legs. */
@@ -155,7 +209,7 @@ function bottomLayer(kind: 'trousers' | 'skirt', b: BodyType, p: Pose): Img {
   return im;
 }
 
-function topLayer(kind: 'tunic' | 'vest', b: BodyType, p: Pose): Img {
+function topLayer(kind: 'tunic' | 'vest' | 'robe', b: BodyType, p: Pose): Img {
   const im = new Img(24, 32);
   const g = geo(b);
   const beltY = 19 + p.bob;
@@ -164,7 +218,7 @@ function topLayer(kind: 'tunic' | 'vest', b: BodyType, p: Pose): Img {
     im.rect(g.t0, 14 + p.bob, g.t0 + 1, 21 + p.bob, CL.lit);
     im.rect(g.t1 - 1, 14 + p.bob, g.t1, 21 + p.bob, CL.shade);
     im.rect(g.t0, 20 + p.bob, g.t1, 21 + p.bob, CL.shade);
-    if (kind === 'tunic') {
+    if (kind === 'tunic' || kind === 'robe') {
       for (const [i, x0] of [g.armL, g.armR].entries()) {
         const dy = p.armDy[i as 0 | 1];
         im.rect(x0, 15 + p.bob + dy, x0 + 1, 19 + p.bob + dy, i === 0 ? CL.lit : CL.shade);
@@ -183,14 +237,28 @@ function topLayer(kind: 'tunic' | 'vest', b: BodyType, p: Pose): Img {
     im.rect(g.pt0, 14 + p.bob, g.pt0 + 1, 21 + p.bob, CL.lit);
     im.rect(g.pt1 - 1, 14 + p.bob, g.pt1, 21 + p.bob, CL.shade);
     im.rect(g.pt0, 20 + p.bob, g.pt1, 21 + p.bob, CL.shade);
-    if (kind === 'tunic') {
+    if (kind === 'tunic' || kind === 'robe') {
       im.rect(10 + p.armDx, 15 + p.bob, 12 + p.armDx, 19 + p.bob, CL.lit);
       im.rect(g.pt0, beltY, g.pt1, beltY, DARK);
     } else {
       im.rect(g.pt0, 21 + p.bob, g.pt1, 21 + p.bob, null);
     }
   }
+  if (kind === 'robe') robeSkirt(im, b, p);
   return im;
+}
+
+/** The robe's long skirt: flares from the waist to just above the boots. */
+function robeSkirt(im: Img, b: BodyType, p: Pose): void {
+  const g = geo(b);
+  const x0 = (p.dir === 'right' ? g.pt0 : g.t0) - 1;
+  const x1 = (p.dir === 'right' ? g.pt1 : g.t1) + 1;
+  const top = 22 + p.bob;
+  const bottom = Math.max(top, 25);
+  im.rect(x0, top, x1, bottom, CL.main);
+  im.rect(x0, top, x0 + 1, bottom, CL.lit);
+  im.rect(x1 - 1, top, x1, bottom, CL.shade);
+  im.rect(x0, bottom, x1, bottom, CL.shade);
 }
 
 type HairKind = 'short' | 'long' | 'ponytail' | 'curly' | 'bun';
@@ -258,39 +326,118 @@ function hairLayer(kind: HairKind, p: Pose): Img {
   return im;
 }
 
-const POSES: { name: string; pose: Pose }[] = [
-  ...(['down', 'up', 'right'] as const).flatMap((d) =>
-    [0, 1, 2, 3].map((n) => ({ name: `walk_${d}_${n}`, pose: poseOf(d, n) })),
-  ),
-  ...(['down', 'up', 'right'] as const).map((d) => ({
-    name: `idle_${d}`,
-    pose: poseOf(d, 'idle'),
-  })),
-];
+// Item colors are fixed palette entries: 28 to 31 metal, 44 to 47 ochre wood, 26 and 27 violet, 17 and 18 stone, 22 ember.
+const METAL = { edge: 29, blade: 30, tip: 31 };
+const WOOD = { shade: 44, main: 45, lit: 46 };
 
-function frames(draw: (p: Pose) => Img): Record<string, Img> {
-  const out: Record<string, Img> = {};
-  for (const { name, pose } of POSES) out[name] = draw(pose);
+/** Where the hands are. Down and up views show both arms, the profile shows the near arm. */
+function hands(b: BodyType, p: Pose): { main: [number, number]; off: [number, number] } {
+  const g = geo(b);
+  const raised = p.armDy[1] <= -2;
+  if (p.dir === 'right') {
+    const y = (p.stance === 'strike' ? 18 : 20) + p.bob;
+    return { main: [12 + p.armDx, y], off: [g.pt0 - 2, 18 + p.bob] };
+  }
+  return {
+    main: [g.armR, (raised ? 15 : 21) + p.bob + p.armDy[1]],
+    off: [g.armL, 21 + p.bob + p.armDy[0]],
+  };
+}
+
+function swordLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const side = p.dir === 'right';
+  const cx = side ? hx + 1 : hx + 2;
+  const up = p.stance === 'windup' || (p.stance === 'hurt' && !side);
+  im.rect(cx - 1, hy, cx + 1, hy, 2);
+  const blade = (x: number, y: number, last: boolean): void =>
+    im.set(x, y, last ? METAL.tip : METAL.blade);
+  if (side && p.stance === 'strike') {
+    for (let i = 1; i <= 7; i++) blade(cx + i, hy, i === 7);
+    im.rect(cx + 1, hy + 1, cx + 6, hy + 1, METAL.edge);
+  } else if (side && p.stance === 'recover') {
+    for (let i = 1; i <= 5; i++) blade(cx + i, hy + i - 1, i === 5);
+  } else if (up) {
+    for (let i = 1; i <= 7; i++) blade(cx, hy - i, i === 7);
+  } else {
+    for (let i = 1; i <= 7; i++) blade(cx, hy + i, i === 7);
+    im.rect(cx + 1, hy + 2, cx + 1, hy + 6, METAL.edge);
+  }
+  return im;
+}
+
+function staffLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const cx = p.dir === 'right' ? hx + 1 : hx + 2;
+  im.rect(cx, hy - 7, cx, hy + 3, WOOD.main);
+  im.rect(cx, hy - 3, cx, hy - 1, WOOD.lit);
+  im.rect(cx, hy + 1, cx, hy + 3, WOOD.shade);
+  im.rect(cx - 1, hy - 9, cx + 1, hy - 8, 26);
+  im.set(cx, hy - 8, 27);
+  return im;
+}
+
+function shieldLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).off;
+  if (p.dir === 'right') {
+    // Strapped to the far arm: only the rim shows behind the torso.
+    im.rect(hx, hy - 3, hx + 1, hy + 3, METAL.edge);
+    im.rect(hx, hy - 2, hx, hy + 2, 18);
+  } else {
+    im.rect(hx - 3, hy - 5, hx, hy, METAL.edge);
+    im.rect(hx - 2, hy - 4, hx - 1, hy - 1, 18);
+    im.set(hx - 2, hy - 3, 22);
+  }
+  return im;
+}
+
+function shifted(src: Img, dx: number, dy: number): Img {
+  if (dx === 0 && dy === 0) return src;
+  const out = new Img(src.w, src.h);
+  for (let y = 0; y < src.h; y++)
+    for (let x = 0; x < src.w; x++) out.set(x + dx, y + dy, src.get(x, y));
   return out;
 }
 
-const anims = {
-  walk_down: { frames: ['walk_down_0', 'walk_down_1', 'walk_down_2', 'walk_down_3'], fps: 8 },
-  walk_up: { frames: ['walk_up_0', 'walk_up_1', 'walk_up_2', 'walk_up_3'], fps: 8 },
-  walk_right: { frames: ['walk_right_0', 'walk_right_1', 'walk_right_2', 'walk_right_3'], fps: 8 },
-  walk_left: {
-    frames: ['walk_right_0', 'walk_right_1', 'walk_right_2', 'walk_right_3'],
-    fps: 8,
-    flipX: true,
-  },
-  idle_down: { frames: ['idle_down', 'walk_down_1'], fps: 2 },
-  idle_up: { frames: ['idle_up', 'walk_up_1'], fps: 2 },
-  idle_right: { frames: ['idle_right', 'walk_right_1'], fps: 2 },
-  idle_left: { frames: ['idle_right', 'walk_right_1'], fps: 2, flipX: true },
-} as const;
+const POSES: { name: string; pose: Pose }[] = [
+  ...DOLL_DRAWN_DIRS.flatMap((d) =>
+    [0, 1, 2, 3].map((n) => ({ name: `walk_${d}_${n}`, pose: poseOf(d, n) })),
+  ),
+  ...DOLL_DRAWN_DIRS.map((d) => ({ name: `idle_${d}`, pose: poseOf(d, 'idle') })),
+  ...DOLL_DRAWN_DIRS.flatMap((d) =>
+    [0, 1, 2].map((n) => ({ name: `attack_${d}_${n}`, pose: actionPose(d, 'attack', n) })),
+  ),
+  ...DOLL_DRAWN_DIRS.map((d) => ({ name: `hurt_${d}`, pose: actionPose(d, 'hurt', 0) })),
+  ...DOLL_DRAWN_DIRS.flatMap((d) =>
+    [0, 1].map((n) => ({ name: `dodge_${d}_${n}`, pose: actionPose(d, 'dodge', n) })),
+  ),
+];
 
-function layer(id: string, draw: (p: Pose) => Img): SpriteDef {
-  return toSprite(id, 'core', DOLL_ORIGIN, frames(draw), anims);
+/**
+ * Keeps held items inside the margin the composed outline needs (2 px from every canvas edge),
+ * so a long blade at full reach is cut short instead of running off the frame.
+ */
+function clipped(src: Img): Img {
+  const out = new Img(src.w, src.h);
+  for (let y = 2; y < src.h - 2; y++)
+    for (let x = 2; x < src.w - 2; x++) out.set(x, y, src.get(x, y));
+  return out;
+}
+
+function frames(draw: (p: Pose) => Img, clip: boolean): Record<string, Img> {
+  const out: Record<string, Img> = {};
+  for (const { name, pose } of POSES) {
+    const img = shifted(draw(pose), pose.shiftX, pose.shiftY);
+    out[name] = clip ? clipped(img) : img;
+  }
+  return out;
+}
+
+function layer(id: string, draw: (p: Pose) => Img, clip = false): SpriteDef {
+  return toSprite(id, 'core', DOLL_ORIGIN, frames(draw, clip), DOLL_ANIMS);
 }
 
 /** Every doll layer sprite. */
@@ -300,8 +447,11 @@ export function dollLayers(): SpriteDef[] {
     out.push(layer(`doll.body_${b}`, (p) => bodyLayer(b, p)));
     for (const k of ['trousers', 'skirt'] as const)
       out.push(layer(`doll.bottom_${k}_${b}`, (p) => bottomLayer(k, b, p)));
-    for (const k of ['tunic', 'vest'] as const)
+    for (const k of ['tunic', 'vest', 'robe'] as const)
       out.push(layer(`doll.top_${k}_${b}`, (p) => topLayer(k, b, p)));
+    out.push(layer(`doll.main_sword_${b}`, (p) => swordLayer(b, p), true));
+    out.push(layer(`doll.main_staff_${b}`, (p) => staffLayer(b, p), true));
+    out.push(layer(`doll.off_shield_${b}`, (p) => shieldLayer(b, p), true));
   }
   for (const k of ['short', 'long', 'ponytail', 'curly', 'bun'] as const)
     out.push(layer(`doll.hair_${k}`, (p) => hairLayer(k, p)));

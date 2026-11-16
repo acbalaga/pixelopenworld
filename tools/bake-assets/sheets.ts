@@ -219,21 +219,47 @@ export function swatchSheet(): Rgba {
 
 const CHARACTER_FRAMES = ['idle_down', 'idle_up', 'idle_right', 'walk_right_0', 'walk_right_2'];
 
+/** One dark band, for sheets with many frames per row. */
+export const AVATAR_BANDS = [DARK];
+
+/** Every action pose, for the avatar sheet: idle, walk, attack, hurt, dodge in all three drawn views. */
+export const AVATAR_FRAMES = [
+  'idle_down',
+  'walk_down_0',
+  'attack_down_0',
+  'attack_down_1',
+  'attack_down_2',
+  'hurt_down',
+  'dodge_down_1',
+  'idle_up',
+  'attack_up_1',
+  'hurt_up',
+  'idle_right',
+  'walk_right_0',
+  'attack_right_0',
+  'attack_right_1',
+  'attack_right_2',
+  'hurt_right',
+  'dodge_right_1',
+];
+
 /** A short label for a character spec. */
 export function describeDoll(s: DollSpec): string {
-  return `${s.body} ${s.skin} ${s.hair} ${s.hairColor} ${s.top} ${s.topColor} ${s.bottom} ${s.bottomColor}`;
+  return `${s.body} ${s.skin} ${s.hair} ${s.hairColor} ${s.top} ${s.topColor} ${s.bottom} ${s.bottomColor} main ${s.mainHand} off ${s.offHand}`;
 }
 
 /** Contact sheet of composed characters: idle in three directions and two walk poses, light and dark. */
 export function characterSheet(
   entries: readonly DollSpec[],
   defs: ReadonlyMap<string, SpriteDef>,
+  frames: readonly string[] = CHARACTER_FRAMES,
+  bands: readonly (typeof LIGHT)[] = [LIGHT, DARK],
 ): Rgba {
   const SC = 3;
   const cw = 24 * SC + 6;
-  const bandW = CHARACTER_FRAMES.length * cw + 6;
+  const bandW = frames.length * cw + 6;
   const rowH = 32 * SC + 22;
-  const width = 6 + bandW * 2 + 6 + 6;
+  const width = 6 + bandW * bands.length + 6 * bands.length;
   const height = 6 + entries.length * rowH + 6;
   const img = newImage(width, height);
   fill(img, 0, 0, width, height, hex('#9a9488'));
@@ -242,10 +268,10 @@ export function characterSheet(
   entries.forEach((spec, n) => {
     const y = 6 + n * rowH;
     text(img, describeDoll(spec), 6, y, 1, hex('#f1ebdf'));
-    for (const [bi, bg] of [LIGHT, DARK].entries()) {
+    for (const [bi, bg] of bands.entries()) {
       const bx = 6 + bi * (bandW + 6);
       fill(img, bx, y + 8, bandW, 32 * SC + 8, bg);
-      CHARACTER_FRAMES.forEach((frame, fi) => {
+      frames.forEach((frame, fi) => {
         const px = composeFrame(provider, layersFor(spec), frame);
         for (let j = 0; j < 32; j++) {
           for (let i = 0; i < 24; i++) {

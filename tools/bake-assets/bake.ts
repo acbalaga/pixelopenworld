@@ -5,6 +5,8 @@ import { randomDoll } from '../../src/content/dolls/parts';
 import { FONTS } from '../../src/content/fonts';
 import { rng } from '../../src/content/sprites/gen/img';
 import {
+  AVATAR_BANDS,
+  AVATAR_FRAMES,
   characterSheet,
   contactSheet,
   fontSheet,
@@ -113,6 +115,19 @@ export function bakeAll(spritesIn: readonly SpriteDef[], tilesIn: readonly TileD
     out.set(
       'contact-characters.png',
       encodePng(characterSheet(specs, new Map(sprites.map((s) => [s.id, s])))),
+    );
+    // Six distinct avatars in every action pose (M1-01 contact sheet).
+    const avatars = Array.from({ length: 6 }, () => randomDoll(r));
+    out.set(
+      'contact-avatars.png',
+      encodePng(
+        characterSheet(
+          avatars,
+          new Map(sprites.map((s) => [s.id, s])),
+          AVATAR_FRAMES,
+          AVATAR_BANDS,
+        ),
+      ),
     );
   }
   return out;

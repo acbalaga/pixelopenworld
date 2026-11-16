@@ -4,6 +4,9 @@ import { setComp, isAlive } from './kernel/entities';
 import type { Command } from './kernel/commands';
 import { driftSystem } from './systems/drift';
 import type { SimState } from './state';
+import { applyAvatarCommand } from './avatar';
+import { movementSystem } from './systems/movement';
+import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
 export const SYSTEMS: readonly System<SimState>[] = [driftSystem];
@@ -19,4 +22,12 @@ function handle(state: SimState, c: Command): void {
 /** Advances the sim one tick. Returns the number of rejected commands. */
 export function step(state: SimState, input: TickInput): number {
   return tick(state, SYSTEMS, input, handle);
+}
+
+/** Systems for a world with an avatar, in run order. */
+export const WORLD_SYSTEMS: readonly System<SimState>[] = [movementSystem];
+
+/** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */
+export function stepWorld(state: SimState, who: EntityId, input: TickInput): number {
+  return tick(state, WORLD_SYSTEMS, input, (s, c) => applyAvatarCommand(s, who, c));
 }
