@@ -29,17 +29,6 @@ canvas {
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
     env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
-.dev-meter {
-  position: fixed;
-  left: 4px;
-  top: 4px;
-  margin: 0;
-  padding: 2px 4px;
-  font: 11px monospace;
-  color: #e8e8e8;
-  background: rgba(0, 0, 0, 0.6);
-  pointer-events: none;
-}
 .dev-button {
   position: fixed;
   right: 8px;

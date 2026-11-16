@@ -11,6 +11,7 @@ import { loadAtlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
 import { DollFactory } from '../render/dollSprite';
+import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { watchViewport } from '../render/viewport';
 import { moveBox, type Box } from '../sim/systems/collision';
@@ -117,18 +118,24 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let waypoint = 0;
   const speedPx = fly ? (auto ? 10 : 8) : 2.5;
 
-  let meter: { begin(t: number): void; end(t: number, extra?: string): void } | null = null;
+  let meter: DevOverlay | null = null;
   if (import.meta.env.DEV) {
-    void import('../dev/frameMeter').then((m) => {
-      const fm = new m.FrameMeter();
-      fm.show();
-      meter = fm;
+    void import('../dev/overlay').then((m) => {
+      meter = new m.DevOverlay(() => ({
+        entities: 1,
+        drawCalls: renderer.drawCalls,
+        logicalWidth: renderer.width,
+        logicalHeight: renderer.height,
+        scale: vp.current.scale,
+        extra: `chunks ${chunks.length} built ${chunkRenderer.chunksBuilt} | terrain blits ${renderer.terrainBlits}`,
+      }));
     });
   }
 
   let lastFrame = performance.now();
   startBrowserLoop({
     tick: () => {
+      meter?.tickBegin(performance.now());
       prev = { x: box.x, y: box.y };
       let mx = 0;
       let my = 0;
@@ -156,10 +163,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const dy = Math.round(my * speedPx * 256);
       if (fly) box = { ...box, x: box.x + dx, y: box.y + dy };
       else box = moveBox(world, box, dx, dy);
+      meter?.tickEnd(performance.now());
     },
     render: (alpha) => {
       const now = performance.now();
-      meter?.begin(now);
+      meter?.frameBegin(now);
       const dt = now - lastFrame;
       lastFrame = now;
       const fx = (prev.x + (box.x - prev.x) * alpha + W / 2) / 256;
@@ -181,10 +189,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const anim = (moving ? walk : idle)[animIndex[facing]] as number;
       renderer.drawSprite(Layer.Objects, atlas.animFrame(anim, now), px, py, atlas.animFlip(anim));
       renderer.end();
-      meter?.end(
-        performance.now(),
-        `chunks ${chunks.length} built ${chunkRenderer.chunksBuilt} | terrain blits ${renderer.terrainBlits} | calls ${renderer.drawCalls}`,
-      );
+      meter?.frameEnd(performance.now());
     },
   });
 }

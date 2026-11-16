@@ -14,16 +14,18 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "bench": "vitest run --config vitest.bench.config.ts",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:dev",
     "bake": "tsx tools/bake-assets/index.ts",
     "bake:check": "tsx tools/bake-assets/index.ts --check",
-    "e2e": "node tools/stub.mjs e2e",
-    "validate": "tsx tools/bake-assets/index.ts --validate"
+    "e2e": "npm run build && playwright test",
+    "validate": "tsx tools/bake-assets/index.ts --validate",
+    "check:dev": "tsx tools/check-dev-absent.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",
     "@cloudflare/workers-types": "^5.20261116.1",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.63.0",
     "@types/node": "^26.6.6",
     "@types/pngjs": "^6.0.5",
     "eslint": "^10.15.0",
