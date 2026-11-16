@@ -66,8 +66,9 @@ const DARK = PALETTE[0] as string;
 const GOLD = PALETTE[47] as string;
 const HURT = PALETTE[22] as string;
 const LABELS: Record<string, string> = {
-  tech1: '1',
-  tech2: '2',
+  // Technique buttons show what they do: Lunge, Fire (Ember bolt).
+  tech1: 'L',
+  tech2: 'F',
   tech3: '3',
   tech4: '4',
   dodge: 'D',
@@ -220,12 +221,29 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // Scheme button, standing in for the settings screen (M1-06). T on a keyboard.
   const schemeButton = document.createElement('button');
   schemeButton.type = 'button';
-  schemeButton.className = 'dev-button';
+  schemeButton.className = 'scheme-icon';
   schemeButton.id = 'scheme-toggle';
+  const SVG = 'http://www.w3.org/2000/svg';
+  const icon = document.createElementNS(SVG, 'svg');
+  icon.setAttribute('viewBox', '0 0 16 16');
+  const path = document.createElementNS(SVG, 'path');
+  icon.appendChild(path);
+  schemeButton.appendChild(icon);
   const pendingCommands: { type: 'scheme'; scheme: 'flow' | 'classic' }[] = [];
   const syncScheme = (): void => {
     const sc = settings.get().controlScheme;
-    schemeButton.textContent = sc === 'flow' ? 'Flow (tap for Classic)' : 'Classic (tap for Flow)';
+    // Flow is a wave (move and explore). Classic is crossed blades (fight).
+    path.setAttribute(
+      'd',
+      sc === 'flow'
+        ? 'M1 6q2-3 3.5 0t3.5 0 3.5 0 3.5 0M1 11q2-3 3.5 0t3.5 0 3.5 0 3.5 0'
+        : 'M3 3l10 10M13 3L3 13M2 11l3 3M11 2l3 3',
+    );
+    schemeButton.setAttribute(
+      'aria-label',
+      sc === 'flow' ? 'Flow controls. Switch to Classic' : 'Classic controls. Switch to Flow',
+    );
+    schemeButton.title = schemeButton.getAttribute('aria-label') ?? '';
     pendingCommands.push({ type: 'scheme', scheme: sc });
   };
   settings.subscribe(syncScheme);
@@ -391,6 +409,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const my = Math.round(tp.y / 256) - 20;
         renderer.drawRect(Layer.Objects, mx - 2, my - 2, 4, 4, '#ffd96a');
       }
+      for (const id of state.entities.comps.projectile.keys()) {
+        const bp = state.entities.comps.pos[id];
+        if (bp && state.entities.comps.projectile[id]) {
+          const bx = Math.round(bp.x / 256);
+          const by = Math.round(bp.y / 256);
+          renderer.drawRect(Layer.Objects, bx - 3, by - 3, 6, 6, '#c2402a');
+          renderer.drawRect(Layer.Objects, bx - 2, by - 2, 4, 4, '#ef8a2e');
+          renderer.drawRect(Layer.Objects, bx - 1, by - 1, 2, 2, '#ffd96a');
+        }
+      }
       for (const id of state.entities.comps.echo.keys()) {
         const ep = state.entities.comps.pos[id];
         if (ep && state.entities.comps.echo[id])
@@ -432,15 +460,22 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           outline: DARK,
         };
         const held = new Set<string>(input.sampler.keyboard.held());
+        const slotOf: Record<string, number> = { tech1: 0, tech2: 1, tech3: 2, tech4: 3 };
+        const hasTarget = contextTarget(state, who) !== null;
         for (const [id, r] of Object.entries(layout.buttons)) {
           if (id === 'menu' || id === 'bag') continue;
+          // Slots with no technique and a context button with nothing to use are not shown.
+          const slot = slotOf[id];
+          if (slot !== undefined && !afight.slots[slot]) continue;
+          if (id === 'context' && !hasTarget) continue;
           const rect = {
             x: Math.round(r.x * k),
             y: Math.round(r.y * k),
             w: Math.round(r.w * k),
             h: Math.round(r.h * k),
           };
-          drawCanvasButton(renderer, kit, rect, LABELS[id] ?? '?', held.has(id));
+          const cooling = slot !== undefined && (afight.cooldowns[slot] ?? 0) > 0;
+          drawCanvasButton(renderer, kit, rect, LABELS[id] ?? '?', held.has(id) || cooling);
         }
       }
       renderer.end();
