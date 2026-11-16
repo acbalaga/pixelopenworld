@@ -37,7 +37,16 @@ export interface Renderer {
   begin(camX: number, camY: number): void;
   drawRect(layer: LayerId, x: number, y: number, w: number, h: number, color: string): void;
   /** Draws an atlas frame with its origin at world (x, y). Get handles from the atlas once. */
-  drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX?: boolean): void;
+  drawSprite(
+    layer: LayerId,
+    handle: number,
+    x: number,
+    y: number,
+    flipX?: boolean,
+    alpha?: number,
+  ): void;
+  /** Draws a prepared canvas (for example a cached chunk) with its top left at world (x, y). One draw call. */
+  drawBlit(layer: LayerId, source: CanvasImageSource, x: number, y: number): void;
   drawTiles(layer: LayerId, grid: TileGrid): void;
   /** Sorts the Objects layer by y, draws every layer in order, presents with one scaled blit. */
   end(): void;
@@ -55,6 +64,7 @@ class Commands {
   /** Atlas handle for sprites, -1 for rects. */
   handle: number[] = [];
   flip: number[] = [];
+  alpha: number[] = [];
   sortY: number[] = [];
   push(layer: number, x: number, y: number, w: number, h: number, color: string): void {
     const i = this.n++;
@@ -66,9 +76,10 @@ class Commands {
     this.color[i] = color;
     this.handle[i] = -1;
     this.flip[i] = 0;
+    this.alpha[i] = 1;
     this.sortY[i] = y + h;
   }
-  pushSprite(layer: number, handle: number, x: number, y: number, flip: boolean): void {
+  pushSprite(layer: number, handle: number, x: number, y: number, flip: boolean, alpha = 1): void {
     const i = this.n++;
     this.layer[i] = layer;
     this.x[i] = x;
@@ -78,6 +89,7 @@ class Commands {
     this.color[i] = '';
     this.handle[i] = handle;
     this.flip[i] = flip ? 1 : 0;
+    this.alpha[i] = alpha;
     this.sortY[i] = y;
   }
 }
@@ -98,6 +110,10 @@ export class Canvas2DRenderer implements Renderer {
   private camY = 0;
   private scale = 1;
   private atlas: Atlas | null = null;
+  private blits: CanvasImageSource[] = [];
+  private blitCount = 0;
+  /** Chunk blits in the last completed frame. */
+  terrainBlits = 0;
   private byBottomEdge = (a: number, b: number): number => {
     const c = this.cmds;
     return (c.sortY[a] as number) - (c.sortY[b] as number) || a - b;
@@ -139,14 +155,22 @@ export class Canvas2DRenderer implements Renderer {
     this.camY = camY;
     this.cmds.n = 0;
     this.tileCount = 0;
+    this.blitCount = 0;
   }
 
   drawRect(layer: LayerId, x: number, y: number, w: number, h: number, color: string): void {
     this.cmds.push(layer, x, y, w, h, color);
   }
 
-  drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX = false): void {
-    this.cmds.pushSprite(layer, handle, x, y, flipX);
+  drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX = false, alpha = 1): void {
+    this.cmds.pushSprite(layer, handle, x, y, flipX, alpha);
+  }
+
+  drawBlit(layer: LayerId, source: CanvasImageSource, x: number, y: number): void {
+    // Blits are stored with a negative handle: -2 - index into the per-frame source list.
+    this.blits[this.blitCount] = source;
+    this.cmds.pushSprite(layer, -2 - this.blitCount, x, y, false);
+    this.blitCount++;
   }
 
   drawTiles(layer: LayerId, grid: TileGrid): void {
@@ -162,6 +186,7 @@ export class Canvas2DRenderer implements Renderer {
     b.fillRect(0, 0, this.width, this.height);
     if (this.order.length < c.n) this.order = new Int32Array(c.n * 2);
     let calls = 0;
+    let blits = 0;
 
     for (let layer = 0; layer < LAYER_COUNT; layer++) {
       const screenSpace = layer === Layer.Hud;
@@ -185,7 +210,13 @@ export class Canvas2DRenderer implements Renderer {
         const sx = Math.round(c.x[i] as number) - ox;
         const sy = Math.round(c.y[i] as number) - oy;
         if (handle >= 0) {
+          const alpha = c.alpha[i] as number;
+          if (alpha < 1) b.globalAlpha = alpha;
           this.blitSprite(handle, sx, sy, c.flip[i] === 1);
+          if (alpha < 1) b.globalAlpha = 1;
+        } else if (handle <= -2) {
+          b.drawImage(this.blits[-2 - handle] as CanvasImageSource, sx, sy);
+          blits++;
         } else {
           b.fillStyle = c.color[i] as string;
           b.fillRect(sx, sy, c.w[i] as number, c.h[i] as number);
@@ -194,6 +225,7 @@ export class Canvas2DRenderer implements Renderer {
       }
     }
     this.drawCalls = calls;
+    this.terrainBlits = blits;
     this.sctx.drawImage(this.back, 0, 0, this.width * this.scale, this.height * this.scale);
   }
 

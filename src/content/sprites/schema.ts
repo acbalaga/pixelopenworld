@@ -25,6 +25,7 @@ export const tileSchema = z.object({
   frame: z.string(),
   animated: z.boolean().optional(),
   layer: z.enum(['ground', 'detail', 'object', 'overhead']),
+  offset: z.tuple([z.number().int(), z.number().int()]).optional(),
   collision: z.enum(['none', 'full', 'half_top', 'half_bottom', 'water', 'ledge']),
   tags: z.array(z.enum(['flammable', 'diggable', 'climbable'])),
 });

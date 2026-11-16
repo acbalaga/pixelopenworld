@@ -31,14 +31,14 @@ export class FrameMeter {
   }
 
   /** Call at the end of the render callback with `performance.now()`. */
-  end(now: number): void {
+  end(now: number, extra = ''): void {
     this.work[this.i] = now - this.last;
     this.i = (this.i + 1) % N;
     this.filled = Math.min(N, this.filled + 1);
     if (this.el && now - this.shownAt > 500) {
       this.shownAt = now;
       const s = this.stats();
-      this.el.textContent = `${s.fps.toFixed(0)} fps  frame ${s.avgFrameMs.toFixed(1)} ms (p95 ${s.p95FrameMs.toFixed(1)}, max ${s.maxFrameMs.toFixed(1)})  work ${s.avgWorkMs.toFixed(2)} ms`;
+      this.el.textContent = `${s.fps.toFixed(0)} fps  frame ${s.avgFrameMs.toFixed(1)} ms (p95 ${s.p95FrameMs.toFixed(1)}, max ${s.maxFrameMs.toFixed(1)})  work ${s.avgWorkMs.toFixed(2)} ms${extra ? `  ${extra}` : ''}`;
     }
   }
 
