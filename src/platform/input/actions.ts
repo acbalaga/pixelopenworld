@@ -18,6 +18,11 @@ export interface InputRecord {
   move: { x: number; y: number };
   /** 8-way quantization of `move`, or null when idle. */
   moveDir: Direction | null;
+  /**
+   * An analog source (touch stick, gamepad) is at full extent. Holding it counts toward sprint.
+   * Keyboard is never full: it has no analog extent, so it never sprints by holding a key.
+   */
+  full: boolean;
   /** Technique 1 to 4 pressed this sample (index 0 to 3). */
   technique: [boolean, boolean, boolean, boolean];
   /** Technique held (aim) per slot. */
@@ -38,6 +43,7 @@ export function emptyRecord(): InputRecord {
   return {
     move: { x: 0, y: 0 },
     moveDir: null,
+    full: false,
     technique: [false, false, false, false],
     techniqueHeld: [false, false, false, false],
     dodge: null,

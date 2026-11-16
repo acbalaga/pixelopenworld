@@ -1,4 +1,5 @@
 /** Paper doll parts. Data only. Layers are authored once and recolored through ramps. */
+import type { AnimDef } from '../sprites/types';
 
 /** Four palette indices, dark to light. */
 export type Ramp4 = readonly [number, number, number, number];
@@ -41,10 +42,16 @@ export type ClothColor = keyof typeof CLOTH_COLORS;
 
 export const HAIR_STYLES = ['none', 'short', 'long', 'ponytail', 'curly', 'bun'] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
-export const TOP_STYLES = ['tunic', 'vest'] as const;
+export const TOP_STYLES = ['tunic', 'vest', 'robe'] as const;
 export type TopStyle = (typeof TOP_STYLES)[number];
 export const BOTTOM_STYLES = ['trousers', 'skirt'] as const;
 export type BottomStyle = (typeof BOTTOM_STYLES)[number];
+
+/** Held items. They have fixed colors (metal, wood), so they are not recolored. */
+export const MAIN_HANDS = ['none', 'sword', 'staff'] as const;
+export type MainHand = (typeof MAIN_HANDS)[number];
+export const OFF_HANDS = ['none', 'shield'] as const;
+export type OffHand = (typeof OFF_HANDS)[number];
 
 /** One character's look. */
 export interface DollSpec {
@@ -56,6 +63,8 @@ export interface DollSpec {
   topColor: ClothColor;
   bottom: BottomStyle;
   bottomColor: ClothColor;
+  mainHand: MainHand;
+  offHand: OffHand;
 }
 
 /** A layer to draw, with the ramp its recolorable slots map to. Drawn first to last. */
@@ -63,8 +72,10 @@ export interface DollLayerRef {
   id: string;
   ramp: Ramp4;
   /** Slots 4 to 7 are recolored. Skin layers keep their own light/shade logic in the art. */
-  kind: 'body' | 'bottom' | 'top' | 'hair';
+  kind: 'body' | 'bottom' | 'top' | 'hair' | 'main' | 'off';
 }
+
+const ITEM_RAMP: Ramp4 = [28, 29, 30, 31];
 
 /** The ordered layers for a spec. */
 export function layersFor(spec: DollSpec): DollLayerRef[] {
@@ -79,6 +90,11 @@ export function layersFor(spec: DollSpec): DollLayerRef[] {
   ];
   if (spec.hair !== 'none')
     out.push({ id: `doll.hair_${spec.hair}`, ramp: HAIR_COLORS[spec.hairColor], kind: 'hair' });
+  // Items use fixed colors; the ramp is unused but keeps the layer shape uniform.
+  if (spec.offHand !== 'none')
+    out.push({ id: `doll.off_${spec.offHand}_${spec.body}`, ramp: ITEM_RAMP, kind: 'off' });
+  if (spec.mainHand !== 'none')
+    out.push({ id: `doll.main_${spec.mainHand}_${spec.body}`, ramp: ITEM_RAMP, kind: 'main' });
   return out;
 }
 
@@ -107,16 +123,43 @@ export function randomDoll(rand: () => number): DollSpec {
     topColor,
     bottom: pickOf(rand, BOTTOM_STYLES),
     bottomColor: pickOf(rand, Object.keys(CLOTH_COLORS) as ClothColor[]),
+    mainHand: pickOf(rand, MAIN_HANDS),
+    offHand: pickOf(rand, OFF_HANDS),
   };
 }
 
-/** Frame names every layer provides. */
+/** Directions drawn. Left is the right frames mirrored. */
+export const DOLL_DRAWN_DIRS = ['down', 'up', 'right'] as const;
+type DrawnDir = (typeof DOLL_DRAWN_DIRS)[number];
+const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
+
+/** Frame names every layer provides: walk 4, idle 1, attack 3, hurt 1, dodge 2, per drawn direction. */
 export const DOLL_FRAMES: readonly string[] = [
-  ...(['down', 'up', 'right'] as const).flatMap((d) => [0, 1, 2, 3].map((n) => `walk_${d}_${n}`)),
-  'idle_down',
-  'idle_up',
-  'idle_right',
+  ...DOLL_DRAWN_DIRS.flatMap((d) => range(4).map((n) => `walk_${d}_${n}`)),
+  ...DOLL_DRAWN_DIRS.map((d) => `idle_${d}`),
+  ...DOLL_DRAWN_DIRS.flatMap((d) => range(3).map((n) => `attack_${d}_${n}`)),
+  ...DOLL_DRAWN_DIRS.map((d) => `hurt_${d}`),
+  ...DOLL_DRAWN_DIRS.flatMap((d) => range(2).map((n) => `dodge_${d}_${n}`)),
 ];
+
+/**
+ * Animations, in four facings. Left shares the right frames mirrored. Idle is two frames (a slow
+ * breath), walk four, attack three (windup, strike, recover), hurt one, dodge two.
+ */
+export const DOLL_ANIMS: Readonly<Record<string, AnimDef>> = Object.fromEntries(
+  (['down', 'up', 'right', 'left'] as const).flatMap((f) => {
+    const d: DrawnDir = f === 'left' ? 'right' : f;
+    const flip = f === 'left' ? { flipX: true } : {};
+    const seq = (name: string, n: number): string[] => range(n).map((i) => `${name}_${d}_${i}`);
+    return [
+      [`walk_${f}`, { fps: 8, frames: seq('walk', 4), ...flip }],
+      [`idle_${f}`, { fps: 2, frames: [`idle_${d}`, `walk_${d}_1`], ...flip }],
+      [`attack_${f}`, { fps: 12, frames: seq('attack', 3), ...flip }],
+      [`hurt_${f}`, { fps: 4, frames: [`hurt_${d}`], ...flip }],
+      [`dodge_${f}`, { fps: 8, frames: seq('dodge', 2), ...flip }],
+    ] as [string, AnimDef][];
+  }),
+);
 
 export const DOLL_SIZE = [24, 32] as const;
 export const DOLL_ORIGIN = [12, 28] as const;

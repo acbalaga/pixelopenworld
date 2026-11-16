@@ -109,3 +109,35 @@ export function moveBox(grid: CollisionGrid, box: Box, dx: number, dy: number): 
   }
   return { x, y, w, h };
 }
+
+function boxesOverlap(a: Box, b: Box): boolean {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
+/**
+ * Like {@link moveBox}, and also stops flush against `others` (solid entity boxes). A box that
+ * already overlaps another at the start can walk out of it, so nothing gets trapped by a spawn
+ * or a push. Axes resolve X then Y, as in moveBox.
+ */
+export function moveBoxSolid(
+  grid: CollisionGrid,
+  box: Box,
+  dx: number,
+  dy: number,
+  others: readonly Box[],
+): Box {
+  const free = others.filter((o) => !boxesOverlap(box, o));
+  let b = moveBox(grid, box, dx, 0);
+  for (const o of free) {
+    if (!boxesOverlap(b, o)) continue;
+    b = { ...b, x: dx > 0 ? o.x - b.w : o.x + o.w };
+  }
+  const afterX = b;
+  b = moveBox(grid, b, 0, dy);
+  for (const o of free) {
+    if (!boxesOverlap(b, o)) continue;
+    b = { ...b, y: dy > 0 ? o.y - b.h : o.y + o.h };
+  }
+  // Pushing back out of an entity must not leave the box inside a tile on the other axis.
+  return overlapsSolid(grid, b) ? afterX : b;
+}

@@ -1,12 +1,47 @@
 import { createStore, spawn, setComp, type EntityStore } from './kernel/entities';
 import { createEventQueue, type EventQueue } from './kernel/events';
 import { createStreams, int, type RngStreams } from './kernel/rng';
-import { px, type Vec } from './kernel/fixed';
+import { px, type Direction, type Vec } from './kernel/fixed';
+import type { CollisionGrid } from './systems/collision';
 
-/** Components. The demo uses two; real ones arrive with real systems. */
+/** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
+export interface Body {
+  w: number;
+  h: number;
+  /** Blocks other bodies. Avatars and creatures check against solid bodies. */
+  solid: boolean;
+}
+
+/** State of the player-controlled avatar. */
+export interface Avatar {
+  /** Cardinal facing: N, E, S or W (0, 2, 4, 6). */
+  facing: Direction;
+  /** Direction the stick is held in, or null. */
+  intent: Direction | null;
+  /** Stick at full extent. */
+  full: boolean;
+  /** Consecutive ticks at full extent. */
+  fullTicks: number;
+  sprinting: boolean;
+  /** Stamina and its cap. The resource system (M1-04) takes these over. */
+  stamina: number;
+  staminaMax: number;
+  /** Ran dry: sprint is off until stamina recovers. */
+  winded: boolean;
+}
+
+/** Something the context button can use. `kind` names it in content. */
+export interface Interactable {
+  kind: string;
+}
+
+/** Components. `pos` is the feet position of a body, in sub-pixel units. */
 export interface Components {
   pos: Vec;
   vel: Vec;
+  body: Body;
+  avatar: Avatar;
+  interactable: Interactable;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -18,7 +53,18 @@ export interface SimState {
   entities: EntityStore<Components>;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
+  /** Transient. The tile collision source for the current area. Null in demos with no map. */
+  world: CollisionGrid | null;
 }
+
+/** Every component name, in a fixed order. */
+export const COMPONENT_KEYS: readonly (keyof Components)[] = [
+  'pos',
+  'vel',
+  'body',
+  'avatar',
+  'interactable',
+];
 
 /** Demo box size in sub-pixel units. */
 export const DEMO_BOX: Vec = { x: px(1024), y: px(1024) };
@@ -29,8 +75,9 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     seed: seed >>> 0,
     tick: 0,
     rng: createStreams(seed),
-    entities: createStore<Components>(['pos', 'vel']),
+    entities: createStore<Components>(COMPONENT_KEYS),
     events: createEventQueue(),
+    world: null,
   };
   for (let i = 0; i < entityCount; i++) {
     const id = spawn(state.entities);
@@ -56,7 +103,7 @@ function canonical(v: unknown): string {
     .join(',')}}`;
 }
 
-function persistent(state: SimState): Omit<SimState, 'events'> {
+function persistent(state: SimState): Omit<SimState, 'events' | 'world'> {
   return {
     seed: state.seed,
     tick: state.tick,
@@ -71,8 +118,8 @@ export function serializeState(state: SimState): string {
 }
 
 /** Rebuilds a state from {@link serializeState} output. Round trip is exact. */
-export function deserializeState(text: string): SimState {
-  const raw = JSON.parse(text) as Omit<SimState, 'events'>;
+export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
+  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world'>;
   if (
     typeof raw?.tick !== 'number' ||
     typeof raw.seed !== 'number' ||
@@ -81,7 +128,7 @@ export function deserializeState(text: string): SimState {
   ) {
     throw new Error('malformed sim state');
   }
-  return { ...raw, events: createEventQueue() };
+  return { ...raw, events: createEventQueue(), world };
 }
 
 /** Stable 53-bit hash of the saved state, as 14 hex chars. For tests and save checks. */

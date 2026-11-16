@@ -1,7 +1,12 @@
 import { isDirection, type Direction } from './fixed';
 
 /** Commands are the only way the outside changes the sim. */
-export type Command = { type: 'move'; dir: Direction | null };
+export type Command = {
+  type: 'move';
+  dir: Direction | null;
+  /** Stick held at full extent. Sprint starts after it has been held long enough. */
+  full?: boolean;
+};
 
 /** Result of validating a raw command. */
 export type Validated = { ok: true; command: Command } | { ok: false; reason: string };
@@ -12,8 +17,17 @@ export function validateCommand(raw: unknown): Validated {
   const r = raw as Record<string, unknown>;
   switch (r.type) {
     case 'move':
+      if (r.full !== undefined && typeof r.full !== 'boolean')
+        return { ok: false, reason: 'bad full flag' };
       if (r.dir === null) return { ok: true, command: { type: 'move', dir: null } };
-      if (isDirection(r.dir)) return { ok: true, command: { type: 'move', dir: r.dir } };
+      if (isDirection(r.dir))
+        return {
+          ok: true,
+          command:
+            r.full === true
+              ? { type: 'move', dir: r.dir, full: true }
+              : { type: 'move', dir: r.dir },
+        };
       return { ok: false, reason: 'bad direction' };
     default:
       return { ok: false, reason: 'unknown command type' };

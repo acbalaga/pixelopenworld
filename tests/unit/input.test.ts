@@ -218,9 +218,25 @@ describe('sources share one action layer', () => {
     const kr = k.sample(0);
     const tr = ts.sample(10);
     expect(toCommands(kr, null)).toEqual([{ type: 'move', dir: Dir.E }]);
-    expect(toCommands(tr, null)).toEqual([{ type: 'move', dir: Dir.E }]);
-    expect(toCommands(tr, Dir.E)).toEqual([]);
+    // Touch at full extent also reports it (sprint hold). Keyboard has no extent.
+    expect(toCommands(tr, null)).toEqual([{ type: 'move', dir: Dir.E, full: true }]);
+    expect(toCommands(tr, Dir.E, true)).toEqual([]);
     expect(g).toBeDefined();
+  });
+
+  it('touch and gamepad at full extent report full, keyboard never does', () => {
+    const k = sampler();
+    k.keyboard.keyDown('KeyD');
+    expect(k.sample(0).full).toBe(false);
+    pad.current = { axes: [1, 0], buttons: [] };
+    expect(sampler().sample(0).full).toBe(true);
+    pad.current = { axes: [0.5, 0], buttons: [] };
+    expect(sampler().sample(0).full).toBe(false);
+    pad.current = null;
+    const t = mk();
+    t.down(1, 100, 600, 0);
+    t.move(1, 200, 600);
+    expect(new InputSampler(t).sample(10).full).toBe(true);
   });
 });
 

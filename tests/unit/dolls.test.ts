@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   BODY_TYPES,
   CLOTH_COLORS,
+  DOLL_ANIMS,
   DOLL_FRAMES,
   HAIR_COLORS,
   HAIR_STYLES,
   SKIN_TONES,
+  TOP_STYLES,
   layersFor,
   randomDoll,
   type DollSpec,
@@ -32,6 +34,8 @@ const base: DollSpec = {
   topColor: 'blue',
   bottom: 'trousers',
   bottomColor: 'brown',
+  mainHand: 'none',
+  offHand: 'none',
 };
 const compose = (spec: DollSpec, frame = 'idle_down'): Uint8Array =>
   composeFrame(fromDefs, layersFor(spec), frame);
@@ -71,6 +75,46 @@ describe('doll composition', () => {
         expect(compose({ ...base, topColor: c as DollSpec['topColor'] }).join()).not.toBe(ref);
     expect(compose({ ...base, top: 'vest' }).join()).not.toBe(ref);
     expect(compose({ ...base, bottom: 'skirt' }).join()).not.toBe(ref);
+    expect(compose({ ...base, top: 'robe' }).join()).not.toBe(ref);
+    expect(compose({ ...base, mainHand: 'sword' }).join()).not.toBe(ref);
+    expect(compose({ ...base, mainHand: 'staff' }).join()).not.toBe(ref);
+    expect(compose({ ...base, offHand: 'shield' }).join()).not.toBe(ref);
+  });
+
+  it('attack, hurt and dodge frames differ from idle and from each other, in every drawn view', () => {
+    const armed: DollSpec = { ...base, mainHand: 'sword', offHand: 'shield' };
+    for (const d of ['down', 'up', 'right']) {
+      const frames = [
+        `idle_${d}`,
+        `attack_${d}_0`,
+        `attack_${d}_1`,
+        `attack_${d}_2`,
+        `hurt_${d}`,
+        `dodge_${d}_0`,
+        `dodge_${d}_1`,
+      ];
+      const pics = frames.map((f) => compose(armed, f).join());
+      expect(new Set(pics).size).toBe(frames.length);
+    }
+  });
+
+  it('a held item moves with the attack: the sword frames differ between windup and strike', () => {
+    const sword: DollSpec = { ...base, mainHand: 'sword' };
+    for (const d of ['down', 'right']) {
+      expect(compose(sword, `attack_${d}_0`).join()).not.toBe(
+        compose(sword, `attack_${d}_1`).join(),
+      );
+    }
+  });
+
+  it('provides the animations the avatar needs in four facings', () => {
+    for (const f of ['down', 'up', 'left', 'right'])
+      for (const a of ['idle', 'walk', 'attack', 'hurt', 'dodge'])
+        expect(DOLL_ANIMS[`${a}_${f}`], `${a}_${f}`).toBeDefined();
+    expect(DOLL_ANIMS.attack_down?.frames).toHaveLength(3);
+    expect(DOLL_ANIMS.dodge_up?.frames).toHaveLength(2);
+    expect(DOLL_ANIMS.hurt_left?.frames).toHaveLength(1);
+    expect(DOLL_ANIMS.attack_left?.flipX).toBe(true);
   });
 
   it('has an outline in the darkest neutral around the figure and never touches the canvas edge', () => {
@@ -125,7 +169,7 @@ describe('randomDoll', () => {
     expect(seen.body.size).toBe(BODY_TYPES.length);
     expect(seen.hair.size).toBe(HAIR_STYLES.length);
     expect(seen.skin.size).toBe(Object.keys(SKIN_TONES).length);
-    expect(seen.top.size).toBe(2);
+    expect(seen.top.size).toBe(TOP_STYLES.length);
     expect(seen.bottom.size).toBe(2);
   });
 

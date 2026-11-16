@@ -5,6 +5,9 @@ import { GamepadState, type PadSnapshot } from './gamepad';
 import { KeyboardState } from './keyboard';
 import { TouchController } from './touch';
 
+/** Stick magnitude at or above this counts as full extent (sprint hold). */
+const FULL_EXTENT = 0.95;
+
 const TECH: ButtonId[] = ['tech1', 'tech2', 'tech3', 'tech4'];
 
 /** Merges touch, keyboard and gamepad into one {@link InputRecord} per sample. */
@@ -30,6 +33,7 @@ export class InputSampler {
       Math.hypot(s.x, s.y) > Math.hypot(best.x, best.y) ? s : best,
     );
     r.moveDir = quantizeDir(r.move.x, r.move.y, INPUT_TUNABLES.directionThreshold);
+    r.full = r.moveDir !== null && r.move !== k && Math.hypot(r.move.x, r.move.y) >= FULL_EXTENT;
 
     const pressed = new Set<ButtonId>([
       ...t.buttonsPressed,
@@ -55,8 +59,18 @@ export class InputSampler {
 /**
  * Turns a record into sim commands. The sim never sees DOM events or this record's source.
  * Only commands the sim understands today are produced. Others arrive with their systems.
+ * `prevDir` and `prevFull` are what the last tick sent; a command is produced only on change.
  */
-export function toCommands(record: InputRecord, prevDir: number | null): Command[] {
-  if (record.moveDir === prevDir) return [];
-  return [{ type: 'move', dir: record.moveDir }];
+export function toCommands(
+  record: InputRecord,
+  prevDir: number | null,
+  prevFull = false,
+): Command[] {
+  const full = record.full;
+  if (record.moveDir === prevDir && full === prevFull) return [];
+  return [
+    full
+      ? { type: 'move', dir: record.moveDir, full: true }
+      : { type: 'move', dir: record.moveDir },
+  ];
 }
