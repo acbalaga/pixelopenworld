@@ -61,6 +61,7 @@ for (const sp of TREE_SPECIES) {
       sprite: `prop.tree_${sp}_${v}_canopy`,
       frame: 'base',
       layer: 'overhead',
+      offset: [0, -8],
       collision: 'none',
       tags,
     });

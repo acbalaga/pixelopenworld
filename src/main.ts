@@ -1,13 +1,17 @@
 import './style.css';
 import { startScene } from './demo/scene';
 import { startUiDemo } from './demo/ui';
+import { startWorldDemo } from './demo/world';
 
 function start(): void {
   const el = document.getElementById('game');
   if (!(el instanceof HTMLCanvasElement)) throw new Error('canvas missing');
-  // `?scene=ui` is the M0-09 UI demo. The default is the drift scene.
-  if (new URLSearchParams(location.search).get('scene') === 'ui') void startUiDemo(el);
-  else void startScene(el);
+  // `?scene=drift` is the M0-05 drift scene (many moving rects), `?scene=ui` the M0-09 UI demo.
+  // The default is the world demo.
+  const scene = new URLSearchParams(location.search).get('scene');
+  if (scene === 'drift') void startScene(el);
+  else if (scene === 'ui') void startUiDemo(el);
+  else void startWorldDemo(el);
 }
 
 start();

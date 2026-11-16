@@ -13,6 +13,7 @@ import {
   treeSheet,
 } from './sheets';
 import { validateDefs } from './validate';
+import { bakeWorld } from './world';
 
 /** Output files by name. Values are bytes or text. */
 export type BakeOutput = Map<string, Uint8Array | string>;
@@ -105,6 +106,7 @@ export function bakeAll(spritesIn: readonly SpriteDef[], tilesIn: readonly TileD
   if (panel)
     for (const f of Object.keys(panel.frames))
       out.set(`ui-panel-${f}.png`, encodePng(renderFrame(panel, f)));
+  for (const [name, bytes] of bakeWorld()) out.set(name, bytes);
   if (sprites.some((s) => s.id.startsWith('doll.'))) {
     const r = rng(2024);
     const specs = Array.from({ length: 18 }, () => randomDoll(r));

@@ -38,6 +38,8 @@ export interface TileDef {
   frame: string;
   animated?: boolean;
   layer: TileLayer;
+  /** Pixels to shift the sprite from the tile anchor (bottom center of the tile). */
+  offset?: readonly [number, number];
   collision: TileCollision;
   tags: readonly ('flammable' | 'diggable' | 'climbable')[];
 }
