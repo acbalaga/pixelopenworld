@@ -19,13 +19,13 @@ const good: SpriteDef = {
 const with_ = (patch: Partial<SpriteDef>): SpriteDef => ({ ...good, ...patch });
 
 describe('palette', () => {
-  it('has 32 colors in 8 ramps of 4, all valid hex, no duplicates', () => {
-    expect(PALETTE).toHaveLength(32);
-    expect(new Set(PALETTE).size).toBe(32);
-    expect(ALL_RAMPS).toHaveLength(8);
+  it('has 48 colors in 12 ramps of 4, all valid hex, no duplicates', () => {
+    expect(PALETTE).toHaveLength(48);
+    expect(new Set(PALETTE).size).toBe(48);
+    expect(ALL_RAMPS).toHaveLength(12);
     for (const c of PALETTE) expect(c).toMatch(/^#[0-9a-f]{6}$/);
     expect(ALL_RAMPS.flatMap((r) => r.indices).sort((a, b) => a - b)).toEqual([
-      ...Array(32).keys(),
+      ...Array(48).keys(),
     ]);
   });
 
@@ -61,10 +61,10 @@ describe('validation', () => {
   });
 
   it('out-of-palette index names sprite, frame and row', () => {
-    const e = validateDefs([with_({ key: { '.': null, a: 40 } })], []);
+    const e = validateDefs([with_({ key: { '.': null, a: 60 } })], []);
     expect(
       e.some((m) =>
-        m.startsWith("sprite test.thing frame f0 row 0: character 'a' maps to palette index 40"),
+        m.startsWith("sprite test.thing frame f0 row 0: character 'a' maps to palette index 60"),
       ),
     ).toBe(true);
   });
@@ -143,7 +143,7 @@ describe('runtime atlas', () => {
   const atlas = new Atlas(m, { core: {} as CanvasImageSource });
 
   it('resolves handles and rejects unknown names', () => {
-    const h = atlas.frame('char.placeholder_humanoid', 'walk_down_0');
+    const h = atlas.frame('doll.body_a', 'walk_down_0');
     expect(atlas.width(h)).toBe(24);
     expect(atlas.height(h)).toBe(32);
     expect(atlas.originX(h)).toBe(12);
@@ -152,13 +152,53 @@ describe('runtime atlas', () => {
   });
 
   it('plays animations by time and loops', () => {
-    const walk = atlas.anim('char.placeholder_humanoid', 'walk_down');
+    const walk = atlas.anim('doll.body_a', 'walk_down');
     const f = (ms: number): number => atlas.animFrame(walk, ms);
-    expect(f(0)).toBe(atlas.frame('char.placeholder_humanoid', 'walk_down_0'));
-    expect(f(125)).toBe(atlas.frame('char.placeholder_humanoid', 'walk_down_1'));
-    expect(f(375)).toBe(atlas.frame('char.placeholder_humanoid', 'walk_down_3'));
+    expect(f(0)).toBe(atlas.frame('doll.body_a', 'walk_down_0'));
+    expect(f(125)).toBe(atlas.frame('doll.body_a', 'walk_down_1'));
+    expect(f(375)).toBe(atlas.frame('doll.body_a', 'walk_down_3'));
     expect(f(500)).toBe(f(0));
     expect(atlas.animFlip(walk)).toBe(false);
-    expect(atlas.animFlip(atlas.anim('char.placeholder_humanoid', 'walk_left'))).toBe(true);
+    expect(atlas.animFlip(atlas.anim('doll.body_a', 'walk_left'))).toBe(true);
+  });
+});
+
+describe('palette extension keeps the approved colors', () => {
+  it('indices 0 to 31 are the colors approved first', () => {
+    const approved = [
+      '#1a1614',
+      '#4a423e',
+      '#a89f94',
+      '#f1ebdf',
+      '#4a2a2c',
+      '#8a5a3b',
+      '#c68a58',
+      '#efc08c',
+      '#1f3d3a',
+      '#2f6b3a',
+      '#5c9a3f',
+      '#a6c75a',
+      '#1f2f6b',
+      '#2f5fa8',
+      '#4f95d0',
+      '#9fd4ea',
+      '#34374a',
+      '#5b5f73',
+      '#8c8d96',
+      '#c4c0b6',
+      '#6e1f2a',
+      '#c2402a',
+      '#ef8a2e',
+      '#ffd96a',
+      '#3b1f5e',
+      '#6d3fa8',
+      '#a56bdb',
+      '#dcb4f5',
+      '#2c3a47',
+      '#5f7a8a',
+      '#9db8c4',
+      '#e4f0f2',
+    ];
+    expect(PALETTE.slice(0, 32)).toEqual(approved);
   });
 });

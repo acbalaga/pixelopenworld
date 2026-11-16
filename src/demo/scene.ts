@@ -1,20 +1,24 @@
-// Temporary demo scene. Real world rendering arrives with M0-06 and M0-07.
+// Temporary demo scene. Real world rendering arrives with M0-07.
+import manifest from '../../baked/manifest.json';
+import coreUrl from '../../baked/atlas-core.png?url';
+import { randomDoll, type DollSpec } from '../content/dolls/parts';
+import { BIOMES, type Biome, type Weighted } from '../content/nature/biomes';
 import { attachInput } from '../platform/input/dom';
 import { toCommands } from '../platform/input/sampler';
 import { startBrowserLoop } from '../platform/loop';
+import { loadAtlas, type Atlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
+import { DollFactory } from '../render/dollSprite';
 import { Interpolator } from '../render/interp';
-import { Canvas2DRenderer, Layer, type TileGrid } from '../render/renderer';
+import { Canvas2DRenderer, Layer, type LayerId, type TileGrid } from '../render/renderer';
 import { watchViewport } from '../render/viewport';
-import { loadAtlas, type Manifest } from '../render/atlas';
-import manifest from '../../baked/manifest.json';
-import coreUrl from '../../baked/atlas-core.png?url';
 import { setComp } from '../sim/kernel/entities';
 import { createDemoState, DEMO_BOX } from '../sim/state';
 import { step } from '../sim/step';
 
 const TILE = 16;
 const KIND = { grass0: 0, grass1: 1, grass2: 2, dirt: 3, water: 4 } as const;
+const WORLD = DEMO_BOX.x / 256;
 
 function kindAt(c: number, r: number): number {
   if (c >= 40 && c <= 51 && r >= 40 && r <= 49) return KIND.water;
@@ -31,22 +35,93 @@ function groundGrid(frameOf: (kind: number) => number): TileGrid {
   return { cols, rows, size: TILE, tiles, frameOf, x: 0, y: 0 };
 }
 
-/** Deterministic scatter of props, away from the start point. */
-function scatter(count: number, seed: number): { x: number; y: number }[] {
-  const out: { x: number; y: number }[] = [];
-  let s = seed;
-  while (out.length < count) {
+/** Biome by quadrant, with a wasteland patch in the north east corner. */
+function biomeAt(x: number, y: number): Biome {
+  if (x > 800 && y < 200) return BIOMES.wasteland;
+  if (x < WORLD / 2) return y < WORLD / 2 ? BIOMES.temperate : BIOMES.autumn_grove;
+  return y < WORLD / 2 ? BIOMES.pine_forest : BIOMES.blossom_grove;
+}
+
+interface Prop {
+  layer: LayerId;
+  handle: number;
+  x: number;
+  y: number;
+  /** Second sprite for trees: the canopy, drawn overhead. */
+  canopy?: number;
+}
+
+function lcg(seed: number): () => number {
+  let s = Math.imul(seed >>> 0, 2654435761) >>> 0;
+  for (let i = 0; i < 8; i++) s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+  return () => {
     s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    const x = 40 + (s % 940);
-    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    const y = 40 + (s % 940);
-    const c = Math.floor(x / TILE);
-    const r = Math.floor(y / TILE);
-    const k = kindAt(c, r);
-    if (k === KIND.water || k === KIND.dirt) continue;
-    if (Math.hypot(x - 512, y - 512) < 60) continue;
-    out.push({ x, y });
+    return s / 4294967296;
+  };
+}
+
+function weighted<T>(r: () => number, table: Weighted<T>): T {
+  const total = table.reduce((s, [, w]) => s + w, 0);
+  let roll = r() * total;
+  for (const [item, w] of table) {
+    roll -= w;
+    if (roll < 0) return item;
   }
+  return (table[table.length - 1] as readonly [T, number])[0];
+}
+
+/** Seeded scatter by biome: species and variant by seed, never on water, road or the start. */
+function scatterProps(atlas: Atlas, seed: number): Prop[] {
+  const r = lcg(seed);
+  const out: Prop[] = [];
+  const free = (x: number, y: number): boolean => {
+    const k = kindAt(Math.floor(x / TILE), Math.floor(y / TILE));
+    return k !== KIND.water && k !== KIND.dirt && Math.hypot(x - 512, y - 512) > 70;
+  };
+  const place = (count: number, make: (b: Biome) => Prop | null): void => {
+    for (let i = 0; i < count; i++) {
+      const x = 24 + r() * (WORLD - 48);
+      const y = 40 + r() * (WORLD - 60);
+      if (!free(x, y)) continue;
+      const p = make(biomeAt(x, y));
+      if (p) out.push({ ...p, x: Math.round(x), y: Math.round(y) });
+    }
+  };
+  const area = (WORLD * WORLD) / 10000;
+  place(Math.round(area * 0.55 * 4), (b) => {
+    if (r() > b.treeDensity / 0.7) return null;
+    const sp = weighted(r, b.trees);
+    const v = Math.floor(r() * 3);
+    return {
+      layer: Layer.Objects,
+      handle: atlas.frame(`prop.tree_${sp}_${v}_trunk`, 'base'),
+      canopy: atlas.frame(`prop.tree_${sp}_${v}_canopy`, 'base'),
+      x: 0,
+      y: 0,
+    };
+  });
+  place(Math.round(area * 0.5 * 4), (b) => {
+    if (r() > b.bushDensity / 0.55) return null;
+    const k = weighted(r, b.bushes);
+    return {
+      layer: Layer.Objects,
+      handle: atlas.frame(`prop.bush_${k}_${Math.floor(r() * 3)}`, 'base'),
+      x: 0,
+      y: 0,
+    };
+  });
+  place(Math.round(area * 1.6 * 4), (b) => {
+    if (b.flowers.length === 0 || r() > b.flowerDensity / 1.6) return null;
+    const c = weighted(r, b.flowers);
+    return {
+      layer: Layer.Detail,
+      handle: atlas.frame(`prop.flower_${c}_${Math.floor(r() * 2)}`, 'base'),
+      x: 0,
+      y: 0,
+    };
+  });
+  const rock = atlas.frame('prop.rock', 'base');
+  place(60, () => ({ layer: Layer.Objects, handle: rock, x: 0, y: 0 }));
   return out;
 }
 
@@ -57,50 +132,77 @@ function facingOf(dir: number): keyof typeof FACING {
   return dir >= 1 && dir <= 3 ? 'E' : 'W';
 }
 
-/** Runs the demo: entity 0 (yellow) follows input, the rest drift. `?n=500` sets the count. */
+function animSet(
+  atlas: Atlas,
+  id: string,
+  prefix: 'walk' | 'idle',
+): Record<'up' | 'down' | 'right' | 'left', number> {
+  return {
+    up: atlas.anim(id, `${prefix}_up`),
+    down: atlas.anim(id, `${prefix}_down`),
+    right: atlas.anim(id, `${prefix}_right`),
+    left: atlas.anim(id, `${prefix}_left`),
+  };
+}
+
+function describe(s: DollSpec): string {
+  return `body ${s.body}, ${s.skin} skin, ${s.hair} ${s.hairColor} hair, ${s.topColor} ${s.top}, ${s.bottomColor} ${s.bottom}`;
+}
+
+/** Runs the demo: entity 0 follows input, the rest drift. `?n=500` sets the count. */
 export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
   const atlas = await loadAtlas(manifest as Manifest, { core: coreUrl });
   const n = Number(new URLSearchParams(location.search).get('n')) || 30;
   const state = createDemoState(1, n);
+  setComp(state.entities, 0, 'pos', { x: 512 * 256, y: 512 * 256 });
   setComp(state.entities, 0, 'vel', { x: 0, y: 0 });
-  const worldW = DEMO_BOX.x / 256;
-  const worldH = DEMO_BOX.y / 256;
 
   const renderer = new Canvas2DRenderer(canvas);
-  const camera = new Camera(worldW, worldH);
+  const camera = new Camera(WORLD, WORLD);
   const interp = new Interpolator();
   renderer.setAtlas(atlas);
-  const tileFrames = [
-    atlas.frame('tile.grass_0', 'base'),
-    atlas.frame('tile.grass_1', 'base'),
-    atlas.frame('tile.grass_2', 'base'),
-    atlas.frame('tile.dirt', 'base'),
-  ];
+  const tileFrames = ['tile.grass_0', 'tile.grass_1', 'tile.grass_2', 'tile.dirt'].map((id) =>
+    atlas.frame(id, 'base'),
+  );
   const waterAnim = atlas.anim('tile.water', 'flow');
   let clock = 0;
   const ground = groundGrid((k) =>
     k === KIND.water ? atlas.animFrame(waterAnim, clock) : (tileFrames[k] as number),
   );
-  const trunk = atlas.frame('prop.tree_trunk', 'base');
-  const canopy = atlas.frame('prop.tree_canopy', 'base');
-  const rock = atlas.frame('prop.rock', 'base');
-  const trees = scatter(28, 11);
-  const rocks = scatter(14, 29);
-  const hum = 'char.placeholder_humanoid';
-  const walk = {
-    up: atlas.anim(hum, 'walk_up'),
-    down: atlas.anim(hum, 'walk_down'),
-    right: atlas.anim(hum, 'walk_right'),
-    left: atlas.anim(hum, 'walk_left'),
+  const props = scatterProps(atlas, 11);
+
+  // Characters: the player, plus a row of villagers standing near the start to show variety.
+  const dolls = new DollFactory(atlas, manifest as Manifest);
+  const pick = lcg(Math.floor(Math.random() * 1e9));
+  let look = randomDoll(pick);
+  const player = dolls.create('char.player', look);
+  const walk = animSet(atlas, 'char.player', 'walk');
+  const idle = animSet(atlas, 'char.player', 'idle');
+  const villagers = Array.from({ length: 10 }, (_, i) => {
+    const id = `char.villager_${i}`;
+    dolls.create(id, randomDoll(lcg(100 + i * 7)));
+    return { anim: atlas.anim(id, 'idle_down'), x: 452 + i * 14, y: 470 + (i % 2) * 6 };
+  });
+
+  const label = document.createElement('div');
+  label.className = 'dev-label';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'dev-button';
+  button.textContent = 'Randomize character (R)';
+  const reroll = (): void => {
+    look = randomDoll(pick);
+    player.draw(look);
+    label.textContent = describe(look);
   };
-  const idle = {
-    up: atlas.anim(hum, 'idle_up'),
-    down: atlas.anim(hum, 'idle_down'),
-    right: atlas.anim(hum, 'idle_right'),
-    left: atlas.anim(hum, 'idle_left'),
-  };
-  let facing: keyof typeof FACING = 'S';
-  let moving = false;
+  button.addEventListener('click', reroll);
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyR' && !e.repeat) reroll();
+  });
+  label.textContent = describe(look);
+  document.body.appendChild(button);
+  document.body.appendChild(label);
+
   const probe = document.getElementById('safe-probe');
   if (!probe) throw new Error('safe-area probe missing');
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
@@ -112,8 +214,10 @@ export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
 
   const input = attachInput(canvas, { leftHanded: () => false });
   let prevDir: number | null = null;
+  let facing: keyof typeof FACING = 'S';
+  let moving = false;
 
-  let meter: { begin(t: number): void; end(t: number): void; stats(): unknown } | null = null;
+  let meter: { begin(t: number): void; end(t: number): void } | null = null;
   if (import.meta.env.DEV) {
     void import('../dev/frameMeter').then((m) => {
       const fm = new m.FrameMeter();
@@ -153,8 +257,7 @@ export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
         const x = Math.round(interp.x(id, p.x, alpha));
         const y = Math.round(interp.y(id, p.y, alpha));
         if (id === 0) {
-          const set = moving ? walk : idle;
-          const anim = set[FACING[facing]];
+          const anim = (moving ? walk : idle)[FACING[facing]];
           renderer.drawSprite(
             Layer.Objects,
             atlas.animFrame(anim, now),
@@ -162,13 +265,16 @@ export async function startScene(canvas: HTMLCanvasElement): Promise<void> {
             y,
             atlas.animFlip(anim),
           );
-        } else renderer.drawRect(Layer.Objects, x - 3, y - 6, 6, 6, '#e8e8e8');
+        } else {
+          renderer.drawRect(Layer.Objects, x - 3, y - 6, 6, 6, '#e8e8e8');
+        }
       }
-      for (const t of trees) {
-        renderer.drawSprite(Layer.Objects, trunk, t.x, t.y);
-        renderer.drawSprite(Layer.Overhead, canopy, t.x, t.y - 8);
+      for (const v of villagers)
+        renderer.drawSprite(Layer.Objects, atlas.animFrame(v.anim, now), v.x, v.y);
+      for (const p of props) {
+        renderer.drawSprite(p.layer, p.handle, p.x, p.y);
+        if (p.canopy !== undefined) renderer.drawSprite(Layer.Overhead, p.canopy, p.x, p.y - 8);
       }
-      for (const r of rocks) renderer.drawSprite(Layer.Objects, rock, r.x, r.y);
       renderer.end();
       meter?.end(performance.now());
     },

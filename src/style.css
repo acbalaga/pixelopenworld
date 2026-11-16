@@ -40,3 +40,30 @@ canvas {
   background: rgba(0, 0, 0, 0.6);
   pointer-events: none;
 }
+.dev-button {
+  position: fixed;
+  right: 8px;
+  top: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  font:
+    13px system-ui,
+    sans-serif;
+  color: #f1ebdf;
+  background: #3b2220;
+  border: 2px solid #f1ebdf;
+  border-radius: 0;
+}
+.dev-label {
+  position: fixed;
+  left: 4px;
+  bottom: 4px;
+  max-width: 70vw;
+  padding: 2px 6px;
+  font:
+    12px system-ui,
+    sans-serif;
+  color: #f1ebdf;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}

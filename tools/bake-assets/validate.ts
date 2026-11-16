@@ -81,6 +81,6 @@ export function validateDefs(sprites: readonly SpriteDef[], tiles: readonly Tile
     }
   }
 
-  if (PALETTE.length !== 32) errors.push(`palette has ${PALETTE.length} colors, expected 32`);
+  if (PALETTE.length !== 48) errors.push(`palette has ${PALETTE.length} colors, expected 48`);
   return errors;
 }

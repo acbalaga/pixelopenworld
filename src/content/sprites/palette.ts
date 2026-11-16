@@ -1,4 +1,8 @@
-/** The master palette. 32 colors, defined once. Sprites and tiles use only these indices. */
+/**
+ * The master palette. 48 colors, defined once. Sprites and tiles use only these indices.
+ * Indices 0 to 31 were approved first and never change. 32 to 47 extend it (more skin tones,
+ * rose, ochre) for characters, blossoms and autumn.
+ */
 
 /** One named ramp of four steps, dark to light. */
 export interface Ramp {
@@ -51,6 +55,26 @@ export const PALETTE: readonly string[] = [
   '#5f7a8a',
   '#9db8c4',
   '#e4f0f2',
+  // 32-35 deep skin
+  '#3b2220',
+  '#6b4130',
+  '#9a6a48',
+  '#c8946a',
+  // 36-39 pale skin
+  '#5a3a3c',
+  '#b57a62',
+  '#e0a888',
+  '#f8d6b8',
+  // 40-43 rose
+  '#5e1f4a',
+  '#a33a6e',
+  '#d9689a',
+  '#f5b0c8',
+  // 44-47 ochre (gold: blond hair, autumn leaves, sand, wheat)
+  '#6b4a14',
+  '#b8861e',
+  '#e8b83a',
+  '#fbe58a',
 ];
 
 /** The neutral ramp, for the swatch sheet. */
@@ -60,7 +84,7 @@ export const NEUTRALS: Ramp = {
   use: 'Outlines (index 0 is the darkest neutral), UI text and panels, highlights of last resort.',
 };
 
-/** The seven hue ramps. */
+/** The eleven hue ramps. */
 export const RAMPS: readonly Ramp[] = [
   { name: 'skin_wood', indices: [4, 5, 6, 7], use: 'Skin tones, hair, wood, dirt, leather.' },
   {
@@ -77,6 +101,14 @@ export const RAMPS: readonly Ramp[] = [
     use: 'Magic, Undercroft, night tint, rare items.',
   },
   { name: 'metal', indices: [28, 29, 30, 31], use: 'Weapons, armor, tools, Waystones.' },
+  { name: 'skin_deep', indices: [32, 33, 34, 35], use: 'Deep skin tones. Step 3 is the lit base.' },
+  { name: 'skin_pale', indices: [36, 37, 38, 39], use: 'Pale skin tones. Step 3 is the lit base.' },
+  { name: 'rose', indices: [40, 41, 42, 43], use: 'Blossoms, rose dyes, pink hair, berries.' },
+  {
+    name: 'ochre',
+    indices: [44, 45, 46, 47],
+    use: 'Blond hair, autumn leaves, gold dyes, sand, wheat.',
+  },
 ];
 
 /** The ramp in which every palette index sits, for review tooling. */

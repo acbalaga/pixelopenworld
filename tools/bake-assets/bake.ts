@@ -1,7 +1,9 @@
 import type { AtlasGroup, SpriteDef, TileDef } from '../../src/content/sprites/types';
 import { encodePng, newImage, put } from './png';
 import { pack } from './pack';
-import { contactSheet, renderFrame, swatchSheet } from './sheets';
+import { randomDoll } from '../../src/content/dolls/parts';
+import { rng } from '../../src/content/sprites/gen/img';
+import { characterSheet, contactSheet, renderFrame, swatchSheet, treeSheet } from './sheets';
 import { validateDefs } from './validate';
 
 /** Output files by name. Values are bytes or text. */
@@ -70,10 +72,29 @@ export function bakeAll(spritesIn: readonly SpriteDef[], tilesIn: readonly TileD
     }
     manifest.atlases[group] = { height, image: `atlas-${group}.png`, width };
     out.set(`atlas-${group}.png`, encodePng(atlas));
-    out.set(`contact-${group}.png`, encodePng(contactSheet(members)));
+    const isDoll = (s: SpriteDef): boolean => s.id.startsWith('doll.');
+    const isNature = (s: SpriteDef): boolean => /^prop\.(tree|bush|flower)_/.test(s.id);
+    const parts: [string, SpriteDef[]][] = [
+      [`contact-${group}.png`, members.filter((s) => !isDoll(s) && !isNature(s))],
+      [`contact-${group}-nature.png`, members.filter(isNature)],
+      [`contact-${group}-doll-layers.png`, members.filter(isDoll)],
+    ];
+    const nature = members.filter(isNature);
+    if (nature.some((s) => s.id.includes('tree_')))
+      out.set(`contact-${group}-trees.png`, encodePng(treeSheet(nature)));
+    for (const [name, list] of parts)
+      if (list.length > 0) out.set(name, encodePng(contactSheet(list)));
   }
   for (const t of tiles) manifest.tiles[t.id] = t;
   out.set('manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
   out.set('palette-swatch.png', encodePng(swatchSheet()));
+  if (sprites.some((s) => s.id.startsWith('doll.'))) {
+    const r = rng(2024);
+    const specs = Array.from({ length: 18 }, () => randomDoll(r));
+    out.set(
+      'contact-characters.png',
+      encodePng(characterSheet(specs, new Map(sprites.map((s) => [s.id, s])))),
+    );
+  }
   return out;
 }

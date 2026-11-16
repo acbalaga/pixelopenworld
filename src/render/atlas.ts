@@ -46,28 +46,42 @@ export class Atlas {
     }
     for (const id of Object.keys(manifest.sprites).sort()) {
       const s = manifest.sprites[id];
-      if (!s) continue;
-      for (const f of Object.keys(s.frames).sort()) {
-        const r = s.frames[f];
-        if (!r) continue;
-        const h = this.sx.length;
-        this.frameIndex.set(`${id}#${f}`, h);
-        this.imgOf.push(groupSlot.get(s.group) ?? 0);
-        this.sx.push(r.x);
-        this.sy.push(r.y);
-        this.fw.push(r.w);
-        this.fh.push(r.h);
-        this.ox.push(s.origin[0] ?? 0);
-        this.oy.push(s.origin[1] ?? 0);
-      }
-      for (const a of Object.keys(s.anims).sort()) {
-        const def = s.anims[a];
-        if (!def) continue;
-        this.animIndex.set(`${id}#${a}`, this.animFrames.length);
-        this.animFrames.push(def.frames.map((f) => this.frame(id, f)));
-        this.animFps.push(def.fps);
-        this.animFlipX.push(def.flipX === true);
-      }
+      if (s) this.register(id, s, groupSlot.get(s.group) ?? 0);
+    }
+  }
+
+  /**
+   * Adds a sprite whose pixels live in a canvas the caller owns (for example a composed
+   * character). Frames are read from the canvas each draw, so redrawing it updates the sprite
+   * without changing any handle.
+   */
+  addSprite(id: string, image: CanvasImageSource, entry: Manifest['sprites'][string]): void {
+    const slot = this.images.length;
+    this.images.push(image);
+    this.register(id, entry, slot);
+  }
+
+  private register(id: string, s: Manifest['sprites'][string], slot: number): void {
+    for (const f of Object.keys(s.frames).sort()) {
+      const r = s.frames[f];
+      if (!r) continue;
+      const h = this.sx.length;
+      this.frameIndex.set(`${id}#${f}`, h);
+      this.imgOf.push(slot);
+      this.sx.push(r.x);
+      this.sy.push(r.y);
+      this.fw.push(r.w);
+      this.fh.push(r.h);
+      this.ox.push(s.origin[0] ?? 0);
+      this.oy.push(s.origin[1] ?? 0);
+    }
+    for (const a of Object.keys(s.anims).sort()) {
+      const def = s.anims[a];
+      if (!def) continue;
+      this.animIndex.set(`${id}#${a}`, this.animFrames.length);
+      this.animFrames.push(def.frames.map((f) => this.frame(id, f)));
+      this.animFps.push(def.fps);
+      this.animFlipX.push(def.flipX === true);
     }
   }
 
