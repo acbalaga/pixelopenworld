@@ -6,6 +6,10 @@ import { TouchController } from './touch';
 /** Settings the input layer reads. */
 export interface InputOptions {
   leftHanded: () => boolean;
+  /** HUD scale setting; scales the buttons. */
+  hudScale?: () => number;
+  /** Device safe-area insets in CSS px; buttons stay inside them. */
+  insets?: () => { top: number; right: number; bottom: number; left: number };
 }
 
 /**
@@ -19,7 +23,10 @@ export function attachInput(
   const rect = (): DOMRect => surface.getBoundingClientRect();
   const makeLayout = (): ReturnType<typeof computeLayout> => {
     const r = rect();
-    return computeLayout(r.width, r.height, opts.leftHanded());
+    return computeLayout(r.width, r.height, opts.leftHanded(), {
+      hudScale: opts.hudScale?.() ?? 1,
+      insets: opts.insets?.() ?? { top: 0, right: 0, bottom: 0, left: 0 },
+    });
   };
   let layout = makeLayout();
   const touch = new TouchController(layout);

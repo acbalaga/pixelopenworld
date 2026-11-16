@@ -134,21 +134,32 @@ export class Atlas {
   }
 }
 
-/** Fetches the manifest's atlas images and builds an {@link Atlas}. */
+/**
+ * Fetches atlas images and builds an {@link Atlas}. Groups without a url are skipped, so a scene
+ * that only needs the core group does not load the UI atlas; asking for one of their frames
+ * throws a clear error.
+ */
 export async function loadAtlas(
   manifest: Manifest,
   imageUrls: Readonly<Record<string, string>>,
 ): Promise<Atlas> {
   const images: Record<string, CanvasImageSource> = {};
+  const loadable: Manifest = {
+    ...manifest,
+    atlases: Object.fromEntries(
+      Object.entries(manifest.atlases).filter(([g]) => imageUrls[g] !== undefined),
+    ),
+    sprites: Object.fromEntries(
+      Object.entries(manifest.sprites).filter(([, s]) => imageUrls[s.group] !== undefined),
+    ),
+  };
   await Promise.all(
-    Object.keys(manifest.atlases).map(async (group) => {
-      const url = imageUrls[group];
-      if (!url) throw new Error(`no image url for atlas ${group}`);
+    Object.keys(loadable.atlases).map(async (group) => {
       const img = new Image();
-      img.src = url;
+      img.src = imageUrls[group] as string;
       await img.decode();
       images[group] = img;
     }),
   );
-  return new Atlas(manifest, images);
+  return new Atlas(loadable, images);
 }
