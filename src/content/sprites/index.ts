@@ -1,6 +1,7 @@
 import { propRock } from './core/props';
 import { CORE_TILES } from './core/tiles';
 import { tileDirt, tileGrass0, tileGrass1, tileGrass2, tileWater } from './core/terrain';
+import { autotileSprite } from './gen/autotile';
 import { dollLayers } from './gen/dolls';
 import { natureSprites } from './gen/nature';
 import type { SpriteDef, TileDef } from './types';
@@ -13,6 +14,8 @@ export const SPRITES: readonly SpriteDef[] = [
   tileDirt,
   tileWater,
   propRock,
+  autotileSprite({ id: 'auto.dirt', source: tileDirt, frames: ['base'], rim: 4 }),
+  autotileSprite({ id: 'auto.water', source: tileWater, frames: ['flow_0', 'flow_1'], rim: 12 }),
   ...natureSprites(),
   ...dollLayers(),
 ];
