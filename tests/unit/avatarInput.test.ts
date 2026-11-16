@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { emptyRecord } from '../../src/platform/input/actions';
 import { computeLayout } from '../../src/platform/input/layout';
 import { InputSampler, toCommands } from '../../src/platform/input/sampler';
 import { TouchController } from '../../src/platform/input/touch';
@@ -35,17 +36,10 @@ describe('touch to motion', () => {
 describe('toCommands full extent', () => {
   it('sends full only when the stick is at full extent, and re-sends when that changes', () => {
     const rec = (mag: number) => ({
+      ...emptyRecord(),
       move: { x: mag, y: 0 },
       moveDir: 2 as const,
       full: mag >= 0.95,
-      technique: [false, false, false, false] as [boolean, boolean, boolean, boolean],
-      techniqueHeld: [false, false, false, false] as [boolean, boolean, boolean, boolean],
-      dodge: null,
-      context: false,
-      menu: false,
-      bag: false,
-      targetTap: null,
-      longPress: null,
     });
     expect(toCommands(rec(1), null)).toEqual([{ type: 'move', dir: 2, full: true }]);
     expect(toCommands(rec(0.5), 2, true)).toEqual([{ type: 'move', dir: 2 }]);

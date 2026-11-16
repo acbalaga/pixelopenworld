@@ -13,7 +13,8 @@ export interface Rect {
 export interface ControlLayout {
   /** Where a floating stick may begin. */
   stickZone: Rect;
-  buttons: Readonly<Record<ButtonId, Rect>>;
+  /** Every button except `attack`, which exists only in Classic. */
+  buttons: Readonly<Record<Exclude<ButtonId, 'attack'>, Rect>> & { readonly attack?: Rect };
 }
 
 /** True if the point is inside the rect. */
@@ -33,6 +34,8 @@ export function computeLayout(
   height: number,
   leftHanded: boolean,
   opts: {
+    /** Classic adds an attack button. Flow attacks on its own. */
+    scheme?: 'flow' | 'classic';
     hudScale?: number;
     insets?: { top: number; right: number; bottom: number; left: number };
   } = {},
@@ -45,7 +48,7 @@ export function computeLayout(
   // Right side and top are mirrored together with the buttons, so insets are applied before mirroring.
   const mirror = (r: Rect): Rect => (leftHanded ? { ...r, x: width - r.x - r.w } : r);
 
-  const buttons = {} as Record<ButtonId, Rect>;
+  const buttons = {} as Record<ButtonId, Rect | undefined>;
   // Technique buttons in an arc above the right thumb rest.
   const baseX = width - margin - ins.right - size;
   const baseY = height - margin - ins.bottom - size;
@@ -60,7 +63,14 @@ export function computeLayout(
     buttons[id] = mirror({ x: baseX + a[0], y: baseY + a[1], w: size, h: size });
   });
   buttons.dodge = mirror({ x: baseX, y: baseY - (size + gap), w: size, h: size });
-  buttons.context = mirror({ x: baseX, y: baseY, w: size, h: size });
+  // Classic puts attack under the thumb and moves context beside it. In Flow attack has no button.
+  const classic = opts.scheme === 'classic';
+  if (classic) buttons.attack = mirror({ x: baseX, y: baseY, w: size, h: size });
+  buttons.context = mirror(
+    classic
+      ? { x: baseX - (size + gap), y: baseY, w: size, h: size }
+      : { x: baseX, y: baseY, w: size, h: size },
+  );
   buttons.menu = mirror({
     x: width - margin - ins.right - min,
     y: margin + ins.top,
@@ -76,14 +86,15 @@ export function computeLayout(
 
   const zoneH = Math.round(height * INPUT_TUNABLES.stickZoneFraction);
   const stickZone: Rect = { x: 0, y: height - zoneH, w: width, h: zoneH };
-  return { stickZone, buttons };
+  return { stickZone, buttons: buttons as ControlLayout['buttons'] };
 }
 
 /** Finds the button under a point. Later buttons win on overlap. */
 export function buttonAt(layout: ControlLayout, p: ScreenPoint): ButtonId | null {
   let hit: ButtonId | null = null;
   for (const id of Object.keys(layout.buttons) as ButtonId[]) {
-    if (inRect(layout.buttons[id], p)) hit = id;
+    const r = layout.buttons[id];
+    if (r && inRect(r, p)) hit = id;
   }
   return hit;
 }

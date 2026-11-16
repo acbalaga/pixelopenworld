@@ -1,4 +1,5 @@
 import { MOVEMENT as M } from '../../content/balance/movement';
+import { COMBAT } from '../../content/balance/combat';
 import { Dir, dirStep, type Direction } from '../kernel/fixed';
 import { getComp, query } from '../kernel/entities';
 import type { SimState } from '../state';
@@ -41,55 +42,85 @@ function solidBoxes(state: SimState, self: number): Box[] {
 }
 
 /**
+ * Moves an entity's body by (dx, dy) sub-pixels with tile and solid-body collision. Returns the
+ * distance actually moved. Used by walking, dodges, dashes, knockback and creature movement.
+ */
+export function nudge(
+  state: SimState,
+  id: number,
+  dx: number,
+  dy: number,
+): { x: number; y: number } {
+  const p = getComp(state.entities, id, 'pos');
+  const b = getComp(state.entities, id, 'body');
+  if (!p || !b || (dx === 0 && dy === 0)) return { x: 0, y: 0 };
+  const from: Box = { x: p.x - (b.w >> 1), y: p.y - b.h, w: b.w, h: b.h };
+  const grid = state.world;
+  const to = grid
+    ? moveBoxSolid(grid, from, dx, dy, solidBoxes(state, id))
+    : { ...from, x: from.x + dx, y: from.y + dy };
+  p.x = to.x + (b.w >> 1);
+  p.y = to.y + b.h;
+  return { x: to.x - from.x, y: to.y - from.y };
+}
+
+/**
  * Avatar movement: sprint state, velocity ramps, collision against tiles and solid bodies,
  * facing. Runs after commands are applied, so a stick change moves the avatar the same tick.
+ * The avatar's combat state shapes it: dodges and dashes override the velocity, swinging slows
+ * it, being hurt or dead stops it, and a hit pause freezes it.
  */
 export function movementSystem(state: SimState): void {
-  const grid = state.world;
   const e = state.entities;
-  for (const id of query(e, 'avatar', 'pos', 'vel', 'body')) {
+  for (const id of query(e, 'avatar', 'pos', 'vel', 'body', 'pools')) {
     const a = getComp(e, id, 'avatar');
-    const p = getComp(e, id, 'pos');
     const v = getComp(e, id, 'vel');
-    const b = getComp(e, id, 'body');
-    if (!a || !p || !v || !b) continue;
+    const pools = getComp(e, id, 'pools');
+    const f = getComp(e, id, 'fighter');
+    if (!a || !v || !pools) continue;
+    if (f && f.hitstop > 0) continue;
 
     a.fullTicks = a.intent !== null && a.full ? a.fullTicks + 1 : 0;
-    const sprint = a.fullTicks >= M.sprintHoldTicks && !a.winded && a.stamina > 0;
+    const sprint =
+      a.fullTicks >= M.sprintHoldTicks && !a.winded && pools.sta > 0 && (!f || f.state === 'idle');
     if (sprint) {
       a.sprinting = true;
-      a.stamina = Math.max(0, a.stamina - M.sprintDrain);
-      if (a.stamina === 0) {
+      pools.sta = Math.max(0, pools.sta - M.sprintDrain);
+      pools.lastSpend = state.tick;
+      if (pools.sta === 0) {
         a.winded = true;
         a.sprinting = false;
       }
     } else {
       a.sprinting = false;
-      a.stamina = Math.min(a.staminaMax, a.stamina + M.staminaRegen);
-      if (a.winded && a.stamina >= M.sprintResume) a.winded = false;
+      if (a.winded && pools.sta >= M.sprintResume) a.winded = false;
     }
 
-    const speed = a.sprinting ? Math.round((M.walkSpeed * M.sprintFactor256) / 256) : M.walkSpeed;
-    const t = targetVelocity(a.intent, speed);
-    const accel = Math.ceil(speed / M.accelTicks);
-    const decel = Math.ceil(M.walkSpeed / M.decelTicks);
-    // Both axes moving means a diagonal: scale the steps so the speed ramps no faster than a cardinal.
-    const diag = (t.x !== 0 && t.y !== 0) || (v.x !== 0 && v.y !== 0);
-    const k = (n: number): number => (diag ? Math.ceil((n * M.diagonal256) / 256) : n);
-    v.x = ramp(v.x, t.x, k(accel), k(decel));
-    v.y = ramp(v.y, t.y, k(accel), k(decel));
-    if (a.intent !== null) a.facing = facingFor(a.intent, a.facing);
+    const state_ = f?.state ?? 'idle';
+    const forced = state_ === 'dodge' || (state_ === 'attack' && (f?.dv.x !== 0 || f?.dv.y !== 0));
+    if (forced && f) {
+      v.x = f.dv.x;
+      v.y = f.dv.y;
+    } else {
+      const frozen = state_ === 'hurt' || state_ === 'stagger' || state_ === 'dead';
+      const swing = state_ === 'attack' ? COMBAT.attackMoveFactor : 100;
+      const base = a.sprinting ? Math.round((M.walkSpeed * M.sprintFactor256) / 256) : M.walkSpeed;
+      const speed = Math.round((base * swing) / 100);
+      const t = frozen ? { x: 0, y: 0 } : targetVelocity(a.intent, speed);
+      const accel = Math.ceil(speed / M.accelTicks);
+      const decel = Math.ceil(M.walkSpeed / M.decelTicks);
+      // Both axes moving means a diagonal: scale the steps so the speed ramps no faster than a cardinal.
+      const diag = (t.x !== 0 && t.y !== 0) || (v.x !== 0 && v.y !== 0);
+      const k = (n: number): number => (diag ? Math.ceil((n * M.diagonal256) / 256) : n);
+      v.x = ramp(v.x, t.x, k(accel), k(decel));
+      v.y = ramp(v.y, t.y, k(accel), k(decel));
+      if (a.intent !== null && !frozen && !f?.lock) a.facing = facingFor(a.intent, a.facing);
+    }
 
     if (v.x === 0 && v.y === 0) continue;
-    const from: Box = { x: p.x - (b.w >> 1), y: p.y - b.h, w: b.w, h: b.h };
-    const others = solidBoxes(state, id);
-    const to = grid
-      ? moveBoxSolid(grid, from, v.x, v.y, others)
-      : { ...from, x: from.x + v.x, y: from.y + v.y };
+    const moved = nudge(state, id, v.x, v.y);
     // A blocked axis loses its speed, so pushing into a wall does not store momentum.
-    if (to.x - from.x !== v.x) v.x = 0;
-    if (to.y - from.y !== v.y) v.y = 0;
-    p.x = to.x + (b.w >> 1);
-    p.y = to.y + b.h;
+    if (moved.x !== v.x) v.x = 0;
+    if (moved.y !== v.y) v.y = 0;
   }
 }

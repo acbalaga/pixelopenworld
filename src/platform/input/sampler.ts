@@ -45,6 +45,7 @@ export class InputSampler {
       r.technique[i] = pressed.has(id);
       r.techniqueHeld[i] = held.has(id);
     });
+    r.attack = pressed.has('attack');
     r.context = pressed.has('context');
     r.menu = pressed.has('menu');
     r.bag = pressed.has('bag');
@@ -73,4 +74,45 @@ export function toCommands(
       ? { type: 'move', dir: record.moveDir, full: true }
       : { type: 'move', dir: record.moveDir },
   ];
+}
+
+/** Where a screen point is in the world, in whole px, or null if it is not on the world. */
+export type ScreenToWorld = (p: { x: number; y: number }) => { x: number; y: number } | null;
+
+/**
+ * Turns input records into sim commands, keeping the little memory it needs (last move, held
+ * technique buttons). One per avatar.
+ */
+export class CommandMapper {
+  private dir: number | null = null;
+  private full = false;
+  private held = [false, false, false, false];
+
+  constructor(private readonly toWorld: ScreenToWorld = () => null) {}
+
+  /** Commands for one sample. Move first, then actions in a fixed order. */
+  map(r: InputRecord): Command[] {
+    const out = toCommands(r, this.dir, this.full);
+    this.dir = r.moveDir;
+    this.full = r.full;
+    if (r.attack) out.push({ type: 'attack' });
+    if (r.dodge) out.push({ type: 'dodge', dir: r.dodge.dir });
+    if (r.targetTap) {
+      const w = this.toWorld(r.targetTap);
+      if (w) out.push({ type: 'lock', x: w.x, y: w.y });
+    }
+    for (let slot = 0; slot < 4; slot++) {
+      const pressed = r.technique[slot] === true;
+      const held = r.techniqueHeld[slot] === true;
+      const was = this.held[slot] === true;
+      // A key gives press and hold on the same sample: that is a hold, so it aims.
+      if (held && !was) out.push({ type: 'technique', slot, phase: 'aim', aim: r.moveDir });
+      else if (pressed && !held && !was)
+        out.push({ type: 'technique', slot, phase: 'press', aim: r.moveDir });
+      else if (!held && was)
+        out.push({ type: 'technique', slot, phase: 'release', aim: r.moveDir });
+      this.held[slot] = held;
+    }
+    return out;
+  }
 }

@@ -23,11 +23,111 @@ export interface Avatar {
   /** Consecutive ticks at full extent. */
   fullTicks: number;
   sprinting: boolean;
-  /** Stamina and its cap. The resource system (M1-04) takes these over. */
-  stamina: number;
-  staminaMax: number;
+  /** Carried coin. Placeholder until the inventory (M1-05) owns coin. */
+  coin: number;
+  /** Where the avatar wakes after dying: the last Waystone touched. Feet position, sub-pixel units. */
+  respawn: Vec;
   /** Ran dry: sprint is off until stamina recovers. */
   winded: boolean;
+}
+
+/** Health, Stamina and Focus. Health in points, Stamina and Focus in tenths. */
+export interface Pools {
+  hp: number;
+  hpMax: number;
+  sta: number;
+  staMax: number;
+  foc: number;
+  focMax: number;
+  /** Tick of the last damage dealt or taken. Health regenerates only after a quiet spell. */
+  lastCombat: number;
+  /** Tick of the last Stamina spend. */
+  lastSpend: number;
+}
+
+export type FighterState = 'idle' | 'attack' | 'dodge' | 'hurt' | 'stagger' | 'dead';
+export type Scheme = 'flow' | 'classic';
+
+/** Combat state machine for anything that fights. Team 0 is the player's side. */
+export interface Fighter {
+  team: 0 | 1;
+  state: FighterState;
+  /** Ticks spent in the current state. */
+  t: number;
+  /** Attack in progress, with the ids it has already hit. */
+  atk: string | null;
+  hit: number[];
+  /** Classic combo step (0 to 2) the next press starts, and a chain request made in the window. */
+  combo: number;
+  queued: boolean;
+  /** Aim vector in px for the attack in progress. Never zero. */
+  aim: Vec;
+  /** Ticks both sides freeze after a hit lands. */
+  hitstop: number;
+  /** Ticks of invulnerability left. */
+  invuln: number;
+  /** Tick the current dodge began, for perfect dodge detection. */
+  dodgeStart: number;
+  /** Per-tick displacement for dodges and dashes, sub-pixel units. */
+  dv: Vec;
+  /** Ticks until the next Flow swing may start. */
+  gap: number;
+  /** Locked target. */
+  lock: number | null;
+  scheme: Scheme;
+  /** Technique slot being aimed (held), or -1. */
+  aiming: number;
+  slots: (string | null)[];
+  /** Cooldown ticks per slot. */
+  cooldowns: number[];
+  /** Technique whose attack is in progress, so its projectile launches. */
+  casting: string | null;
+  /** Ticks since death. */
+  deadT: number;
+}
+
+/** What a fighter hits with and how hard it is to hurt. */
+export interface Combatant {
+  weapon: string;
+  power: number;
+  defense: number;
+  /** Skill rank 0 to 100 for the weapon's skill. Real skills arrive with M1-04. */
+  skillRank: number;
+  /** Name for the lock frame. */
+  name: string;
+}
+
+export interface Stagger {
+  cur: number;
+  max: number;
+  /** Tick of the last hit. */
+  lastHit: number;
+}
+
+/** Pending knockback, spread over `ttl` ticks. Sub-pixel units per tick. */
+export interface Knock {
+  x: number;
+  y: number;
+  ttl: number;
+}
+
+/** A flying bolt. */
+export interface Projectile {
+  owner: number;
+  team: 0 | 1;
+  vx: number;
+  vy: number;
+  ttl: number;
+  power: number;
+  mult: number;
+  stagger: number;
+  knock: number;
+  element: string;
+}
+
+/** Coin left behind by a death. */
+export interface Echo {
+  coin: number;
 }
 
 /** Something the context button can use. `kind` names it in content. */
@@ -42,6 +142,13 @@ export interface Components {
   body: Body;
   avatar: Avatar;
   interactable: Interactable;
+  pools: Pools;
+  fighter: Fighter;
+  combatant: Combatant;
+  stagger: Stagger;
+  knock: Knock;
+  projectile: Projectile;
+  echo: Echo;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -64,6 +171,13 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'body',
   'avatar',
   'interactable',
+  'pools',
+  'fighter',
+  'combatant',
+  'stagger',
+  'knock',
+  'projectile',
+  'echo',
 ];
 
 /** Demo box size in sub-pixel units. */

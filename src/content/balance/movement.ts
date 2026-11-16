@@ -15,12 +15,8 @@ export const MOVEMENT = {
   diagonal256: 181,
   /** Ticks the stick must be held at full extent before sprint starts (0.5 s). */
   sprintHoldTicks: 15,
-  /** Stamina pool for the avatar until the resource system lands. Sub-units, 1000 is full. */
-  staminaMax: 1000,
   /** Stamina drained per tick while sprinting (full bar lasts 5 s). */
   sprintDrain: 6,
-  /** Stamina regained per tick when not sprinting. */
-  staminaRegen: 10,
   /** After running dry, sprint stays off until stamina reaches this. */
   sprintResume: 250,
   /** Avatar collision box, at the feet, in px. */

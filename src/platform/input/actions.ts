@@ -7,7 +7,8 @@ export interface ScreenPoint {
 }
 
 /** Buttons that live on screen. */
-export type ButtonId = 'tech1' | 'tech2' | 'tech3' | 'tech4' | 'context' | 'menu' | 'bag' | 'dodge';
+export type ButtonId =
+  'tech1' | 'tech2' | 'tech3' | 'tech4' | 'context' | 'menu' | 'bag' | 'dodge' | 'attack';
 
 /**
  * One tick of abstract input. Every source (touch, keyboard, gamepad) fills this same record.
@@ -29,6 +30,8 @@ export interface InputRecord {
   techniqueHeld: [boolean, boolean, boolean, boolean];
   /** Dodge requested this sample, with a direction when one is known. */
   dodge: { dir: Direction | null } | null;
+  /** Attack pressed this sample (Classic). */
+  attack: boolean;
   context: boolean;
   menu: boolean;
   bag: boolean;
@@ -47,6 +50,7 @@ export function emptyRecord(): InputRecord {
     technique: [false, false, false, false],
     techniqueHeld: [false, false, false, false],
     dodge: null,
+    attack: false,
     context: false,
     menu: false,
     bag: false,
