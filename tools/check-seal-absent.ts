@@ -68,6 +68,11 @@ async function builtMaterials(): Promise<{ label: string; bytes: Uint8Array }[]>
   for (const v of SEAL_VERSIONS) {
     const mod = (await import(`../src/save/seal/v${v}/index.ts`)) as { FRAGMENTS: Uint8Array[] };
     out.push({ label: `seal v${v}`, bytes: await combineFragments(mod.FRAGMENTS, v) });
+    // A build that injects its own material must not carry the committed fragments either.
+    if (env)
+      mod.FRAGMENTS.forEach((f, i) =>
+        out.push({ label: `committed v${v} fragment ${i}`, bytes: f }),
+      );
   }
   return out;
 }
