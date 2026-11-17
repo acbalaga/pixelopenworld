@@ -20,7 +20,7 @@ export default defineConfig({
   projects: [
     {
       name: 'smoke',
-      testMatch: /(smoke|menu|slice|talk|save|frontend)\.spec\.ts/,
+      testMatch: /(smoke|menu|slice|talk|save|frontend|secure)\.spec\.ts/,
       use: { baseURL: PROD },
     },
     { name: 'dev-tools', testMatch: /(devtools|sliceRun)\.spec\.ts/, use: { baseURL: DEV } },

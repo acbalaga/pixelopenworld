@@ -77,7 +77,7 @@ describe('save and load', () => {
 
     const got = await reload(storage, clock).load();
     expect(got).not.toBeNull();
-    expect(got!.report).toEqual({ slot: 'latest', fellBack: false, skipped: [] });
+    expect(got!.report).toMatchObject({ slot: 'latest', fellBack: false, skipped: [] });
     expect(got!.plain.look).toEqual(LOOK);
     expect(got!.plain.summary).toEqual(deriveSummary(s, s.tick / 30));
     expect(hashState(deserializeState(got!.plain.sim))).toBe(hashState(s));
@@ -197,7 +197,7 @@ describe('damaged saves', () => {
     storage.failNext = true;
     await expect(m.commit(input(s))).rejects.toThrow('aborted');
     const got = await reload(storage, clock).load();
-    expect(got!.report).toEqual({ slot: 'latest', fellBack: false, skipped: [] });
+    expect(got!.report).toMatchObject({ slot: 'latest', fellBack: false, skipped: [] });
     expect(hashState(deserializeState(got!.plain.sim))).toBe(before);
     // And the next save goes through.
     await m.commit(input(s));
@@ -269,6 +269,7 @@ describe('migrations', () => {
       latest: { seq: 7, savedAt: 1, checksum: await sha256Hex(bytes), bytes },
       previous: null,
       old: null,
+      emergency: null,
       quarantine: null,
     });
     const got = await new SaveManager({

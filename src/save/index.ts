@@ -2,6 +2,9 @@ export { AutoSaver, type SaveReason } from './autosave';
 export { JsonCodec, sha256Hex } from './codec';
 export { SaveManager, OLD_SNAPSHOT_MS, type LoadReport, type LoadResult } from './manager';
 export { migrate, MIGRATIONS } from './migrations';
+export { SecureCodec, type KeyProvider } from './secureCodec';
+export { IdbKeyStore, MemoryKeyStore, loadDeviceKey, type KeyStore } from './deviceKey';
+export { checkSaveSupport, type SupportReport } from './support';
 export { createStorage, IdbStorage, MemoryStorage } from './storage';
 export { CURRENT_SCHEMA, type SavePlain, type SaveCodec, type SaveStorage } from './types';
 

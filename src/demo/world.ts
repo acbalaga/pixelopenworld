@@ -40,12 +40,16 @@ import { ChatTicker, HintLine } from '../ui/dom/ambient';
 import { runFrontEnd, type FrontEndResult } from '../ui/dom/frontEnd';
 import {
   AutoSaver,
+  checkSaveSupport,
   createStorage,
-  JsonCodec,
+  IdbKeyStore,
+  loadDeviceKey,
   newSaveId,
   SaveManager,
+  SecureCodec,
   type SaveReason,
 } from '../save';
+import { showRecover, showUnsupported } from '../ui/dom/saveNotices';
 import { findAvatar } from '../shared/summary';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
@@ -137,15 +141,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const auto = params.get('auto') === '1';
   const fly = auto || params.get('fly') === '1';
   // Saves: `?nosave=1` turns loading and saving off (for screenshots and tools). Free flight never saves.
-  const saves =
-    fly || params.get('nosave') === '1'
-      ? null
-      : new SaveManager({
-          codec: new JsonCodec(),
-          storage: createStorage(),
-          now: () => Date.now(),
-          newId: newSaveId,
-        });
+  const savesWanted = !(fly || params.get('nosave') === '1');
+  if (savesWanted) {
+    // A browser that cannot keep a safe save says so. It never stores one in the clear.
+    const support = await checkSaveSupport();
+    if (!support.ok) {
+      applyPaletteVars(document.documentElement);
+      showUnsupported(support.missing);
+      return;
+    }
+  }
+  const deviceKey = savesWanted ? loadDeviceKey(new IdbKeyStore()) : null;
+  const saves = savesWanted
+    ? new SaveManager({
+        codec: new SecureCodec(() => deviceKey as Promise<CryptoKey>, true),
+        storage: createStorage(),
+        now: () => Date.now(),
+        newId: newSaveId,
+      })
+    : null;
   let loaded = null as Awaited<ReturnType<SaveManager['load']>>;
   let loadFailed = false;
   if (saves) {
@@ -245,6 +259,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       // A new character starts a new game, even if an unreadable save was lying around.
       restored = null;
     }
+  }
+  // The newest save could not be used: say which one was loaded and why.
+  if (!entry && restored && loaded?.report.fellBack) {
+    await showRecover(root, loaded.report, loaded.plain.createdAt);
   }
   let baseDoll = entry ? entry.look : restored && loaded ? loaded.plain.look : randomDoll(rand);
   const startGear = startGear0;
@@ -651,10 +669,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (document.hidden) requestSave('hidden');
     });
     window.addEventListener('pagehide', () => requestSave('pagehide'));
+    // The crash handler writes the emergency slot, once, and touches nothing else.
+    let crashed = false;
+    const onCrash = (): void => {
+      if (crashed) return;
+      crashed = true;
+      void saves
+        .commitEmergency({ sim: state, look: baseDoll, playSeconds: state.tick / 30 })
+        .catch(() => undefined);
+    };
+    window.addEventListener('error', onCrash);
+    window.addEventListener('unhandledrejection', onCrash);
     if (restored) {
       canvas.dataset.loadedHash = hashState(state);
       canvas.dataset.loadedSeq = String(loaded?.plain.seq ?? 0);
-      if (loaded?.report.fellBack) notices.toast(UI_STRINGS.save.fellBack);
     } else {
       // A save that could not be used: a new game starts, and the damaged one is kept aside.
       if (loadFailed || loaded) notices.toast(UI_STRINGS.save.unreadable);

@@ -143,7 +143,7 @@ test('a killed save leaves the latest readable: an aborted IndexedDB transaction
   expect(await attr(page, 'data-loaded-hash')).not.toBeNull();
 });
 
-test('a damaged latest save is skipped with a message, and the game still loads', async ({
+test('a damaged latest save is skipped with the recover screen, and the game still loads', async ({
   page,
 }) => {
   await page.goto('/?foes=0&at=48,41');
@@ -181,7 +181,11 @@ test('a damaged latest save is skipped with a message, and the game still loads'
       }),
   );
   await page.reload();
+  // The recover screen names what happened, and the game starts when the player continues.
+  const recover = page.locator('.pow-recover');
+  await expect(recover).toContainText('Save recovered');
+  await expect(recover).toContainText('the save before your latest');
+  await recover.getByRole('button', { name: 'Continue' }).click();
   await ready(page);
-  await expect(page.locator('.pow-toast')).toContainText('earlier one was loaded');
   expect(await attr(page, 'data-loaded-hash')).not.toBeNull();
 });

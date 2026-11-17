@@ -357,7 +357,8 @@ export function createDemoState(seed: number, entityCount: number): SimState {
   return state;
 }
 
-function canonical(v: unknown): string {
+/** Stable JSON text: object keys sorted, undefined properties dropped. */
+export function canonical(v: unknown): string {
   if (v === null || typeof v !== 'object') return JSON.stringify(v);
   if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
   const o = v as Record<string, unknown>;

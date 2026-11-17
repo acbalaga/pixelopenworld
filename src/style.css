@@ -638,6 +638,28 @@ canvas {
   flex-direction: column;
   gap: calc(var(--px) * 2);
 }
+/* Save recovery and the unsupported browser message (M2-01). Clear text, centered. */
+.pow-recover,
+.pow-unsupported {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  padding: calc(var(--px) * 4);
+  color: var(--pal-3);
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+  font-size: calc(1rem * var(--text-scale, 1));
+  line-height: 1.4;
+  overflow-y: auto;
+  z-index: 50;
+}
+.pow-recover-body,
+.pow-recover-reasons {
+  margin: 0;
+}
+.pow-recover-reasons {
+  padding-left: 1.2em;
+}
 .pow-talk-head,
 .pow-shop-head {
   display: flex;
