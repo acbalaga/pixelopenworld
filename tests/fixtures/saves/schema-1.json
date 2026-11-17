@@ -1,0 +1,36 @@
+{
+  "expectedHash": "020dd9b371bc50",
+  "plain": {
+    "schema": 1,
+    "saveId": "00112233445566778899aabbccddeeff",
+    "seq": 7,
+    "prevHash": "abc",
+    "createdAt": 1700000000000,
+    "playSeconds": 3,
+    "look": {
+      "body": "a",
+      "skin": "light",
+      "hair": "short",
+      "hairColor": "brown",
+      "top": "tunic",
+      "topColor": "blue",
+      "bottom": "trousers",
+      "bottomColor": "brown",
+      "mainHand": "sword",
+      "offHand": "none"
+    },
+    "sim": "{\"entities\":{\"alive\":[true,true],\"capacity\":2,\"comps\":{\"ai\":[null,null],\"avatar\":[{\"coin\":42,\"facing\":2,\"full\":false,\"fullTicks\":0,\"intent\":2,\"respawn\":{\"x\":43008,\"y\":44544},\"sprinting\":false,\"winded\":false},null],\"body\":[{\"h\":2048,\"solid\":true,\"w\":2560},{\"h\":2048,\"solid\":true,\"w\":3072}],\"combatant\":[{\"defense\":0,\"kind\":\"avatar\",\"name\":\"You\",\"power\":10,\"skillRank\":1,\"tier\":0,\"weapon\":\"sword\"},null],\"echo\":[null,null],\"fed\":[null,null],\"fighter\":[{\"aim\":{\"x\":0,\"y\":1},\"aiming\":-1,\"atk\":null,\"casting\":null,\"combo\":0,\"cooldowns\":[0,0,0,0],\"deadT\":0,\"dodgeStart\":-1000,\"dv\":{\"x\":0,\"y\":0},\"gap\":0,\"hit\":[],\"hitstop\":0,\"invuln\":0,\"lock\":null,\"queued\":false,\"scheme\":\"flow\",\"slots\":[\"technique.blades_lunge\",\"technique.ember_bolt\",null,null],\"state\":\"idle\",\"t\":90,\"team\":0},null],\"fixture\":[null,null],\"gather\":[null,null],\"interactable\":[null,{\"kind\":\"npc.shopkeeper\"}],\"inventory\":[{\"equipment\":{\"accessory\":null,\"body\":null,\"head\":null,\"legs\":null,\"main\":\"item.sword_rusty\",\"off\":null},\"recipes\":[],\"slots\":[{\"item\":\"item.dish_bread\",\"qty\":4},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},null],\"journal\":[{\"flags\":[],\"requests\":{}},null],\"knock\":[null,null],\"node\":[null,null],\"npc\":[null,{\"id\":\"npc.shopkeeper\",\"purse\":80}],\"pickup\":[null,null],\"pools\":[{\"foc\":1000,\"focMax\":1000,\"hp\":101,\"hpMax\":101,\"lastCombat\":-150,\"lastSpend\":-20,\"sta\":1005,\"staMax\":1005},null],\"pos\":[{\"x\":48384,\"y\":44544},{\"x\":51200,\"y\":44544}],\"projectile\":[null,null],\"skills\":[{\"offered\":[],\"passed\":[],\"points\":{\"skill.blades\":1},\"seen\":[],\"stride\":{\"acc\":0,\"x\":48384,\"y\":44544},\"xp\":{\"skill.blades\":50}},null],\"spawner\":[null,null],\"stagger\":[null,null],\"vel\":[{\"x\":0,\"y\":0},null]},\"free\":[]},\"rng\":{\"combat\":{\"s\":[818825901,1844699877,9604732,-1680048086]},\"loot\":{\"s\":[1929500070,865979732,-1649323267,-2071757911]},\"misc\":{\"s\":[785719236,612559778,-565906576,2047688594]},\"travelers\":{\"s\":[-88671427,2131631276,2020965276,-909815445]},\"world\":{\"s\":[1014804600,627655654,-800147720,1192086855]}},\"seed\":12345,\"tick\":90}",
+    "summary": {
+      "tick": 90,
+      "playSeconds": 3,
+      "coin": 42,
+      "skillPoints": {
+        "skill.blades": 1
+      },
+      "totalSkillPoints": 1,
+      "itemCount": 4,
+      "requestsDone": 0,
+      "flags": 0
+    }
+  }
+}

@@ -36,6 +36,15 @@ import { NPCS } from '../content/dialogue';
 import { spawnNpc } from '../sim/systems/npcs';
 import { pinnedRequest } from '../sim/journal';
 import { TalkSheet } from '../ui/dom/talk';
+import {
+  AutoSaver,
+  createStorage,
+  JsonCodec,
+  newSaveId,
+  SaveManager,
+  type SaveReason,
+} from '../save';
+import { findAvatar } from '../shared/summary';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
@@ -69,7 +78,7 @@ import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../si
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
 import { px } from '../sim/kernel/fixed';
-import { createDemoState } from '../sim/state';
+import { createDemoState, deserializeState, hashState, type SimState } from '../sim/state';
 import { stepWorld } from '../sim/step';
 import { contextTarget } from '../sim/systems/interact';
 import { decodeChunk } from '../sim/world/chunk';
@@ -118,6 +127,34 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const params = new URLSearchParams(location.search);
   const auto = params.get('auto') === '1';
   const fly = auto || params.get('fly') === '1';
+  // Saves: `?nosave=1` turns loading and saving off (for screenshots and tools). Free flight never saves.
+  const saves =
+    fly || params.get('nosave') === '1'
+      ? null
+      : new SaveManager({
+          codec: new JsonCodec(),
+          storage: createStorage(),
+          now: () => Date.now(),
+          newId: newSaveId,
+        });
+  let loaded = null as Awaited<ReturnType<SaveManager['load']>>;
+  let loadFailed = false;
+  if (saves) {
+    try {
+      loaded = await saves.load();
+    } catch {
+      loadFailed = true;
+    }
+  }
+  let restored: SimState | null = null;
+  if (loaded) {
+    try {
+      restored = deserializeState(loaded.plain.sim);
+      if (findAvatar(restored) === null) restored = null;
+    } catch {
+      restored = null;
+    }
+  }
   const m = manifest as unknown as Manifest & {
     fonts: typeof FONTS;
     tiles: Record<string, { sprite: string; frame: string; offset?: [number, number] }>;
@@ -147,7 +184,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     };
   })();
   const dolls = new DollFactory(atlas, m);
-  let baseDoll = randomDoll(rand);
+  let baseDoll = restored && loaded ? loaded.plain.look : randomDoll(rand);
   const startGear = { ...newInventory().equipment };
   const player = dolls.create('char.player', dollWithGear(baseDoll, startGear));
   for (const n of Object.values(NPCS)) dolls.create(`char.${n.id}`, n.doll);
@@ -218,12 +255,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     spawnTile.x = at[0] as number;
     spawnTile.y = at[1] as number;
   }
-  const state = createDemoState(1, 0);
+  const state = restored ?? createDemoState(1, 0);
   state.world = world;
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
-  const who = createAvatar(state, px(feet.x), px(feet.y));
+  const who = restored
+    ? (findAvatar(restored) as number)
+    : createAvatar(state, px(feet.x), px(feet.y));
+  // `?at=` also moves a loaded avatar, for screenshots and tests.
+  if (restored && at && at.length === 2 && at.every(Number.isFinite)) {
+    const p = state.entities.comps.pos[who];
+    if (p) {
+      p.x = px(feet.x);
+      p.y = px(feet.y);
+    }
+  }
+  // A loaded save already holds every entity, so the map is only populated for a new game.
   // Map objects: fixtures, gathering nodes and the camp pot. `?foes=0` turns spawners off below.
-  for (const c of chunks)
+  for (const c of restored ? [] : chunks)
     for (const o of c.objects) {
       const tx = c.cx * 32 + o.x;
       const ty = c.cy * 32 + o.y;
@@ -233,7 +281,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       else if (o.kind.startsWith('npc.') && NPCS[o.kind]) spawnNpc(state, o.kind, tx, ty);
       else if (o.kind === 'prop.camp_pot') spawnCampPot(state, tx * TILE_PX + 8, ty * TILE_PX + 14);
     }
-  const bag = state.entities.comps.inventory[who];
+  const bag = restored ? null : state.entities.comps.inventory[who];
   if (bag) {
     addItem(bag, 'item.sword_iron', 1);
     addItem(bag, 'item.outfit_leather', 1);
@@ -266,7 +314,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   });
 
   // Spawners come from the map's objects (`spawner.*`). `?foes=0` turns them off.
-  if (!fly && params.get('foes') !== '0') {
+  if (!fly && !restored && params.get('foes') !== '0') {
     for (const c of chunks)
       for (const o of c.objects)
         if (o.kind.startsWith('spawner.') && SPAWNERS[o.kind])
@@ -382,7 +430,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   // Rooms: the camera is held to the room the avatar is in and snaps when it changes.
   const ROOM_PX = TILE_PX;
-  let room = roomAt(spawnTile.x, spawnTile.y) ?? OUTDOORS;
+  const startPos = state.entities.comps.pos[who];
+  let room =
+    (restored && startPos
+      ? roomAt(Math.floor(startPos.x / 256 / TILE_PX), Math.floor((startPos.y / 256 - 1) / TILE_PX))
+      : roomAt(spawnTile.x, spawnTile.y)) ?? OUTDOORS;
   const enterRoom = (r: typeof OUTDOORS): void => {
     room = r;
     camera.setBounds(r.x0 * ROOM_PX, r.y0 * ROOM_PX, r.x1 * ROOM_PX, r.y1 * ROOM_PX);
@@ -490,6 +542,45 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     return p ? { x: Math.round(p.x / 256), y: Math.round(p.y / 256) - 4 } : null;
   };
 
+  // Autosave (tech/02): every 60 seconds of play, on room changes and Trials, when the page is
+  // hidden or closed. One save runs at a time. `data-saved-seq` and `data-saved-hash` let tests
+  // see what was written.
+  const AUTOSAVE_TICKS = 60 * 30;
+  let lastSaveTick = state.tick;
+  let saveGlyphAt = -1e9;
+  const GLYPH_MS = 1600;
+  const saver = new AutoSaver(
+    async () => {
+      if (!saves) return;
+      const h = hashState(state);
+      const seq = await saves.commit({ sim: state, look: baseDoll, playSeconds: state.tick / 30 });
+      canvas.dataset.savedSeq = String(seq);
+      canvas.dataset.savedHash = h;
+    },
+    () => undefined,
+    () => {
+      saveGlyphAt = performance.now();
+    },
+  );
+  const requestSave = (reason: SaveReason): void => {
+    if (saves) saver.request(reason);
+  };
+  if (saves) {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) requestSave('hidden');
+    });
+    window.addEventListener('pagehide', () => requestSave('pagehide'));
+    if (restored) {
+      canvas.dataset.loadedHash = hashState(state);
+      canvas.dataset.loadedSeq = String(loaded?.plain.seq ?? 0);
+      if (loaded?.report.fellBack) notices.toast(UI_STRINGS.save.fellBack);
+    } else {
+      // A save that could not be used: a new game starts, and the damaged one is kept aside.
+      if (loadFailed || loaded) notices.toast(UI_STRINGS.save.unreadable);
+      requestSave('manual');
+    }
+  }
+
   let prev = { x: apos.x, y: apos.y };
   let waypoint = 0;
   const speedPx = auto ? 10 : 8;
@@ -575,6 +666,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
+        if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {
+          lastSaveTick = state.tick;
+          requestSave('timer');
+        }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
         skillFeed.ingest(state.events.list, who);
@@ -589,6 +684,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             const ty = Math.floor((apos.y / 256 - 1) / TILE_PX);
             enterRoom(roomAt(tx, ty) ?? OUTDOORS);
             fadeAt = performance.now();
+            requestSave('transition');
           } else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') notices.toast(W_STR.unlocked);
           else if (e.type === 'chestOpened') notices.toast(W_STR.chest);
@@ -830,6 +926,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             icon,
           );
         }
+      }
+      // The save glyph: a small disk in the bottom right corner for a moment after each save.
+      const gk = 1 - (now - saveGlyphAt) / GLYPH_MS;
+      if (gk > 0) {
+        const gx = v.safe.x + v.safe.w - 12;
+        const gy = v.safe.y + v.safe.h - 12;
+        renderer.drawRect(Layer.Hud, gx - 1, gy - 1, 10, 10, DARK, gk);
+        renderer.drawRect(Layer.Hud, gx, gy, 8, 8, INK, gk);
+        renderer.drawRect(Layer.Hud, gx + 2, gy, 4, 3, DARK, gk);
+        renderer.drawRect(Layer.Hud, gx + 1, gy + 5, 6, 3, GOLD, gk);
       }
       const fade = 1 - (now - fadeAt) / FADE_MS;
       if (fade > 0) renderer.drawRect(Layer.Hud, 0, 0, v.width, v.height, '#000000', fade);
