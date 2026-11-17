@@ -1,0 +1,156 @@
+/**
+ * Every bound the validator uses, as a named constant with its derivation. Bounds come from
+ * `content/` and `content/balance/` wherever they can, so a balance change moves the bound with
+ * it and an honest player cannot be tripped by a retune. Where a number is a judgement call it
+ * says so, and it is generous: a legitimate player must never reach one.
+ */
+import { SKILLS_BALANCE } from '../../content/balance/skills';
+import { COMBAT } from '../../content/balance/combat';
+import { ITEMS_BALANCE } from '../../content/balance/items';
+import { MOVEMENT } from '../../content/balance/movement';
+import { SHOP_BALANCE } from '../../content/balance/shop';
+import { ATTACKS } from '../../content/combat/attacks';
+import { CREATURES } from '../../content/creatures';
+import { RECIPES } from '../../content/items/recipes';
+import { ITEMS } from '../../content/items';
+import { REQUESTS, SHOPS } from '../../content/dialogue';
+import { FIXTURES } from '../../content/world/fixtures';
+import { SKILLS } from '../../content/skills';
+import type { XpSource } from '../../content/skills/types';
+
+/** Sim ticks per second. */
+export const TPS = 30;
+
+/**
+ * Slack, in seconds, between play time and the wall clock between first and latest save.
+ * Judgement: a device clock corrected by up to ten minutes (network time, a manual fix) is not
+ * tampering. Large jumps are the trusted-time layer's job (M2-04).
+ */
+export const PLAY_SLACK_SECONDS = 600;
+
+/** The summary's tick and the recorded play seconds are written together; they may differ by this. */
+export const TICK_SLACK_SECONDS = 10;
+
+/** Hard caps. Judgement: far above anything the game can reach, below anything that breaks it. */
+export const COIN_HARD_CAP = 1_000_000_000;
+export const MAX_BAG_SLOTS = 60;
+export const MAX_ENTITY_CAPACITY = 100_000;
+
+/** The fastest player swing, in ticks: windup, active and recover of the quickest attack. */
+export const SWING_TICKS_MIN = Math.min(
+  ...Object.values(ATTACKS)
+    .filter((a) => a.family !== 'creature')
+    .map((a) => a.windup + a.active + a.recover),
+);
+
+/**
+ * Most creatures one swing can hit. Judgement: the engagement cap is six, but wide arcs hit what
+ * is in front of them, so three is generous for the shapes in the game.
+ */
+export const MAX_TARGETS_PER_SWING = 3;
+
+/** Damage events per second: fastest swing rate times targets per swing. */
+export const DAMAGE_EVENTS_PER_SECOND = (TPS / SWING_TICKS_MIN) * MAX_TARGETS_PER_SWING;
+
+/** Dodges per second: one dodge takes `dodge.ticks`, and Stamina would run out first. */
+export const DODGE_EVENTS_PER_SECOND = TPS / COMBAT.dodge.ticks;
+
+/** Gathers per second: one sweep takes `sweepTicks`. */
+export const GATHER_EVENTS_PER_SECOND = TPS / ITEMS_BALANCE.gather.sweepTicks;
+
+/** Cooks per second. Judgement: cooking has no timer in the sim, so two a second is far past a hand. */
+export const COOK_EVENTS_PER_SECOND = 2;
+
+/** Sprint pays once per `sprintPx` run, at sprint speed (walk speed times the sprint factor). */
+export const SPRINT_EVENTS_PER_SECOND =
+  (((MOVEMENT.walkSpeed * MOVEMENT.sprintFactor256) / 256 / 256) * TPS) / SKILLS_BALANCE.sprintPx;
+
+/** Creatures killed per second. Judgement: design/04 puts a common kill at 4 to 8 s; this allows area kills. */
+export const KILLS_PER_SECOND_MAX = 2;
+
+/** One-off allowance for counts and lumps that do not scale with time. */
+export const COUNT_SLACK = 20;
+export const XP_SLACK = 300;
+
+const rateOf = (on: XpSource['on']): number =>
+  on === 'damage'
+    ? DAMAGE_EVENTS_PER_SECOND
+    : on === 'dodge'
+      ? DODGE_EVENTS_PER_SECOND
+      : on === 'gather'
+        ? GATHER_EVENTS_PER_SECOND
+        : on === 'cook'
+          ? COOK_EVENTS_PER_SECOND
+          : SPRINT_EVENTS_PER_SECOND;
+
+/** Most XP one event of a source can pay: base, scaled up to the challenge ceiling. */
+const perEvent = (s: XpSource): number =>
+  s.scaled === false ? s.base : Math.floor((s.base * SKILLS_BALANCE.challenge.ceilPct) / 100);
+
+/** Things a first-time lump can key on: creatures, items and recipes. */
+const FIRST_TIME_SUBJECTS =
+  Object.keys(CREATURES).length + Object.keys(ITEMS).length + Object.keys(RECIPES).length;
+
+/**
+ * The most XP a skill can have earned in `seconds` of play: every source firing at its fastest
+ * rate for the whole time at the top challenge pay, plus every first-time lump, plus slack.
+ */
+export function xpCeiling(skill: string, seconds: number): number {
+  const def = SKILLS[skill];
+  if (!def) return 0;
+  let total = XP_SLACK;
+  for (const s of def.sources) {
+    total += perEvent(s) * rateOf(s.on) * seconds;
+    total += (s.firstTime ?? 0) * FIRST_TIME_SUBJECTS;
+  }
+  return Math.ceil(total);
+}
+
+/** The most coin one kill of a creature can drop: the top of every coin entry in its table. */
+export function maxCoinPerKill(creature: string): number {
+  return (CREATURES[creature]?.drops ?? [])
+    .filter((d) => d.item === 'item.coin')
+    .reduce((n, d) => n + d.max, 0);
+}
+
+/** The most of an item one kill of a creature can drop. */
+export function maxItemPerKill(creature: string, item: string): number {
+  return (CREATURES[creature]?.drops ?? [])
+    .filter((d) => d.item === item)
+    .reduce((n, d) => n + d.max, 0);
+}
+
+/** Coin in every chest in the game, each opened once. */
+export const CHEST_COIN_TOTAL = Object.values(FIXTURES).reduce(
+  (n, f) => n + (f.loot?.coin ?? 0),
+  0,
+);
+
+/** Coin paid by every request, each once. */
+export const REQUEST_COIN_TOTAL = Object.values(REQUESTS).reduce((n, r) => n + r.reward.coin, 0);
+
+/**
+ * The most coin shops can pay out in `seconds`: what they start with, what they earn back on
+ * their regen timer, and what the player has paid them (their purse refills from purchases).
+ */
+export function saleCeiling(seconds: number, spentOnPurchases: number): number {
+  const shops = Object.values(SHOPS);
+  const start = shops.reduce((n, s) => n + s.purse.start, 0);
+  const regens = Math.floor(seconds / (SHOP_BALANCE.purseRegenEvery / TPS)) + 1;
+  return start + regens * SHOP_BALANCE.purseRegen * shops.length + spentOnPurchases;
+}
+
+/**
+ * The most coin the avatar can have earned from anything in `seconds`, with `kills` made: loot
+ * per kill, every chest, every request, and shop sales. Used for the `seed` source of a save
+ * migrated from before the ledger, which has no history to break down.
+ */
+export function coinCeiling(seconds: number, kills: number, spentOnPurchases: number): number {
+  const perKill = Math.max(0, ...Object.keys(CREATURES).map(maxCoinPerKill));
+  return (
+    Math.max(kills, KILLS_PER_SECOND_MAX * seconds + COUNT_SLACK) * perKill +
+    CHEST_COIN_TOTAL +
+    REQUEST_COIN_TOTAL +
+    saleCeiling(seconds, spentOnPurchases)
+  );
+}

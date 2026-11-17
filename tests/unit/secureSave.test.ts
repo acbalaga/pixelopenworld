@@ -63,6 +63,8 @@ function plainOf(s: SimState, seq = 1, prevHash = ''): SavePlain {
     sim: serializeState(s),
     summary: deriveSummary(s, 300),
     ledger: structuredClone(s.ledger),
+    startedAt: 1_700_000_000_000 - 300_000,
+    trust: { state: 'intact', reasons: [], flaggedAt: null },
   };
 }
 

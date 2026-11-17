@@ -1,3 +1,4 @@
+import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
 import { deserializeState, serializeState } from '../sim/state';
@@ -68,6 +69,18 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const state = deserializeState(JSON.stringify({ ...raw, ledger }));
     return { ...old, schema: 3, sim: serializeState(state), ledger };
   },
+  /**
+   * 3 to 4 (M2-02): the save records when it was first written and whether it is Intact or
+   * Flagged. A save from before has no record of its start, so it is taken to have started
+   * `playSeconds` before it was last written, which is the earliest an honest save could have.
+   * Every save starts Intact here; the validator runs on load and flags it if it is not.
+   */
+  3: (old) => ({
+    ...old,
+    schema: 4,
+    startedAt: old.createdAt - old.playSeconds * 1000,
+    trust: intact(),
+  }),
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

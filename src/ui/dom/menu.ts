@@ -1,3 +1,5 @@
+import type { Trust } from '../../save/integrity/reasons';
+import { createSeal } from './seal';
 import { UI_BALANCE } from '../../content/balance/ui';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
@@ -38,6 +40,8 @@ export interface MenuDeps {
   /** Paints the avatar preview into a canvas. */
   drawAvatar: (canvas: HTMLCanvasElement) => void;
   onLogOut: () => void;
+  /** The save's trust state, read when System draws. */
+  trust: () => Trust;
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -625,6 +629,9 @@ export class MenuSheet {
       () => st.get().muted,
       (v) => st.set({ muted: v }),
     );
+
+    this.body.appendChild(this.heading(S.title.sealLabel));
+    this.body.appendChild(createSeal(this.deps.trust()));
 
     const out = el('div', 'pow-logout');
     const btn = el('button', 'pow-button pow-danger', sys.logOut);

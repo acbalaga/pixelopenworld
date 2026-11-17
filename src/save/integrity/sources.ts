@@ -1,0 +1,55 @@
+/**
+ * Where each item can legitimately come from, derived from content so it cannot drift from the
+ * game: creature drop tables, gathering nodes, recipes, request rewards, chests, shop stock and
+ * dialogue gifts. The ledger records the source of every item the sim creates; a rule compares.
+ */
+import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
+import { ITEMS_BALANCE } from '../../content/balance/items';
+import { CREATURES } from '../../content/creatures';
+import { NODES, RECIPES } from '../../content/items/recipes';
+import { FIXTURES } from '../../content/world/fixtures';
+import type { ItemSource } from '../../sim/ledger';
+
+/** The item a failed cook makes. */
+export const BURNT = 'item.burnt_mess';
+
+function build(): Map<string, Set<ItemSource>> {
+  const out = new Map<string, Set<ItemSource>>();
+  const add = (item: string, source: ItemSource): void => {
+    let s = out.get(item);
+    if (!s) out.set(item, (s = new Set()));
+    s.add(source);
+  };
+  for (const c of Object.values(CREATURES)) for (const d of c.drops) add(d.item, 'loot');
+  for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
+  for (const r of Object.values(RECIPES)) add(r.result, 'cook');
+  add(BURNT, 'cook');
+  for (const r of Object.values(REQUESTS)) for (const i of r.reward.items) add(i.item, 'request');
+  for (const f of Object.values(FIXTURES))
+    for (const i of f.loot?.items ?? []) add(i.item, 'chest');
+  for (const s of Object.values(SHOPS)) for (const i of s.stock) add(i, 'shop');
+  for (const d of Object.values(DIALOGUES)) {
+    for (const n of Object.values(d.nodes)) {
+      const effects = [...(n.do ?? []), ...(n.choices ?? []).flatMap((c) => c.do ?? [])];
+      for (const e of effects) if ('give' in e) add(e.give, 'dialogue');
+    }
+  }
+  for (const s of ITEMS_BALANCE.starter.bag) add(s.item, 'start');
+  for (const item of Object.values(ITEMS_BALANCE.starter.equipment)) add(item, 'start');
+  return out;
+}
+
+const SOURCES = build();
+
+/** Whether `item` can come from `source`. `seed` is allowed for anything: see the plausibility layer. */
+export function canCome(item: string, source: string): boolean {
+  if (source === 'seed') return true;
+  return SOURCES.get(item)?.has(source as ItemSource) ?? false;
+}
+
+/** Creatures whose drop table includes `item`. */
+export function droppedBy(item: string): string[] {
+  return Object.values(CREATURES)
+    .filter((c) => c.drops.some((d) => d.item === item))
+    .map((c) => c.id);
+}
