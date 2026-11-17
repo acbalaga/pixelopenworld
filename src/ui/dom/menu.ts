@@ -1,5 +1,6 @@
 import type { Trust } from '../../save/integrity/reasons';
 import { createBackupSection, type BackupDeps } from './backup';
+import { createDeviceSection } from './device';
 import { createSeal } from './seal';
 import { UI_BALANCE } from '../../content/balance/ui';
 import { fill } from '../../content/strings/skills';
@@ -635,6 +636,9 @@ export class MenuSheet {
 
     this.body.appendChild(this.heading(S.title.sealLabel));
     this.body.appendChild(createSeal(this.deps.trust()));
+
+    this.body.appendChild(this.heading(S.device.heading));
+    this.body.appendChild(createDeviceSection());
 
     this.body.appendChild(this.heading(S.backup.heading));
     this.body.appendChild(createBackupSection(this.root, this.deps.backup));

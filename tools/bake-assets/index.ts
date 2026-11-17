@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SPRITES, TILES } from '../../src/content/sprites';
 import { bakeAll } from './bake';
+import { bakePwa } from './pwa';
 import { decodePng } from './png';
 import { ATTACKS } from '../../src/content/combat/attacks';
 import { CREATURES, SPAWNERS } from '../../src/content/creatures';
@@ -29,6 +30,7 @@ function validateAll(): string[] {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'baked');
+const publicDir = join(root, 'public');
 const mode = process.argv[2];
 
 if (mode === '--validate') {
@@ -66,6 +68,10 @@ const bytes = (v: Uint8Array | string): Buffer =>
 
 if (mode === '--check') {
   const diffs: string[] = [];
+  for (const [name, v] of bakePwa()) {
+    const p = join(publicDir, name);
+    if (!existsSync(p) || !sameFile(name, readFileSync(p), bytes(v))) diffs.push(`public/${name}`);
+  }
   for (const [name, v] of files) {
     const p = join(outDir, name);
     if (!existsSync(p) || !sameFile(name, readFileSync(p), bytes(v))) diffs.push(name);
@@ -84,4 +90,9 @@ if (mode === '--check') {
   for (const n of readdirSync(outDir)) if (n !== '.gitkeep') rmSync(join(outDir, n));
   for (const [name, v] of files) writeFileSync(join(outDir, name), bytes(v));
   console.log(`bake: wrote ${files.size} files to baked/`);
+  for (const [name, v] of bakePwa()) {
+    mkdirSync(dirname(join(publicDir, name)), { recursive: true });
+    writeFileSync(join(publicDir, name), bytes(v));
+  }
+  console.log('bake: wrote the PWA icons and manifest to public/');
 }
