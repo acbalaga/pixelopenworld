@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { COMBAT as C } from '../../src/content/balance/combat';
 import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
 import { CREATURES } from '../../src/content/creatures';
+import { WEAPONS } from '../../src/content/combat/attacks';
 import { ITEMS } from '../../src/content/items';
 import { NODES, RECIPES } from '../../src/content/items/recipes';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
@@ -154,10 +155,37 @@ describe('equipment', () => {
     r.tick({ type: 'equip', slot: stash(r, 'item.outfit_wayfarer') });
     expect(cb(r).defense).toBe(2 + 1);
   });
-  it('the main hand can be swapped but never left empty', () => {
+  it('an empty main hand fights with bare hands, and a weapon takes over again', () => {
     const r = rig();
-    expect(unequip(r.s, r.me, 'main')).toBe(false);
-    expect(inv(r).equipment.main).toBe('item.sword_rusty');
+    r.tick({ type: 'unequip', slot: 'main' });
+    expect(inv(r).equipment.main).toBeNull();
+    expect(countItem(inv(r), 'item.sword_rusty')).toBe(1);
+    expect(cb(r)).toMatchObject({ weapon: 'fists', power: WEAPONS.fists!.power });
+    r.tick({ type: 'equip', slot: inv(r).slots.findIndex((x) => x?.item === 'item.sword_rusty') });
+    expect(cb(r)).toMatchObject({ weapon: 'sword', power: 10 });
+  });
+  it('bare hands hit enemies through the real combat loop and pay no weapon skill', () => {
+    const r = rig();
+    r.tick({ type: 'unequip', slot: 'main' });
+    const p = feetPx(r);
+    const foe = spawnEnemy(r.s, 'creature.mossling', p.x + 14, p.y);
+    r.tick({ type: 'move', dir: 2 });
+    r.tick({ type: 'move', dir: null });
+    r.events.length = 0;
+    for (let i = 0; i < 60; i++) r.tick();
+    const hits = ofType(r.events, 'damageDealt').filter((e) => e.src === r.me && e.dst === foe);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((h) => h.tag === 'unarmed')).toBe(true);
+    expect(r.s.entities.comps.skills[r.me]!.xp['skill.blades']).toBeUndefined();
+  });
+  it('the weapon rank of a held weapon does not carry over to bare hands', () => {
+    const r = rig();
+    r.s.entities.comps.skills[r.me]!.points['skill.blades'] = 20;
+    r.run(1);
+    expect(cb(r).skillRank).toBe(20);
+    r.tick({ type: 'unequip', slot: 'main' });
+    r.run(1);
+    expect(cb(r).skillRank).toBe(0);
   });
   it('taking gear off with a full bag is refused', () => {
     const r = rig();
@@ -430,6 +458,23 @@ describe('cooking and experiments', () => {
     expect(inv(r).recipes).toEqual(['recipe.herb_tea']);
     expect(countItem(inv(r), 'item.herb_tea')).toBe(2);
     expect(ofType(r.events, 'cooked')).toHaveLength(2);
+  });
+  it('a burnt mess is still edible, but weak, and gives no Fed buff', () => {
+    const r = atPot();
+    stash(r, 'item.sunwort');
+    stash(r, 'item.berry_blue');
+    r.tick({ type: 'cook', items: ['item.sunwort', 'item.berry_blue'] });
+    const mess = ITEMS['item.burnt_mess']!.food!;
+    const best = Math.max(...Object.values(ITEMS).map((i) => i.food?.hp ?? 0));
+    expect(mess.hp).toBeGreaterThan(0);
+    expect(mess.hp).toBeLessThan(ITEMS['item.dish_bread']!.food!.hp);
+    expect(mess.hp).toBeLessThan(best / 4);
+    expect(mess.fed).toBeUndefined();
+    pools(r).hp = 10;
+    r.tick({ type: 'use', slot: inv(r).slots.findIndex((x) => x?.item === 'item.burnt_mess') });
+    expect(pools(r).hp).toBe(10 + mess.hp);
+    expect(countItem(inv(r), 'item.burnt_mess')).toBe(0);
+    expect(r.s.entities.comps.fed[r.me]).toBeNull();
   });
   it('a combination with no recipe burns the ingredients and teaches nothing', () => {
     const r = atPot();

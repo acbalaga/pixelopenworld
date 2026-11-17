@@ -93,7 +93,8 @@ const LIST: readonly ItemDef[] = [
   }),
   // Money and odds and ends. Coin is held as a number, not in a slot.
   item('item.coin', 'currency', { value: 1, stack: 9999 }),
-  item('item.burnt_mess', 'misc', { value: 0 }),
+  // Still edible, just poor: it restores a little and gives no buff.
+  item('item.burnt_mess', 'consumable', { value: 0, food: { hp: 3, sta: 0, foc: 0 } }),
   item('item.old_key', 'misc', { value: 0, stack: 1 }),
   item('item.river_pebble', 'misc', { value: 1 }),
   item('item.crow_feather', 'misc', { value: 2 }),

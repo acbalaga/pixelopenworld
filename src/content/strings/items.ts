@@ -49,7 +49,7 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.coin.name': 'Coin',
   'item.coin.desc': 'Stamped with a small sun.',
   'item.burnt_mess.name': 'Burnt Mess',
-  'item.burnt_mess.desc': 'Something went wrong in the pot.',
+  'item.burnt_mess.desc': 'Something went wrong in the pot. You can still eat it.',
   'item.old_key.name': 'Old Key',
   'item.old_key.desc': 'The teeth are worn smooth.',
   'item.river_pebble.name': 'River Pebble',

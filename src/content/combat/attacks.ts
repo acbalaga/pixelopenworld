@@ -9,7 +9,7 @@ export type HitShape =
   /** Everything within `radius` of the attacker. Used for slams, with a ground marker. */
   | { kind: 'circle'; radius: number };
 
-export type Family = 'blades' | 'polearms' | 'creature';
+export type Family = 'blades' | 'polearms' | 'unarmed' | 'creature';
 
 /** One attack. `windup` is the telegraph: the hit shape is dangerous only during `active`. */
 export interface AttackDef {
@@ -131,6 +131,51 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     shape: { kind: 'line', reach: 44, halfWidth: 8 },
     pierce: true,
     heavy: true,
+  },
+  /** Bare hands: quick, short, light. Used whenever nothing is held. */
+  'attack.fist_jab': {
+    id: 'attack.fist_jab',
+    family: 'unarmed',
+    windup: 3,
+    active: 2,
+    recover: 4,
+    mult: 100,
+    stagger: 5,
+    knock: 4,
+    shape: { kind: 'arc', reach: 16, cos256: 100 },
+  },
+  'attack.fist_combo_1': {
+    id: 'attack.fist_combo_1',
+    family: 'unarmed',
+    windup: 3,
+    active: 2,
+    recover: 4,
+    mult: 100,
+    stagger: 5,
+    knock: 3,
+    shape: { kind: 'arc', reach: 16, cos256: 100 },
+  },
+  'attack.fist_combo_2': {
+    id: 'attack.fist_combo_2',
+    family: 'unarmed',
+    windup: 3,
+    active: 2,
+    recover: 4,
+    mult: 110,
+    stagger: 5,
+    knock: 3,
+    shape: { kind: 'arc', reach: 16, cos256: 100 },
+  },
+  'attack.fist_combo_3': {
+    id: 'attack.fist_combo_3',
+    family: 'unarmed',
+    windup: 4,
+    active: 2,
+    recover: 7,
+    mult: 140,
+    stagger: 10,
+    knock: 8,
+    shape: { kind: 'arc', reach: 18, cos256: 100 },
   },
   /** Blades technique: a fast dash that cuts through whoever it reaches. */
   'technique.blades_lunge': {
@@ -286,6 +331,16 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.spear_combo_1', 'attack.spear_combo_2', 'attack.spear_combo_3'],
     chainWindow: 4,
     reach: 40,
+  },
+  /** What the avatar fights with when nothing is held. */
+  fists: {
+    id: 'fists',
+    family: 'unarmed',
+    power: 5,
+    auto: 'attack.fist_jab',
+    combo: ['attack.fist_combo_1', 'attack.fist_combo_2', 'attack.fist_combo_3'],
+    chainWindow: 4,
+    reach: 16,
   },
   /** What a common creature fights with. */
   claws: {

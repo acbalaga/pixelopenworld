@@ -143,6 +143,9 @@ export function recomputeGear(state: SimState, who: EntityId): void {
   const cb = getComp(state.entities, who, 'combatant');
   if (!inv || !cb) return;
   let defense = 0;
+  // Nothing in the main hand means bare hands.
+  cb.weapon = 'fists';
+  cb.power = WEAPONS.fists?.power ?? cb.power;
   for (const slot of EQUIP_SLOTS) {
     const def = ITEMS[inv.equipment[slot] ?? '']?.equip;
     if (!def) continue;
@@ -191,14 +194,11 @@ export function equip(state: SimState, who: EntityId, slot: number): boolean {
   return true;
 }
 
-/**
- * Takes worn gear off into the bag. The main hand is never left empty (there is no unarmed
- * attack yet), so it can only be swapped.
- */
+/** Takes worn gear off into the bag. An empty main hand fights with bare hands. */
 export function unequip(state: SimState, who: EntityId, slot: EquipSlot): boolean {
   const inv = getComp(state.entities, who, 'inventory');
   const worn = inv?.equipment[slot];
-  if (!inv || !worn || slot === 'main' || !idle(state, who)) return false;
+  if (!inv || !worn || !idle(state, who)) return false;
   if (!canHold(inv, worn)) {
     emit(state.events, { type: 'bagFull', id: who, item: worn });
     return false;

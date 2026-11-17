@@ -44,7 +44,9 @@ function practice(state: SimState, who: EntityId, p: Practice): void {
 function syncWeaponRank(state: SimState, who: EntityId): void {
   const cb = getComp(state.entities, who, 'combatant');
   const family = cb ? WEAPONS[cb.weapon]?.family : undefined;
-  if (!cb || !family) return;
+  if (!cb) return;
+  cb.skillRank = 0;
+  if (!family) return;
   for (const id of Object.keys(SKILLS).sort()) {
     if (SKILLS[id]?.weapon === family) {
       cb.skillRank = pointsOf(state, who, id);
