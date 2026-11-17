@@ -306,6 +306,8 @@ export interface TechniqueDef {
   /** Hold to aim, release to fire. */
   aimed: boolean;
   cooldown: number;
+  /** Button icon sprite id. */
+  icon: string;
 }
 
 export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
@@ -314,11 +316,13 @@ export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
     attack: 'technique.blades_lunge',
     aimed: false,
     cooldown: 45,
+    icon: 'ui.icon_lunge',
   },
   'technique.ember_bolt': {
     id: 'technique.ember_bolt',
     attack: 'technique.ember_bolt',
     aimed: true,
     cooldown: 60,
+    icon: 'ui.icon_ember',
   },
 };

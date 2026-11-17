@@ -16,6 +16,10 @@ function gitSha(): string {
 
 export default defineConfig({
   plugins: [cloudflare()],
-  define: { __APP_VERSION__: JSON.stringify(gitSha()) },
+  define: {
+    __APP_VERSION__: JSON.stringify(gitSha()),
+    // UTC, to the minute, so a refreshed page can be told apart from a stale one.
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString().slice(5, 16).replace('T', ' ')),
+  },
   build: { target: 'es2022', sourcemap: false },
 });

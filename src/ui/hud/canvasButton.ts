@@ -1,7 +1,7 @@
 import { chooseTextRenderer, type PixelFontSize } from '../text/rule';
 import type { PixelFont } from '../text/pixelFont';
 import type { PanelCache } from '../panel';
-import type { Renderer } from '../../render/renderer';
+import { Layer, type Renderer } from '../../render/renderer';
 
 /** A button rectangle in logical px. */
 export interface ButtonRect {
@@ -9,6 +9,13 @@ export interface ButtonRect {
   y: number;
   w: number;
   h: number;
+}
+
+/** An icon drawn in place of a label. `size` is its width and height in logical px. */
+export interface ButtonIcon {
+  handle: number;
+  size: number;
+  alpha?: number;
 }
 
 /** Everything a canvas button needs to draw. */
@@ -34,8 +41,21 @@ export function drawCanvasButton(
   label: string,
   pressed: boolean,
   font: PixelFontSize = 'small',
+  icon?: ButtonIcon,
 ): { pixelLabel: boolean } {
   kit.panels.draw(r, rect.x, rect.y, rect.w, rect.h, pressed ? 'pressed' : 'base');
+  if (icon) {
+    // An icon replaces the label: it reads at a glance and needs no text rule.
+    r.drawSprite(
+      Layer.Hud,
+      icon.handle,
+      rect.x + Math.floor((rect.w - icon.size) / 2),
+      rect.y + Math.floor((rect.h - icon.size) / 2) + (pressed ? 1 : 0),
+      false,
+      icon.alpha ?? 1,
+    );
+    return { pixelLabel: false };
+  }
   const rule = chooseTextRenderer({
     text: label,
     lines: 1,

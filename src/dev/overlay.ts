@@ -5,6 +5,7 @@
  */
 
 import './dev.css';
+import { BUILD_LABEL } from '../shared/version';
 
 const N = 240;
 
@@ -130,6 +131,7 @@ export class DevOverlay {
       `logical ${i.logicalWidth}x${i.logicalHeight} at ${i.scale}x  heap ${mem === null ? 'n/a' : `${mem.toFixed(1)} MB`}`,
     ];
     if (i.extra) lines.push(i.extra);
+    lines.push(`build ${BUILD_LABEL}`);
     return lines.join('\n');
   }
 }
