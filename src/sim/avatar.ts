@@ -8,12 +8,13 @@ import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 import { newSkills } from './skills';
 import { interactFixture } from './systems/fixtures';
+import { hintSeen } from './systems/hints';
 import { buy, interactNpc, sell, talk } from './systems/npcs';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, recomputeGear } from './items';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
-export function createAvatar(state: SimState, x: number, y: number): EntityId {
+export function createAvatar(state: SimState, x: number, y: number, handle = 'Traveler'): EntityId {
   const id = spawn(state.entities);
   setComp(state.entities, id, 'pos', { x, y });
   setComp(state.entities, id, 'vel', { x: 0, y: 0 });
@@ -31,6 +32,7 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
     coin: 0,
     respawn: { x, y },
     winded: false,
+    handle,
   });
   setComp(state.entities, id, 'pools', newPools(state.tick));
   setComp(
@@ -68,7 +70,8 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   if (c.type === 'interact') {
     interactFixture(state, who);
     interactNpc(state, who);
-  } else if (c.type === 'talk') talk(state, who, c);
+  } else if (c.type === 'hint') hintSeen(state, who, c.id);
+  else if (c.type === 'talk') talk(state, who, c);
   else if (c.type === 'buy') buy(state, who, c);
   else if (c.type === 'sell') sell(state, who, c);
   applyFighterCommand(state, who, c);

@@ -30,6 +30,8 @@ export interface Avatar {
   respawn: Vec;
   /** Ran dry: sprint is off until stamina recovers. */
   winded: boolean;
+  /** The name the player chose at setup. Shown to other players, so it is validated (shared/handle). */
+  handle: string;
 }
 
 /** Health, Stamina and Focus. Health in points, Stamina and Focus in tenths. */
@@ -243,6 +245,10 @@ export interface Fixture {
 /** What the avatar has done with people: flags set by dialogue, and requests taken. */
 export interface Journal {
   flags: string[];
+  /** Hints that have been shown and are done (acted on, or expired). Never shown again. */
+  hints: string[];
+  /** The hint on screen now, with where and when it appeared, or null. */
+  hint: { id: string; at: number; x: number; y: number } | null;
   requests: Record<string, { state: 'active' | 'ready' | 'done'; progress: number }>;
 }
 

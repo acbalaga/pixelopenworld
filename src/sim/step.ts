@@ -11,6 +11,7 @@ import { spawnerSystem } from './systems/spawner';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
+import { hintsSystem } from './systems/hints';
 import { requestsSystem } from './systems/npcs';
 import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
@@ -45,6 +46,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   poolsSystem,
   itemsSystem,
   requestsSystem,
+  hintsSystem,
   // Last, so it sees every event the other systems sent this tick.
   skillsSystem,
 ];

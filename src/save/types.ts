@@ -2,7 +2,7 @@ import type { DollSpec } from '../content/dolls/parts';
 import type { SaveSummary } from '../shared/summary';
 
 /** The save layout version. Bump it for any change to saved state, and add a migration. */
-export const CURRENT_SCHEMA = 1;
+export const CURRENT_SCHEMA = 2;
 
 /**
  * What a save holds, before any encoding (tech/02). `sim` is the canonical text from

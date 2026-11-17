@@ -1,0 +1,68 @@
+import { SCAFFOLD_CHAT } from '../../content/chat/scaffold';
+import { UI_STRINGS as S } from '../../content/strings/ui';
+
+/** The one-line hint, near the top, that never takes input. */
+export class HintLine {
+  private line: HTMLElement | null = null;
+  private current: string | null = null;
+
+  constructor(private readonly root: HTMLElement) {}
+
+  /** Shows the hint with this key under `UI_STRINGS.hints`, or hides it when null. */
+  set(key: string | null): void {
+    if (key === this.current) return;
+    this.current = key;
+    this.line?.remove();
+    this.line = null;
+    if (!key) return;
+    const text = (S.hints as Record<string, string>)[key];
+    if (!text) return;
+    const l = document.createElement('p');
+    l.className = 'pow-hint-line';
+    l.setAttribute('role', 'status');
+    l.textContent = text;
+    this.root.appendChild(l);
+    this.line = l;
+  }
+}
+
+/**
+ * The scripted chat ticker (scaffolding, see `content/chat/scaffold.ts`). `update` is called each
+ * frame with seconds of play; each line shows once as play time passes it, and a session that
+ * starts past a line does not replay it.
+ */
+export class ChatTicker {
+  private readonly box: HTMLElement;
+  private next = 0;
+
+  constructor(root: HTMLElement, startSec: number) {
+    this.box = document.createElement('div');
+    this.box.className = 'pow-chat-ticker';
+    // Not a live region: it would read every line aloud over play.
+    this.box.setAttribute('aria-hidden', 'true');
+    root.appendChild(this.box);
+    while (
+      this.next < SCAFFOLD_CHAT.length &&
+      (SCAFFOLD_CHAT[this.next] as { atSec: number }).atSec < startSec
+    )
+      this.next++;
+  }
+
+  update(playSec: number): void {
+    while (this.next < SCAFFOLD_CHAT.length) {
+      const line = SCAFFOLD_CHAT[this.next] as (typeof SCAFFOLD_CHAT)[number];
+      if (line.atSec > playSec) break;
+      this.next++;
+      const p = document.createElement('p');
+      p.className = 'pow-chat-line';
+      const name = document.createElement('span');
+      name.className = 'pow-chat-name';
+      name.textContent = `${line.name}:`;
+      p.appendChild(name);
+      p.appendChild(document.createTextNode(` ${line.text}`));
+      this.box.appendChild(p);
+      window.setTimeout(() => p.remove(), 14_000);
+      while (this.box.children.length > 3) this.box.firstElementChild?.remove();
+    }
+  }
+}

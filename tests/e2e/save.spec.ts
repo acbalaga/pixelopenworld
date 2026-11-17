@@ -74,8 +74,8 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
     window.addEventListener('pagehide', stop, true);
     document.addEventListener('visibilitychange', stop, true);
   });
-  // A plain address, so `?at=` does not move the loaded avatar.
-  await page.goto('/');
+  // No `?at=`, which would move the loaded avatar. `skip` goes past the title.
+  await page.goto('/?skip=1');
   await ready(page);
   expect(await attr(page, 'data-loaded-seq')).toBe(savedSeq);
   expect(await attr(page, 'data-loaded-hash')).toBe(savedHash);
