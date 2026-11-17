@@ -25,14 +25,15 @@ import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
 import { drawLockFrame, drawPoolBars } from '../ui/hud/combatHud';
 import { PixelFont } from '../ui/text/pixelFont';
-import { brainTick, createBrain } from './brain';
+import { CREATURES, SPAWNERS } from '../content/creatures';
+import { createSpawner } from '../sim/systems/spawner';
+import { drawTelegraphs, telegraphOf } from '../render/telegraph';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
 import { DollFactory } from '../render/dollSprite';
 import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
-import { spawnEnemy } from '../sim/combat/enemy';
 import { cardinalOf } from '../sim/combat/fighter';
 import { px } from '../sim/kernel/fixed';
 import { setComp, spawn } from '../sim/kernel/entities';
@@ -122,27 +123,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     if (e.code === 'KeyR' && !e.repeat)
       player.draw({ ...randomDoll(rand), mainHand: 'sword', offHand: 'none' });
   });
-  // Each facing has its own anim; look them up once.
-  const sets: Record<string, Record<'up' | 'down' | 'right' | 'left', number>> = {};
-  const animSet = (id: string): Record<'up' | 'down' | 'right' | 'left', number> => {
-    const set = sets[id];
-    if (set) return set;
-    const make = (name: string) => ({
-      up: atlas.anim(id, `${name}_up`),
-      down: atlas.anim(id, `${name}_down`),
-      right: atlas.anim(id, `${name}_right`),
-      left: atlas.anim(id, `${name}_left`),
-    });
-    const built = make('idle');
-    sets[id] = built;
-    for (const name of ['walk', 'attack', 'hurt', 'dodge']) sets[`${id}#${name}`] = make(name);
-    return built;
+  // Anim handles by sprite, action and facing, looked up once. A missing action (a rooted plant
+  // has no walk) falls back to idle.
+  const animCache = new Map<string, number>();
+  const animOf = (id: string, name: string, facing: number): number => {
+    const dir = FACE_NAME[facing as 0 | 2 | 4 | 6];
+    const key = `${id}#${name}#${dir}`;
+    let h = animCache.get(key);
+    if (h === undefined) {
+      try {
+        h = atlas.anim(id, `${name}_${dir}`);
+      } catch {
+        h = atlas.anim(id, `idle_${dir}`);
+      }
+      animCache.set(key, h);
+    }
+    return h;
   };
-  animSet('char.player');
-  const animOf = (id: string, name: string, facing: number): number =>
-    (sets[name === 'idle' ? id : `${id}#${name}`] ?? animSet(id))[
-      FACE_NAME[facing as 0 | 2 | 4 | 6]
-    ];
 
   const settings = new SettingsStore(browserSettingsEnv());
   const uiImage = atlas.image(atlas.frame('ui.panel', 'base')) as HTMLImageElement;
@@ -189,28 +186,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   setComp(state.entities, rock, 'body', { w: px(12), h: px(8), solid: true });
   setComp(state.entities, rock, 'interactable', { kind: 'rock' });
 
-  // Practice creatures. They are people-shaped stand-ins until the creature art exists.
-  const foeCount = fly ? 0 : Number(params.get('foes') ?? 3);
-  const foeLook = new Map<number, string>();
-  for (let i = 0; i < foeCount; i++) {
-    const id = spawnEnemy(
-      state,
-      'creature.mossling',
-      feet.x + 70 + i * 26,
-      feet.y + 10 + (i % 2) * 26,
-    );
-    const key = `char.foe_${i}`;
-    dolls.create(key, {
-      ...randomDoll(rand),
-      mainHand: 'none',
-      offHand: 'none',
-      topColor: 'red',
-      top: 'vest',
-    });
-    animSet(key);
-    foeLook.set(id, key);
+  // Spawners come from the map's objects (`spawner.*`). `?foes=0` turns them off.
+  if (!fly && params.get('foes') !== '0') {
+    for (const c of chunks)
+      for (const o of c.objects)
+        if (o.kind.startsWith('spawner.') && SPAWNERS[o.kind])
+          createSpawner(
+            state,
+            o.kind,
+            (c.cx * 32 + o.x) * TILE_PX + 8,
+            (c.cy * 32 + o.y) * TILE_PX + 14,
+          );
   }
-  const brain = createBrain();
+  const lastDrawn = new Map<number, { x: number; y: number }>();
 
   const avatar = state.entities.comps.avatar[who];
   const apos = state.entities.comps.pos[who];
@@ -296,17 +284,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const facing = state.entities.comps.avatar[id]?.facing ?? (f ? cardinalOf(f.aim) : 4);
     let name = 'idle';
     let t = now;
+    const last = lastDrawn.get(id);
+    lastDrawn.set(id, { x, y });
+    const walking = last !== undefined && (last.x !== x || last.y !== y);
     if (f?.state === 'attack') {
       name = 'attack';
-      t = Math.min(f.t * (1000 / 30), 249);
+      t = Math.min(Math.max(0, f.t) * (1000 / 30), 249);
     } else if (f?.state === 'dodge') {
       name = 'dodge';
-      t = Math.min(f.t * (1000 / 30), 249);
+      t = Math.min(Math.max(0, f.t) * (1000 / 30), 249);
     } else if (f?.state === 'hurt' || f?.state === 'stagger' || f?.state === 'dead') name = 'hurt';
-    else if (v && (v.x !== 0 || v.y !== 0)) name = 'walk';
+    else if ((v && (v.x !== 0 || v.y !== 0)) || (!state.entities.comps.avatar[id] && walking))
+      name = 'walk';
     const a = animOf(spriteId, name, facing);
     const dead = f?.state === 'dead';
-    const blink = feedback.flashing(id, now);
+    // A creature winding up an attack flashes: the telegraph for close strikes.
+    const winding = f?.team === 1 && f.state === 'attack' && telegraphOf(state, id) !== null;
+    const blink = feedback.flashing(id, now) || (winding && Math.floor(now / 90) % 2 === 0);
     renderer.drawSprite(
       Layer.Objects,
       atlas.animFrame(a, t),
@@ -348,7 +342,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           avatar.facing = Math.abs(mx) > Math.abs(my) ? (mx > 0 ? 2 : 6) : my > 0 ? 4 : 0;
       } else {
         const rec = input.sampler.sample(performance.now());
-        brainTick(state, brain, who);
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
@@ -391,10 +384,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           Math.round(rp.x / 256),
           Math.round(rp.y / 256),
         );
-      for (const [id, key] of foeLook) {
+      drawTelegraphs(renderer, state);
+      for (const id of state.entities.comps.ai.keys()) {
+        const ai = state.entities.comps.ai[id];
         const p = state.entities.comps.pos[id];
-        if (p && state.entities.alive[id])
-          drawActor(key, id, now, Math.round(p.x / 256), Math.round(p.y / 256));
+        const def = ai ? CREATURES[ai.creature] : undefined;
+        if (ai && p && def && state.entities.alive[id])
+          drawActor(def.sprite, id, now, Math.round(p.x / 256), Math.round(p.y / 256));
       }
       if (fly) {
         const moving = avatar.intent !== null;

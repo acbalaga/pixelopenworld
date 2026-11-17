@@ -78,6 +78,8 @@ export const COMBAT = {
     /** Reach, px, within which the avatar recovers an Echo. */
     echoPickup: 12,
   },
+  /** Shortest allowed wind-up of any creature attack, in ms (design/04): 350 at tier 1 to 200 at tier 8. */
+  telegraphMs: { tier1: 350, tier8: 200 },
   crit: {
     /** Base crit chance, percent. */
     chancePct: 5,

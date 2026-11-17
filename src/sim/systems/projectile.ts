@@ -1,4 +1,4 @@
-import type { AttackDef, TechniqueDef } from '../../content/combat/attacks';
+import type { AttackDef } from '../../content/combat/attacks';
 import { dealDamage, centerPx, foes } from '../combat/fighter';
 import { len } from '../combat/geometry';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
@@ -14,7 +14,7 @@ export function launchProjectile(
   state: SimState,
   owner: EntityId,
   def: AttackDef,
-  proj: NonNullable<TechniqueDef['projectile']>,
+  proj: NonNullable<AttackDef['projectile']>,
 ): void {
   const f = getComp(state.entities, owner, 'fighter');
   const cb = getComp(state.entities, owner, 'combatant');

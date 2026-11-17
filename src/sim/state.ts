@@ -130,6 +130,36 @@ export interface Echo {
   coin: number;
 }
 
+export type AiState = 'idle' | 'wander' | 'notice' | 'approach' | 'leash' | 'flee';
+
+/** Creature brain. Attacking is the fighter's state machine; this decides when to start. */
+export interface Ai {
+  creature: string;
+  state: AiState;
+  /** Ticks in the current state. */
+  t: number;
+  /** Where it started. Leash and reset measure from here. Sub-pixel units. */
+  home: Vec;
+  target: number | null;
+  /** Ticks before each attack (by index in the creature's list) may be used again. */
+  cooldowns: number[];
+  /** Phase reached: 0 at the start, up by one at each Health threshold. */
+  phase: number;
+  /** Wander heading, a direction 0 to 7, and the spawner that made it (or -1). */
+  heading: number;
+  spawner: number;
+  /** Already ran away once at low Health. */
+  fled: boolean;
+}
+
+/** Keeps `cap` of a creature alive near its position. */
+export interface Spawner {
+  kind: string;
+  /** Ticks since a member was last missing. */
+  timer: number;
+  members: number[];
+}
+
 /** Something the context button can use. `kind` names it in content. */
 export interface Interactable {
   kind: string;
@@ -149,6 +179,8 @@ export interface Components {
   knock: Knock;
   projectile: Projectile;
   echo: Echo;
+  ai: Ai;
+  spawner: Spawner;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -178,6 +210,8 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'knock',
   'projectile',
   'echo',
+  'ai',
+  'spawner',
 ];
 
 /** Demo box size in sub-pixel units. */

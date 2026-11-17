@@ -5,7 +5,9 @@ export type HitShape =
   /** Wedge: reach in px and a half angle given as cos * 256 (128 is 60 degrees). */
   | { kind: 'arc'; reach: number; cos256: number }
   /** Corridor: how far ahead it reaches and how wide it is each side of the aim line. */
-  | { kind: 'line'; reach: number; halfWidth: number };
+  | { kind: 'line'; reach: number; halfWidth: number }
+  /** Everything within `radius` of the attacker. Used for slams, with a ground marker. */
+  | { kind: 'circle'; radius: number };
 
 export type Family = 'blades' | 'polearms' | 'creature';
 
@@ -25,8 +27,10 @@ export interface AttackDef {
   shape: HitShape;
   /** Pierces: the hit shape can reach more than one target. Otherwise the first in line only. */
   pierce?: boolean;
-  /** Dash during windup and active, px along aim. For lunges. */
+  /** Dash during the active frames, px along aim. For lunges and charges. */
   dash?: number;
+  /** Launches a projectile when the active frames begin (spells, spat seeds). */
+  projectile?: { speed: number; ttl: number; element: string };
   /** Cost, in tenths, and the pool it draws from. Basic attacks cost nothing. */
   cost?: { pool: 'sta' | 'foc'; amount: number };
   /** Heavy hits add to hit pause. */
@@ -154,6 +158,7 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     stagger: 6,
     knock: 6,
     shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 5, ttl: 40, element: 'ember' },
     cost: { pool: 'foc', amount: 300 },
   },
   /** A common creature's swipe. Telegraph of 12 ticks is 400 ms, above the 350 ms tier 1 minimum. */
@@ -167,6 +172,83 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     stagger: 0,
     knock: 8,
     shape: { kind: 'arc', reach: 20, cos256: 100 },
+  },
+  /** A Shooter's seed. The 14 tick wind-up (467 ms) is the telegraph. */
+  'attack.spitbloom_seed': {
+    id: 'attack.spitbloom_seed',
+    family: 'creature',
+    windup: 14,
+    active: 1,
+    recover: 14,
+    mult: 90,
+    stagger: 0,
+    knock: 6,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 3.5, ttl: 40, element: 'none' },
+  },
+  /** A Charger's close attack. */
+  'attack.boar_gore': {
+    id: 'attack.boar_gore',
+    family: 'creature',
+    windup: 12,
+    active: 2,
+    recover: 12,
+    mult: 100,
+    stagger: 0,
+    knock: 10,
+    shape: { kind: 'arc', reach: 20, cos256: 100 },
+  },
+  /** The charge: a long wind-up while it paws the ground, then a straight rush. */
+  'attack.boar_charge': {
+    id: 'attack.boar_charge',
+    family: 'creature',
+    windup: 18,
+    active: 8,
+    recover: 30,
+    mult: 130,
+    stagger: 0,
+    knock: 16,
+    shape: { kind: 'line', reach: 12, halfWidth: 8 },
+    dash: 88,
+    heavy: true,
+  },
+  'attack.boss_gore': {
+    id: 'attack.boss_gore',
+    family: 'creature',
+    windup: 13,
+    active: 3,
+    recover: 14,
+    mult: 100,
+    stagger: 0,
+    knock: 14,
+    shape: { kind: 'arc', reach: 30, cos256: 90 },
+    heavy: true,
+  },
+  'attack.boss_charge': {
+    id: 'attack.boss_charge',
+    family: 'creature',
+    windup: 20,
+    active: 10,
+    recover: 34,
+    mult: 140,
+    stagger: 0,
+    knock: 22,
+    shape: { kind: 'line', reach: 18, halfWidth: 14 },
+    dash: 140,
+    heavy: true,
+  },
+  /** Phase two: it rears and slams. The ground marker is the circle. */
+  'attack.boss_slam': {
+    id: 'attack.boss_slam',
+    family: 'creature',
+    windup: 24,
+    active: 2,
+    recover: 22,
+    mult: 160,
+    stagger: 0,
+    knock: 20,
+    shape: { kind: 'circle', radius: 44 },
+    heavy: true,
   },
 };
 
@@ -224,8 +306,6 @@ export interface TechniqueDef {
   /** Hold to aim, release to fire. */
   aimed: boolean;
   cooldown: number;
-  /** Projectile launched when the cast completes its windup, if any. */
-  projectile?: { speed: number; ttl: number; element: string };
 }
 
 export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
@@ -240,6 +320,5 @@ export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
     attack: 'technique.ember_bolt',
     aimed: true,
     cooldown: 60,
-    projectile: { speed: 5, ttl: 40, element: 'ember' },
   },
 };

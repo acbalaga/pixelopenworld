@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { COMBAT as C } from '../../src/content/balance/combat';
 import { ATTACKS, WEAPONS } from '../../src/content/combat/attacks';
-import { ENEMIES } from '../../src/content/combat/enemies';
+import { CREATURES } from '../../src/content/creatures';
 import { computeDamage, skillFactor } from '../../src/sim/combat/damage';
 import { spawnEnemy } from '../../src/sim/combat/enemy';
 import { startAttack } from '../../src/sim/combat/fighter';
@@ -490,7 +490,7 @@ describe('weapons and techniques', () => {
     const hit = ofType(a.events, 'damageDealt').find((e) => e.dst === en);
     expect(hit).toBeDefined();
     expect(hit!.amount).toBeGreaterThan(
-      computeDamage(10, 100, 0, ENEMIES['creature.mossling']!.defense, 100, {
+      computeDamage(10, 100, 0, CREATURES['creature.mossling']!.defense, 100, {
         crit: false,
         staggered: false,
       }),

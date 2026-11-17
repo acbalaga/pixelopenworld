@@ -92,3 +92,50 @@ export function toSprite(
     ...(anims ? { anims } : {}),
   };
 }
+
+/**
+ * Adds a 1 px outline in the darkest neutral around a silhouette (art bible rule 2). On the lit
+ * side (top and left light, so right and below edges) every third outline pixel is left out so
+ * the light edge breaks up. The drawing needs a 1 px clear margin.
+ */
+export function outlined(src: Img): Img {
+  const out = new Img(src.w, src.h);
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) out.set(x, y, src.get(x, y));
+  const solid = (x: number, y: number): boolean => src.get(x, y) !== null;
+  for (let y = 0; y < src.h; y++) {
+    for (let x = 0; x < src.w; x++) {
+      if (solid(x, y)) continue;
+      const right = solid(x + 1, y);
+      const below = solid(x, y + 1);
+      const left = solid(x - 1, y);
+      const above = solid(x, y - 1);
+      if (!(right || below || left || above)) continue;
+      if ((right || below) && !left && !above && (x + y) % 3 === 0) continue;
+      out.set(x, y, 0);
+    }
+  }
+  return out;
+}
+
+/** Four tones of one material, dark to light. */
+export type Tones4 = readonly [number, number, number, number];
+
+/** Fills an ellipse, shaded by light from the top left: lit rim light, lower right dark. */
+export function shadedEllipse(
+  im: Img,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  tones: Tones4,
+): void {
+  for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+      const dx = (x + 0.5 - cx) / rx;
+      const dy = (y + 0.5 - cy) / ry;
+      if (dx * dx + dy * dy > 1) continue;
+      const l = -dx * 0.55 - dy * 0.85;
+      im.set(x, y, l > 0.55 ? tones[3] : l > 0.05 ? tones[2] : l > -0.5 ? tones[1] : tones[0]);
+    }
+  }
+}

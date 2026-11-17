@@ -11,6 +11,7 @@ export function len(v: Vec): number {
  * `radius` is the target's half size, so a body is hit when any part of it reaches the shape.
  */
 export function inShape(shape: HitShape, aim: Vec, d: Vec, radius: number): boolean {
+  if (shape.kind === 'circle') return len(d) <= shape.radius + radius;
   const al = len(aim);
   if (al === 0) return false;
   const forward = (d.x * aim.x + d.y * aim.y) / al;

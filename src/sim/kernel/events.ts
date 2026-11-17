@@ -26,7 +26,11 @@ export type SimEvent =
   | { type: 'echoLost'; id: number }
   | { type: 'echoRecovered'; id: number; coin: number }
   | { type: 'projectileLaunched'; id: number; owner: number }
-  | { type: 'lockChanged'; id: number; target: number | null };
+  | { type: 'lockChanged'; id: number; target: number | null }
+  | { type: 'noticed'; id: number; target: number }
+  | { type: 'leashReset'; id: number }
+  | { type: 'phaseChanged'; id: number; phase: number }
+  | { type: 'spawned'; id: number; creature: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */
 export interface EventQueue {

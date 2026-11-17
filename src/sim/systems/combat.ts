@@ -1,5 +1,5 @@
 import { COMBAT as C } from '../../content/balance/combat';
-import { ATTACKS, TECHNIQUES, WEAPONS } from '../../content/combat/attacks';
+import { ATTACKS, WEAPONS } from '../../content/combat/attacks';
 import { startComboStep } from '../combat/commands';
 import {
   cardinalOf,
@@ -15,6 +15,7 @@ import { destroy, getComp, query, spawn, setComp, type EntityId } from '../kerne
 import { emit } from '../kernel/events';
 import { dirStep, SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
+import { nudge } from './movement';
 import { launchProjectile } from './projectile';
 
 /** The state machine for every fighter, run once per tick after commands. Ascending id order. */
@@ -122,10 +123,9 @@ function advanceAttack(state: SimState, id: EntityId): void {
       const l = len(f.aim);
       f.dv = { x: Math.round((f.aim.x / l) * per), y: Math.round((f.aim.y / l) * per) };
     }
-    if (f.t === activeFrom && f.casting) {
-      const tech = TECHNIQUES[f.casting];
-      if (tech?.projectile) launchProjectile(state, id, def, tech.projectile);
-    }
+    if (f.t === activeFrom && def.projectile) launchProjectile(state, id, def, def.projectile);
+    // Creatures are not moved by the avatar movement system, so their dashes are applied here.
+    if (def.dash && !getComp(state.entities, id, 'avatar')) nudge(state, id, f.dv.x, f.dv.y);
     resolveSwing(state, id, def);
   } else {
     f.dv = { x: 0, y: 0 };
