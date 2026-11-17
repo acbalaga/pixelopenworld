@@ -11,6 +11,7 @@ import { SFX } from '../../src/content/audio/sfx';
 import { validateDefs } from './validate';
 import { validateCreatures } from './validateCreatures';
 import { validateRealItems } from './validateItems';
+import { validateDialogue } from './validateDialogue';
 
 /** Sprite, creature and spawner validation together. */
 function validateAll(): string[] {
@@ -22,6 +23,7 @@ function validateAll(): string[] {
       sfx: new Set(SFX.map((s) => s.id)),
     }),
     ...validateRealItems(new Set(SPRITES.map((s) => s.id))),
+    ...validateDialogue(),
   ];
 }
 

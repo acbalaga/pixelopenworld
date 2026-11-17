@@ -7,6 +7,8 @@ export const AUDIO_TUNABLES = {
   /** Scheduler lookahead and timer period for music, in seconds. */
   musicLookaheadSec: 0.25,
   musicTimerMs: 50,
+  /** Music bus gain, as a fraction of its volume, while someone is talking. */
+  duckGain: 0.35,
   /** Default music crossfade, seconds. */
   crossfadeSec: 1.5,
   /** Limiter settings. */

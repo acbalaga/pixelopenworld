@@ -33,7 +33,15 @@ export type Command =
   /** Eat or use the item in bag slot `slot`. */
   | { type: 'use'; slot: number }
   /** Cook these ingredients at the camp pot in front. Experiments are cooks with no recipe. */
-  | { type: 'cook'; items: string[] };
+  | { type: 'cook'; items: string[] }
+  /**
+   * Dialogue with an NPC: enter `node` (choice -1, runs its effects) or pick choice `choice` of it.
+   * The sim looks the effects up itself, so only real conversations can change anything.
+   */
+  | { type: 'talk'; npc: string; node: string; choice: number }
+  | { type: 'buy'; shop: string; item: string; qty: number }
+  /** Sell from bag slot `slot` to the shop in front of you. */
+  | { type: 'sell'; shop: string; slot: number; qty: number };
 
 /** Result of validating a raw command. */
 export type Validated = { ok: true; command: Command } | { ok: false; reason: string };
@@ -106,6 +114,39 @@ export function validateCommand(raw: unknown): Validated {
       )
         return { ok: false, reason: 'bad ingredients' };
       return { ok: true, command: { type: 'cook', items: [...(r.items as string[])] } };
+    case 'talk': {
+      const name = /^[a-z0-9_.]{1,60}$/;
+      if (typeof r.npc !== 'string' || !name.test(r.npc) || typeof r.node !== 'string')
+        return { ok: false, reason: 'bad dialogue' };
+      if (!name.test(r.node)) return { ok: false, reason: 'bad dialogue' };
+      if (!Number.isInteger(r.choice) || (r.choice as number) < -1 || (r.choice as number) > 15)
+        return { ok: false, reason: 'bad choice' };
+      return {
+        ok: true,
+        command: { type: 'talk', npc: r.npc, node: r.node, choice: r.choice as number },
+      };
+    }
+    case 'buy':
+    case 'sell': {
+      if (typeof r.shop !== 'string' || !/^shop\.[a-z0-9_]{1,40}$/.test(r.shop))
+        return { ok: false, reason: 'bad shop' };
+      if (!Number.isInteger(r.qty) || (r.qty as number) < 1 || (r.qty as number) > 99)
+        return { ok: false, reason: 'bad quantity' };
+      if (r.type === 'buy') {
+        if (typeof r.item !== 'string' || !/^item\.[a-z0-9_]{1,40}$/.test(r.item))
+          return { ok: false, reason: 'bad item' };
+        return {
+          ok: true,
+          command: { type: 'buy', shop: r.shop, item: r.item, qty: r.qty as number },
+        };
+      }
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
+        return { ok: false, reason: 'bad slot' };
+      return {
+        ok: true,
+        command: { type: 'sell', shop: r.shop, slot: r.slot as number, qty: r.qty as number },
+      };
+    }
     default:
       return { ok: false, reason: 'unknown command type' };
   }

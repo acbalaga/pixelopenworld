@@ -128,6 +128,18 @@ describe('audio context lifecycle', () => {
     expect(holder.ctx?.state).toBe('running');
   });
 
+  it('ducks only the music bus during dialogue, and restores it', () => {
+    const { engine } = makeEngine();
+    engine.unlock();
+    engine.setVolume('music', 0.6);
+    engine.setVolume('effects', 0.9);
+    engine.setDucked(true);
+    expect(engine.busGain('music')).toBeCloseTo(0.6 * 0.35);
+    expect(engine.busGain('effects')).toBe(0.9);
+    engine.setDucked(false);
+    expect(engine.busGain('music')).toBe(0.6);
+  });
+
   it('muting each bus zeroes it and unmuting restores the volume', () => {
     const { engine } = makeEngine();
     engine.unlock();

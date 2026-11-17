@@ -8,6 +8,8 @@ import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 import { newSkills } from './skills';
 import { interactFixture } from './systems/fixtures';
+import { buy, interactNpc, sell, talk } from './systems/npcs';
+import { newJournal } from './journal';
 import { applyItemCommand, newInventory, recomputeGear } from './items';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
@@ -48,6 +50,7 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
   });
   setComp(state.entities, id, 'skills', newSkills());
   setComp(state.entities, id, 'inventory', newInventory());
+  setComp(state.entities, id, 'journal', newJournal());
   recomputeGear(state, id);
   return id;
 }
@@ -62,7 +65,12 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
     return;
   }
   applyItemCommand(state, who, c);
-  if (c.type === 'interact') interactFixture(state, who);
+  if (c.type === 'interact') {
+    interactFixture(state, who);
+    interactNpc(state, who);
+  } else if (c.type === 'talk') talk(state, who, c);
+  else if (c.type === 'buy') buy(state, who, c);
+  else if (c.type === 'sell') sell(state, who, c);
   applyFighterCommand(state, who, c);
 }
 

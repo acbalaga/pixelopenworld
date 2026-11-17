@@ -155,6 +155,8 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
       const def = SKILLS[id];
       if (!def || def.family !== family) continue;
       const points = s?.points[id] ?? 0;
+      // A skill stays hidden until it first ranks up, so earning one is a surprise.
+      if (points < 1) continue;
       const xp = s?.xp[id] ?? 0;
       const pending = s ? pendingTrial(s, id) : null;
       const cost = points >= SB.maxPoints ? 0 : xpToNext(points);

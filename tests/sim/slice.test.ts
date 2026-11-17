@@ -298,6 +298,24 @@ describe('the cave run', () => {
     expect(b.tile().y).toBeGreaterThan(at('fixture.portal_cave_mouth').y);
   });
 
+  it('entering the cave puts you at its south door, and walking north stays inside', () => {
+    const b = world();
+    expect(b.walkTo(at('fixture.portal_cave_mouth'))).toBe(true);
+    expect(b.room()).toBe('room.a');
+    const entry = at('fixture.portal_a_entry');
+    // The door you came through is behind you, to the south.
+    expect(entry.y).toBeGreaterThan(b.tile().y);
+    for (let i = 0; i < 200; i++) b.tick({ type: 'move', dir: N });
+    expect(b.room()).toBe('room.a');
+    expect(b.count('roomChanged')).toBe(1);
+    // Walking back south reaches that door and leads outside, once.
+    expect(b.walkTo(entry)).toBe(true);
+    expect(b.room()).toBe('room.outdoors');
+    for (let i = 0; i < 60; i++) b.tick({ type: 'move', dir: S });
+    expect(b.room()).toBe('room.outdoors');
+    expect(b.count('roomChanged')).toBe(2);
+  });
+
   it('the side room holds a chest and a tablet', () => {
     const b = world();
     expect(b.walkTo(at('fixture.portal_cave_mouth'))).toBe(true);

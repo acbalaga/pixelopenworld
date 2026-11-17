@@ -46,37 +46,34 @@ describe('touch stick', () => {
 });
 
 describe('flick, tap, hold', () => {
-  it('a fast short swipe is a flick with the right direction', () => {
-    const t = mk();
-    t.down(1, 100, 600, 0);
-    t.move(1, 100, 560);
-    t.up(1, 100, 560, 100);
-    const s = t.sample(110);
-    expect(s.dodge).toEqual({ dir: Dir.N });
-    expect(s.targetTap).toBeNull();
-  });
-
-  it('a slow drag of the same distance is not a flick', () => {
-    const t = mk();
-    t.down(1, 100, 600, 0);
-    t.move(1, 100, 560);
-    t.up(1, 100, 560, T.flickMaxMs + 200);
-    expect(t.sample(1000).dodge).toBeNull();
-  });
-
-  it('a flick is detected in all of four sample directions', () => {
-    const cases: [number, number, number][] = [
-      [40, 0, Dir.E],
-      [0, 40, Dir.S],
-      [-40, 0, Dir.W],
-      [30, -30, Dir.NE],
-    ];
-    for (const [dx, dy, dir] of cases) {
+  it('a fast short swipe is not a dodge, so reaching for things never dodges by accident', () => {
+    for (const [dx, dy] of [
+      [0, -40],
+      [40, 0],
+      [0, 40],
+      [-40, 0],
+      [30, -30],
+    ] as const) {
       const t = mk();
       t.down(1, 180, 600, 0);
       t.up(1, 180 + dx, 600 + dy, 90);
-      expect(t.sample(100).dodge).toEqual({ dir });
+      const s = t.sample(100);
+      expect(s.dodge).toBeNull();
+      expect(s.targetTap).toBeNull();
     }
+  });
+
+  it('with the flick dodge switched on, a fast short swipe dodges in its direction', () => {
+    const t = new TouchController(layout(), { ...T, flickDodge: true });
+    t.down(1, 100, 600, 0);
+    t.move(1, 100, 560);
+    t.up(1, 100, 560, 100);
+    expect(t.sample(110).dodge).toEqual({ dir: Dir.N });
+    const slow = new TouchController(layout(), { ...T, flickDodge: true });
+    slow.down(1, 100, 600, 0);
+    slow.move(1, 100, 560);
+    slow.up(1, 100, 560, T.flickMaxMs + 200);
+    expect(slow.sample(1000).dodge).toBeNull();
   });
 
   it('a short still touch on open ground is a target tap', () => {

@@ -1,5 +1,5 @@
 // Temporary demo: the 3 x 3 chunk test map with the sim avatar and three practice creatures.
-// Walk, fight (Flow or Classic, button top right), dodge with a flick or Space, lock by tapping.
+// Walk, fight (Flow or Classic, button top right), dodge with the button or Space, lock by tapping.
 // Keys: WASD move, J attack (Classic), Space dodge, 1 and 2 techniques (hold to aim), T scheme.
 //   ?fly=1   no collision, fast, no creatures (for crossing all nine chunks)
 //   ?auto=1  fly a fixed loop through all nine chunks without input (for the frame-rate check)
@@ -30,6 +30,12 @@ import { FIXTURES } from '../content/world/fixtures';
 import { roomAt, OUTDOORS } from '../content/world/rooms';
 import { spawnFixture } from '../sim/systems/fixtures';
 import { UI_STRINGS } from '../content/strings/ui';
+import { DIALOGUE_STRINGS } from '../content/strings/dialogue';
+import { fill } from '../content/strings/skills';
+import { NPCS } from '../content/dialogue';
+import { spawnNpc } from '../sim/systems/npcs';
+import { pinnedRequest } from '../sim/journal';
+import { TalkSheet } from '../ui/dom/talk';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
@@ -144,6 +150,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let baseDoll = randomDoll(rand);
   const startGear = { ...newInventory().equipment };
   const player = dolls.create('char.player', dollWithGear(baseDoll, startGear));
+  for (const n of Object.values(NPCS)) dolls.create(`char.${n.id}`, n.doll);
   // Anim handles by sprite, action and facing, looked up once. A missing action (a rooted plant
   // has no walk) falls back to idle.
   const animCache = new Map<string, number>();
@@ -194,10 +201,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     scheme: () => settings.get().controlScheme,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
-    keysEnabled: () => !menuOpen && !notices.tabletOpen,
+    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
+  let talkOpen = false;
 
   // The avatar lives in the sim. Feet position is the bottom center of its 10 x 8 box.
   const spawnTile = chunks.flatMap((c) =>
@@ -222,6 +230,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (o.kind.startsWith('fixture.') && FIXTURES[o.kind]) spawnFixture(state, o.kind, tx, ty);
       else if (o.kind.startsWith('node.') && NODES[o.kind])
         spawnNode(state, o.kind, tx * TILE_PX + 8, ty * TILE_PX + 14);
+      else if (o.kind.startsWith('npc.') && NPCS[o.kind]) spawnNpc(state, o.kind, tx, ty);
       else if (o.kind === 'prop.camp_pot') spawnCampPot(state, tx * TILE_PX + 8, ty * TILE_PX + 14);
     }
   const bag = state.entities.comps.inventory[who];
@@ -433,6 +442,26 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (open) input.sampler.keyboard.reset();
     },
   });
+  const FACING = { up: 0, right: 2, down: 4, left: 6 } as const;
+  const talk = new TalkSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    drawIcon: (canvas, id) => blit(canvas, atlas.frame(id, 'base')),
+    drawPortrait: (canvas, npcId) => {
+      // The head and shoulders of the NPC's idle frame, 16 x 16 from the 24 x 32 doll frame.
+      const h = atlas.animFrame(animOf(`char.${npcId}`, 'idle', 4), 0);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(atlas.image(h), atlas.srcX(h) + 4, atlas.srcY(h) + 3, 16, 16, 0, 0, 16, 16);
+    },
+    onOpenChange: (open) => {
+      talkOpen = open;
+      audio.setDucked(open);
+      if (open) input.sampler.keyboard.reset();
+    },
+  });
   attachSwipe({
     height: () => canvas.getBoundingClientRect().height,
     bottomInset: () => readSafeInsets(probe).bottom,
@@ -548,7 +577,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
-        skillFeed.ingest(state.events.list, who, now);
+        skillFeed.ingest(state.events.list, who);
         for (const ev of state.events.list)
           if (ev.type === 'equipped' && ev.id === who)
             player.draw(
@@ -569,6 +598,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             input.sampler.keyboard.reset();
             notices.openTablet();
           }
+          talk.onEvent(e);
           const sfx = sfxFor(e, who);
           if (sfx) audio.playSfx(sfx);
           const h = hapticFor(e, who);
@@ -586,6 +616,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const fy = (prev.y + (apos.y - prev.y) * alpha) / 256;
       const pxX = Math.round(fx);
       const pxY = Math.round(fy);
+      // Rooms follow the avatar wherever it is, including a respawn at a Waystone in another room.
+      if (!fly) {
+        const here = roomAt(Math.floor(pxX / TILE_PX), Math.floor((pxY - 1) / TILE_PX));
+        if (here && here.id !== room.id) {
+          enterRoom(here);
+          fadeAt = now;
+        }
+      }
       camera.follow(pxX, pxY - 14, dt);
       const shake = feedback.shake(now);
       renderer.begin(camera.x + shake.x, camera.y + shake.y);
@@ -600,6 +638,33 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         dt,
       );
       drawFixtures(now);
+      // People: they stand still and turn to face you when you are close.
+      for (const id of state.entities.comps.npc.keys()) {
+        const n = state.entities.comps.npc[id];
+        const np = state.entities.comps.pos[id];
+        const def = n ? NPCS[n.id] : undefined;
+        if (!n || !np || !def) continue;
+        const dx = apos.x - np.x;
+        const dy = apos.y - np.y;
+        const near = Math.hypot(dx, dy) / 256 < 48;
+        const face = near
+          ? Math.abs(dx) > Math.abs(dy)
+            ? dx > 0
+              ? 2
+              : 6
+            : dy > 0
+              ? 4
+              : 0
+          : FACING[def.facing];
+        const a = animOf(`char.${n.id}`, 'idle', face);
+        renderer.drawSprite(
+          Layer.Objects,
+          atlas.animFrame(a, now),
+          Math.round(np.x / 256),
+          Math.round(np.y / 256),
+          atlas.animFlip(a),
+        );
+      }
       drawTelegraphs(renderer, state);
       drawItemsWorld();
       for (const id of state.entities.comps.ai.keys()) {
@@ -678,6 +743,22 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
         settings.get().reducedMotion,
       );
+      // The pinned request line, bottom left above the build label.
+      const pin = pinnedRequest(state.entities.comps.journal[who] ?? { flags: [], requests: {} });
+      if (pin) {
+        const text = fill(DIALOGUE_STRINGS[pin.log] ?? pin.log, {
+          n: String(pin.n),
+          max: String(pin.max),
+        });
+        fonts.small.draw(
+          renderer,
+          pin.ready ? `${text} Done` : text,
+          v.safe.x + 3,
+          v.safe.y + v.safe.h - 19,
+          pin.ready ? GOLD : INK,
+          { outline: DARK },
+        );
+      }
       // The gather timing sweep when working a node.
       const gat = state.entities.comps.gather[who];
       if (gat) {

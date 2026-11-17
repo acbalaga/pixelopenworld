@@ -221,6 +221,10 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 48, 40, 'spawn.player', objects);
   object(g, 47, 37, 'fixture.waystone', objects);
   object(g, 42, 40, 'prop.camp_pot', objects);
+  object(g, 40, 30, 'npc.shopkeeper', objects);
+  object(g, 43, 41, 'npc.cook', objects);
+  object(g, 50, 44, 'npc.guard', objects);
+  object(g, 55, 39, 'npc.pilgrim', objects);
   object(g, 81, 78, 'fixture.portal_cave_mouth', objects);
   for (const [x, y] of [
     [24, 40],
@@ -290,10 +294,10 @@ function cave(g: Grid, objects: Obj[]): void {
   const fixture = (x: number, y: number, kind: string): void => object(g, x, y, kind, objects);
 
   carve('room.a', (x0, y0) => {
-    portal(x0 + 9, y0, 'fixture.portal_a_entry');
+    portal(x0 + 9, y0 + 13, 'fixture.portal_a_entry');
     portal(x0 + 17, y0 + 7, 'fixture.portal_a_east');
-    g.set(x0 + 9, y0 + 13, ARCH);
-    fixture(x0 + 9, y0 + 13, 'fixture.arrival_a_shortcut');
+    g.set(x0 + 9, y0, ARCH);
+    fixture(x0 + 9, y0, 'fixture.arrival_a_shortcut');
     object(g, x0 + 5, y0 + 6, 'spawner.mossling', objects);
   });
   carve('room.b', (x0, y0) => {

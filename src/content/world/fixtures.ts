@@ -44,7 +44,7 @@ const LIST: readonly FixtureDef[] = [
     kind: 'fixture.portal_a_entry',
     type: 'portal',
     to: 'fixture.portal_cave_mouth',
-    arrive: [0, 22],
+    arrive: [0, -22],
   },
   { kind: 'fixture.portal_a_east', type: 'portal', to: 'fixture.portal_b_west', arrive: [-22, 0] },
   { kind: 'fixture.portal_b_west', type: 'portal', to: 'fixture.portal_a_east', arrive: [22, 0] },
@@ -70,7 +70,7 @@ const LIST: readonly FixtureDef[] = [
     to: 'fixture.arrival_a_shortcut',
     arrive: [0, 22],
   },
-  { kind: 'fixture.arrival_a_shortcut', type: 'arrival', arrive: [0, -22] },
+  { kind: 'fixture.arrival_a_shortcut', type: 'arrival', arrive: [0, 22] },
 
   {
     kind: 'fixture.door_boss',

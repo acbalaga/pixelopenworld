@@ -4,6 +4,7 @@ export const SKILL_STRINGS = {
   xpTick: '+{n} {skill}',
   /** Banner when a skill gains a point. `{skill}`, `{points}`. */
   rankUp: '{skill} {points}',
+  newSkill: 'New skill: {skill}',
   /** Banner when a skill reaches a mastery rank. `{skill}`, `{rank}`. */
   masteryUp: '{skill}: {rank}',
   /** Shown while XP waits on a Trial. */

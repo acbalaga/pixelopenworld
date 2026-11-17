@@ -53,17 +53,20 @@ describe('character view', () => {
 });
 
 describe('skills view', () => {
+  it('lists nothing for a new avatar: no skill is shown before it first ranks up', () => {
+    const { s, me } = rig();
+    expect(skillsView(s, me)).toEqual([]);
+    addXp(s, me, 'skill.blades', xpToNext(0) - 1);
+    expect(skillsView(s, me)).toEqual([]);
+  });
+
   it('groups the skills by family, with rank and progress', () => {
     const { s, me } = rig();
     addXp(s, me, 'skill.blades', xpToNext(0) + Math.floor(xpToNext(1) / 2));
     const fams = skillsView(s, me);
-    expect(fams.map((f) => f.family)).toEqual([
-      'arms',
-      'magic',
-      'gathering',
-      'crafting',
-      'exploration',
-    ]);
+    // Only skills that have ranked up are listed, so only Arms shows.
+    expect(fams.map((f) => f.family)).toEqual(['arms']);
+    expect(fams[0]!.rows.map((r) => r.id)).toEqual(['skill.blades']);
     const blades = fams[0]!.rows.find((r) => r.id === 'skill.blades')!;
     expect(blades).toMatchObject({ points: 1, mastery: 'Novice' });
     expect(blades.progressPct).toBeGreaterThanOrEqual(45);
@@ -92,10 +95,12 @@ describe('skills view', () => {
     });
     try {
       const { s, me } = rig();
-      const fams = skillsView(s, me);
-      expect(fams.find((f) => f.family === 'social')?.rows[0]).toMatchObject({
+      // Hidden until it first ranks up, like every other skill.
+      expect(skillsView(s, me).find((f) => f.family === 'social')).toBeUndefined();
+      addXp(s, me, 'skill.fake', xpToNext(0));
+      expect(skillsView(s, me).find((f) => f.family === 'social')?.rows[0]).toMatchObject({
         id: 'skill.fake',
-        points: 0,
+        points: 1,
       });
     } finally {
       unregisterSkill('skill.fake');

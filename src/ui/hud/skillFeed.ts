@@ -37,19 +37,16 @@ export class SkillFeed {
   private shown: (Banner & { at: number }) | null = null;
 
   /** Takes this tick's events for the avatar `who`. */
-  ingest(events: readonly SimEvent[], who: number, now: number): void {
+  ingest(events: readonly SimEvent[], who: number): void {
     for (const e of events) {
-      if (e.type === 'skillXp' && e.id === who) {
-        const last = this.ticks.find((t) => t.skill === e.skill);
-        if (last) {
-          last.amount += e.amount;
-          last.at = now;
-        } else this.ticks.push({ skill: e.skill, amount: e.amount, at: now });
-      } else if (e.type === 'skillRankUp' && e.id === who) {
+      // XP gains are silent: only a rank-up says anything about a skill.
+      if (e.type === 'skillRankUp' && e.id === who) {
         const name = SKILLS[e.skill]?.name ?? e.skill;
         const text = e.mastery
           ? fill(SKILL_STRINGS.masteryUp, { skill: name, rank: e.mastery })
-          : fill(SKILL_STRINGS.rankUp, { skill: name, points: e.points });
+          : e.points === 1
+            ? fill(SKILL_STRINGS.newSkill, { skill: name })
+            : fill(SKILL_STRINGS.rankUp, { skill: name, points: e.points });
         if (this.queue.length < MAX_QUEUED) this.queue.push({ text, mastery: e.mastery !== null });
       }
     }

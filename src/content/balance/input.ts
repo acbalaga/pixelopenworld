@@ -8,6 +8,8 @@ export const INPUT_TUNABLES = {
   tapMaxDistPx: 10,
   tapMaxMs: 250,
   /** A fast short swipe: at least this far, at most this long. */
+  /** A fast short swipe dodges. Off: swiping to move or to reach things kept triggering dodges. */
+  flickDodge: false as boolean,
   flickMinDistPx: 24,
   flickMaxDistPx: 110,
   flickMaxMs: 180,
