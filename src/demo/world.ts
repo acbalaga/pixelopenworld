@@ -11,6 +11,9 @@ import uiUrl from '../../baked/atlas-ui.png?url';
 import { randomDoll } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
+import { BUTTON_ICONS } from '../content/sprites/ui/icons';
+import { TECHNIQUES } from '../content/combat/attacks';
+import { BUILD_LABEL } from '../shared/version';
 import { attachInput } from '../platform/input/dom';
 import { sfxFor, hapticFor, vibrate } from '../platform/combatFx';
 import { CommandMapper } from '../platform/input/sampler';
@@ -66,6 +69,7 @@ const INK = PALETTE[3] as string;
 const DARK = PALETTE[0] as string;
 const GOLD = PALETTE[47] as string;
 const HURT = PALETTE[22] as string;
+const GREY = PALETTE[2] as string;
 const LABELS: Record<string, string> = {
   // Technique buttons show what they do: Lunge, Fire (Ember bolt).
   tech1: 'L',
@@ -440,6 +444,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const v = vp.current;
       drawPoolBars(renderer, state, who, v.safe.x + 3, v.safe.y + 3);
       drawLockFrame(renderer, fonts.small, state, who, Math.floor(v.width / 2), v.safe.y + 3);
+      // Build id and time, bottom left, so a refreshed page can be told from a stale one.
+      fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {
+        outline: DARK,
+      });
       if (!fly) {
         const k = v.dpr / v.scale;
         const css = canvas.getBoundingClientRect();
@@ -471,7 +479,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             h: Math.round(r.h * k),
           };
           const cooling = slot !== undefined && (afight.cooldowns[slot] ?? 0) > 0;
-          drawCanvasButton(renderer, kit, rect, LABELS[id] ?? '?', held.has(id) || cooling);
+          const iconId =
+            slot !== undefined ? TECHNIQUES[afight.slots[slot] as string]?.icon : BUTTON_ICONS[id];
+          const icon = iconId
+            ? { handle: atlas.frame(iconId, 'base'), size: 12, alpha: cooling ? 0.45 : 1 }
+            : undefined;
+          drawCanvasButton(
+            renderer,
+            kit,
+            rect,
+            LABELS[id] ?? '?',
+            held.has(id) || cooling,
+            'small',
+            icon,
+          );
         }
       }
       renderer.end();

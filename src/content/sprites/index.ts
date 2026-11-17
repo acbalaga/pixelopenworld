@@ -6,6 +6,7 @@ import { autotileSprite } from './gen/autotile';
 import { creatureSprites } from './gen/creatures';
 import { dollLayers } from './gen/dolls';
 import { natureSprites } from './gen/nature';
+import { UI_ICONS } from './ui/icons';
 import { uiPanel } from './ui/panel';
 import type { SpriteDef, TileDef } from './types';
 
@@ -23,6 +24,7 @@ export const SPRITES: readonly SpriteDef[] = [
   ...dollLayers(),
   ...creatureSprites(),
   uiPanel,
+  ...UI_ICONS,
   ...FONT_SPRITES,
 ];
 
