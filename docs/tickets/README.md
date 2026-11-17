@@ -7,7 +7,7 @@ One file per milestone. Each ticket is one PR.
 | [M0-foundation.md](M0-foundation.md)       | Foundation                   | READY  |
 | [M1-first-login.md](M1-first-login.md)     | First Login (vertical slice) | READY  |
 | [M2-trust.md](M2-trust.md)                 | Save security and PWA        | READY  |
-| [M3-core-rpg.md](M3-core-rpg.md)           | Core RPG systems             | DRAFT  |
+| [M3-core-rpg.md](M3-core-rpg.md)           | Core RPG systems             | READY  |
 | [M4-world-1.md](M4-world-1.md)             | World tech and region 1      | DRAFT  |
 | [M5-the-crowd.md](M5-the-crowd.md)         | Simulated MMO                | DRAFT  |
 | [M6-second-life.md](M6-second-life.md)     | Life systems                 | DRAFT  |

@@ -18,10 +18,10 @@ If the address does not load, check the computer's firewall allows port 5173.
 
 ## 2. The two schemes
 
-| Scheme  | Hands   | Summary (design/04)                                                                    |
-| ------- | ------- | -------------------------------------------------------------------------------------- |
-| Flow    | One     | Drag to move. Basic attack is automatic in reach. Tap an enemy to lock. Technique tap. |
-| Classic | Two     | Fixed stick left, attack and dodge right. Manual attack.                               |
+| Scheme  | Hands | Summary (design/04)                                                                    |
+| ------- | ----- | -------------------------------------------------------------------------------------- |
+| Flow    | One   | Drag to move. Basic attack is automatic in reach. Tap an enemy to lock. Technique tap. |
+| Classic | Two   | Fixed stick left, attack and dodge right. Manual attack.                               |
 
 Play Flow first in portrait with one thumb, then Classic in landscape with two. Try each with the left-handed mirror from Menu, System if you are left handed or curious.
 
@@ -44,17 +44,17 @@ Do the slice in this order. It is the same route in both schemes.
 
 Answer for each scheme, then compare.
 
-| Question                                                  | Flow | Classic |
-| --------------------------------------------------------- | ---- | ------- |
-| Did the avatar do what you meant most of the time?        |      |         |
-| Where did your thumb get tired, and after how many minutes? |    |         |
-| Did you ever lose track of the avatar under your thumb?   |      |         |
-| Did you dodge on purpose, or by accident?                 |      |         |
-| Was any text hard to read? Which, on which screen?        |      |         |
-| Were fights too short, too long, or about right?          |      |         |
-| Did a tap ever miss, or hit the wrong thing?              |      |         |
-| Did the touch to response delay ever feel late?           |      |         |
-| Would you keep playing for another 20 minutes?            |      |         |
+| Question                                                    | Flow | Classic |
+| ----------------------------------------------------------- | ---- | ------- |
+| Did the avatar do what you meant most of the time?          |      |         |
+| Where did your thumb get tired, and after how many minutes? |      |         |
+| Did you ever lose track of the avatar under your thumb?     |      |         |
+| Did you dodge on purpose, or by accident?                   |      |         |
+| Was any text hard to read? Which, on which screen?          |      |         |
+| Were fights too short, too long, or about right?            |      |         |
+| Did a tap ever miss, or hit the wrong thing?                |      |         |
+| Did the touch to response delay ever feel late?             |      |         |
+| Would you keep playing for another 20 minutes?              |      |         |
 
 Questions for the whole slice:
 
@@ -68,13 +68,13 @@ Questions for the whole slice:
 
 With the overlay on, in the busy square and in the cave fight, write down:
 
-| Reading                      | Budget                   | Flow | Classic |
-| ---------------------------- | ------------------------ | ---- | ------- |
-| fps                          | 60, never below 45       |      |         |
-| frame p95 and `>20 ms` count | no hitches in a fight    |      |         |
-| render ms                    | under 8                  |      |         |
-| tick ms (avg, max)           | under 6 avg, under 12 max |     |         |
-| heap MB (Chrome)             | under 150, flat          |      |         |
+| Reading                      | Budget                    | Flow | Classic |
+| ---------------------------- | ------------------------- | ---- | ------- |
+| fps                          | 60, never below 45        |      |         |
+| frame p95 and `>20 ms` count | no hitches in a fight     |      |         |
+| render ms                    | under 8                   |      |         |
+| tick ms (avg, max)           | under 6 avg, under 12 max |      |         |
+| heap MB (Chrome)             | under 150, flat           |      |         |
 
 Battery: note the percentage before and after a 20 minute session. Budget is under 8% per 30 minutes.
 
@@ -102,3 +102,14 @@ Would I play 20 more minutes? (flow / classic):
 ## 7. What happens with the answers
 
 The default scheme is set from question 1. The rest feed the M3 refinement ticket. Controls that fail the question get iterated before M3 starts.
+
+## Result
+
+**Passed** on 2026-11-17, owner playtest on a phone.
+
+| Item              | Decision                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Portrait default  | Flow. Classic stays the default in landscape and on gamepad or keyboard.                                                              |
+| Dodge in Flow     | The dodge button. Flick dodge was removed in the playtest fixes (PR #35) and stays removed. design/04 updated.                        |
+| Numbers to change | None raised. M3 starts from the tunables on `main`.                                                                                   |
+| Follow-ups        | The playtest fixes already merged (PRs #35, #40 and #45). Everything else feeds POW-M3-01, recorded in `docs/tickets/M3-core-rpg.md`. |

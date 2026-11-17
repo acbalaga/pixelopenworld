@@ -34,6 +34,9 @@ Decisions made with the owner on 2026-11-16. Changing one needs a planning PR.
 | D10 | Orientation       | Portrait first, one-thumb. Landscape and desktop supported.                                                                                                                                                                                                         |
 | D11 | Business model    | Free. No ads, purchases, accounts, or analytics.                                                                                                                                                                                                                    |
 | D12 | Tickets           | Specs in the repo. GitHub issues opened per milestone as it becomes active.                                                                                                                                                                                         |
+| D13 | Default controls  | Decided at Gate G1 (2026-11-17): Flow in portrait, Classic in landscape and on gamepad or keyboard. Flow dodges with the dodge button; flick dodge is removed.                                                                                                      |
+| D14 | Gate G2           | Passed 2026-11-17 with the multi-day offline step still running. M3 starts in parallel; the residual risk is recorded in `docs/ops/security-review.md`.                                                                                                             |
+| D15 | M3 scope          | M3 builds the engines with a proving set of content on the slice map. The remaining rank 15 Trials and the Hearthford requests move to M4-12. Skills with no system yet are defined but earn no XP until their milestone (`PENDING_SKILLS`).                        |
 
 Decisions made by the design authority (owner may overrule):
 
@@ -63,6 +66,7 @@ Decisions made by the design authority (owner may overrule):
 | [08-lore-SPOILERS](design/08-lore-SPOILERS.md)   | The hidden layer. Spoils everything.                              |
 | [09-ui-ux](design/09-ui-ux.md)                   | Screen layout, text rules, menus, accessibility                   |
 | [10-content-budget](design/10-content-budget.md) | Counts, playtime model, 100% definition                           |
+| [11-skill-table](design/11-skill-table.md)       | The 36 skills: XP sources, band 0 and 15 grants, the M3 Paths     |
 
 **Tech**
 
@@ -77,14 +81,14 @@ Decisions made by the design authority (owner may overrule):
 
 ## 5. Roadmap
 
-Thirteen milestones. Each ends with a playable build on the Cloudflare preview URL and an owner review. Milestones M0 to M2 are fully specified and READY. Later milestones are specified at ticket level and marked DRAFT. Each opens with a refinement ticket that turns DRAFT into READY using what the earlier milestones taught us.
+Thirteen milestones. Each ends with a playable build on the Cloudflare preview URL and an owner review. Milestones M0 to M3 are fully specified and READY. Later milestones are specified at ticket level and marked DRAFT. Each opens with a refinement ticket that turns DRAFT into READY using what the earlier milestones taught us.
 
 | M   | Name             | Player-visible result                                                                 | Tickets |
 | --- | ---------------- | ------------------------------------------------------------------------------------- | ------- |
 | M0  | Foundation       | A character-less test map renders and scrolls on a phone, deployed.                   | 11      |
 | M1  | First Login      | A 20 minute slice: create an avatar, fight, forage, cook, talk, save.                 | 11      |
 | M2  | Trust            | Encrypted saves, integrity checks, sealed export and import, installable offline PWA. | 6       |
-| M3  | Core RPG         | All 36 skills, gear, crafting, shops, requests, Paths.                                | 12      |
+| M3  | Core RPG         | All 36 skills, gear, crafting, shops, requests, Paths.                                | 14      |
 | M4  | World I          | Chunk streaming, the full first region, map, dungeons, bosses, weather.               | 12      |
 | M5  | The Crowd        | Travelers, chat, parties, guilds, rankings, market, world events.                     | 12      |
 | M6  | A Second Life    | Farming, housing, cooking, fishing, taming, relationships, festivals, shops.          | 11      |

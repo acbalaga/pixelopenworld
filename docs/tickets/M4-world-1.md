@@ -37,7 +37,7 @@ Size: L Depends: M4-02 Status: DRAFT
 Refs: docs/design/regions/01-dawnmeadow.md
 
 Goal: the region's land and its hub, authored.
-Scope: region spec. Stamps for Hearthford (square, inn, shops, smithy, homes, request board, guild notice wall, market terminal placeholder), three smaller settlements, farms, landmarks visible from afar. Tile and prop art for the biome. Hearthford day and night look. The slice area from M1 is absorbed into the region.
+Scope: region spec. Stamps for Hearthford (square, inn, shops, smithy, homes, request board, guild notice wall, market terminal placeholder), three smaller settlements, farms, landmarks visible from afar. Tile and prop art for the biome. Hearthford day and night look. The slice area from M1 is absorbed into the region, including the M3 square fixtures (crafting stations, request board, storage chest, bed), which move to the smithy, inn and square.
 Acceptance: region PNG and phone screenshots of every settlement. Every landmark is visible from at least two chunks away. Art contact sheets.
 
 ### POW-M4-05 Dawnmeadow creatures and spawns
@@ -55,7 +55,7 @@ Size: M Depends: M4-03 Status: DRAFT
 Refs: design/02-world (Secrets and discovery), design/09-ui-ux
 
 Goal: the map draws itself as the player explores.
-Scope: per-tile-block fog stored compactly in the save. Minimap and full map (pan, pinch zoom). Map rendered in a hand-drawn pixel style from chunk data. Cartography XP from revealing, reveal radius by rank. Player notes. Rumor marks. Landmark icons appear only once seen.
+Scope: per-tile-block fog stored compactly in the save. Minimap and full map (pan, pinch zoom). Map rendered in a hand-drawn pixel style from chunk data. Cartography XP from revealing, reveal radius by rank. Player notes. Rumor marks (moved here from M3-11): a location an NPC or Traveler told the player about appears as a hand-drawn mark offset from the true spot by a seeded amount that shrinks with Cartography. Landmark icons appear only once seen.
 Acceptance: fog storage for a fully explored continent stays under the save budget share (state the number). Map opens in under 200 ms.
 
 ### POW-M4-07 Waystones and fast travel
@@ -109,5 +109,5 @@ Size: L Depends: M4-04, M3-11 Status: DRAFT
 Refs: design/05-life-systems (Requests, Relationships), design/10-content-budget (Verification)
 
 Goal: the region is inhabited, and its hours are counted.
-Scope: about 15 named NPCs with schedules, homes, and likes (friendship itself arrives in M6, the data is authored now). 25 authored requests, 5 Threads. Rank 30 Trials for skills whose trainers live here. `estMinutes` on every authored content item. `tools/pacing-ledger` sums by category and region, writes a report, and fails CI under budget. `docs/ops/gate-g4.md` owner checklist.
+Scope: about 15 named NPCs with schedules, homes, and likes (friendship itself arrives in M6, the data is authored now). 25 authored requests (this absorbs the 20 Hearthford requests moved out of M3), 5 Threads, at least 8 with a non-combat solution. The rank 15 Trials for every wired skill that M3 did not author (M3 authored Blades, Polearms, Evasion, Ember, Athletics, Foraging, Smithing, Cooking), and rank 30 Trials for skills whose trainers live here. Move the M3 slice givers (Orla, Wren, Hesper, Brin, the Pilgrim) into Hearthford without breaking their Trials or requests. `estMinutes` on every authored content item. `tools/pacing-ledger` sums by category and region, writes a report, and fails CI under budget. `docs/ops/gate-g4.md` owner checklist.
 Acceptance: ledger report shows Dawnmeadow at or above budget. NPC schedule tests. Owner action: play G4.
