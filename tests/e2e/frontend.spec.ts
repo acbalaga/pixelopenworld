@@ -132,3 +132,39 @@ test('the first hint appears on its own, is one line, and is not a dialog', asyn
   await page.keyboard.up('KeyD');
   await expect(hint).toHaveCount(0);
 });
+
+test('settings outlive Log Out: muted audio stays muted on the next login', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Handle').fill('Quiet_1');
+  await page.getByRole('button', { name: 'Enter the world' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  const mute = page.getByRole('switch', { name: 'Mute audio' });
+  await expect(mute).toHaveAttribute('aria-checked', 'false');
+  await mute.click();
+  await expect(mute).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('button', { name: 'Log Out' }).click();
+  await expect(page.getByText('Signed in as Quiet_1.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Log In as Quiet_1' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await expect(page.getByRole('switch', { name: 'Mute audio' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+
+  // A full reload keeps it too.
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log In as Quiet_1' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await expect(page.getByRole('switch', { name: 'Mute audio' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+});

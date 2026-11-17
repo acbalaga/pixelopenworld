@@ -172,7 +172,7 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     kind: 'spawner.old_bramblehide',
     creature: 'creature.old_bramblehide',
     cap: 1,
-    respawn: 5400,
+    respawn: 1800,
     radius: 0,
   },
 };
