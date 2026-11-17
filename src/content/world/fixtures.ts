@@ -4,7 +4,16 @@
  */
 
 export type FixtureType =
-  'portal' | 'arrival' | 'door' | 'gate' | 'plate' | 'block' | 'chest' | 'tablet' | 'waystone';
+  | 'portal'
+  | 'arrival'
+  | 'door'
+  | 'gate'
+  | 'plate'
+  | 'block'
+  | 'chest'
+  | 'tablet'
+  | 'waystone'
+  | 'storage';
 
 export interface FixtureDef {
   kind: string;
@@ -116,6 +125,8 @@ const LIST: readonly FixtureDef[] = [
     loot: { items: [{ item: 'item.herbed_skewer', qty: 2 }], coin: 40 },
   },
   { kind: 'fixture.tablet', type: 'tablet', sprite: 'prop.tablet', size: 12 },
+  // The storage chest by the square Waystone: 40 slots held on the avatar (M3-05).
+  { kind: 'fixture.storage', type: 'storage', sprite: 'prop.chest', size: 12 },
 ];
 
 /** Every fixture kind. */

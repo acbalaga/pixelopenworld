@@ -17,16 +17,16 @@ describe('item content', () => {
   it('the real content is valid', () => {
     expect(validateRealItems(sprites)).toEqual([]);
   });
-  it('the slice has about 30 items, four recipes and two node kinds', () => {
-    expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(30);
+  it('the set has about 120 items, four recipes and two node kinds', () => {
+    expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
     expect(Object.keys(RECIPES)).toHaveLength(4);
     expect(Object.keys(NODES)).toHaveLength(2);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(
       Object.values(ITEMS).filter((i) => i.equip?.slot === 'main' && i.equip.weapon === 'sword'),
-    ).toHaveLength(2);
-    expect(Object.values(ITEMS).filter((i) => i.equip?.weapon === 'spear')).toHaveLength(1);
-    expect(Object.values(ITEMS).filter((i) => i.equip?.slot === 'body')).toHaveLength(3);
+    ).toHaveLength(4);
+    expect(Object.values(ITEMS).filter((i) => i.equip?.weapon === 'spear')).toHaveLength(4);
+    expect(Object.values(ITEMS).filter((i) => i.equip?.slot === 'body')).toHaveLength(7);
     expect(count('consumable')).toBeGreaterThanOrEqual(6);
   });
   it('has a name and a description for every item, and an icon in the atlas', () => {

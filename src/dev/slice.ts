@@ -36,7 +36,7 @@ export interface PowDevApi {
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
   /** Puts items in the bag, as if gathered. */
-  giveItem(item: string, qty: number): void;
+  giveItem(item: string, qty: number, q?: 0 | 1 | 2 | 3, dur?: number): void;
   /** Pays XP to a skill, as if earned. For screenshots and checks of the Skills tab. */
   giveXp(skill: string, amount: number): void;
 }
@@ -77,10 +77,12 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         held,
       };
     },
-    giveItem(item, qty) {
+    giveItem(item, qty, q = 0, dur) {
       const inv = getComp(state.entities, who, 'inventory');
       if (!inv) return;
-      addItem(inv, item, qty);
+      addItem(inv, item, qty, q ? { q } : {});
+      if (dur !== undefined)
+        for (const s of inv.slots) if (s?.item === item && s.q === (q || undefined)) s.dur = dur;
       madeItems(state, 'seed', item, qty);
     },
     giveXp(skill, amount) {

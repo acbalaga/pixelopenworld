@@ -1,3 +1,4 @@
+import { activeMods, modAdd } from '../mods';
 import { COMBAT as C } from '../../content/balance/combat';
 import { ATTACKS, type AttackDef, WEAPONS } from '../../content/combat/attacks';
 import { emit } from '../kernel/events';
@@ -203,7 +204,9 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
 
   const stagger = getComp(e, dst, 'stagger');
   const wasStaggered = f.state === 'stagger';
-  const crit = nextU32(state.rng.combat) % 100 < C.crit.chancePct;
+  const crit =
+    nextU32(state.rng.combat) % 100 <
+    C.crit.chancePct + modAdd(activeMods(state, h.src), 'critPct');
   const amount = computeDamage(h.power, h.mult, h.rank, cb?.defense ?? 0, h.element, {
     crit,
     staggered: wasStaggered,

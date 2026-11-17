@@ -70,6 +70,9 @@ export const SPRINT_EVENTS_PER_SECOND =
 export const KILLS_PER_SECOND_MAX = 2;
 
 /** One-off allowance for counts and lumps that do not scale with time. */
+/** Hard cap on storage chest slots, as for the bag. */
+export const MAX_STORAGE_SLOTS = ITEMS_BALANCE.storage.slots;
+
 export const COUNT_SLACK = 20;
 export const XP_SLACK = 300;
 

@@ -1,6 +1,7 @@
 import { COMBAT as C } from '../content/balance/combat';
 import { SKILLS_BALANCE as B } from '../content/balance/skills';
 import { SKILLS, TRIALS, trialKey } from '../content/skills';
+import { activeMods, modAdd } from './mods';
 import { getComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import type { SimState, Skills } from './state';
@@ -87,10 +88,11 @@ export function recomputePools(state: SimState, who: EntityId): void {
     }
   }
   const fed = getComp(state.entities, who, 'fed');
+  const mods = activeMods(state, who);
   const max = {
-    hp: C.pools.hpMax + sums.hp + (fed?.hpMax ?? 0),
-    sta: C.pools.staMax + sums.sta + (fed?.staMax ?? 0),
-    foc: C.pools.focMax + sums.foc + (fed?.focMax ?? 0),
+    hp: C.pools.hpMax + sums.hp + (fed?.hpMax ?? 0) + modAdd(mods, 'hpMax'),
+    sta: C.pools.staMax + sums.sta + (fed?.staMax ?? 0) + modAdd(mods, 'staMax'),
+    foc: C.pools.focMax + sums.foc + (fed?.focMax ?? 0) + modAdd(mods, 'focMax'),
   };
   for (const k of ['hp', 'sta', 'foc'] as const) {
     const key = `${k}Max` as 'hpMax' | 'staMax' | 'focMax';

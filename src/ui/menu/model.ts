@@ -1,11 +1,18 @@
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
-import { EQUIP_SLOTS, type EquipSlot, type ItemDef } from '../../content/items/types';
+import {
+  EQUIP_SLOTS,
+  type BagFilter,
+  type EquipSlot,
+  type ItemDef,
+} from '../../content/items/types';
 import { SKILLS, TRIALS, type SkillFamily } from '../../content/skills';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { UI_STRINGS } from '../../content/strings/ui';
 import { fill } from '../../content/strings/skills';
+import { AFFIXES } from '../../content/items/affixes';
+import { gearStats, isBroken } from '../../sim/items';
 import { masteryName, pendingTrial, xpToNext } from '../../sim/skills';
 import { dayPhase } from '../../sim/time';
 import type { SimState } from '../../sim/state';
@@ -65,8 +72,15 @@ export interface SkillFamilyView {
 
 export type ItemAction = 'use' | 'equip' | 'drop';
 
+export type BagFilterId = 'all' | BagFilter;
+export type BagSortId = 'type' | 'tier' | 'value' | 'newest';
+
 export interface BagSlotView {
   index: number;
+  /** Quality 0 to 3, and its corner glyph (empty for Common). */
+  q: number;
+  glyph: string;
+  broken: boolean;
   item: string | null;
   qty: number;
   name: string | null;
@@ -89,6 +103,9 @@ export interface ItemDetailView {
   value: string;
   qty: string;
   actions: ItemAction[];
+  /** Extra lines under the description: quality, durability, broken, maker, affixes, stats. */
+  lines: string[];
+  broken: boolean;
 }
 
 export interface StatusIconView {
@@ -139,7 +156,7 @@ export function characterView(state: SimState, who: number): CharacterView {
       ]
     : [];
   const gear = EQUIP_SLOTS.map((slot): GearSlotView => {
-    const item = inv?.equipment[slot] ?? null;
+    const item = inv?.equipment[slot]?.item ?? null;
     return {
       slot,
       label: UI_STRINGS.slots[slot],
@@ -190,13 +207,20 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
   return out;
 }
 
-export function bagView(state: SimState, who: number): BagView {
+export function bagView(
+  state: SimState,
+  who: number,
+  opts: { filter?: BagFilterId; sort?: BagSortId | null } = {},
+): BagView {
   const inv = state.entities.comps.inventory[who];
   const a = state.entities.comps.avatar[who];
-  const slots = (inv?.slots ?? []).map((s, index): BagSlotView => {
+  const all = (inv?.slots ?? []).map((s, index): BagSlotView => {
     if (!s) {
       return {
         index,
+        q: 0,
+        glyph: '',
+        broken: false,
         item: null,
         qty: 0,
         name: null,
@@ -205,22 +229,47 @@ export function bagView(state: SimState, who: number): BagView {
       };
     }
     const name = itemName(s.item);
+    const q = s.q ?? 0;
+    const broken = isBroken(s);
+    const qname = q > 0 ? `${UI_STRINGS.quality[q]} ` : '';
     return {
       index,
+      q,
+      glyph: UI_STRINGS.qualityGlyph[q] ?? '',
+      broken,
       item: s.item,
       qty: s.qty,
       name,
       icon: ITEMS[s.item]?.icon ?? null,
-      label: fill(UI_STRINGS.bagSlot, { item: name, qty: s.qty }),
+      label:
+        fill(UI_STRINGS.bagSlot, { item: `${qname}${name}`, qty: s.qty }) +
+        (broken ? `, ${UI_STRINGS.brokenGlyph}` : ''),
     };
   });
+  const filter = opts.filter ?? 'all';
+  const sort = opts.sort ?? null;
+  // Plain view (all, no sort) is the real grid with its empty cells. Anything else lists only items.
+  const plain = filter === 'all' && sort === null;
+  const full = all.filter((s) => s.item !== null);
+  let slots = full.filter((s) => filter === 'all' || ITEMS[s.item as string]?.bag === filter);
+  const def = (s: BagSlotView): ItemDef | undefined => ITEMS[s.item as string];
+  const typeRank = (s: BagSlotView): number => BAG_ORDER.indexOf(def(s)?.bag ?? 'other');
+  const by: Record<BagSortId, (x: BagSlotView, y: BagSlotView) => number> = {
+    type: (x, y) => typeRank(x) - typeRank(y) || (x.name ?? '').localeCompare(y.name ?? ''),
+    tier: (x, y) => (def(y)?.tier ?? 0) - (def(x)?.tier ?? 0) || typeRank(x) - typeRank(y),
+    value: (x, y) => (def(y)?.value ?? 0) - (def(x)?.value ?? 0),
+    newest: (x, y) => y.index - x.index,
+  };
+  if (sort) slots = [...slots].sort((x, y) => by[sort](x, y) || x.index - y.index);
   return {
-    slots,
-    used: slots.filter((s) => s.item !== null).length,
-    total: slots.length,
+    slots: plain ? all : slots,
+    used: full.length,
+    total: all.length,
     coin: a?.coin ?? 0,
   };
 }
+
+const BAG_ORDER: readonly BagFilter[] = ['gear', 'tools', 'food', 'materials', 'other'];
 
 /** What can be done with an item from the Bag: eat food, wear gear, and drop anything. */
 export function itemActions(def: ItemDef): ItemAction[] {
@@ -235,6 +284,30 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
   const s = state.entities.comps.inventory[who]?.slots[slot];
   const def = s ? ITEMS[s.item] : undefined;
   if (!s || !def) return null;
+  const lines: string[] = [];
+  const q = s.q ?? 0;
+  if (q > 0) lines.push(fill(UI_STRINGS.detailQuality, { q: UI_STRINGS.quality[q] ?? '' }));
+  const broken = isBroken(s);
+  if (def.durability !== undefined) {
+    lines.push(
+      fill(UI_STRINGS.detailDurability, { n: s.dur ?? def.durability, max: def.durability }),
+    );
+    if (broken) lines.push(UI_STRINGS.detailBroken);
+  }
+  if (def.equip && (def.equip.power || def.equip.defense || def.equip.weapon)) {
+    const g = gearStats(def, s);
+    lines.push(fill(UI_STRINGS.detailStats, { power: g.power, defense: g.defense }));
+  }
+  if (s.affixes && s.affixes.length > 0)
+    lines.push(
+      fill(UI_STRINGS.detailAffixes, {
+        list: s.affixes.map((a) => ITEM_STRINGS[AFFIXES[a]?.nameKey ?? ''] ?? a).join(', '),
+      }),
+    );
+  if (s.mark)
+    lines.push(
+      fill(UI_STRINGS.detailMark, { handle: state.entities.comps.avatar[who]?.handle ?? '' }),
+    );
   return {
     item: s.item,
     name: itemName(s.item),
@@ -243,6 +316,8 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
     value: fill(UI_STRINGS.detailValue, { n: def.value }),
     qty: fill(UI_STRINGS.detailStack, { n: s.qty }),
     actions: itemActions(def),
+    lines,
+    broken,
   };
 }
 

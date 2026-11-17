@@ -174,6 +174,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return;
     case 'waystone':
       return useWaystone(state, who, target);
+    case 'storage':
+      emit(state.events, { type: 'storageOpened', id: target, who });
+      return;
     default:
   }
 }

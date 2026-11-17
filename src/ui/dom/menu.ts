@@ -14,7 +14,15 @@ import {
 import type { SettingsStore } from '../../platform/settings';
 import type { Command } from '../../sim/kernel/commands';
 import type { SimState } from '../../sim/state';
-import { bagView, characterView, itemDetail, skillsView, type ItemAction } from '../menu/model';
+import {
+  bagView,
+  characterView,
+  itemDetail,
+  skillsView,
+  type BagFilterId,
+  type BagSortId,
+  type ItemAction,
+} from '../menu/model';
 
 export const TAB_IDS = [
   'character',
@@ -387,7 +395,7 @@ export class MenuSheet {
 
   private renderBag(): void {
     const { state, who } = this.deps.read();
-    const v = bagView(state, who);
+    const v = bagView(state, who, { filter: this.bagFilter, sort: this.bagSort });
     this.body.appendChild(
       el(
         'p',
@@ -395,6 +403,7 @@ export class MenuSheet {
         `${fill(S.bagCount, { used: v.used, total: v.total })}. ${S.coin}: ${v.coin}`,
       ),
     );
+    this.body.appendChild(this.bagControls());
     const grid = el('ul', 'pow-bag-grid');
     grid.setAttribute('aria-label', S.bagTitle);
     for (const s of v.slots) {
@@ -407,6 +416,8 @@ export class MenuSheet {
         b.setAttribute('aria-pressed', String(this.selected === s.index));
         put(b, this.icon(s.icon, 'pow-icon pow-icon-big'));
         if (s.qty > 1) put(b, el('span', 'pow-qty', String(s.qty)));
+        if (s.glyph) put(b, el('span', 'pow-qual', s.glyph));
+        if (s.broken) b.classList.add('pow-broken');
         b.addEventListener('click', () => {
           this.selected = this.selected === s.index ? -1 : s.index;
           this.render(true);
@@ -436,6 +447,7 @@ export class MenuSheet {
         h,
         el('p', 'pow-detail-meta', `${d.category}. ${d.value}. ${d.qty}.`),
         el('p', 'pow-detail-desc', d.description),
+        ...d.lines.map((l) => el('p', 'pow-detail-meta', l)),
       );
       const actions = el('div', 'pow-actions');
       const slot = this.selected;
@@ -443,6 +455,51 @@ export class MenuSheet {
       detail.appendChild(actions);
     }
     this.body.appendChild(detail);
+  }
+
+  private bagFilter: BagFilterId = 'all';
+  private bagSort: BagSortId | null = null;
+
+  /** Filter chips (All, Gear, Tools, Food, Materials, Other) and the sort choice. */
+  private bagControls(): HTMLElement {
+    const wrap = el('div', 'pow-bag-controls');
+    const chips = el('div', 'pow-seg');
+    chips.setAttribute('role', 'radiogroup');
+    chips.setAttribute('aria-label', S.bagFiltersLabel);
+    for (const id of Object.keys(S.bagFilters) as BagFilterId[]) {
+      const b = el('button', 'pow-seg-btn', S.bagFilters[id]);
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(this.bagFilter === id));
+      b.dataset.key = `filter-${id}`;
+      b.addEventListener('click', () => {
+        this.bagFilter = id;
+        this.selected = -1;
+        this.render(true);
+        this.body.querySelector<HTMLElement>(`[data-key="filter-${id}"]`)?.focus();
+      });
+      chips.appendChild(b);
+    }
+    const label = el('label', 'pow-field', S.bagSortLabel);
+    const sel = el('select', 'pow-select');
+    sel.dataset.key = 'bag-sort';
+    const none = el('option', undefined, S.bagSlotOrder);
+    none.value = '';
+    sel.appendChild(none);
+    for (const id of Object.keys(S.bagSorts) as BagSortId[]) {
+      const o = el('option', undefined, S.bagSorts[id]);
+      o.value = id;
+      sel.appendChild(o);
+    }
+    sel.value = this.bagSort ?? '';
+    sel.addEventListener('change', () => {
+      this.bagSort = (sel.value || null) as BagSortId | null;
+      this.render(true);
+      this.body.querySelector<HTMLElement>('[data-key="bag-sort"]')?.focus();
+    });
+    label.appendChild(sel);
+    put(wrap, chips, label);
+    return wrap;
   }
 
   private actionNodes(a: ItemAction, slot: number): HTMLElement[] {

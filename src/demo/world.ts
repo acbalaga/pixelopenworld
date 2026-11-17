@@ -602,6 +602,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       }
       let frame: string;
       if (def.type === 'plate') frame = f.open ? 'down' : 'up';
+      // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
+      else if (def.type === 'storage') frame = 'closed';
       else if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
         frame = f.open ? 'open' : 'closed';
         // A fixture opened this session plays its opening frames first. One loaded already open

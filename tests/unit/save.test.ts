@@ -1,3 +1,4 @@
+import { asSchema5 } from '../support/saves';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -233,8 +234,7 @@ describe('migrations', () => {
     delete j.hints;
     delete j.hint;
     delete (s as { ledger?: unknown }).ledger;
-    delete (s.entities.comps.skills[me] as { nightAcc?: number }).nightAcc;
-    expect(hashState(s)).toBe(fixture.expectedHash);
+    expect(hashState(asSchema5(s))).toBe(fixture.expectedHash);
   });
 
   it('the schema 2 fixture gains a ledger seeded from what the avatar holds', async () => {
@@ -258,8 +258,7 @@ describe('migrations', () => {
     expect(now.ledger.xpEarned['skill.blades']).toBe(25);
     // Everything else is untouched: remove the ledger and the old hash comes back.
     delete (s as { ledger?: unknown }).ledger;
-    delete (s.entities.comps.skills[me] as { nightAcc?: number }).nightAcc;
-    expect(hashState(s)).toBe(f2.expectedHash);
+    expect(hashState(asSchema5(s))).toBe(f2.expectedHash);
     expect(now.playSeconds).toBe(f2.plain.playSeconds);
     expect(now.look).toEqual(f2.plain.look);
   });

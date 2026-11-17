@@ -6,6 +6,16 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.brin.again': 'Back again. What will it be?',
   'dlg.brin.c_shop': 'Show me what you have.',
 
+  'dlg.tobin.greet': 'Tools and blades. Everything here has been hit with a hammer at least once.',
+  'dlg.tobin.again': 'Back at the anvil. What do you need?',
+  'dlg.tobin.c_shop': 'Let me see the steel.',
+  'dlg.mara.greet': 'Cloth, leather, a bit of mail. I can fit you in a minute.',
+  'dlg.mara.again': 'Back for another fitting?',
+  'dlg.mara.c_shop': 'What have you got to wear?',
+  'dlg.ilse.greet': 'Roots, tonics and things that keep. Mind the nightshade.',
+  'dlg.ilse.again': 'More bruises? Come in.',
+  'dlg.ilse.c_shop': 'What do you sell?',
+
   'dlg.hesper.greet': 'Hungry? A pot is only as good as what goes into it.',
   'dlg.hesper.c_teach': 'Teach me something.',
   'dlg.hesper.teach':
