@@ -113,6 +113,7 @@ export const UI_STRINGS = {
     handedness: 'Left handed layout',
     reducedMotion: 'Reduced motion',
     haptics: 'Vibration',
+    guardToggle: 'Tap Guard to raise and lower it',
     mute: 'Mute audio',
     scheme: 'Controls',
     flow: 'Flow',

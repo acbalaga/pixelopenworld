@@ -295,7 +295,7 @@ describe('migrations', () => {
   });
 
   it('refuses a save from a newer version, a missing step, and a step that skips', () => {
-    expect(() => migrate({ ...fixture.plain, schema: 9 })).toThrow(/newer/);
+    expect(() => migrate({ ...fixture.plain, schema: CURRENT_SCHEMA + 1 })).toThrow(/newer/);
     expect(() => migrate(fixture.plain, {}, 2)).toThrow(/no migration from schema 1/);
     expect(() => migrate(fixture.plain, { 1: (o) => ({ ...o, schema: 3 }) }, 3)).toThrow(
       /produced schema 3/,

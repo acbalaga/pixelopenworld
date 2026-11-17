@@ -70,8 +70,8 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 27 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(27);
+  it('list 23 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(23);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
     for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
@@ -83,6 +83,13 @@ describe('every skill that is not pending earns XP', () => {
   const SCRIPTS: Record<string, (s: SimState, me: number) => void> = {
     'skill.blades': (s, me) => hit(s, me, 'blades'),
     'skill.polearms': (s, me) => hit(s, me, 'polearms'),
+    'skill.heavy_arms': (s, me) => hit(s, me, 'heavy'),
+    'skill.archery': (s, me) => hit(s, me, 'archery'),
+    'skill.unarmed': (s, me) => hit(s, me, 'unarmed'),
+    'skill.shieldcraft': (s, me) => {
+      const foe = spawnEnemy(s, 'creature.mossling', 400, 300);
+      feed(s, { type: 'blocked', who: me, src: foe, amount: 2 });
+    },
     'skill.ember': (s, me) => hit(s, me, 'ember'),
     'skill.evasion': (s, me) => {
       const foe = spawnEnemy(s, 'creature.mossling', 400, 300);
@@ -125,8 +132,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 9 skills with a system at the end of M3-02', () => {
-    expect(active).toHaveLength(9);
+  it('has 13 skills with a system after M3-04', () => {
+    expect(active).toHaveLength(13);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

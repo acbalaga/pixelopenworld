@@ -8,6 +8,8 @@ export interface TouchOutput {
   move: { x: number; y: number };
   buttonsPressed: ButtonId[];
   buttonsHeld: ReadonlySet<ButtonId>;
+  /** Buttons with a finger on them now, without the hold delay. Guard reads this. */
+  buttonsDown: ReadonlySet<ButtonId>;
   dodge: { dir: Direction | null } | null;
   targetTap: ScreenPoint | null;
   longPress: ScreenPoint | null;
@@ -148,7 +150,9 @@ export class TouchController {
   /** Reads and clears edge events. Holds are evaluated against `now`. */
   sample(now: number): TouchOutput {
     const held = new Set<ButtonId>();
+    const down = new Set<ButtonId>();
     for (const p of this.pointers.values()) {
+      if (p.button) down.add(p.button);
       if (!p.moved && !p.holdFired && now - p.t0 >= this.tun.holdMs) {
         p.holdFired = true;
         if (!p.button) this.long = { x: p.x, y: p.y };
@@ -170,6 +174,7 @@ export class TouchController {
       move,
       buttonsPressed: this.pressed,
       buttonsHeld: held,
+      buttonsDown: down,
       dodge: this.dodge,
       targetTap: this.tap,
       longPress: this.long,

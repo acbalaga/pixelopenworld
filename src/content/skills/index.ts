@@ -24,7 +24,13 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         weapon: 'blades',
         sources: damage('blades'),
       },
-      { id: 'skill.heavy_arms', name: 'Heavy Arms', family: 'arms', sources: [] },
+      {
+        id: 'skill.heavy_arms',
+        name: 'Heavy Arms',
+        family: 'arms',
+        weapon: 'heavy',
+        sources: damage('heavy'),
+      },
       {
         id: 'skill.polearms',
         name: 'Polearms',
@@ -32,9 +38,30 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         weapon: 'polearms',
         sources: damage('polearms'),
       },
-      { id: 'skill.archery', name: 'Archery', family: 'arms', sources: [] },
-      { id: 'skill.unarmed', name: 'Unarmed', family: 'arms', sources: [] },
-      { id: 'skill.shieldcraft', name: 'Shieldcraft', family: 'arms', sources: [] },
+      {
+        id: 'skill.archery',
+        name: 'Archery',
+        family: 'arms',
+        weapon: 'archery',
+        sources: damage('archery'),
+      },
+      {
+        id: 'skill.unarmed',
+        name: 'Unarmed',
+        family: 'arms',
+        weapon: 'unarmed',
+        sources: damage('unarmed'),
+      },
+      {
+        id: 'skill.shieldcraft',
+        name: 'Shieldcraft',
+        family: 'arms',
+        // A parry pays more than a block. Both scale with the tier of whoever swung.
+        sources: [
+          { on: 'block', base: 6 },
+          { on: 'parry', base: 20 },
+        ],
+      },
       {
         id: 'skill.evasion',
         name: 'Evasion',
@@ -114,10 +141,6 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
  * XP to a skill listed here. A test checks that every skill not listed earns XP.
  */
 export const PENDING_SKILLS: string[] = [
-  'skill.heavy_arms',
-  'skill.archery',
-  'skill.unarmed',
-  'skill.shieldcraft',
   'skill.tide',
   'skill.gale',
   'skill.stone',

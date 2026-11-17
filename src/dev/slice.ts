@@ -7,6 +7,7 @@
 import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { spawnCreature } from '../sim/combat/enemy';
+import type { Command } from '../sim/kernel/commands';
 import { addItem, countItem } from '../sim/items';
 import { madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
@@ -18,6 +19,8 @@ export interface SliceHookContext {
   state: SimState;
   who: EntityId;
   settings: SettingsStore;
+  /** Queues a command for the next tick, the way the UI does. */
+  command: (c: Command) => void;
 }
 
 /** The view a test reads. Plain data, no live references. */
@@ -39,6 +42,10 @@ export interface PowDevApi {
   giveItem(item: string, qty: number, q?: 0 | 1 | 2 | 3, dur?: number): void;
   /** Pays XP to a skill, as if earned. For screenshots and checks of the Skills tab. */
   giveXp(skill: string, amount: number): void;
+  /** Gives an item if the bag lacks it and wears it. For screenshots of weapons and shields. */
+  wear(item: string): void;
+  /** Left or right handed layout, for screenshots of the controls. */
+  leftHanded(on: boolean): void;
   /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
   trial(id: string, what: 'offer' | 'pass'): void;
 }
@@ -49,7 +56,7 @@ const AHEAD: Record<number, [number, number]> = { 0: [0, -1], 2: [1, 0], 4: [0, 
 
 /** Adds the scheme toggle button and `window.__pow`. */
 export function installSliceHooks(ctx: SliceHookContext): void {
-  const { state, who, settings } = ctx;
+  const { state, who, settings, command } = ctx;
 
   const button = document.createElement('button');
   button.type = 'button';
@@ -86,6 +93,15 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       if (dur !== undefined)
         for (const s of inv.slots) if (s?.item === item && s.q === (q || undefined)) s.dur = dur;
       madeItems(state, 'seed', item, qty);
+    },
+    wear(item) {
+      const inv = getComp(state.entities, who, 'inventory');
+      if (!inv) return;
+      if (!inv.slots.some((s) => s?.item === item)) addItem(inv, item, 1);
+      command({ type: 'equip', slot: inv.slots.findIndex((s) => s?.item === item) });
+    },
+    leftHanded(on) {
+      settings.set({ handedness: on ? 'left' : 'right' });
     },
     trial(id, what) {
       if (what === 'offer') offerTrial(state, who, id);

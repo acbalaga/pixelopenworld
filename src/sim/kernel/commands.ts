@@ -22,6 +22,8 @@ export type Command =
    */
   | { type: 'technique'; slot: number; phase: 'press' | 'aim' | 'release'; aim: Direction | null }
   | { type: 'scheme'; scheme: 'flow' | 'classic' }
+  /** Raise or lower the guard. Raising needs a shield in the off hand. */
+  | { type: 'guard'; on: boolean }
   /** The context button: work the node in front, or take the second press of a gather. */
   | { type: 'interact' }
   /** Wear the gear in bag slot `slot`. */
@@ -97,6 +99,9 @@ export function validateCommand(raw: unknown): Validated {
       if (r.scheme === 'flow' || r.scheme === 'classic')
         return { ok: true, command: { type: 'scheme', scheme: r.scheme } };
       return { ok: false, reason: 'bad scheme' };
+    case 'guard':
+      if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad guard' };
+      return { ok: true, command: { type: 'guard', on: r.on } };
     case 'interact':
       return { ok: true, command: { type: 'interact' } };
     case 'equip':

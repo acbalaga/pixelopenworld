@@ -130,8 +130,7 @@ function perform(
 }
 
 /**
- * Applies one sim event to the Trials of `who`, if the acting source is manual. `parried` is sent
- * by Shieldcraft (M3-04). Craft quality is carried by the craft events of M3-07, so until then a
+ * Applies one sim event to the Trials of `who`, if the acting source is manual. Craft quality is carried by the craft events of M3-07, so until then a
  * craft counts at Common.
  */
 export function advanceTrials(
@@ -165,9 +164,10 @@ export function advanceTrials(
         finish(state, who, def, p, 1);
       }
       return;
+    case 'parried':
+      if (e.who === who) perform(state, who, 'parry');
+      return;
     default:
-      if ((e.type as string) === 'parried' && (e as unknown as { who: number }).who === who)
-        perform(state, who, 'parry');
   }
 }
 

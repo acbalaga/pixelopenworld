@@ -46,6 +46,8 @@ export class InputSampler {
       r.techniqueHeld[i] = held.has(id);
     });
     r.attack = pressed.has('attack');
+    r.guardTouch = t.buttonsDown.has('guard');
+    r.guardHeld = this.keyboard.guardHeld() || g.held.has('guard');
     r.context = pressed.has('context');
     r.menu = pressed.has('menu');
     r.bag = pressed.has('bag');
@@ -87,14 +89,43 @@ export class CommandMapper {
   private dir: number | null = null;
   private full = false;
   private held = [false, false, false, false];
+  private guardUp = false;
+  private touchWas = false;
+  private toggled = false;
+  /** Touch guard: a tap raises it and the next tap lowers it, or it stays up only while held. */
+  guardToggle = true;
 
   constructor(private readonly toWorld: ScreenToWorld = () => null) {}
+
+  /**
+   * Tells the mapper whether the sim still has the guard up. A guard the sim dropped (out of
+   * Stamina, a guard break) ends a toggle. A held button stays down until it is released.
+   */
+  syncGuard(simGuard: boolean): void {
+    if (!simGuard && this.guardUp && this.guardToggle) {
+      this.guardUp = false;
+      this.toggled = false;
+    }
+  }
 
   /** Commands for one sample. Move first, then actions in a fixed order. */
   map(r: InputRecord): Command[] {
     const out = toCommands(r, this.dir, this.full);
     this.dir = r.moveDir;
     this.full = r.full;
+    // Guard. Keys and pad hold it. Touch holds it too, or toggles it with a tap.
+    const rise = r.guardTouch && !this.touchWas;
+    this.touchWas = r.guardTouch;
+    if (this.guardToggle) {
+      if (rise) this.toggled = !this.toggled;
+    } else {
+      this.toggled = false;
+    }
+    const wantGuard = r.guardHeld || (this.guardToggle ? this.toggled : r.guardTouch);
+    if (wantGuard !== this.guardUp) {
+      this.guardUp = wantGuard;
+      out.push({ type: 'guard', on: wantGuard });
+    }
     if (r.attack) out.push({ type: 'attack' });
     if (r.dodge) out.push({ type: 'dodge', dir: r.dodge.dir });
     if (r.context) out.push({ type: 'interact' });

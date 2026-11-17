@@ -5,6 +5,8 @@ export interface DamageOpts {
   crit: boolean;
   /** The target was staggered when the hit landed. */
   staggered: boolean;
+  /** Percent from a weapon property or a block. 100 or absent for none. */
+  pct?: number;
 }
 
 /** Skill factor in permille: 1000 at rank 0, 2000 at rank 100. */
@@ -33,6 +35,7 @@ export function computeDamage(
     (power * mult * skillFactor(rank) * element) / (1000 * (C.damage.defenseBase + defense)),
   );
   if (opts.crit) centi = Math.floor((centi * C.damage.critMult) / 100);
+  if (opts.pct !== undefined && opts.pct !== 100) centi = Math.floor((centi * opts.pct) / 100);
   if (opts.staggered) centi = Math.floor((centi * C.damage.staggerBonus) / 100);
   return Math.max(1, Math.floor((centi + 50) / 100));
 }

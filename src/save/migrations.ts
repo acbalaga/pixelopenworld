@@ -193,6 +193,25 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     }
     return { ...old, schema: 8, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 8 to 9 (M3-04): every fighter gains a guard (down, no ticks) and a stood-still counter.
+   */
+  8: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          fighter: ({ guard?: boolean; guardT?: number; still?: number } | null)[];
+        };
+      };
+    };
+    for (const f of raw.entities.comps.fighter) {
+      if (!f) continue;
+      f.guard = false;
+      f.guardT = 0;
+      f.still = 0;
+    }
+    return { ...old, schema: 9, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

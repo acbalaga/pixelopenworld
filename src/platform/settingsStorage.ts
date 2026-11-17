@@ -12,7 +12,7 @@ export interface SettingsBackend {
 }
 
 const NUMBERS = ['textScale', 'hudScale', 'buttonScale', 'hudOpacity'] as const;
-const BOOLEANS = ['reducedMotion', 'haptics', 'muted'] as const;
+const BOOLEANS = ['reducedMotion', 'haptics', 'muted', 'guardToggle'] as const;
 
 /** Keeps only the fields that are present and of the right type. The store clamps the numbers. */
 export function sanitizeSettings(raw: unknown): Partial<Settings> {

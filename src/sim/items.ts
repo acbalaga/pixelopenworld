@@ -8,6 +8,7 @@ import { destroy, getComp, query, setComp, spawn, type EntityId } from './kernel
 import { emit } from './kernel/events';
 import type { Command } from './kernel/commands';
 import { SUBPX } from './kernel/fixed';
+import { hasShield } from './combat/guard';
 import { int, next, weighted, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
@@ -261,6 +262,8 @@ export function recomputeGear(state: SimState, who: EntityId): void {
   // Slot 1 is the lunge of whatever is held: every blade and every polearm has one.
   const fighter = getComp(state.entities, who, 'fighter');
   if (fighter) fighter.slots[0] = WEAPONS[cb.weapon]?.lunge ?? null;
+  // No shield, no guard.
+  if (fighter && !hasShield(state, who)) fighter.guard = false;
   recomputePools(state, who);
 }
 

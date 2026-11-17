@@ -23,6 +23,7 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
     case 'damageDealt':
       return e.heavy || e.crit || e.bonus ? 'sfx.hit_heavy' : 'sfx.hit_light';
     case 'perfectDodge':
+    case 'parried':
       return 'sfx.chime';
     case 'dodgeStarted':
       return 'sfx.step';

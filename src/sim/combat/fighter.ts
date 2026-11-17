@@ -7,6 +7,8 @@ import { dirStep, SUBPX, type Vec } from '../kernel/fixed';
 import { nextU32 } from '../kernel/rng';
 import type { Fighter, Pools, SimState } from '../state';
 import { computeDamage } from './damage';
+import { blocking, facingOf, hitAngle256 } from './guard';
+import { breaksGuard, knockPx, propertyPct, refundOf, staggerPoints } from './properties';
 import { inShape, len } from './geometry';
 import { recordKill } from '../ledger';
 
@@ -47,6 +49,9 @@ export function newFighter(team: 0 | 1, slots: (string | null)[] = []): Fighter 
     cooldowns: [0, 0, 0, 0],
     casting: null,
     deadT: 0,
+    guard: false,
+    guardT: 0,
+    still: 0,
   };
 }
 
@@ -202,14 +207,43 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     return;
   }
 
-  const stagger = getComp(e, dst, 'stagger');
   const wasStaggered = f.state === 'stagger';
+  const mid = centerPx(state, dst) ?? { x: 0, y: 0 };
+
+  // A raised guard turns a frontal hit: a parry if it was raised just before, a guard break from
+  // a heavy weapon, else a block that costs Stamina. With no Stamina left it fails.
+  let through = 100;
+  let blocked = false;
+  if (
+    blocking(state, dst) &&
+    hitAngle256(facingOf(state, dst), mid, h.from) >= C.guard.frontCos256
+  ) {
+    if (f.guardT <= C.guard.parryWindow) {
+      parry(state, dst, h);
+      return;
+    }
+    if (breaksGuard(h.tag)) {
+      f.guard = false;
+      emit(state.events, { type: 'guardBroken', who: dst });
+    } else if (pools.sta >= C.guard.cost) {
+      pools.sta -= C.guard.cost;
+      pools.lastSpend = state.tick;
+      blocked = true;
+      through = C.guard.takenPct;
+    } else {
+      f.guard = false;
+      emit(state.events, { type: 'guardBroken', who: dst });
+    }
+  }
+
   const crit =
     nextU32(state.rng.combat) % 100 <
     C.crit.chancePct + modAdd(activeMods(state, h.src), 'critPct');
+  const prop = propertyPct(state, dst, h.tag, mid, h.from, wasStaggered);
   const amount = computeDamage(h.power, h.mult, h.rank, cb?.defense ?? 0, h.element, {
     crit,
     staggered: wasStaggered,
+    pct: Math.floor((prop * through) / 100),
   });
   pools.hp = Math.max(0, pools.hp - amount);
   pools.lastCombat = state.tick;
@@ -225,14 +259,18 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     heavy: h.heavy,
     tag: h.tag,
   });
+  if (blocked) emit(state.events, { type: 'blocked', who: dst, src: h.src, amount });
+  // Every unarmed hit gives some Stamina back.
+  const refund = refundOf(h.tag);
+  if (srcPools && refund > 0) srcPools.sta = Math.min(srcPools.staMax, srcPools.sta + refund);
 
-  // Knockback away from the source, spread over a few ticks.
+  // Knockback away from the source, spread over a few ticks. A block takes half of it.
   const pos = getComp(e, dst, 'pos');
   if (pos && h.knock > 0) {
     // Centers, not feet, so a hit from the same row pushes straight back.
-    const mid = centerPx(state, dst) ?? { x: pos.x / SUBPX, y: pos.y / SUBPX };
-    let dx = mid.x - h.from.x;
-    let dy = mid.y - h.from.y;
+    const m = centerPx(state, dst) ?? { x: pos.x / SUBPX, y: pos.y / SUBPX };
+    let dx = m.x - h.from.x;
+    let dy = m.y - h.from.y;
     const l = len({ x: dx, y: dy });
     if (l === 0) {
       dx = 0;
@@ -241,7 +279,8 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
       dx /= l;
       dy /= l;
     }
-    const per = (h.knock * SUBPX) / C.knockTicks;
+    const dist = knockPx(h.tag, h.knock, l);
+    const per = ((blocked ? dist >> 1 : dist) * SUBPX) / C.knockTicks;
     const k = getComp(e, dst, 'knock');
     const add = { x: Math.round(dx * per), y: Math.round(dy * per) };
     e.comps.knock[dst] = k
@@ -259,18 +298,8 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     kill(state, dst);
     return;
   }
-  if (stagger) {
-    stagger.cur += h.stagger;
-    stagger.lastHit = state.tick;
-    if (!wasStaggered && stagger.cur >= stagger.max) {
-      stagger.cur = 0;
-      f.state = 'stagger';
-      f.t = 0;
-      f.atk = null;
-      f.dv = { x: 0, y: 0 };
-      emit(state.events, { type: 'staggerBreak', id: dst });
-    }
-  }
+  if (blocked) return;
+  fillStagger(state, dst, staggerPoints(h.tag, h.stagger));
   const hurt = f.team === 0 ? C.hurtTicks.player : C.hurtTicks.enemy;
   if (hurt > 0 && f.state !== 'stagger') {
     f.state = 'hurt';
@@ -278,6 +307,49 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     f.atk = null;
     f.dv = { x: 0, y: 0 };
   }
+}
+
+/** Adds to a fighter's stagger bar. A full bar breaks into the helpless state. */
+function fillStagger(state: SimState, id: EntityId, points: number): void {
+  const f = getComp(state.entities, id, 'fighter');
+  const stagger = getComp(state.entities, id, 'stagger');
+  if (!f || !stagger || f.state === 'dead') return;
+  const was = f.state === 'stagger';
+  stagger.cur += points;
+  stagger.lastHit = state.tick;
+  if (!was && stagger.cur >= stagger.max) {
+    stagger.cur = 0;
+    f.state = 'stagger';
+    f.t = 0;
+    f.atk = null;
+    f.dv = { x: 0, y: 0 };
+    emit(state.events, { type: 'staggerBreak', id });
+  }
+}
+
+/** A hit met a guard raised just before it: no damage, and the attacker is thrown off balance. */
+function parry(state: SimState, dst: EntityId, h: HitInfo): void {
+  const e = state.entities;
+  const f = getComp(e, dst, 'fighter');
+  const pools = getComp(e, dst, 'pools');
+  if (!f || !pools) return;
+  pools.lastCombat = state.tick;
+  const srcPools = getComp(e, h.src, 'pools');
+  if (srcPools) srcPools.lastCombat = state.tick;
+  emit(state.events, { type: 'parried', who: dst, src: h.src });
+  f.hitstop = Math.max(f.hitstop, C.hitstop.target);
+  const sf = getComp(e, h.src, 'fighter');
+  if (sf) {
+    sf.hitstop = Math.max(sf.hitstop, C.hitstop.attacker);
+    // The swing is over: a parried attacker is open, whether or not it has a stagger bar.
+    if (sf.state === 'attack') {
+      sf.state = 'idle';
+      sf.t = 0;
+      sf.atk = null;
+      sf.dv = { x: 0, y: 0 };
+    }
+  }
+  fillStagger(state, h.src, C.guard.parryStagger);
 }
 
 /** Moves a fighter to the dead state. Echo and respawn are handled by the combat system. */
