@@ -1183,3 +1183,65 @@ canvas {
   gap: calc(var(--px) * 3);
   justify-content: flex-end;
 }
+
+/* Bag filters, sort, quality glyph, broken items (M3-05). */
+.pow-bag-controls {
+  display: grid;
+  gap: calc(var(--px) * 2);
+  margin-bottom: calc(var(--px) * 2);
+}
+.pow-bag-controls .pow-seg {
+  flex-wrap: wrap;
+}
+.pow-bag-controls .pow-seg-btn {
+  padding: 0 calc(var(--px) * 3);
+}
+.pow-bag-controls .pow-seg-btn[aria-checked='true'] {
+  color: var(--pal-0);
+  background: var(--pal-47);
+}
+.pow-bag-controls .pow-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  color: var(--pal-47);
+  font-size: 0.9em;
+}
+.pow-select {
+  min-height: 44px;
+  padding: 0 0.6em;
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+}
+.pow-qual {
+  position: absolute;
+  left: 3px;
+  top: 1px;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: var(--pal-47);
+  text-shadow: 1px 1px 0 var(--pal-0);
+}
+/* A broken item shows a crack across its icon, so it is not told by color alone. */
+.pow-broken::after {
+  content: '';
+  position: absolute;
+  inset: 20% 30% 20% 30%;
+  border-left: 2px solid var(--pal-0);
+  border-right: 2px solid var(--pal-21);
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+.pow-storage-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--px) * 3);
+}
+@media (max-width: 420px) {
+  .pow-storage-cols {
+    grid-template-columns: 1fr;
+  }
+}

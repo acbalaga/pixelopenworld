@@ -117,3 +117,25 @@ export function tamper(
   }
   return next;
 }
+
+/**
+ * A state with what later schemas added taken off, so an old fixture's recorded hash can be
+ * checked against it: nothing else changed. Covers skills.nightAcc (6), and storage, wear, worn
+ * stacks and bag durability (7).
+ */
+export function asSchema5(s: SimState): SimState {
+  for (const sk of s.entities.comps.skills) if (sk) delete (sk as { nightAcc?: number }).nightAcc;
+  delete (s.entities.comps as { storage?: unknown }).storage;
+  for (const inv of s.entities.comps.inventory) {
+    if (!inv) continue;
+    delete (inv as { wear?: unknown }).wear;
+    const eq = inv.equipment as Record<string, unknown>;
+    for (const k of Object.keys(eq)) eq[k] = (eq[k] as { item: string } | null)?.item ?? null;
+    for (const st of inv.slots) if (st) delete st.dur;
+  }
+  if (s.ledger) {
+    delete (s.ledger as { masterworks?: unknown }).masterworks;
+    delete (s.ledger as { marked?: unknown }).marked;
+  }
+  return s;
+}

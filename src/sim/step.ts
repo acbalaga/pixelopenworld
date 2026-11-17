@@ -15,6 +15,7 @@ import { hintsSystem } from './systems/hints';
 import { requestsSystem } from './systems/npcs';
 import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
+import { wearSystem } from './items';
 import { skillsSystem } from './systems/skills';
 import type { EntityId } from './kernel/entities';
 
@@ -48,6 +49,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   requestsSystem,
   hintsSystem,
   // Last, so it sees every event the other systems sent this tick.
+  wearSystem,
   skillsSystem,
 ];
 

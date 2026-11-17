@@ -2,7 +2,9 @@ import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { HINTS } from '../../content/hints';
 import { REQUESTS } from '../../content/dialogue';
 import { CREATURES } from '../../content/creatures';
+import { AFFIXES } from '../../content/items/affixes';
 import { ITEMS } from '../../content/items';
+import type { ItemStack } from '../../sim/state';
 import { EQUIP_SLOTS } from '../../content/items/types';
 import { RECIPES } from '../../content/items/recipes';
 import { SKILLS } from '../../content/skills';
@@ -14,6 +16,7 @@ import {
   COIN_HARD_CAP,
   MAX_BAG_SLOTS,
   MAX_ENTITY_CAPACITY,
+  MAX_STORAGE_SLOTS,
   TICK_SLACK_SECONDS,
   TPS,
 } from './bounds';
@@ -42,7 +45,7 @@ export function consistency(v: View): Reason[] {
   const fail = (code: Reason['code'], detail: string): void => {
     out.push({ code, layer: 'consistency', detail });
   };
-  const { plain, sim, avatar, inv, skills, pools, journal, ledger } = v;
+  const { plain, sim, avatar, inv, storage, skills, pools, journal, ledger } = v;
 
   // The stored summary and ledger copy are the ones the sim gives.
   if (canonical(plain.summary) !== canonical(deriveSummary(sim, plain.playSeconds)))
@@ -58,20 +61,41 @@ export function consistency(v: View): Reason[] {
     fail('BAD_QUANTITY', `coin ${avatar.coin}`);
   if (inv.slots.length > MAX_BAG_SLOTS || inv.slots.length < 1)
     fail('BAG_SIZE', `${inv.slots.length}`);
-  for (const st of inv.slots) {
-    if (!st) continue;
-    if (!ITEMS[st.item]) fail('UNKNOWN_ID', st.item);
-    else if (!isCount(st.qty) || st.qty < 1) fail('BAD_QUANTITY', `${st.item} x${st.qty}`);
-    else if (st.qty > stackSize(st.item)) fail('STACK_OVER_CAP', `${st.item} x${st.qty}`);
-  }
+  const markedHeld: Record<string, number> = {};
+  /** One stack, wherever it sits: known item, count, durability, quality, affixes, gear never stacks. */
+  const checkStack = (st: ItemStack, worn: boolean): void => {
+    const def = ITEMS[st.item];
+    if (!def) return fail('UNKNOWN_ID', st.item);
+    if (!isCount(st.qty) || st.qty < 1) return fail('BAD_QUANTITY', `${st.item} x${st.qty}`);
+    if (!worn && st.qty > stackSize(st.item)) fail('STACK_OVER_CAP', `${st.item} x${st.qty}`);
+    if ((def.equip || def.tool) && st.qty !== 1) fail('STACK_RULES', `${st.item} x${st.qty}`);
+    if (
+      def.durability === undefined
+        ? st.dur !== undefined
+        : !isCount(st.dur ?? 0) || (st.dur ?? 0) > def.durability
+    )
+      fail('DUR_RANGE', `${st.item} dur ${st.dur}`);
+    if (st.q !== undefined && (!def.quality || ![1, 2, 3].includes(st.q)))
+      fail('QUALITY_ON_PLAIN', `${st.item} q ${st.q}`);
+    const affixes = st.affixes ?? [];
+    if (affixes.length > (def.affixSlots ?? 0) || affixes.some((a) => !AFFIXES[a]))
+      fail('AFFIX_OVERFLOW', `${st.item} ${affixes.join(',')}`);
+    if (st.mark) markedHeld[st.item] = (markedHeld[st.item] ?? 0) + st.qty;
+  };
+  for (const st of inv.slots) if (st) checkStack(st, false);
+  if (storage.slots.length > MAX_STORAGE_SLOTS) fail('BAG_SIZE', `storage ${storage.slots.length}`);
+  for (const st of storage.slots) if (st) checkStack(st, false);
   for (const slot of Object.keys(inv.equipment)) {
-    const item = inv.equipment[slot as keyof typeof inv.equipment];
+    const st = inv.equipment[slot as keyof typeof inv.equipment];
     if (!(EQUIP_SLOTS as readonly string[]).includes(slot)) fail('EQUIP_SLOT', slot);
-    else if (item !== null) {
-      if (!ITEMS[item]) fail('UNKNOWN_ID', item);
-      else if (ITEMS[item]?.equip?.slot !== slot) fail('EQUIP_SLOT', `${item} in ${slot}`);
+    else if (st !== null) {
+      checkStack(st, true);
+      if (ITEMS[st.item] && ITEMS[st.item]?.equip?.slot !== slot)
+        fail('EQUIP_SLOT', `${st.item} in ${slot}`);
     }
   }
+  for (const [item, n] of Object.entries(markedHeld))
+    if (n > (ledger.marked[item] ?? 0)) fail('MARK_WITHOUT_CRAFT', `${item} marked ${n}`);
   for (const r of inv.recipes) if (!RECIPES[r]) fail('UNKNOWN_ID', r);
 
   // Skills: ids, counts, rank follows XP, banked XP only while a Trial is pending.

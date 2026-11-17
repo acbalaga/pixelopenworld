@@ -8,6 +8,7 @@ import {
   type Pools,
   type SimState,
   type Skills,
+  type Storage,
 } from '../../sim/state';
 import type { SavePlain } from '../types';
 
@@ -18,6 +19,7 @@ export interface View {
   who: EntityId;
   avatar: Avatar;
   inv: Inventory;
+  storage: Storage;
   skills: Skills;
   pools: Pools;
   journal: Journal;
@@ -32,9 +34,11 @@ export function buildView(plain: SavePlain): View {
   const who = avatars[0] as EntityId;
   const avatar = getComp(sim.entities, who, 'avatar');
   const inv = getComp(sim.entities, who, 'inventory');
+  const storage = getComp(sim.entities, who, 'storage');
   const skills = getComp(sim.entities, who, 'skills');
   const pools = getComp(sim.entities, who, 'pools');
   const journal = getComp(sim.entities, who, 'journal');
-  if (!avatar || !inv || !skills || !pools || !journal) throw new Error('avatar parts missing');
-  return { plain, sim, who, avatar, inv, skills, pools, journal, ledger: sim.ledger };
+  if (!avatar || !inv || !storage || !skills || !pools || !journal)
+    throw new Error('avatar parts missing');
+  return { plain, sim, who, avatar, inv, storage, skills, pools, journal, ledger: sim.ledger };
 }
