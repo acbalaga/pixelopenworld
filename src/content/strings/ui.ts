@@ -69,6 +69,7 @@ export const UI_STRINGS = {
     handedness: 'Left handed layout',
     reducedMotion: 'Reduced motion',
     haptics: 'Vibration',
+    mute: 'Mute audio',
     scheme: 'Controls',
     flow: 'Flow',
     classic: 'Classic',

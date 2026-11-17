@@ -430,12 +430,13 @@ canvas {
 }
 .pow-bag-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  /* Slots grow with the pixel scale so the 18 px icons fit on desktop too. */
+  grid-template-columns: repeat(auto-fill, minmax(max(56px, calc(var(--px) * 24)), 1fr));
   gap: calc(var(--px) * 1);
 }
 .pow-bag-cell {
   aspect-ratio: 1;
-  min-height: 56px;
+  min-height: max(56px, calc(var(--px) * 24));
   display: flex;
 }
 .pow-bag-cell.pow-empty {
@@ -445,7 +446,7 @@ canvas {
   position: relative;
   box-sizing: border-box;
   width: 100%;
-  min-height: 56px;
+  min-height: max(56px, calc(var(--px) * 24));
   display: grid;
   place-items: center;
   font: inherit;

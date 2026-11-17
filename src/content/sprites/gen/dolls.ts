@@ -100,11 +100,11 @@ function geo(b: BodyType) {
         armL: 5,
         armR: 17,
         legs: [
-          [7, 10],
-          [13, 16],
+          [8, 10],
+          [13, 15],
         ] as const,
         pt0: 8,
-        pt1: 15,
+        pt1: 16,
       }
     : {
         t0: 8,
@@ -158,7 +158,7 @@ function bodyLayer(b: BodyType, p: Pose): Img {
     im.set(17, top + 5, SK.main);
     im.rect(g.pt0, 14 + p.bob, g.pt1, 21 + p.bob, SK.main);
     im.rect(14, 14 + p.bob, 15, 21 + p.bob, SK.shade);
-    const w = b === 'a' ? 4 : 3;
+    const w = 3;
     for (const [i, x0] of p.legX.entries())
       im.rect(x0, 22 + p.bob, x0 + w - 1, 27, i === 0 ? SK.shade : SK.main);
     im.rect(10 + p.armDx, 15 + p.bob, 12 + p.armDx, 21 + p.bob, SK.main);
@@ -180,8 +180,8 @@ function bottomLayer(kind: 'trousers' | 'skirt', b: BodyType, p: Pose): Img {
       }
       im.rect(g.t0, 20 + p.bob, g.t1, 21 + p.bob, CL.main);
     } else {
-      const x0 = g.t0 - 1;
-      const x1 = g.t1 + 1;
+      const x0 = g.t0;
+      const x1 = g.t1;
       im.rect(g.t0, 20 + p.bob, g.t1, 21 + p.bob, CL.main);
       im.rect(x0, 22 + p.bob, x1, 25 + p.bob, CL.main);
       im.rect(x0, 22 + p.bob, x0 + 1, 25 + p.bob, CL.lit);
@@ -193,17 +193,17 @@ function bottomLayer(kind: 'trousers' | 'skirt', b: BodyType, p: Pose): Img {
       }
     }
   } else if (kind === 'trousers') {
-    const w = b === 'a' ? 4 : 3;
+    const w = 3;
     for (const [i, x0] of p.legX.entries()) {
       im.rect(x0, 21 + p.bob, x0 + w - 1, 25, i === 0 ? CL.shade : CL.main);
       im.rect(x0, 26, x0 + w, 27, DARK);
     }
     im.rect(g.pt0, 20 + p.bob, g.pt1, 21 + p.bob, CL.main);
   } else {
-    im.rect(g.pt0 - 1, 20 + p.bob, g.pt1 + 1, 25 + p.bob, CL.main);
-    im.rect(g.pt0 - 1, 20 + p.bob, g.pt0, 25 + p.bob, CL.lit);
-    im.rect(g.pt1, 20 + p.bob, g.pt1 + 1, 25 + p.bob, CL.shade);
-    im.rect(g.pt0 - 1, 25 + p.bob, g.pt1 + 1, 25 + p.bob, CL.shade);
+    im.rect(g.pt0, 20 + p.bob, g.pt1, 25 + p.bob, CL.main);
+    im.rect(g.pt0, 20 + p.bob, g.pt0 + 1, 25 + p.bob, CL.lit);
+    im.rect(g.pt1 - 1, 20 + p.bob, g.pt1, 25 + p.bob, CL.shade);
+    im.rect(g.pt0, 25 + p.bob, g.pt1, 25 + p.bob, CL.shade);
     for (const x0 of p.legX) im.rect(x0, 26, x0 + 3, 27, DARK);
   }
   return im;
@@ -251,8 +251,8 @@ function topLayer(kind: 'tunic' | 'vest' | 'robe', b: BodyType, p: Pose): Img {
 /** The robe's long skirt: flares from the waist to just above the boots. */
 function robeSkirt(im: Img, b: BodyType, p: Pose): void {
   const g = geo(b);
-  const x0 = (p.dir === 'right' ? g.pt0 : g.t0) - 1;
-  const x1 = (p.dir === 'right' ? g.pt1 : g.t1) + 1;
+  const x0 = p.dir === 'right' ? g.pt0 : g.t0;
+  const x1 = p.dir === 'right' ? g.pt1 : g.t1;
   const top = 22 + p.bob;
   const bottom = Math.max(top, 25);
   im.rect(x0, top, x1, bottom, CL.main);

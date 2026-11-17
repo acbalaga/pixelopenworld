@@ -21,6 +21,8 @@ export interface Settings {
   controlScheme: ControlScheme;
   /** Haptic ticks on hit and perfect dodge, where the device supports them. */
   haptics: boolean;
+  /** Silences all audio (master bus). The volumes themselves are kept. */
+  muted: boolean;
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -51,6 +53,7 @@ export class SettingsStore {
       reducedMotion: env.prefersReducedMotion(),
       controlScheme: 'flow',
       haptics: true,
+      muted: false,
     };
   }
 
@@ -73,7 +76,8 @@ export class SettingsStore {
       next.handedness === this.value.handedness &&
       next.reducedMotion === this.value.reducedMotion &&
       next.controlScheme === this.value.controlScheme &&
-      next.haptics === this.value.haptics
+      next.haptics === this.value.haptics &&
+      next.muted === this.value.muted
     )
       return;
     this.value = next;
