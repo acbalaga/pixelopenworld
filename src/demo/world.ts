@@ -55,6 +55,8 @@ import {
   type SaveReason,
 } from '../save';
 import { showRecover, showUnsupported } from '../ui/dom/saveNotices';
+import { validateSave, intact } from '../save/integrity';
+import type { SavePlain } from '../save';
 import { findAvatar } from '../shared/summary';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
@@ -163,6 +165,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         storage: createStorage(),
         now: () => Date.now(),
         newId: newSaveId,
+        // Dev builds check every save as it is written and warn, so a legitimate change that
+        // would trip a rule is found by the developer, not by a player.
+        ...(import.meta.env.DEV
+          ? {
+              audit: (plain: SavePlain): void => {
+                const found = validateSave(plain);
+                if (!found.ok)
+                  console.warn(
+                    `[integrity] this save would be flagged: ${found.reasons.map((r) => `${r.code} (${r.detail})`).join('; ')}`,
+                  );
+              },
+            }
+          : {}),
       })
     : null;
   let loaded = null as Awaited<ReturnType<SaveManager['load']>>;
@@ -236,6 +251,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               handle: savedAvatar.handle,
               playSeconds: loaded.plain.playSeconds,
               look: loaded.plain.look,
+              trust: loaded.plain.trust,
             }
           : null,
       drawPreview: (canvas, look) => {
@@ -263,6 +279,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       entry = result;
       // A new character starts a new game, even if an unreadable save was lying around.
       restored = null;
+      saves?.startFresh();
     }
   }
   // The newest save could not be used: say which one was loaded and why.
@@ -589,6 +606,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     drawIcon: (canvas, id) => blit(canvas, atlas.frame(id, 'base')),
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
     // Log Out saves, then returns to the title screen (a fresh page start shows it).
+    trust: () => saves?.currentTrust() ?? intact(),
     onLogOut: () => {
       void (async () => {
         if (saves) {

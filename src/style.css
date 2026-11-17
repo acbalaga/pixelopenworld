@@ -1066,3 +1066,59 @@ canvas {
 .reduced-motion .pow-chat-line {
   animation: none;
 }
+
+/* The save seal (M2-02): a glyph and a short label, with a plain explanation on tap. */
+.pow-seal {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+  align-items: flex-start;
+  color: var(--pal-3);
+}
+.pow-seal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  min-height: 44px;
+  padding: 0 calc(var(--px) * 2);
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--pal-18);
+  font: inherit;
+  font-size: calc(1rem * var(--text-scale, 1));
+  cursor: pointer;
+}
+.pow-seal-glyph {
+  width: 1.6em;
+  height: 1.6em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pow-seal-intact .pow-seal-glyph {
+  color: var(--pal-47);
+}
+.pow-seal-flagged .pow-seal-glyph {
+  color: var(--pal-21);
+}
+.pow-seal-tap {
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+.pow-seal-info {
+  max-width: 34rem;
+  font-size: calc(1rem * var(--text-scale, 1));
+  line-height: 1.4;
+}
+.pow-seal-info p,
+.pow-seal-info ul {
+  margin: 0 0 calc(var(--px) * 2);
+}
+.pow-seal-info ul {
+  padding-left: 1.2em;
+}
+.pow-seal-info[hidden] {
+  display: none;
+}

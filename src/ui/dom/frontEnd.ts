@@ -1,3 +1,5 @@
+import type { Trust } from '../../save/integrity/reasons';
+import { createSeal } from './seal';
 import {
   BODY_TYPES,
   CLOTH_COLORS,
@@ -18,7 +20,7 @@ import { PortalScene } from './portalScene';
 export interface FrontEndDeps {
   root: HTMLElement;
   /** A saved character on this device, or null. */
-  save: { handle: string; playSeconds: number; look: DollSpec } | null;
+  save: { handle: string; playSeconds: number; look: DollSpec; trust: Trust } | null;
   /** Paints the character preview (24 x 32) into a canvas. */
   drawPreview: (canvas: HTMLCanvasElement, look: DollSpec) => void;
   rand: () => number;
@@ -129,7 +131,9 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       );
       status.setAttribute('role', 'status');
       const ver = el('p', 'pow-front-version', fill(S.title.version, { id: BUILD_ID }));
-      put(screen, stage, status, ver);
+      put(screen, stage, status);
+      if (deps.save) put(screen, createSeal(deps.save.trust));
+      put(screen, ver);
       go.focus();
     };
 

@@ -9,6 +9,9 @@ Local saves (POW-M1-09), sealed on the device by POW-M2-01.
 - `SaveLedger` (`src/sim/ledger.ts`) holds lifetime totals the sim updates as value is created: coin earned and spent by source, XP per skill, items made by source, kills, crafts. A system that creates value reports to the ledger in the same ticket that adds it.
 - The loader order is `latest`, `previous`, `old`, then `emergency` (written once by the crash handler, never in rotation). `LoadReport.chain` says whether the `prevHash` chain between the loaded snapshot and the one before it holds.
 - `SecureCodec(key, true)` also opens the plain JSON saves M1 wrote (schema 2 and earlier). They migrate on load and are written back sealed by the next save.
+- `src/save/integrity/` is the validator (M2-02). It runs on every load, in `SaveManager.load`, and dev builds also run it on every save and warn. It returns reason codes; `mergeTrust` folds them into the save's `trust` (Intact or Flagged, permanent once Flagged). The doc comment at the top of `integrity/index.ts` says how to add ledger entries and rules when a new system creates value. `tests/unit/recordedSessions.test.ts` replays scripted 30 minute runs and requires zero flags.
+- `SavePlain.startedAt` and `SavePlain.trust` are part of schema 4. A new character calls `SaveManager.startFresh()`, which resets both; the old snapshots stay in rotation.
+- `src/ui/dom/seal.ts` draws the seal (solid or cracked) on the title screen and in System, with a plain explanation on tap.
 - `src/ui/dom/saveNotices.ts` is the recover screen and the unsupported-browser message.
 
 ## Local snapshots (M1-09)

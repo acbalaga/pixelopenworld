@@ -98,6 +98,28 @@ describe('trust through the save manager', () => {
     expect((await b.load())!.plain.trust.state).toBe('flagged');
   });
 
+  it("a new character does not inherit the old save's Flagged mark", async () => {
+    const { mgr, clock } = setup();
+    const s = honestState();
+    s.entities.comps.avatar[findAvatar(s)!]!.coin += 1_000_000;
+    await mgr.commit({ sim: s, look: LOOK, playSeconds: s.tick / 30 });
+    clock.t += 5000;
+    expect((await mgr.load())!.plain.trust.state).toBe('flagged');
+
+    // The saved character could not be used, and a new one begins.
+    mgr.startFresh();
+    expect(mgr.currentTrust().state).toBe('intact');
+    const fresh = honestState();
+    clock.t += 5000;
+    await mgr.commit({ sim: fresh, look: LOOK, playSeconds: fresh.tick / 30 });
+    clock.t += 5000;
+    const got = await mgr.load();
+    expect(got!.plain.trust).toEqual({ state: 'intact', reasons: [], flaggedAt: null });
+    expect(got!.plain.startedAt).toBeGreaterThan(T0);
+    // The old character stays in rotation as a backup, and the chain carries on.
+    expect(got!.report.chain).toBe('ok');
+  });
+
   it('a broken snapshot chain flags the save', async () => {
     const { mgr, storage, clock } = setup();
     const s = honestState();

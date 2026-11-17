@@ -83,6 +83,16 @@ export class SaveManager {
     };
   }
 
+  /**
+   * A new character begins. Trust and the start time belong to a character, so they reset. The
+   * sequence and hash chain carry on, so the old snapshots stay in rotation as backups.
+   */
+  startFresh(): void {
+    this.trust = intact();
+    this.startedAt = null;
+    this.saveId = null;
+  }
+
   /** Trust as it stands: Intact, or Flagged with the reasons. */
   currentTrust(): Trust {
     return structuredClone(this.trust);

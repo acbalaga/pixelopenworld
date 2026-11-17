@@ -33,6 +33,28 @@ const saveNow = async (page: Page): Promise<void> => {
   await expect.poll(seq).toBeGreaterThan(before);
 };
 
+/** Plants a plain JSON save, as M1 wrote them, before the game ever opens the database. */
+async function plantLegacy(page: Page, json: number[]): Promise<void> {
+  await page.goto('/?skip=1&nosave=1');
+  await page.evaluate(async (data) => {
+    const bytes = Uint8Array.from(data);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    const checksum = [...new Uint8Array(digest)]
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('pow-save', 1);
+      open.onupgradeneeded = () => open.result.createObjectStore('slots', { keyPath: 'slot' });
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const tx = open.result.transaction('slots', 'readwrite');
+        tx.objectStore('slots').put({ slot: 'latest', seq: 12, savedAt: 1, checksum, bytes });
+        tx.oncomplete = () => resolve();
+      };
+    });
+  }, json);
+}
+
 const inWorld = async (page: Page): Promise<void> => {
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(400);
@@ -86,30 +108,7 @@ test('a stored save is sealed: binary header, no readable game text, and it load
 
 test('an M1 save in plain JSON migrates on load and is written back sealed', async ({ page }) => {
   const problems = await watchProblems(page);
-  const f2 = JSON.parse(
-    readFileSync(join(process.cwd(), 'tests', 'fixtures', 'saves', 'schema-2.json'), 'utf8'),
-  ) as { plain: unknown };
-  const json = Array.from(Buffer.from(JSON.stringify(f2.plain), 'utf8'));
-
-  // Plant the old record before the game ever opens the database.
-  await page.goto('/?skip=1&nosave=1');
-  await page.evaluate(async (data) => {
-    const bytes = Uint8Array.from(data);
-    const digest = await crypto.subtle.digest('SHA-256', bytes);
-    const checksum = [...new Uint8Array(digest)]
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-    await new Promise<void>((resolve, reject) => {
-      const open = indexedDB.open('pow-save', 1);
-      open.onupgradeneeded = () => open.result.createObjectStore('slots', { keyPath: 'slot' });
-      open.onerror = () => reject(open.error);
-      open.onsuccess = () => {
-        const tx = open.result.transaction('slots', 'readwrite');
-        tx.objectStore('slots').put({ slot: 'latest', seq: 12, savedAt: 1, checksum, bytes });
-        tx.oncomplete = () => resolve();
-      };
-    });
-  }, json);
+  await plantLegacy(page, legacyJson());
 
   await page.goto('/');
   await expect(page.getByText('Signed in as Fixture_2.')).toBeVisible();
@@ -185,4 +184,70 @@ test('a browser without gzip streams gets a clear message and stores nothing', a
   await expect(page.locator('#game')).not.toHaveAttribute('data-ready', 'true');
   const dbs = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name));
   expect(dbs).not.toContain('pow-save');
+});
+
+const legacyJson = (edit?: (sim: string) => string): number[] => {
+  const f2 = JSON.parse(
+    readFileSync(join(process.cwd(), 'tests', 'fixtures', 'saves', 'schema-2.json'), 'utf8'),
+  ) as { plain: { sim: string } };
+  if (edit) f2.plain.sim = edit(f2.plain.sim);
+  return Array.from(Buffer.from(JSON.stringify(f2.plain), 'utf8'));
+};
+
+test('an honest save shows a solid seal on the title screen and in System, with a plain explanation', async ({
+  page,
+}) => {
+  await plantLegacy(page, legacyJson());
+  await page.goto('/');
+  const seal = page.locator('.pow-seal');
+  await expect(seal).toHaveClass(/pow-seal-intact/);
+  await expect(seal).toContainText('Save sealed');
+  await expect(seal.locator('.pow-seal-info')).toBeHidden();
+  await seal.getByRole('button').click();
+  await expect(seal.locator('.pow-seal-info')).toContainText('passed every check');
+  await page.getByRole('button', { name: 'Log In as Fixture_2' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await expect(page.locator('.pow-menu .pow-seal')).toHaveClass(/pow-seal-intact/);
+});
+
+test('a hand-edited save is flagged: cracked seal with the reason, it still plays, and stays flagged', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  // Coin plus one million, written straight into the old save.
+  await plantLegacy(
+    page,
+    legacyJson((sim) => {
+      expect(sim).toContain('"coin":137');
+      return sim.replace('"coin":137', '"coin":1000137');
+    }),
+  );
+  await page.goto('/');
+  const seal = page.locator('.pow-seal');
+  await expect(seal).toHaveClass(/pow-seal-flagged/);
+  await expect(seal).toContainText('Save flagged');
+  await seal.getByRole('button').click();
+  await expect(seal.locator('.pow-seal-info')).toContainText(
+    'More coin was earned than is possible',
+  );
+  await expect(seal.locator('.pow-seal-info')).toContainText('exactly the same');
+
+  // Flagged has no gameplay effect: it loads, plays and saves.
+  await page.getByRole('button', { name: 'Log In as Fixture_2' }).click();
+  await inWorld(page);
+  await page.keyboard.down('KeyD');
+  await page.waitForTimeout(400);
+  await page.keyboard.up('KeyD');
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await expect(page.locator('.pow-menu .pow-seal')).toHaveClass(/pow-seal-flagged/);
+  await page.keyboard.press('Escape');
+  await saveNow(page);
+
+  // And it is still flagged after the next launch.
+  await page.goto('/');
+  await expect(page.locator('.pow-seal')).toHaveClass(/pow-seal-flagged/);
+  expect(problems.pageErrors).toEqual([]);
 });
