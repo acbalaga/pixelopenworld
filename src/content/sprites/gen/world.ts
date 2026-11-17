@@ -1,0 +1,433 @@
+import type { SpriteDef } from '../types';
+import { Img, outlined, rng, toSprite, type Tones4 } from './img';
+
+/**
+ * Generated art for the Hearthford slice: square paving, bridge, cave rock, buildings, fences,
+ * and the puzzle fixtures. Seeded like the other generators, so the same code is the same art.
+ */
+
+const WOOD: Tones4 = [4, 5, 6, 7];
+const STONE: Tones4 = [16, 17, 18, 19];
+const METAL: Tones4 = [28, 29, 30, 31];
+const FIRE: Tones4 = [20, 21, 22, 23];
+const WATER: Tones4 = [12, 13, 14, 15];
+const GOLD: Tones4 = [44, 45, 46, 47];
+const DARK = 0;
+const ORIGIN_TILE = [8, 14] as const;
+const ORIGIN_FEET = [8, 15] as const;
+
+/** Scatters specks of `c` over filled pixels. */
+function speckle(im: Img, r: () => number, c: number, chance: number): void {
+  for (let y = 0; y < im.h; y++)
+    for (let x = 0; x < im.w; x++) if (im.get(x, y) !== null && r() < chance) im.set(x, y, c);
+}
+
+function fill(c: number): Img {
+  const im = new Img(16, 16);
+  im.rect(0, 0, 15, 15, c);
+  return im;
+}
+
+/** Paving: flagstones with mortar lines, two variants. */
+function cobble(v: number): SpriteDef {
+  const r = rng(300 + v);
+  const im = fill(STONE[2]);
+  speckle(im, r, STONE[1], 0.12);
+  speckle(im, r, STONE[3], 0.08);
+  const rows = [0, 5, 10];
+  rows.forEach((y0, i) => {
+    im.rect(0, y0 + 4, 15, y0 + 4, STONE[1]);
+    const off = (i * 5 + v * 3) % 8;
+    for (const x of [off, off + 8]) im.rect(x % 16, y0, x % 16, y0 + 3, STONE[1]);
+  });
+  im.rect(0, 15, 15, 15, STONE[1]);
+  return toSprite(`tile.cobble_${v}`, 'core', [0, 0], { base: im });
+}
+
+/** Bridge boards running east to west. */
+function planks(): SpriteDef {
+  const r = rng(310);
+  const im = fill(WOOD[2]);
+  for (const y of [0, 4, 8, 12]) {
+    im.rect(0, y, 15, y, WOOD[1]);
+    im.rect(0, y + 1, 15, y + 1, WOOD[3]);
+  }
+  speckle(im, r, WOOD[1], 0.07);
+  for (const [x, y] of [
+    [2, 2],
+    [13, 6],
+    [4, 10],
+    [11, 14],
+  ] as const)
+    im.set(x, y, WOOD[0]);
+  return toSprite('tile.planks_0', 'core', [0, 0], { base: im });
+}
+
+function caveFloor(v: number): SpriteDef {
+  const r = rng(320 + v);
+  const im = fill(STONE[1]);
+  speckle(im, r, STONE[0], 0.14);
+  speckle(im, r, STONE[2], 0.07);
+  speckle(im, r, STONE[3], 0.012);
+  return toSprite(`tile.cave_floor_${v}`, 'core', [0, 0], { base: im });
+}
+
+/** Wall tops are dark rock seen from above. */
+function wallTop(): SpriteDef {
+  const r = rng(330);
+  const im = fill(0);
+  speckle(im, r, STONE[0], 0.28);
+  speckle(im, r, STONE[1], 0.05);
+  return toSprite('tile.cave_wall_top', 'core', ORIGIN_TILE, { base: im });
+}
+
+/** The lit face of a wall, with blocky rock courses. */
+function wallFace(torch: boolean): SpriteDef {
+  const r = rng(331);
+  const frame = (flame: number): Img => {
+    const im = fill(STONE[1]);
+    speckle(im, r, STONE[2], 0.14);
+    speckle(im, r, STONE[0], 0.1);
+    im.rect(0, 0, 15, 1, STONE[2]);
+    im.rect(0, 14, 15, 15, STONE[0]);
+    im.rect(0, 7, 15, 7, STONE[0]);
+    for (const x of [4, 11]) im.rect(x, 0, x, 6, STONE[0]);
+    for (const x of [1, 8, 14]) im.rect(x, 8, x, 13, STONE[0]);
+    if (torch) {
+      im.rect(7, 6, 8, 12, WOOD[1]);
+      im.rect(6, 5, 9, 6, METAL[1]);
+      const tones = [FIRE[1], FIRE[2], FIRE[3]];
+      im.rect(7, 2 + flame, 8, 5, tones[0] as number);
+      im.rect(7, 3 + flame, 8, 5, tones[1] as number);
+      im.set(7, 4, tones[2] as number);
+      im.set(8 - flame, 3, tones[2] as number);
+    }
+    return im;
+  };
+  if (!torch) return toSprite('tile.cave_wall_face', 'core', ORIGIN_TILE, { base: frame(0) });
+  return toSprite(
+    'tile.torch',
+    'core',
+    ORIGIN_TILE,
+    { flame_0: frame(0), flame_1: frame(1) },
+    { flame: { frames: ['flame_0', 'flame_1'], fps: 5 } },
+  );
+}
+
+/** A doorway cut in a cave wall, dark inside with a lintel. */
+function arch(): SpriteDef {
+  const im = fill(0);
+  im.rect(0, 0, 15, 1, STONE[2]);
+  im.rect(0, 0, 1, 15, STONE[1]);
+  im.rect(14, 0, 15, 15, STONE[1]);
+  im.rect(2, 2, 13, 15, 0);
+  im.rect(2, 2, 13, 2, STONE[0]);
+  im.rect(0, 14, 15, 15, STONE[0]);
+  im.rect(2, 12, 13, 15, STONE[0]);
+  return toSprite('tile.cave_arch', 'core', ORIGIN_TILE, { base: im });
+}
+
+type RoofColor = 'red' | 'slate';
+const ROOFS: Record<RoofColor, Tones4> = { red: FIRE, slate: [16, 17, 18, 19] };
+
+/** A roof piece. `row` 0 is the ridge row, 1 the eave. `col` is l, m or r. */
+function roof(color: RoofColor, row: 0 | 1, col: 'l' | 'm' | 'r'): SpriteDef {
+  const t = ROOFS[color];
+  const im = fill(t[1]);
+  for (let y = 0; y < 16; y += 4) {
+    im.rect(0, y + 3, 15, y + 3, t[0]);
+    for (let x = (y / 4) % 2 === 0 ? 0 : 4; x < 16; x += 8) im.rect(x, y, x, y + 2, t[0]);
+    im.rect(0, y, 15, y, t[2]);
+  }
+  if (row === 0) im.rect(0, 0, 15, 2, t[2]);
+  if (row === 1) {
+    im.rect(0, 13, 15, 15, WOOD[0]);
+    im.rect(0, 12, 15, 12, t[0]);
+  }
+  if (col === 'l') im.rect(0, 0, 0, 15, DARK);
+  if (col === 'r') im.rect(15, 0, 15, 15, DARK);
+  if (row === 0) im.rect(0, 0, 15, 0, DARK);
+  return toSprite(`tile.roof_${color}_${row}${col}`, 'core', ORIGIN_TILE, { base: im });
+}
+
+function wall(kind: 'plaster' | 'window' | 'door' | 'shop'): SpriteDef {
+  const im = fill(GOLD[3]);
+  speckle(im, rng(340), 3, 0.05);
+  im.rect(0, 0, 0, 15, WOOD[2]);
+  im.rect(15, 0, 15, 15, WOOD[1]);
+  im.rect(0, 15, 15, 15, STONE[1]);
+  im.rect(0, 0, 15, 0, WOOD[1]);
+  if (kind === 'window') {
+    im.rect(3, 3, 12, 11, WOOD[0]);
+    im.rect(4, 4, 11, 10, WATER[2]);
+    im.rect(4, 4, 6, 5, WATER[3]);
+    im.rect(7, 4, 8, 10, WOOD[1]);
+    im.rect(4, 7, 11, 7, WOOD[1]);
+    im.rect(2, 12, 13, 12, WOOD[2]);
+  }
+  if (kind === 'door') {
+    im.rect(3, 3, 12, 15, WOOD[0]);
+    im.rect(4, 4, 11, 15, WOOD[2]);
+    im.rect(4, 4, 5, 15, WOOD[3]);
+    im.rect(8, 4, 8, 15, WOOD[1]);
+    im.rect(10, 9, 10, 10, GOLD[2]);
+    im.rect(3, 15, 12, 15, STONE[2]);
+  }
+  if (kind === 'shop') {
+    for (let x = 0; x < 16; x += 4) {
+      im.rect(x, 0, x + 1, 4, FIRE[1]);
+      im.rect(x + 2, 0, x + 3, 4, 3);
+    }
+    im.rect(0, 5, 15, 5, WOOD[0]);
+    im.rect(2, 8, 13, 15, WOOD[1]);
+    im.rect(2, 8, 13, 9, WOOD[3]);
+    im.rect(4, 6, 5, 7, FIRE[2]);
+    im.rect(8, 6, 9, 7, 10);
+    im.rect(11, 6, 12, 7, WATER[2]);
+  }
+  return toSprite(`tile.wall_${kind}`, 'core', ORIGIN_TILE, { base: im });
+}
+
+function fence(kind: 'h' | 'v' | 'post'): SpriteDef {
+  const im = new Img(16, 16);
+  if (kind === 'h' || kind === 'post') {
+    if (kind === 'h') {
+      im.rect(0, 6, 15, 7, WOOD[2]);
+      im.rect(0, 6, 15, 6, WOOD[3]);
+      im.rect(0, 10, 15, 11, WOOD[2]);
+      im.rect(0, 10, 15, 10, WOOD[3]);
+      im.rect(0, 8, 15, 8, WOOD[0]);
+    }
+    for (const x of kind === 'h' ? [1, 13] : [6]) {
+      im.rect(x, 4, x + 2, 14, WOOD[1]);
+      im.rect(x, 4, x, 14, WOOD[2]);
+      im.rect(x, 3, x + 2, 3, WOOD[3]);
+    }
+  } else {
+    im.rect(6, 0, 9, 15, WOOD[2]);
+    im.rect(6, 0, 6, 15, WOOD[3]);
+    im.rect(9, 0, 9, 15, WOOD[1]);
+    for (const y of [2, 8, 14]) im.rect(5, y, 10, y + 1, WOOD[1]);
+  }
+  return toSprite(`tile.fence_${kind}`, 'core', ORIGIN_TILE, { base: outlined(im) });
+}
+
+function crate(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 4, 13, 14, WOOD[2]);
+  im.rect(2, 4, 13, 5, WOOD[3]);
+  im.rect(2, 4, 3, 14, WOOD[1]);
+  im.rect(12, 4, 13, 14, WOOD[1]);
+  im.rect(7, 4, 8, 14, WOOD[1]);
+  im.rect(2, 9, 13, 9, WOOD[1]);
+  return toSprite('tile.crate', 'core', ORIGIN_TILE, { base: outlined(im) });
+}
+
+function barrel(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(3, 3, 12, 14, WOOD[2]);
+  im.rect(3, 3, 4, 14, WOOD[3]);
+  im.rect(11, 3, 12, 14, WOOD[1]);
+  im.rect(3, 5, 12, 5, METAL[1]);
+  im.rect(3, 11, 12, 11, METAL[1]);
+  im.rect(4, 3, 11, 3, WOOD[3]);
+  return toSprite('tile.barrel', 'core', ORIGIN_TILE, { base: outlined(im) });
+}
+
+function signpost(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(7, 6, 8, 14, WOOD[1]);
+  im.rect(2, 3, 13, 8, WOOD[2]);
+  im.rect(2, 3, 13, 3, WOOD[3]);
+  im.rect(2, 8, 13, 8, WOOD[1]);
+  im.rect(4, 5, 6, 5, WOOD[0]);
+  im.rect(8, 5, 11, 5, WOOD[0]);
+  im.rect(5, 6, 10, 6, WOOD[0]);
+  return toSprite('tile.sign_post', 'core', ORIGIN_TILE, { base: outlined(im) });
+}
+
+/** The request board: a frame with pinned notes. */
+function board(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 1, 13, 11, WOOD[1]);
+  im.rect(3, 2, 12, 10, WOOD[2]);
+  im.rect(4, 3, 7, 6, 3);
+  im.rect(8, 3, 11, 5, GOLD[3]);
+  im.rect(5, 7, 10, 9, 3);
+  for (const [x, y] of [
+    [5, 3],
+    [9, 3],
+    [7, 7],
+  ] as const)
+    im.set(x, y, FIRE[1]);
+  im.rect(3, 11, 4, 14, WOOD[1]);
+  im.rect(11, 11, 12, 14, WOOD[1]);
+  return toSprite('tile.board', 'core', ORIGIN_TILE, { base: outlined(im) });
+}
+
+/** A rooted stone with a pulsing rune, the Waystone. */
+function waystone(): SpriteDef {
+  const frame = (glow: number): Img => {
+    const im = new Img(16, 24);
+    im.rect(5, 6, 10, 21, STONE[2]);
+    im.rect(4, 10, 11, 21, STONE[2]);
+    im.rect(6, 3, 9, 6, STONE[2]);
+    im.rect(7, 1, 8, 2, STONE[3]);
+    im.rect(5, 6, 6, 21, STONE[3]);
+    im.rect(4, 10, 4, 21, STONE[3]);
+    im.rect(10, 8, 11, 21, STONE[1]);
+    im.rect(3, 20, 12, 22, STONE[1]);
+    im.rect(3, 22, 12, 22, STONE[0]);
+    const rune = glow === 0 ? WATER[3] : WATER[2];
+    im.rect(7, 9, 8, 15, rune);
+    im.rect(6, 11, 9, 11, rune);
+    im.set(7, 8, rune);
+    return outlined(im);
+  };
+  return toSprite(
+    'prop.waystone',
+    'core',
+    [8, 23],
+    { glow_0: frame(0), glow_1: frame(1) },
+    { glow: { frames: ['glow_0', 'glow_1'], fps: 2 } },
+  );
+}
+
+function lockedDoor(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(0, 0, 15, 15, STONE[1]);
+  closed.rect(1, 1, 14, 15, STONE[2]);
+  closed.rect(1, 1, 14, 2, STONE[3]);
+  closed.rect(7, 1, 8, 15, STONE[1]);
+  for (const y of [4, 11]) closed.rect(1, y, 14, y + 1, METAL[1]);
+  closed.rect(6, 7, 9, 10, GOLD[2]);
+  closed.rect(7, 8, 8, 9, DARK);
+  const open = new Img(16, 16);
+  open.rect(0, 0, 15, 15, STONE[1]);
+  open.rect(2, 2, 13, 15, DARK);
+  open.rect(0, 0, 1, 15, STONE[2]);
+  open.rect(14, 0, 15, 15, STONE[2]);
+  return toSprite('prop.door_locked', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: open,
+  });
+}
+
+function gate(): SpriteDef {
+  const closed = new Img(16, 16);
+  for (let x = 1; x < 16; x += 4) closed.rect(x, 1, x + 1, 15, METAL[1]);
+  closed.rect(0, 2, 15, 3, METAL[2]);
+  closed.rect(0, 11, 15, 12, METAL[2]);
+  for (let x = 1; x < 16; x += 4) closed.rect(x, 1, x, 15, METAL[2]);
+  const open = new Img(16, 16);
+  open.rect(0, 0, 1, 15, METAL[1]);
+  open.rect(14, 0, 15, 15, METAL[1]);
+  open.rect(0, 0, 15, 2, METAL[2]);
+  for (let x = 3; x < 14; x += 4) open.rect(x, 0, x + 1, 2, METAL[1]);
+  return toSprite('prop.gate', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+function plate(): SpriteDef {
+  const up = new Img(16, 16);
+  up.rect(2, 3, 13, 13, STONE[1]);
+  up.rect(3, 4, 12, 11, STONE[2]);
+  up.rect(3, 4, 12, 4, STONE[3]);
+  up.rect(7, 6, 8, 9, STONE[1]);
+  up.rect(2, 12, 13, 13, STONE[0]);
+  const down = new Img(16, 16);
+  down.rect(2, 5, 13, 13, STONE[0]);
+  down.rect(3, 6, 12, 12, STONE[1]);
+  down.rect(7, 8, 8, 10, GOLD[2]);
+  return toSprite('prop.plate', 'core', ORIGIN_FEET, { up, down });
+}
+
+function block(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 1, 14, 14, STONE[2]);
+  im.rect(1, 1, 14, 3, STONE[3]);
+  im.rect(1, 1, 3, 14, STONE[3]);
+  im.rect(12, 3, 14, 14, STONE[1]);
+  im.rect(3, 12, 14, 14, STONE[1]);
+  im.rect(6, 6, 9, 9, GOLD[1]);
+  im.rect(7, 7, 8, 8, GOLD[3]);
+  return toSprite('prop.block', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+function chest(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(2, 6, 13, 14, WOOD[2]);
+  closed.rect(2, 4, 13, 7, WOOD[3]);
+  closed.rect(2, 4, 13, 4, WOOD[2]);
+  closed.rect(2, 9, 13, 9, METAL[1]);
+  closed.rect(7, 8, 8, 11, GOLD[2]);
+  closed.rect(2, 13, 13, 14, WOOD[1]);
+  const open = new Img(16, 16);
+  open.rect(2, 8, 13, 14, WOOD[2]);
+  open.rect(3, 8, 12, 9, DARK);
+  open.rect(2, 2, 13, 6, WOOD[3]);
+  open.rect(2, 2, 13, 2, WOOD[2]);
+  open.rect(2, 13, 13, 14, WOOD[1]);
+  open.rect(6, 9, 9, 10, GOLD[2]);
+  return toSprite('prop.chest', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+function tablet(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(3, 2, 12, 14, STONE[2]);
+  im.rect(4, 1, 11, 1, STONE[2]);
+  im.rect(3, 2, 4, 14, STONE[3]);
+  im.rect(11, 3, 12, 14, STONE[1]);
+  for (const [x, y, w] of [
+    [5, 4, 5],
+    [5, 7, 4],
+    [5, 10, 5],
+  ] as const)
+    im.rect(x, y, x + w - 1, y, STONE[0]);
+  im.set(6, 5, STONE[0]);
+  im.set(9, 8, STONE[0]);
+  return toSprite('prop.tablet', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** Every sprite for the slice map. */
+export function worldSprites(): SpriteDef[] {
+  return [
+    cobble(0),
+    cobble(1),
+    planks(),
+    caveFloor(0),
+    caveFloor(1),
+    wallTop(),
+    wallFace(false),
+    wallFace(true),
+    arch(),
+    ...(['red', 'slate'] as const).flatMap((c) =>
+      ([0, 1] as const).flatMap((row) =>
+        (['l', 'm', 'r'] as const).map((col) => roof(c, row, col)),
+      ),
+    ),
+    wall('plaster'),
+    wall('window'),
+    wall('door'),
+    wall('shop'),
+    fence('h'),
+    fence('v'),
+    fence('post'),
+    crate(),
+    barrel(),
+    signpost(),
+    board(),
+    waystone(),
+    lockedDoor(),
+    gate(),
+    plate(),
+    block(),
+    chest(),
+    tablet(),
+  ];
+}

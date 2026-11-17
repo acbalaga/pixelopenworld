@@ -323,3 +323,29 @@ describe('determinism', () => {
     expect(run()).toBe(run());
   });
 });
+
+describe('training dummy', () => {
+  it('takes hits but never notices, moves or fights, and knockback does not move it', () => {
+    const s = createDemoState(5, 0);
+    s.world = { solidAt: () => 0 };
+    const f = feetAt(20, 20);
+    const me = createAvatar(s, f.x, f.y);
+    // In front of the avatar, who faces south.
+    const d = spawnCreature(s, 'creature.training_dummy', 20 * 16 + 8, 20 * 16 + 14 + 14, -1);
+    const home = { ...(s.entities.comps.pos[d] as { x: number; y: number }) };
+    const hp0 = s.entities.comps.pools[d]?.hp ?? 0;
+    const types: string[] = [];
+    const byDummy: string[] = [];
+    stepWorld(s, me, { commands: [{ type: 'scheme', scheme: 'classic' }] });
+    for (let i = 0; i < 60; i++) {
+      stepWorld(s, me, { commands: i % 20 === 2 ? [{ type: 'attack' }] : [] });
+      types.push(...s.events.list.map((e) => e.type));
+      for (const e of s.events.list) if ('id' in e && e.id === d) byDummy.push(e.type);
+    }
+    expect(types).toContain('damageDealt');
+    expect(s.entities.comps.pools[d]?.hp).toBeLessThan(hp0);
+    expect(types).not.toContain('noticed');
+    expect(byDummy).not.toContain('attackStarted');
+    expect(s.entities.comps.pos[d]).toEqual(home);
+  });
+});

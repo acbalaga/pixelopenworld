@@ -83,6 +83,28 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
     ],
     sounds: { notice: 'sfx.creature_notice', die: 'sfx.creature_die' },
   },
+  /** Stands in Hearthford square and takes hits, for trying skills and gear. Never fights back. */
+  'creature.training_dummy': {
+    id: 'creature.training_dummy',
+    name: 'Training Dummy',
+    archetype: 'dummy',
+    tier: 1,
+    hp: 2000,
+    defense: 0,
+    power: 1,
+    speed: 0,
+    notice: 1,
+    lose: 2,
+    leash: 2,
+    wander: false,
+    staggerMax: 60,
+    bodyW: 12,
+    bodyH: 8,
+    sprite: 'creature.training_dummy',
+    attacks: [],
+    drops: [],
+    sounds: { notice: 'sfx.creature_notice', die: 'sfx.creature_die' },
+  },
   /** The cave miniboss: a huge Charger. Below half Health it adds a ground slam. */
   'creature.old_bramblehide': {
     id: 'creature.old_bramblehide',
@@ -138,6 +160,13 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     cap: 1,
     respawn: 900,
     radius: 40,
+  },
+  'spawner.training_dummy': {
+    kind: 'spawner.training_dummy',
+    creature: 'creature.training_dummy',
+    cap: 1,
+    respawn: 150,
+    radius: 0,
   },
   'spawner.old_bramblehide': {
     kind: 'spawner.old_bramblehide',

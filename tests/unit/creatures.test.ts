@@ -20,9 +20,9 @@ describe('creature content', () => {
     expect(validateCreatures(CREATURES, SPAWNERS, refs)).toEqual([]);
   });
 
-  it('has the three archetypes and a miniboss with a phase', () => {
+  it('has the three fighting archetypes, a dummy, and a miniboss with a phase', () => {
     const kinds = new Set(Object.values(CREATURES).map((c) => c.archetype));
-    expect([...kinds].sort()).toEqual(['charger', 'chaser', 'shooter']);
+    expect([...kinds].sort()).toEqual(['charger', 'chaser', 'dummy', 'shooter']);
     expect(CREATURES['creature.old_bramblehide']?.phases?.length).toBeGreaterThan(0);
   });
 

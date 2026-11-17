@@ -169,7 +169,7 @@ function feet(state: SimState, who: EntityId): { x: number; y: number } {
 }
 
 /** Puts an item in the bag. Whatever does not fit is left at the avatar's feet, never lost. */
-function give(state: SimState, who: EntityId, item: string, qty: number): void {
+export function give(state: SimState, who: EntityId, item: string, qty: number): void {
   const inv = getComp(state.entities, who, 'inventory');
   if (!inv) return;
   const left = addItem(inv, item, qty);

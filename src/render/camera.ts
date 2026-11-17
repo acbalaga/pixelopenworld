@@ -18,6 +18,8 @@ export class Camera {
   private viewH = 1;
   private focusY = 0;
   private started = false;
+  private x0 = 0;
+  private y0 = 0;
 
   constructor(
     private worldW: number,
@@ -34,8 +36,20 @@ export class Camera {
   }
 
   setWorld(w: number, h: number): void {
-    this.worldW = w;
-    this.worldH = h;
+    this.setBounds(0, 0, w, h);
+  }
+
+  /** Limits the view to a rectangle in world px, for example the room the avatar is in. */
+  setBounds(x0: number, y0: number, x1: number, y1: number): void {
+    this.x0 = x0;
+    this.y0 = y0;
+    this.worldW = x1;
+    this.worldH = y1;
+  }
+
+  /** The next `follow` jumps to the target instead of easing, for room changes. */
+  snap(): void {
+    this.started = false;
   }
 
   /** Moves toward the target (world px). `dtMs` is frame time. */
@@ -53,13 +67,13 @@ export class Camera {
       if (Math.abs(wantX - this.fx) < 0.5) this.fx = wantX;
       if (Math.abs(wantY - this.fy) < 0.5) this.fy = wantY;
     }
-    this.x = this.clamp(Math.round(this.fx), this.viewW, this.worldW);
-    this.y = this.clamp(Math.round(this.fy), this.viewH, this.worldH);
+    this.x = this.clamp(Math.round(this.fx), this.viewW, this.x0, this.worldW);
+    this.y = this.clamp(Math.round(this.fy), this.viewH, this.y0, this.worldH);
   }
 
-  /** Clamps to the world. A world smaller than the view is centered. */
-  private clamp(v: number, view: number, world: number): number {
-    if (world <= view) return Math.floor((world - view) / 2);
-    return Math.min(Math.max(v, 0), world - view);
+  /** Clamps to the bounds. Bounds smaller than the view are centered. */
+  private clamp(v: number, view: number, lo: number, hi: number): number {
+    if (hi - lo <= view) return lo + Math.floor((hi - lo - view) / 2);
+    return Math.min(Math.max(v, lo), hi - view);
   }
 }

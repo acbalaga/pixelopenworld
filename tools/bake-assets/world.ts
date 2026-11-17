@@ -1,3 +1,4 @@
+import { SLICE_MAP } from '../../src/content/world/slice-map';
 import { TEST_MAP } from '../../src/content/world/test-map';
 import { Terrain, TILESET } from '../../src/content/world/tileset';
 import { TILES } from '../../src/content/sprites';
@@ -34,5 +35,5 @@ export function bakeStamp(stamp: Stamp): Map<string, Uint8Array> {
 
 /** All baked world files. */
 export function bakeWorld(): Map<string, Uint8Array> {
-  return bakeStamp(TEST_MAP);
+  return new Map([...bakeStamp(TEST_MAP), ...bakeStamp(SLICE_MAP)]);
 }
