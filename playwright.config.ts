@@ -23,7 +23,7 @@ export default defineConfig({
       testMatch: /(smoke|menu|slice|talk|save|frontend)\.spec\.ts/,
       use: { baseURL: PROD },
     },
-    { name: 'dev-tools', testMatch: 'devtools.spec.ts', use: { baseURL: DEV } },
+    { name: 'dev-tools', testMatch: /(devtools|sliceRun)\.spec\.ts/, use: { baseURL: DEV } },
   ],
   webServer: [
     {
