@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
+import { SECURITY_HEADERS } from './src/shared/headers';
 import { cloudflare } from '@cloudflare/vite-plugin';
 
 function gitSha(): string {
@@ -81,6 +82,17 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(gitSha()),
     // UTC, to the minute, so a refreshed page can be told apart from a stale one.
     __BUILD_TIME__: JSON.stringify(new Date().toISOString().slice(5, 16).replace('T', ' ')),
+  },
+  // The dev server sends the production policy so a violation shows up while developing. Vite
+  // injects style tags and talks to its own websocket, so those two directives are relaxed here
+  // and only here.
+  server: {
+    headers: {
+      ...SECURITY_HEADERS,
+      'Content-Security-Policy': (SECURITY_HEADERS['Content-Security-Policy'] as string)
+        .replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")
+        .replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:* ws://localhost:*"),
+    },
   },
   build: { target: 'es2022', sourcemap: false },
 });

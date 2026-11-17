@@ -7,6 +7,7 @@ function start(): void {
   // Dev pages exist only in dev builds. The whole branch is removed from production, which
   // tools/check-dev-absent.mjs verifies.
   if (import.meta.env.DEV) {
+    void import('./dev/csp').then((m) => m.installCspReporter());
     const path = location.pathname.replace(/\/+$/, '');
     if (path === '/dev/sprites') {
       void import('./dev/sprites').then((m) => m.startSpritesPage());
