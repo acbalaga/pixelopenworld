@@ -27,6 +27,11 @@ jobs:
       - run: npm run build
       - run: node tools/check-bundle.mjs
       - run: npm run check:dev
+      - run: npm run check:seal
+      - run: npm run check:pwa
+      - run: npm run check:prod
+      - run: npm run check:deps
+      - run: npm run tamper -- --sample
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
         env:

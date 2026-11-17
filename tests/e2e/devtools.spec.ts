@@ -59,3 +59,18 @@ test('/dev/audio plays an effect and a track', async ({ page }) => {
   await shot(page, '13-dev-audio');
   expect(problems.pageErrors).toEqual([]);
 });
+
+test('the dev server sends the policy, and the dev reporter sees no violation', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  const res = await page.goto('/?skip=1');
+  expect(res?.headers()['content-security-policy']).toContain("default-src 'self'");
+  await expect(page.locator('#pow-dev-overlay')).toContainText(/fps/);
+  await page.waitForTimeout(500);
+  // The reporter writes any violation to the console as `[csp] ...`, and the page listener
+  // collects it too. Either fails the run.
+  expect(problems.csp).toEqual([]);
+  expect(problems.console.filter((m) => m.includes('[csp]'))).toEqual([]);
+  expect(problems.pageErrors).toEqual([]);
+});

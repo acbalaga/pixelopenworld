@@ -645,6 +645,13 @@ export class MenuSheet {
     this.body.appendChild(this.heading(S.backup.heading));
     this.body.appendChild(createBackupSection(this.root, this.deps.backup));
 
+    this.body.appendChild(this.heading(S.help.heading));
+    const privacy = el('div', 'pow-help');
+    privacy.dataset.key = 'privacy-note';
+    put(privacy, this.heading(S.help.privacyHeading, 'h4'));
+    for (const line of S.help.privacy) put(privacy, el('p', 'pow-hint', line));
+    this.body.appendChild(privacy);
+
     const out = el('div', 'pow-logout');
     const btn = el('button', 'pow-button pow-danger', sys.logOut);
     btn.type = 'button';

@@ -156,6 +156,15 @@ export const UI_STRINGS = {
     },
     recoverContinue: 'Continue',
   },
+  help: {
+    heading: 'Help',
+    privacyHeading: 'Privacy',
+    privacy: [
+      'There are no accounts. The game asks for no name and no email, and it has no analytics and no cookies.',
+      'Your save stays on this device. It leaves only if you export a file yourself.',
+      'The only request the game makes to its server is for the time, and it sends nothing about you. The server keeps nothing about players.',
+    ],
+  },
   device: {
     heading: 'This device',
     storage: {
