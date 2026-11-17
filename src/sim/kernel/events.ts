@@ -13,6 +13,8 @@ export type SimEvent =
       /** The target was already staggered, so bonus damage applied. */
       bonus: boolean;
       heavy: boolean;
+      /** What dealt it: the weapon family of a swing, or the element of a bolt. Pays skill XP. */
+      tag: string;
     }
   | { type: 'dodgeStarted'; id: number }
   /** An attack found the target inside its invulnerable frames. */
@@ -30,7 +32,17 @@ export type SimEvent =
   | { type: 'noticed'; id: number; target: number }
   | { type: 'leashReset'; id: number }
   | { type: 'phaseChanged'; id: number; phase: number }
-  | { type: 'spawned'; id: number; creature: string };
+  | { type: 'spawned'; id: number; creature: string }
+  /** A gathering node was worked. Sent by the gathering system, read by skills. */
+  | { type: 'gathered'; id: number; tag: string; item: string; tier: number }
+  /** A dish or item was made. Sent by the crafting system, read by skills. */
+  | { type: 'cooked'; id: number; tag: string; recipe: string; tier: number }
+  | { type: 'skillXp'; id: number; skill: string; amount: number }
+  | { type: 'skillRankUp'; id: number; skill: string; points: number; mastery: string | null }
+  /** XP has filled the bar but the next point waits on a Trial. */
+  | { type: 'skillBanked'; id: number; skill: string }
+  | { type: 'trialOffered'; id: number; trial: string }
+  | { type: 'trialPassed'; id: number; trial: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */
 export interface EventQueue {

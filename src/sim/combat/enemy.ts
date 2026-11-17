@@ -39,6 +39,8 @@ export function spawnCreature(
     defense: def.defense,
     skillRank: 0,
     name: def.name,
+    kind: def.id,
+    tier: def.tier,
   });
   setComp(state.entities, id, 'stagger', { cur: 0, max: def.staggerMax, lastHit: -1000 });
   if (brain)

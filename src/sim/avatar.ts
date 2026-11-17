@@ -6,6 +6,7 @@ import { applyFighterCommand } from './combat/commands';
 import { newFighter, newPools } from './combat/fighter';
 import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
+import { newSkills } from './skills';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
 export function createAvatar(state: SimState, x: number, y: number): EntityId {
@@ -40,7 +41,10 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
     defense: 0,
     skillRank: 0,
     name: 'You',
+    kind: 'avatar',
+    tier: 0,
   });
+  setComp(state.entities, id, 'skills', newSkills());
   return id;
 }
 

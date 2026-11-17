@@ -68,6 +68,7 @@ export function projectileSystem(state: SimState): void {
         knock: pr.knock,
         element: 100,
         heavy: false,
+        tag: pr.element,
       });
       destroy(state.entities, id);
       break;

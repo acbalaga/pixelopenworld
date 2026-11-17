@@ -181,6 +181,8 @@ export interface HitInfo {
   knock: number;
   element: number;
   heavy: boolean;
+  /** Weapon family or element, for skill XP. */
+  tag: string;
 }
 
 /** Applies one hit to `dst`: i-frames, perfect dodge, damage, stagger, knockback, hit pause, death. */
@@ -217,6 +219,7 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     crit,
     bonus: wasStaggered,
     heavy: h.heavy,
+    tag: h.tag,
   });
 
   // Knockback away from the source, spread over a few ticks.
@@ -317,6 +320,7 @@ export function resolveSwing(state: SimState, who: EntityId, def: AttackDef): vo
       knock: def.knock,
       element: 100,
       heavy: def.heavy === true,
+      tag: def.family,
     });
   }
 }

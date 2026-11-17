@@ -27,6 +27,7 @@ import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
 import { drawLockFrame, drawPoolBars } from '../ui/hud/combatHud';
+import { SkillFeed } from '../ui/hud/skillFeed';
 import { PixelFont } from '../ui/text/pixelFont';
 import { CREATURES, SPAWNERS } from '../content/creatures';
 import { createSpawner } from '../sim/systems/spawner';
@@ -259,6 +260,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const audio = createGameAudio();
   attachAudioLifecycle(audio);
   const feedback = new CombatFeedback({ hit: INK, crit: GOLD, hurt: HURT });
+  const skillFeed = new SkillFeed();
   const centerOf = (id: number): { x: number; y: number } | null => {
     const p = state.entities.comps.pos[id];
     return p ? { x: Math.round(p.x / 256), y: Math.round(p.y / 256) - 4 } : null;
@@ -349,6 +351,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
+        skillFeed.ingest(state.events.list, who, now);
         for (const e of state.events.list) {
           const sfx = sfxFor(e, who);
           if (sfx) audio.playSfx(sfx);
@@ -444,6 +447,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const v = vp.current;
       drawPoolBars(renderer, state, who, v.safe.x + 3, v.safe.y + 3);
       drawLockFrame(renderer, fonts.small, state, who, Math.floor(v.width / 2), v.safe.y + 3);
+      skillFeed.draw(
+        renderer,
+        fonts.small,
+        now,
+        Math.floor(v.width / 2),
+        v.safe.y + 28,
+        v.safe.x + 3,
+        v.safe.y + 23,
+        settings.get().reducedMotion,
+      );
       // Build id and time, bottom left, so a refreshed page can be told from a stale one.
       fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {
         outline: DARK,

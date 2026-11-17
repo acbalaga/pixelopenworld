@@ -91,10 +91,30 @@ export interface Combatant {
   weapon: string;
   power: number;
   defense: number;
-  /** Skill rank 0 to 100 for the weapon's skill. Real skills arrive with M1-04. */
+  /** Skill points 0 to 100 for the weapon's skill, kept in step by the skills system. */
   skillRank: number;
   /** Name for the lock frame. */
   name: string;
+  /** What it is: a creature id, or `avatar`. Skill XP and first-time bonuses key on it. */
+  kind: string;
+  /** Creature tier 1 to 8, or 0 for the avatar. Sets how much XP fighting it is worth. */
+  tier: number;
+}
+
+/** Skill points and Trial progress for the avatar. Every key is a skill id from content. */
+export interface Skills {
+  /** Points 0 to 100. A skill with no entry has 0. */
+  points: Record<string, number>;
+  /** XP toward the next point. Held in the bank while the next point waits on a Trial. */
+  xp: Record<string, number>;
+  /** Trial flags passed, as `skill@threshold`. */
+  passed: string[];
+  /** Trial ids an NPC has given and that are not passed yet. */
+  offered: string[];
+  /** First-time bonuses already paid, as `skill:event:subject`. */
+  seen: string[];
+  /** Sprint distance: last feet position and sub-pixel distance not yet paid. */
+  stride: { x: number; y: number; acc: number };
 }
 
 export interface Stagger {
@@ -181,6 +201,7 @@ export interface Components {
   echo: Echo;
   ai: Ai;
   spawner: Spawner;
+  skills: Skills;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -212,6 +233,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'echo',
   'ai',
   'spawner',
+  'skills',
 ];
 
 /** Demo box size in sub-pixel units. */
