@@ -94,6 +94,7 @@ export const UI_STRINGS = {
     connecting: 'Connecting',
     skipHint: 'Tap to skip',
     version: 'Build {id}',
+    updated: 'Updated to build {id}.',
   },
   setup: {
     heading: 'Create your character',
@@ -154,6 +155,35 @@ export const UI_STRINGS = {
       unreadable: 'could not be read.',
     },
     recoverContinue: 'Continue',
+  },
+  device: {
+    heading: 'This device',
+    storage: {
+      granted: 'Storage is protected. The browser will not clear your save to free up space.',
+      denied:
+        'Storage is not protected. The browser may clear saves when space runs low. Export a backup now and then.',
+      unsupported:
+        'This browser cannot protect saves from being cleared. Export a backup now and then.',
+    },
+    protect: 'Protect storage',
+    asking: 'Asking the browser to keep your save from being cleared.',
+    install: {
+      installed: 'Installed. It opens full screen and plays with no connection.',
+      prompt: 'Install it to play full screen from your home screen, with no connection needed.',
+      ios: 'To install: tap the Share button, then Add to Home Screen. It then plays with no connection.',
+      other:
+        'To install: open the browser menu and choose Install app or Add to Home screen. Once loaded, the game plays with no connection.',
+    },
+    installButton: 'Install',
+    update: {
+      none: 'You have the latest version.',
+      ready: 'A new version is ready. Updating saves your game first, then restarts.',
+      unsupported: 'Updates arrive each time the game is opened.',
+      checking: 'Checking for a new version.',
+      checkButton: 'Check for updates',
+      applyButton: 'Update now',
+      saving: 'Saving, then restarting.',
+    },
   },
   backup: {
     heading: 'Backup',

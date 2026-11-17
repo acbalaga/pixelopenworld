@@ -27,6 +27,8 @@ export interface FrontEndDeps {
   rand: () => number;
   /** Restoring a save file from the title. `onImported` is set here; the game applies the import. */
   importer: Omit<ImportDeps, 'onImported'>;
+  /** True when this launch runs a newer build than the last one seen. Shows a small note. */
+  updated?: boolean;
   /** How long the "connecting" beat lasts, ms. */
   connectMs?: number;
 }
@@ -148,6 +150,11 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
         ),
       );
       put(screen, imp, ver);
+      if (deps.updated) {
+        const note = el('p', 'pow-front-version', fill(S.title.updated, { id: BUILD_ID }));
+        note.setAttribute('role', 'status');
+        put(screen, note);
+      }
       go.focus();
     };
 

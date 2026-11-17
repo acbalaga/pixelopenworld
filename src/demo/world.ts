@@ -21,6 +21,15 @@ import { sfxFor, hapticFor, vibrate } from '../platform/combatFx';
 import { CommandMapper } from '../platform/input/sampler';
 import { computeLayout } from '../platform/input/layout';
 import { startBrowserLoop } from '../platform/loop';
+import {
+  PERSIST_AFTER_SECONDS,
+  captureInstallPrompt,
+  persistenceAsked,
+  registerServiceWorker,
+  requestPersistence,
+  takeUpdateNote,
+} from '../platform/pwa';
+import { BUILD_ID } from '../shared/version';
 import { itemName } from '../ui/menu/model';
 import {
   TrustedClock,
@@ -165,6 +174,10 @@ function state0Avatar(st: SimState): { handle: string } | null {
 
 export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const params = new URLSearchParams(location.search);
+  // Installable and offline (M2-05). The note says a new build took over since the last launch.
+  registerServiceWorker();
+  captureInstallPrompt();
+  const updated = takeUpdateNote(BUILD_ID);
   const auto = params.get('auto') === '1';
   const fly = auto || params.get('fly') === '1';
   // Saves: `?nosave=1` turns loading and saving off (for screenshots and tools). Free flight never saves.
@@ -271,6 +284,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const previewDolls = dolls.create('char.setup', randomDoll(rand));
     const result = await runFrontEnd({
       root,
+      updated,
       importer: {
         planImport: (bytes) => planImport(bytes, undefined, () => clock.trustedNow()),
         hasSave: () => loaded !== null,
@@ -673,6 +687,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
     // Log Out saves, then returns to the title screen (a fresh page start shows it).
     trust: () => saves?.currentTrust() ?? intact(),
+    beforeUpdate: async () => {
+      if (!saves) return;
+      saver.request('manual');
+      await saver.idle();
+    },
     backup: {
       exportCurrent: () => exportFile(),
       planImport: (bytes) => planImport(bytes, undefined, () => clock.trustedNow()),
@@ -827,6 +846,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // network comes back. A failure changes nothing.
   window.setInterval(() => void clock.sync(), 5 * 60_000);
   window.addEventListener('online', () => void clock.sync());
+  // Ask the browser to keep the save from being cleared, once, after the first Trial or 15
+  // minutes of play, with the reason on screen. The answer is shown in System.
+  let persistDone = !saves || persistenceAsked();
+  const askPersistence = (): void => {
+    if (persistDone) return;
+    persistDone = true;
+    notices.toast(UI_STRINGS.device.asking);
+    void requestPersistence();
+  };
   const requestSave = (reason: SaveReason): void => {
     if (saves) saver.request(reason);
   };
@@ -959,6 +987,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {
           lastSaveTick = state.tick;
           requestSave('timer');
+          if (state.tick / 30 >= PERSIST_AFTER_SECONDS) askPersistence();
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
@@ -975,7 +1004,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             enterRoom(roomAt(tx, ty) ?? OUTDOORS);
             fadeAt = performance.now();
             requestSave('transition');
-          } else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
+          } else if (e.type === 'trialPassed' && e.id === who) askPersistence();
+          else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') {
             openedAt.set(e.id, performance.now());
             notices.toast(W_STR.unlocked);
