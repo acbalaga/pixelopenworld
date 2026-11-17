@@ -622,3 +622,110 @@ canvas {
   stroke-linecap: square;
   stroke-linejoin: miter;
 }
+
+/* Dialogue and shop sheets (M1-08). */
+.pow-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--px) * 2);
+  transform: translateX(-50%);
+  width: min(calc(100% - var(--px) * 4), 34rem);
+  max-height: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-talk-head,
+.pow-shop-head {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+}
+.pow-talk-name {
+  flex: 1 1 auto;
+  margin: 0;
+}
+.pow-portrait {
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 16);
+  flex: none;
+  image-rendering: pixelated;
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+}
+.pow-talk-log {
+  flex: 1 1 auto;
+  min-height: 4.5em;
+  max-height: 32vh;
+  overflow-y: auto;
+  padding: calc(var(--px) * 2);
+  background: var(--pal-17);
+}
+.pow-line {
+  margin: 0 0 0.6em;
+}
+.pow-line:last-child {
+  margin-bottom: 0;
+}
+.pow-line-you {
+  color: var(--pal-18);
+  text-align: right;
+}
+.pow-chat .pow-line-npc {
+  padding: 0.3em 0.6em;
+  background: var(--pal-0);
+  border-left: calc(var(--px) * 1) solid var(--pal-14);
+}
+.pow-line-name {
+  font-weight: 700;
+  color: var(--pal-14);
+}
+.pow-talk-actions {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-choice {
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+}
+.pow-shop {
+  max-height: 80%;
+}
+.pow-shop-coin {
+  color: var(--pal-47);
+  white-space: nowrap;
+}
+.pow-shop-tabs {
+  display: flex;
+  gap: calc(var(--px) * 1);
+}
+.pow-shop-msg {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--pal-47);
+}
+.pow-shop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+}
+.pow-shop-row {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  min-height: 48px;
+}
+.pow-shop-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pow-shop-price {
+  color: var(--pal-47);
+  white-space: nowrap;
+}

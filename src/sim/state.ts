@@ -240,6 +240,17 @@ export interface Fixture {
   home: Vec;
 }
 
+/** What the avatar has done with people: flags set by dialogue, and requests taken. */
+export interface Journal {
+  flags: string[];
+  requests: Record<string, { state: 'active' | 'ready' | 'done'; progress: number }>;
+}
+
+/** A person standing in the world. Text and looks come from `content/dialogue`. */
+export interface Npc {
+  id: string;
+}
+
 /** Components. `pos` is the feet position of a body, in sub-pixel units. */
 export interface Components {
   pos: Vec;
@@ -263,6 +274,8 @@ export interface Components {
   gather: Gather;
   fed: Fed;
   fixture: Fixture;
+  journal: Journal;
+  npc: Npc;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -301,6 +314,8 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'gather',
   'fed',
   'fixture',
+  'journal',
+  'npc',
 ];
 
 /** Demo box size in sub-pixel units. */

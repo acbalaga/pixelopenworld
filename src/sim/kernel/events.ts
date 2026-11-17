@@ -74,6 +74,15 @@ export type SimEvent =
   | { type: 'tabletRead'; id: number; who: number }
   | { type: 'waystoneSet'; id: number; who: number }
   /** The avatar took a portal. Render fades and snaps the camera. */
+  | { type: 'talkStarted'; who: number; npc: string }
+  | { type: 'requestStarted'; who: number; request: string }
+  | { type: 'requestProgress'; who: number; request: string; progress: number }
+  | { type: 'requestReady'; who: number; request: string }
+  | { type: 'requestCompleted'; who: number; request: string }
+  | { type: 'shopOpened'; who: number; shop: string }
+  | { type: 'bought'; who: number; item: string; qty: number; coin: number }
+  | { type: 'sold'; who: number; item: string; qty: number; coin: number }
+  | { type: 'shopDenied'; who: number; reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' }
   | { type: 'roomChanged'; who: number; from: string; to: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */

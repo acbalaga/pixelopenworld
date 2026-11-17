@@ -28,6 +28,7 @@ export class AudioEngine {
   private ctx: AudioContext | null = null;
   private buses = new Map<BusId, GainNode>();
   private volumes: Record<BusId, number> = { ...T.defaultVolumes };
+  private ducked = false;
   private muted = new Set<BusId>();
   private pool = new VoicePool(T.voiceCap);
   private music: MusicPlayer | null = null;
@@ -86,9 +87,16 @@ export class AudioEngine {
     this.applyBus(bus);
   }
 
+  /** Lowers the music while someone is talking, without touching the music volume setting. */
+  setDucked(ducked: boolean): void {
+    this.ducked = ducked;
+    this.applyBus('music');
+  }
+
   /** Effective gain of a bus (0 when muted). For tests and UI. */
   busGain(bus: BusId): number {
-    return this.muted.has(bus) ? 0 : this.volumes[bus];
+    if (this.muted.has(bus)) return 0;
+    return bus === 'music' && this.ducked ? this.volumes[bus] * T.duckGain : this.volumes[bus];
   }
 
   private applyBus(bus: BusId): void {
