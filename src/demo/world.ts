@@ -661,6 +661,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const speedPx = auto ? 10 : 8;
 
   let meter: DevOverlay | null = null;
+  if (import.meta.env.DEV && !fly) {
+    void import('../dev/slice').then((mod) => mod.installSliceHooks({ state, who, settings }));
+  }
   if (import.meta.env.DEV) {
     void import('../dev/overlay').then((mod) => {
       meter = new mod.DevOverlay(() => ({

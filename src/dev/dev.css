@@ -101,3 +101,16 @@ body.dev-page canvas#game {
 #pow-dev-overlay[hidden] {
   display: none;
 }
+
+#pow-dev-scheme {
+  position: fixed;
+  right: 4px;
+  top: 4px;
+  min-height: 44px;
+  padding: 2px 8px;
+  font: 12px monospace;
+  color: #e8e8e8;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #888;
+  border-radius: 4px;
+}
