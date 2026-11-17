@@ -93,6 +93,7 @@ export const UI_STRINGS = {
   shop: {
     title: 'Shop',
     coin: 'Coin: {n}',
+    purse: '{name} has {n} coin.',
     buy: 'Buy',
     sell: 'Sell',
     buyOne: 'Buy',
@@ -108,6 +109,7 @@ export const UI_STRINGS = {
       stock: 'That is not for sale here.',
       worthless: 'The shop will not buy that.',
       range: 'You are too far from the counter.',
+      purse: '{name} cannot afford that right now.',
     },
   },
   world: {

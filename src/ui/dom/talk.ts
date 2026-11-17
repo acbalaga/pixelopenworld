@@ -9,7 +9,7 @@ import { holds, startNode } from '../../sim/journal';
 import type { Command } from '../../sim/kernel/commands';
 import type { SimEvent } from '../../sim/kernel/events';
 import type { SimState } from '../../sim/state';
-import { buyPrice, sellPrice } from '../../sim/systems/npcs';
+import { buyPrice, sellPrice, shopPurse } from '../../sim/systems/npcs';
 
 export interface TalkDeps {
   read: () => { state: SimState; who: number };
@@ -178,7 +178,9 @@ export class TalkSheet {
       this.shopMsg = fill(S.shop.sold, { item: nameOf(e.item), n: String(e.coin) });
       this.renderShop();
     } else if (this.shopId && e.type === 'shopDenied') {
-      this.shopMsg = S.shop.denied[e.reason];
+      this.shopMsg = fill(S.shop.denied[e.reason], {
+        name: NPCS[SHOPS[this.shopId]?.npc ?? '']?.name ?? '',
+      });
       this.renderShop();
     }
   }
@@ -225,6 +227,14 @@ export class TalkSheet {
       });
       tabs.appendChild(b);
     }
+    const purse = el(
+      'p',
+      'pow-hint',
+      fill(S.shop.purse, {
+        name: NPCS[shop.npc]?.name ?? '',
+        n: String(shopPurse(state, shop.id)),
+      }),
+    );
     const msg = el('p', 'pow-shop-msg', this.shopMsg);
     msg.setAttribute('role', 'status');
 
@@ -272,7 +282,7 @@ export class TalkSheet {
       });
       if (!any) list.appendChild(el('li', 'pow-hint', S.shop.nothingToSell));
     }
-    put(s, head, tabs, msg, list);
+    put(s, head, tabs, purse, msg, list);
     (s.querySelector('.pow-shop-list button') as HTMLElement | null)?.focus();
     this.ready = true;
   }

@@ -82,7 +82,11 @@ export type SimEvent =
   | { type: 'shopOpened'; who: number; shop: string }
   | { type: 'bought'; who: number; item: string; qty: number; coin: number }
   | { type: 'sold'; who: number; item: string; qty: number; coin: number }
-  | { type: 'shopDenied'; who: number; reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' }
+  | {
+      type: 'shopDenied';
+      who: number;
+      reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' | 'purse';
+    }
   | { type: 'roomChanged'; who: number; from: string; to: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */

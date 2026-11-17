@@ -7,7 +7,7 @@ import type { Command } from '../../src/sim/kernel/commands';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
-import { buyPrice, sellPrice, spawnNpc } from '../../src/sim/systems/npcs';
+import { buyPrice, sellPrice, shopPurse, spawnNpc } from '../../src/sim/systems/npcs';
 
 interface Rig {
   s: SimState;
@@ -179,6 +179,48 @@ describe('the shop', () => {
     r.tick(buy('item.dish_bread'));
     expect(denials(r)).toEqual(['stock', 'worthless', 'bag', 'range']);
     expect(a.coin).toBe(1000);
+  });
+
+  it('the shopkeeper only has so much coin: sales stop when it runs out, and buying refills it', () => {
+    const r = rig();
+    const inv = r.s.entities.comps.inventory[r.me]!;
+    const a = r.s.entities.comps.avatar[r.me]!;
+    const start = shopPurse(r.s, 'shop.brin');
+    expect(start).toBe(80);
+    // Iron swords sell for 30 each: two fit in an 80 coin purse, the third does not.
+    for (let i = 0; i < 3; i++) inv.slots[i] = { item: 'item.sword_iron', qty: 1 };
+    r.tick(sell(0));
+    r.tick(sell(1));
+    expect(a.coin).toBe(60);
+    expect(shopPurse(r.s, 'shop.brin')).toBe(20);
+    r.tick(sell(2));
+    expect(denials(r)).toEqual(['purse']);
+    expect(a.coin).toBe(60);
+    expect(inv.slots[2]).not.toBeNull();
+    // Buying puts the coin back in the till, up to its limit.
+    r.tick(buy('item.dish_bread', 3));
+    expect(shopPurse(r.s, 'shop.brin')).toBe(20 + buyPrice('item.dish_bread') * 3);
+    r.tick(sell(2));
+    expect(r.count('sold')).toBe(3);
+  });
+
+  it('a shopkeeper who is short earns back a little over time, never past the start', () => {
+    const r = rig();
+    const inv = r.s.entities.comps.inventory[r.me]!;
+    inv.slots[0] = { item: 'item.sword_iron', qty: 1 };
+    inv.slots[1] = { item: 'item.sword_iron', qty: 1 };
+    r.tick(sell(0));
+    r.tick(sell(1));
+    const low = shopPurse(r.s, 'shop.brin');
+    expect(low).toBe(20);
+    r.s.tick = 30 * 120 - 1;
+    r.tick();
+    expect(shopPurse(r.s, 'shop.brin')).toBe(low + 5);
+    for (let i = 0; i < 30; i++) {
+      r.s.tick = (i + 2) * 30 * 120 - 1;
+      r.tick();
+    }
+    expect(shopPurse(r.s, 'shop.brin')).toBe(80);
   });
 
   it('buying costs more than selling pays, so there is no free coin', () => {

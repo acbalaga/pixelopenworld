@@ -1,5 +1,5 @@
 // Temporary demo: the 3 x 3 chunk test map with the sim avatar and three practice creatures.
-// Walk, fight (Flow or Classic, button top right), dodge with a flick or Space, lock by tapping.
+// Walk, fight (Flow or Classic, button top right), dodge with the button or Space, lock by tapping.
 // Keys: WASD move, J attack (Classic), Space dodge, 1 and 2 techniques (hold to aim), T scheme.
 //   ?fly=1   no collision, fast, no creatures (for crossing all nine chunks)
 //   ?auto=1  fly a fixed loop through all nine chunks without input (for the frame-rate check)
@@ -616,6 +616,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const fy = (prev.y + (apos.y - prev.y) * alpha) / 256;
       const pxX = Math.round(fx);
       const pxY = Math.round(fy);
+      // Rooms follow the avatar wherever it is, including a respawn at a Waystone in another room.
+      if (!fly) {
+        const here = roomAt(Math.floor(pxX / TILE_PX), Math.floor((pxY - 1) / TILE_PX));
+        if (here && here.id !== room.id) {
+          enterRoom(here);
+          fadeAt = now;
+        }
+      }
       camera.follow(pxX, pxY - 14, dt);
       const shake = feedback.shake(now);
       renderer.begin(camera.x + shake.x, camera.y + shake.y);

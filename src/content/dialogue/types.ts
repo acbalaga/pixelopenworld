@@ -59,6 +59,8 @@ export interface ShopDef {
   npc: string;
   /** Item ids on sale, in order. */
   stock: readonly string[];
+  /** The shopkeeper's coin: what they hold at the start, and the most they will hold. */
+  purse: { start: number; max: number };
 }
 
 export interface RequestDef {

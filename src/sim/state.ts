@@ -249,6 +249,8 @@ export interface Journal {
 /** A person standing in the world. Text and looks come from `content/dialogue`. */
 export interface Npc {
   id: string;
+  /** Coin the person holds for trading. Shopkeepers only. */
+  purse: number;
 }
 
 /** Components. `pos` is the feet position of a body, in sub-pixel units. */

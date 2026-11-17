@@ -106,6 +106,7 @@ export class TouchController {
     }
 
     if (
+      this.tun.flickDodge &&
       dist >= this.tun.flickMinDistPx &&
       dist <= this.tun.flickMaxDistPx &&
       dur <= this.tun.flickMaxMs

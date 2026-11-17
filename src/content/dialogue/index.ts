@@ -78,6 +78,7 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
   'shop.brin': {
     id: 'shop.brin',
     npc: 'npc.shopkeeper',
+    purse: { start: 80, max: 150 },
     stock: [
       'item.dish_bread',
       'item.herb_tea',

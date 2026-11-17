@@ -294,10 +294,10 @@ function cave(g: Grid, objects: Obj[]): void {
   const fixture = (x: number, y: number, kind: string): void => object(g, x, y, kind, objects);
 
   carve('room.a', (x0, y0) => {
-    portal(x0 + 9, y0, 'fixture.portal_a_entry');
+    portal(x0 + 9, y0 + 13, 'fixture.portal_a_entry');
     portal(x0 + 17, y0 + 7, 'fixture.portal_a_east');
-    g.set(x0 + 9, y0 + 13, ARCH);
-    fixture(x0 + 9, y0 + 13, 'fixture.arrival_a_shortcut');
+    g.set(x0 + 9, y0, ARCH);
+    fixture(x0 + 9, y0, 'fixture.arrival_a_shortcut');
     object(g, x0 + 5, y0 + 6, 'spawner.mossling', objects);
   });
   carve('room.b', (x0, y0) => {
