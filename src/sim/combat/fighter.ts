@@ -7,6 +7,7 @@ import { nextU32 } from '../kernel/rng';
 import type { Fighter, Pools, SimState } from '../state';
 import { computeDamage } from './damage';
 import { inShape, len } from './geometry';
+import { recordKill } from '../ledger';
 
 /** A fresh set of pools at full. */
 export function newPools(tick: number): Pools {
@@ -286,6 +287,10 @@ export function kill(state: SimState, id: EntityId): void {
   f.atk = null;
   f.dv = { x: 0, y: 0 };
   f.lock = null;
+  if (f.team === 1) {
+    const kind = getComp(state.entities, id, 'combatant')?.kind;
+    if (kind) recordKill(state, kind);
+  }
   emit(state.events, { type: 'died', id, team: f.team });
 }
 

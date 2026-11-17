@@ -10,6 +10,7 @@ import { canHold, collect, resolveGather, rollDrops, spawnPickup } from '../item
 import { recomputePools } from '../skills';
 import type { SimState } from '../state';
 import { contextTarget } from './interact';
+import { madeItems } from '../ledger';
 
 /** Creatures that died this tick leave their drops, scattered a little, popping out. */
 function dropLoot(state: SimState): void {
@@ -26,6 +27,7 @@ function dropLoot(state: SimState): void {
       const dx = int(state.rng.loot, -s, s) * SUBPX;
       const dy = int(state.rng.loot, -s, s) * SUBPX;
       spawnPickup(state, d.item, d.qty, p.x + dx, p.y + dy);
+      if (d.item !== 'item.coin') madeItems(state, 'loot', d.item, d.qty);
     }
   }
 }

@@ -10,6 +10,7 @@ import { px, SUBPX } from '../kernel/fixed';
 import { offerTrial } from '../skills';
 import type { Npc, SimState } from '../state';
 import { contextTarget } from './interact';
+import { earnCoin, madeItems, spendCoin } from '../ledger';
 
 const TILE = 16;
 
@@ -76,7 +77,7 @@ function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   if (!j) return;
   if ('setFlag' in e) {
     if (!j.flags.includes(e.setFlag)) j.flags.push(e.setFlag);
-  } else if ('give' in e) give(state, who, e.give, e.qty);
+  } else if ('give' in e) give(state, who, e.give, e.qty, 'dialogue');
   else if ('learnRecipe' in e) learnRecipe(state, who, e.learnRecipe);
   else if ('offerTrial' in e) offerTrial(state, who, e.offerTrial);
   else if ('startRequest' in e) {
@@ -96,8 +97,8 @@ function turnIn(state: SimState, who: EntityId, requestId: string): void {
   const def = REQUESTS[requestId];
   if (!j || !a || !def || requestState(j, requestId) !== 'ready') return;
   j.requests[requestId] = { state: 'done', progress: def.goal.count };
-  a.coin += def.reward.coin;
-  for (const r of def.reward.items) give(state, who, r.item, r.qty);
+  earnCoin(state, who, def.reward.coin, 'request');
+  for (const r of def.reward.items) give(state, who, r.item, r.qty, 'request');
   emit(state.events, { type: 'requestCompleted', who, request: requestId });
 }
 
@@ -137,10 +138,11 @@ export function buy(
   if (a.coin < cost) return void emit(state.events, { type: 'shopDenied', who, reason: 'coin' });
   if (!canHold(inv, c.item, c.qty))
     return void emit(state.events, { type: 'shopDenied', who, reason: 'bag' });
-  a.coin -= cost;
+  spendCoin(state, who, cost, 'purchase');
   const k = keeper(state, c.shop);
   if (k) k.npc.purse = Math.min(k.max, k.npc.purse + cost);
   addItem(inv, c.item, c.qty);
+  madeItems(state, 'shop', c.item, c.qty);
   emit(state.events, { type: 'bought', who, item: c.item, qty: c.qty, coin: cost });
 }
 
@@ -167,7 +169,7 @@ export function sell(
   const item = stack.item;
   if (!removeItem(inv, item, qty)) return;
   k.npc.purse -= each * qty;
-  a.coin += each * qty;
+  earnCoin(state, who, each * qty, 'sale');
   emit(state.events, { type: 'sold', who, item, qty, coin: each * qty });
 }
 

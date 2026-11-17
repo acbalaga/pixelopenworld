@@ -67,6 +67,7 @@ export class SaveManager {
       look: input.look,
       sim: serializeState(input.sim),
       summary: deriveSummary(input.sim, input.playSeconds),
+      ledger: structuredClone(input.sim.ledger),
     };
     const bytes = await codec.encode(plain);
     const checksum = await sha256Hex(bytes);

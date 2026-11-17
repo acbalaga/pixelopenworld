@@ -12,6 +12,7 @@ import { int, next, weighted, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
 import type { Inventory, ItemStack, SimState } from './state';
 import { contextTarget } from './systems/interact';
+import { earnCoin, madeItems, recordCraft, type ItemSource } from './ledger';
 
 /** A new bag, with the starter kit worn and carried. */
 export function newInventory(): Inventory {
@@ -169,9 +170,16 @@ function feet(state: SimState, who: EntityId): { x: number; y: number } {
 }
 
 /** Puts an item in the bag. Whatever does not fit is left at the avatar's feet, never lost. */
-export function give(state: SimState, who: EntityId, item: string, qty: number): void {
+export function give(
+  state: SimState,
+  who: EntityId,
+  item: string,
+  qty: number,
+  source: ItemSource,
+): void {
   const inv = getComp(state.entities, who, 'inventory');
   if (!inv) return;
+  madeItems(state, source, item, qty);
   const left = addItem(inv, item, qty);
   if (left > 0) {
     const f = feet(state, who);
@@ -269,7 +277,7 @@ export function cook(state: SimState, who: EntityId, items: readonly string[]): 
   for (const [i, n] of need) removeItem(inv, i, n);
   const recipe = recipeFor(items);
   if (!recipe) {
-    give(state, who, 'item.burnt_mess', 1);
+    give(state, who, 'item.burnt_mess', 1, 'cook');
     emit(state.events, { type: 'cookFailed', id: who });
     return true;
   }
@@ -277,7 +285,8 @@ export function cook(state: SimState, who: EntityId, items: readonly string[]): 
     inv.recipes.push(recipe.id);
     emit(state.events, { type: 'recipeDiscovered', id: who, recipe: recipe.id });
   }
-  give(state, who, recipe.result, 1);
+  give(state, who, recipe.result, 1, 'cook');
+  recordCraft(state, recipe.id);
   emit(state.events, {
     type: 'cooked',
     id: who,
@@ -311,7 +320,7 @@ export function resolveGather(state: SimState, who: EntityId, sweet: boolean): v
     int(state.rng.loot, B.gather.baseMin, B.gather.baseMax) + (sweet ? B.gather.sweetBonus : 0);
   node.readyAt = state.tick + def.respawn;
   emit(state.events, { type: 'gatherResolved', id: who, node: g.node, sweet, item, qty });
-  give(state, who, item, qty);
+  give(state, who, item, qty, 'gather');
   emit(state.events, { type: 'gathered', id: who, tag: def.tag, item, tier: def.tier });
 }
 
@@ -361,7 +370,7 @@ export function collect(state: SimState, who: EntityId, pickupId: EntityId): boo
   const p = getComp(state.entities, pickupId, 'pickup');
   if (!inv || !a || !p) return false;
   if (p.item === 'item.coin') {
-    a.coin += p.qty;
+    earnCoin(state, who, p.qty, 'loot');
     emit(state.events, { type: 'itemPickedUp', id: who, item: p.item, qty: p.qty });
     destroy(state.entities, pickupId);
     return true;

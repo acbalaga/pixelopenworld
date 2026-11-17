@@ -76,6 +76,7 @@ import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
 import { NODES, RECIPES } from '../content/items/recipes';
 import { dollWithGear } from '../render/gearDoll';
+import { madeItems } from '../sim/ledger';
 import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
@@ -342,10 +343,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     }
   const bag = restored ? null : state.entities.comps.inventory[who];
   if (bag) {
-    addItem(bag, 'item.sword_iron', 1);
-    addItem(bag, 'item.outfit_leather', 1);
-    addItem(bag, 'item.shield_wood', 1);
-    addItem(bag, 'item.raw_meat', 2);
+    for (const [item, qty] of [
+      ['item.sword_iron', 1],
+      ['item.outfit_leather', 1],
+      ['item.shield_wood', 1],
+      ['item.raw_meat', 2],
+    ] as const) {
+      addItem(bag, item, qty);
+      madeItems(state, 'start', item, qty);
+    }
   }
   // Demo keys until the Menu exists (M1-06): G wear the next piece of gear, F eat, C cook a
   // recipe from what the bag holds, or experiment with what it has.

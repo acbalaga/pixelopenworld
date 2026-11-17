@@ -4,6 +4,7 @@ import { createStreams, int, type RngStreams } from './kernel/rng';
 import { px, type Direction, type Vec } from './kernel/fixed';
 import type { CollisionGrid } from './systems/collision';
 import type { EquipSlot } from '../content/items/types';
+import { newLedger, type Ledger } from './ledger';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -293,6 +294,8 @@ export interface SimState {
   tick: number;
   rng: RngStreams;
   entities: EntityStore<Components>;
+  /** Lifetime totals for the integrity check (tech/02). Saved. */
+  ledger: Ledger;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
@@ -336,6 +339,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     tick: 0,
     rng: createStreams(seed),
     entities: createStore<Components>(COMPONENT_KEYS),
+    ledger: newLedger(),
     events: createEventQueue(),
     world: null,
   };
@@ -358,6 +362,7 @@ function canonical(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
   const o = v as Record<string, unknown>;
   return `{${Object.keys(o)
+    .filter((k) => o[k] !== undefined)
     .sort()
     .map((k) => `${JSON.stringify(k)}:${canonical(o[k])}`)
     .join(',')}}`;
@@ -369,6 +374,7 @@ function persistent(state: SimState): Omit<SimState, 'events' | 'world'> {
     tick: state.tick,
     rng: state.rng,
     entities: state.entities,
+    ledger: state.ledger,
   };
 }
 
@@ -379,7 +385,9 @@ export function serializeState(state: SimState): string {
 
 /** Rebuilds a state from {@link serializeState} output. Round trip is exact. */
 export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
-  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world'>;
+  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world' | 'ledger'> & {
+    ledger?: Ledger;
+  };
   if (
     typeof raw?.tick !== 'number' ||
     typeof raw.seed !== 'number' ||
@@ -388,7 +396,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
   ) {
     throw new Error('malformed sim state');
   }
-  return { ...raw, events: createEventQueue(), world };
+  // A state written before the ledger existed has none. The save migration seeds the real one.
+  return { ...raw, ledger: raw.ledger ?? newLedger(), events: createEventQueue(), world };
 }
 
 /** Stable 53-bit hash of the saved state, as 14 hex chars. For tests and save checks. */

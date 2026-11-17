@@ -17,6 +17,7 @@ import { dirStep, SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { nudge } from './movement';
 import { launchProjectile } from './projectile';
+import { earnCoin, spendCoin } from '../ledger';
 
 /** The state machine for every fighter, run once per tick after commands. Ascending id order. */
 export function combatSystem(state: SimState): void {
@@ -176,7 +177,7 @@ function dropEcho(state: SimState, id: EntityId): void {
   }
   const left = Math.floor((a.coin * C.death.echoPercent) / 100);
   if (left <= 0) return;
-  a.coin -= left;
+  spendCoin(state, id, left, 'echo');
   const echo = spawn(state.entities);
   setComp(state.entities, echo, 'pos', { x: p.x, y: p.y });
   setComp(state.entities, echo, 'echo', { coin: left });
@@ -224,7 +225,7 @@ function recoverEchoes(state: SimState): void {
       const echo = getComp(state.entities, eid, 'echo');
       if (!ep || !echo) continue;
       if (len({ x: ep.x - me.x, y: ep.y - me.y }) <= C.death.echoPickup) {
-        a.coin += echo.coin;
+        earnCoin(state, aid, echo.coin, 'echo');
         emit(state.events, { type: 'echoRecovered', id: eid, coin: echo.coin });
         destroy(state.entities, eid);
       }

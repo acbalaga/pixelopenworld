@@ -1,8 +1,9 @@
 import type { DollSpec } from '../content/dolls/parts';
+import type { Ledger } from '../sim/ledger';
 import type { SaveSummary } from '../shared/summary';
 
 /** The save layout version. Bump it for any change to saved state, and add a migration. */
-export const CURRENT_SCHEMA = 2;
+export const CURRENT_SCHEMA = 3;
 
 /**
  * What a save holds, before any encoding (tech/02). `sim` is the canonical text from
@@ -24,6 +25,8 @@ export interface SavePlain {
   look: DollSpec;
   sim: string;
   summary: SaveSummary;
+  /** Lifetime totals, a copy of the sim's ledger for the integrity check (M2-02). */
+  ledger: Ledger;
 }
 
 /** The slots, newest first. `quarantine` keeps a record that failed to load, so nothing is ever lost. */

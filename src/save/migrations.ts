@@ -1,3 +1,5 @@
+import { newLedger } from '../sim/ledger';
+import { xpToNext } from '../sim/skills';
 import { deserializeState, serializeState } from '../sim/state';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
 
@@ -27,6 +29,44 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     patch(raw.entities.comps.avatar, { handle: 'Traveler' });
     patch(raw.entities.comps.journal, { hints: HINT_IDS_V1, hint: null });
     return { ...old, schema: 2, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 2 to 3 (M2-01): the sim gains a `ledger` of lifetime totals, and the save carries a copy. A
+   * save made before the ledger has no history, so the ledger starts from what the avatar holds
+   * under the source `seed`: coin as earned, items as made, and the XP that its skill points and
+   * banked XP add up to. That reconciles by construction, so honest saves are not flagged.
+   */
+  2: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: Record<string, unknown[]> };
+    };
+    const comps = raw.entities.comps;
+    const who = (comps.avatar ?? []).findIndex((a) => a);
+    const ledger = newLedger();
+    if (who >= 0) {
+      const avatar = comps.avatar?.[who] as { coin: number };
+      if (avatar.coin > 0) ledger.coinEarned.seed = avatar.coin;
+      const inv = comps.inventory?.[who] as
+        | {
+            slots: ({ item: string; qty: number } | null)[];
+            equipment: Record<string, string | null>;
+          }
+        | undefined;
+      const seeded: Record<string, number> = {};
+      for (const st of inv?.slots ?? []) if (st) seeded[st.item] = (seeded[st.item] ?? 0) + st.qty;
+      for (const item of Object.values(inv?.equipment ?? {}))
+        if (item) seeded[item] = (seeded[item] ?? 0) + 1;
+      if (Object.keys(seeded).length > 0) ledger.itemsMade.seed = seeded;
+      const sk = comps.skills?.[who] as
+        { points: Record<string, number>; xp: Record<string, number> } | undefined;
+      for (const id of new Set([...Object.keys(sk?.points ?? {}), ...Object.keys(sk?.xp ?? {})])) {
+        let total = sk?.xp[id] ?? 0;
+        for (let i = 0; i < (sk?.points[id] ?? 0); i++) total += xpToNext(i);
+        if (total > 0) ledger.xpEarned[id] = total;
+      }
+    }
+    const state = deserializeState(JSON.stringify({ ...raw, ledger }));
+    return { ...old, schema: 3, sim: serializeState(state), ledger };
   },
 };
 
