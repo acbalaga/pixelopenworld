@@ -27,6 +27,8 @@ export interface ButtonKit {
   /** Label color and shade. */
   ink: string;
   outline: string;
+  /** Opacity of the whole control, from the player's setting. Default 1. */
+  opacity?: number;
 }
 
 /**
@@ -43,7 +45,8 @@ export function drawCanvasButton(
   font: PixelFontSize = 'small',
   icon?: ButtonIcon,
 ): { pixelLabel: boolean } {
-  kit.panels.draw(r, rect.x, rect.y, rect.w, rect.h, pressed ? 'pressed' : 'base');
+  const opacity = kit.opacity ?? 1;
+  kit.panels.draw(r, rect.x, rect.y, rect.w, rect.h, pressed ? 'pressed' : 'base', opacity);
   if (icon) {
     // An icon replaces the label: it reads at a glance and needs no text rule.
     r.drawSprite(
@@ -52,7 +55,7 @@ export function drawCanvasButton(
       rect.x + Math.floor((rect.w - icon.size) / 2),
       rect.y + Math.floor((rect.h - icon.size) / 2) + (pressed ? 1 : 0),
       false,
-      icon.alpha ?? 1,
+      (icon.alpha ?? 1) * opacity,
     );
     return { pixelLabel: false };
   }

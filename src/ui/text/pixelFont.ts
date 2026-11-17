@@ -9,6 +9,8 @@ export interface DrawTextOptions {
   align?: Align;
   /** Outline color. Combat numbers and anything over the world use one. */
   outline?: string;
+  /** Opacity 0 to 1. Default 1. */
+  alpha?: number;
 }
 
 /**
@@ -73,12 +75,12 @@ export class PixelFont {
     return m;
   }
 
-  private run(r: Renderer, text: string, x: number, y: number, color: string): void {
+  private run(r: Renderer, text: string, x: number, y: number, color: string, alpha = 1): void {
     const handles = this.handles(color);
     let cx = x;
     for (let i = 0; i < text.length; i++) {
       const code = handles.has(text.charCodeAt(i)) ? text.charCodeAt(i) : this.fallback;
-      r.drawSprite(Layer.Hud, handles.get(code) as number, cx, y);
+      r.drawSprite(Layer.Hud, handles.get(code) as number, cx, y, false, alpha);
       cx += this.advance(code);
     }
   }
@@ -106,9 +108,9 @@ export class PixelFont {
         [0, 1],
         [1, 1],
       ] as const)
-        this.run(r, text, left + dx, y + dy, opts.outline);
+        this.run(r, text, left + dx, y + dy, opts.outline, opts.alpha);
     }
-    this.run(r, text, left, y, color);
+    this.run(r, text, left, y, color, opts.alpha);
     return w;
   }
 }

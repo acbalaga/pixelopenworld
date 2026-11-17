@@ -1,4 +1,5 @@
 import { INPUT_TUNABLES } from '../../content/balance/input';
+import { UI_BALANCE } from '../../content/balance/ui';
 import type { ButtonId, ScreenPoint } from './actions';
 
 /** A rectangle in CSS px. */
@@ -37,11 +38,16 @@ export function computeLayout(
     /** Classic adds an attack button. Flow attacks on its own. */
     scheme?: 'flow' | 'classic';
     hudScale?: number;
+    /** Button size on its own, on top of `hudScale`. */
+    buttonScale?: number;
     insets?: { top: number; right: number; bottom: number; left: number };
   } = {},
 ): ControlLayout {
   const min = INPUT_TUNABLES.minTargetPx;
-  const size = Math.max(min, Math.round(Math.min(width, height) * 0.14 * (opts.hudScale ?? 1)));
+  const size = Math.max(
+    min,
+    Math.round(Math.min(width, height) * 0.14 * (opts.hudScale ?? 1) * (opts.buttonScale ?? 1)),
+  );
   const gap = Math.round(size * 0.2);
   const margin = 12;
   const ins = opts.insets ?? { top: 0, right: 0, bottom: 0, left: 0 };
@@ -85,7 +91,9 @@ export function computeLayout(
   });
 
   const zoneH = Math.round(height * INPUT_TUNABLES.stickZoneFraction);
-  const stickZone: Rect = { x: 0, y: height - zoneH, w: width, h: zoneH };
+  // The bottom edge belongs to the swipe up that opens the Menu, so the stick cannot start there.
+  const edge = UI_BALANCE.menu.edgePx + ins.bottom;
+  const stickZone: Rect = { x: 0, y: height - zoneH, w: width, h: zoneH - edge };
   return { stickZone, buttons: buttons as ControlLayout['buttons'] };
 }
 

@@ -20,6 +20,8 @@ export const ITEMS_BALANCE = {
     magnetSpeedPx: 3,
     /** Within this many px a drop is taken. */
     collectPx: 6,
+    /** Something the avatar drops cannot be picked up again for this long, so it is not re-collected at once. */
+    dropGraceTicks: 90,
     /** A drop left alone this long is gone. */
     lifeTicks: 3600,
   },

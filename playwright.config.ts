@@ -18,7 +18,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: { ...mobile, trace: 'off', video: 'off' },
   projects: [
-    { name: 'smoke', testMatch: 'smoke.spec.ts', use: { baseURL: PROD } },
+    { name: 'smoke', testMatch: /(smoke|menu)\.spec\.ts/, use: { baseURL: PROD } },
     { name: 'dev-tools', testMatch: 'devtools.spec.ts', use: { baseURL: DEV } },
   ],
   webServer: [

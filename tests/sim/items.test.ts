@@ -542,3 +542,31 @@ describe('commands and determinism', () => {
     expect(run()).toBe(run());
   });
 });
+
+describe('dropping', () => {
+  it('drops a whole slot at the feet, and it is not re-collected for a moment', () => {
+    const r = rig();
+    const slot = stash(r, 'item.sunwort', 3);
+    r.tick({ type: 'drop', slot });
+    expect(inv(r).slots[slot]).toBeNull();
+    const drop = r.s.entities.comps.pickup.findIndex((p) => p?.item === 'item.sunwort');
+    expect(drop).toBeGreaterThanOrEqual(0);
+    r.run(B.loot.dropGraceTicks - 5);
+    expect(countItem(inv(r), 'item.sunwort')).toBe(0);
+    expect(r.s.entities.comps.pickup[drop]).not.toBeNull();
+    r.run(30);
+    expect(countItem(inv(r), 'item.sunwort')).toBe(3);
+  });
+  it('dropping an empty slot or a bad slot does nothing', () => {
+    const r = rig();
+    const before = JSON.stringify(inv(r));
+    r.tick({ type: 'drop', slot: 19 });
+    r.tick({ type: 'drop', slot: 200 });
+    expect(JSON.stringify(inv(r))).toBe(before);
+  });
+  it('validates the drop command', () => {
+    expect(validateCommand({ type: 'drop', slot: 2 }).ok).toBe(true);
+    expect(validateCommand({ type: 'drop', slot: -2 }).ok).toBe(false);
+    expect(validateCommand({ type: 'drop', slot: 'a' }).ok).toBe(false);
+  });
+});

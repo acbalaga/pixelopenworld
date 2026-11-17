@@ -88,11 +88,51 @@ const context = icon('ui.icon_context', (im) => {
   im.rect(7, 2, 7, 6, FIRE);
 });
 
-export const UI_ICONS: readonly SpriteDef[] = [attack, lunge, ember, dodge, context];
+/** Menu: three bars. */
+const menu = icon('ui.icon_menu', (im) => {
+  for (const y of [2, 5, 8]) {
+    im.rect(1, y, 10, y + 1, W);
+    im.rect(1, y, 9, y, METAL);
+  }
+});
+
+/** Bag: a satchel with a flap and a buckle. */
+const bag = icon('ui.icon_bag', (im) => {
+  im.rect(2, 4, 9, 10, WOOD);
+  im.rect(2, 4, 9, 6, GUARD);
+  im.rect(3, 1, 8, 3, WOOD);
+  im.rect(4, 2, 7, 2, GUARD);
+  im.rect(5, 6, 6, 8, METAL);
+  im.rect(2, 10, 9, 10, METAL_DARK);
+});
+
+/** Winded: out of breath, a drop and two short puffs. */
+const winded = icon('ui.status_winded', (im) => {
+  im.rect(5, 1, 6, 2, METAL);
+  im.rect(4, 3, 7, 6, METAL);
+  im.rect(5, 7, 6, 7, METAL);
+  im.rect(0, 4, 2, 4, METAL_DARK);
+  im.rect(0, 7, 3, 7, METAL_DARK);
+  im.rect(9, 4, 11, 4, METAL_DARK);
+  im.rect(9, 7, 11, 7, METAL_DARK);
+});
+
+export const UI_ICONS: readonly SpriteDef[] = [
+  attack,
+  lunge,
+  ember,
+  dodge,
+  context,
+  menu,
+  bag,
+  winded,
+];
 
 /** Icon sprite id for each on-screen button. Technique buttons take their icon from the technique. */
 export const BUTTON_ICONS: Readonly<Record<string, string>> = {
   attack: 'ui.icon_attack',
   dodge: 'ui.icon_dodge',
   context: 'ui.icon_context',
+  menu: 'ui.icon_menu',
+  bag: 'ui.icon_bag',
 };

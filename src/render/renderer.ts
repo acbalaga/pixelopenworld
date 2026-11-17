@@ -35,7 +35,15 @@ export interface Renderer {
   readonly height: number;
   /** Starts a frame with the camera's whole-pixel position. */
   begin(camX: number, camY: number): void;
-  drawRect(layer: LayerId, x: number, y: number, w: number, h: number, color: string): void;
+  drawRect(
+    layer: LayerId,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: string,
+    alpha?: number,
+  ): void;
   /** Draws an atlas frame with its origin at world (x, y). Get handles from the atlas once. */
   drawSprite(
     layer: LayerId,
@@ -66,7 +74,7 @@ class Commands {
   flip: number[] = [];
   alpha: number[] = [];
   sortY: number[] = [];
-  push(layer: number, x: number, y: number, w: number, h: number, color: string): void {
+  push(layer: number, x: number, y: number, w: number, h: number, color: string, alpha = 1): void {
     const i = this.n++;
     this.layer[i] = layer;
     this.x[i] = x;
@@ -76,7 +84,7 @@ class Commands {
     this.color[i] = color;
     this.handle[i] = -1;
     this.flip[i] = 0;
-    this.alpha[i] = 1;
+    this.alpha[i] = alpha;
     this.sortY[i] = y + h;
   }
   pushSprite(layer: number, handle: number, x: number, y: number, flip: boolean, alpha = 1): void {
@@ -158,8 +166,16 @@ export class Canvas2DRenderer implements Renderer {
     this.blitCount = 0;
   }
 
-  drawRect(layer: LayerId, x: number, y: number, w: number, h: number, color: string): void {
-    this.cmds.push(layer, x, y, w, h, color);
+  drawRect(
+    layer: LayerId,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: string,
+    alpha = 1,
+  ): void {
+    this.cmds.push(layer, x, y, w, h, color, alpha);
   }
 
   drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX = false, alpha = 1): void {
@@ -218,8 +234,11 @@ export class Canvas2DRenderer implements Renderer {
           b.drawImage(this.blits[-2 - handle] as CanvasImageSource, sx, sy);
           blits++;
         } else {
+          const a = c.alpha[i] as number;
+          if (a < 1) b.globalAlpha = a;
           b.fillStyle = c.color[i] as string;
           b.fillRect(sx, sy, c.w[i] as number, c.h[i] as number);
+          if (a < 1) b.globalAlpha = 1;
         }
         calls++;
       }

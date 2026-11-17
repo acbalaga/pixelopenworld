@@ -10,6 +10,10 @@ export interface InputOptions {
   scheme?: () => 'flow' | 'classic';
   /** HUD scale setting; scales the buttons. */
   hudScale?: () => number;
+  /** Button size setting, on top of the HUD scale. */
+  buttonScale?: () => number;
+  /** False while a DOM panel such as the Menu has the keyboard. Only Escape still reaches the game. */
+  keysEnabled?: () => boolean;
   /** Device safe-area insets in CSS px; buttons stay inside them. */
   insets?: () => { top: number; right: number; bottom: number; left: number };
 }
@@ -28,6 +32,7 @@ export function attachInput(
     return computeLayout(r.width, r.height, opts.leftHanded(), {
       scheme: opts.scheme?.() ?? 'flow',
       hudScale: opts.hudScale?.() ?? 1,
+      buttonScale: opts.buttonScale?.() ?? 1,
       insets: opts.insets?.() ?? { top: 0, right: 0, bottom: 0, left: 0 },
     });
   };
@@ -89,6 +94,7 @@ export function attachInput(
   window.addEventListener(
     'keydown',
     (e) => {
+      if (opts.keysEnabled?.() === false && e.code !== 'Escape') return;
       if (GAME_KEYS.has(e.code)) e.preventDefault();
       sampler.keyboard.keyDown(e.code);
     },

@@ -210,6 +210,19 @@ export function unequip(state: SimState, who: EntityId, slot: EquipSlot): boolea
   return true;
 }
 
+/** Drops a whole bag slot at the avatar's feet. It cannot be picked up again for a moment. */
+export function dropFromBag(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  if (!inv || !stack || getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
+  inv.slots[slot] = null;
+  const f = feet(state, who);
+  const id = spawnPickup(state, stack.item, stack.qty, f.x, f.y);
+  const pk = getComp(state.entities, id, 'pickup');
+  if (pk) pk.age = -B.loot.dropGraceTicks;
+  return true;
+}
+
 /** Eats food from a bag slot: restores pools and starts a Fed buff that replaces any other. */
 export function eat(state: SimState, who: EntityId, slot: number): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -330,6 +343,9 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'use':
       eat(state, who, c.slot);
+      return;
+    case 'drop':
+      dropFromBag(state, who, c.slot);
       return;
     case 'cook':
       cook(state, who, c.items);

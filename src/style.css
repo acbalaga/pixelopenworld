@@ -1,3 +1,20 @@
+/* Clear text font: Atkinson Hyperlegible, bundled (see src/assets/fonts/README.md). Same origin, so
+   the CSP (default-src 'self') allows it. The system stack below is the fallback. */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/atkinson-hyperlegible-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/atkinson-hyperlegible-700.woff2') format('woff2');
+}
+
 html,
 body {
   margin: 0;
@@ -77,6 +94,7 @@ canvas {
   box-sizing: border-box;
   pointer-events: none;
   font-family:
+    'Atkinson Hyperlegible',
     system-ui,
     -apple-system,
     'Segoe UI',
@@ -182,4 +200,375 @@ canvas {
 }
 .scheme-icon:active {
   background: rgba(20, 18, 31, 0.75);
+}
+
+/* ---- The Menu sheet and HUD-adjacent DOM. Palette colors only, via variables. ---- */
+.pow-menu {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+  overflow: hidden;
+  padding: calc(env(safe-area-inset-top, 0px) + var(--px) * 3)
+    calc(env(safe-area-inset-right, 0px) + var(--px) * 3)
+    calc(env(safe-area-inset-bottom, 0px) + var(--px) * 3)
+    calc(env(safe-area-inset-left, 0px) + var(--px) * 3);
+}
+.pow-menu[hidden] {
+  display: none;
+}
+@media (orientation: landscape) and (min-height: 0px) {
+  .pow-menu {
+    inset: 50% auto auto 50%;
+    transform: translate(-50%, -50%);
+    width: min(100%, 44rem);
+    height: min(100%, 100%);
+  }
+}
+.pow-menu-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  touch-action: none;
+}
+.pow-menu-grip {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 2);
+  background: var(--pal-18);
+}
+.pow-menu .pow-menu-title {
+  margin: 0;
+}
+.pow-menu-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  padding: calc(var(--px) * 2);
+  background: var(--pal-17);
+}
+.pow-menu-body ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pow-h {
+  margin: 0.6em 0 0.3em;
+  font-size: 1em;
+  color: var(--pal-47);
+}
+.pow-hint {
+  margin: 0.4em 0;
+  color: var(--pal-3);
+  opacity: 0.85;
+}
+.pow-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.pow-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 1);
+}
+.pow-tab {
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 calc(var(--px) * 3);
+  font: inherit;
+  font-size: 0.85em;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: calc(var(--px) * 1) solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-tab[aria-selected='true'] {
+  color: var(--pal-0);
+  background: var(--pal-47);
+  border-color: var(--pal-47);
+}
+.pow-tab:disabled {
+  color: var(--pal-18);
+  background: var(--pal-0);
+  border-color: var(--pal-17);
+  cursor: default;
+}
+.pow-tab:focus-visible,
+.pow-gear-btn:focus-visible,
+.pow-bag-slot:focus-visible,
+.pow-toggle:focus-visible,
+.pow-seg-btn:focus-visible,
+.pow-range:focus-visible {
+  outline: 2px solid var(--pal-47);
+  outline-offset: 2px;
+}
+.pow-close {
+  min-height: 44px;
+}
+.pow-icon {
+  width: calc(var(--px) * 12);
+  height: calc(var(--px) * 12);
+  image-rendering: pixelated;
+  flex: none;
+}
+.pow-icon-big {
+  width: calc(var(--px) * 18);
+  height: calc(var(--px) * 18);
+}
+.pow-meter {
+  height: calc(var(--px) * 3);
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+}
+.pow-meter-fill {
+  height: 100%;
+  width: var(--fill, 0%);
+  background: var(--pal-47);
+}
+.pow-meter-hp .pow-meter-fill {
+  background: var(--pal-21);
+}
+.pow-meter-sta .pow-meter-fill {
+  background: var(--pal-10);
+}
+.pow-meter-foc .pow-meter-fill {
+  background: var(--pal-14);
+}
+.pow-char-top {
+  display: flex;
+  gap: calc(var(--px) * 4);
+  align-items: flex-start;
+}
+.pow-avatar {
+  width: calc(var(--px) * 48);
+  height: calc(var(--px) * 64);
+  flex: none;
+  image-rendering: pixelated;
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+}
+.pow-pools {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pow-pool {
+  margin-bottom: 0.5em;
+}
+.pow-pool-name,
+.pow-skill-name {
+  margin-right: 0.5em;
+}
+.pow-pool-val,
+.pow-skill-rank {
+  color: var(--pal-47);
+}
+.pow-gear {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12em, 1fr));
+  gap: calc(var(--px) * 2);
+}
+.pow-gear-slot {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  padding: calc(var(--px) * 1);
+  border: 1px dashed var(--pal-18);
+}
+.pow-gear-slot.pow-empty {
+  color: var(--pal-18);
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+.pow-gear-btn {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 calc(var(--px) * 2);
+  font: inherit;
+  text-align: left;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-gear-label {
+  display: block;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+.pow-gear-item {
+  display: block;
+}
+.pow-skill {
+  padding: calc(var(--px) * 1) 0;
+  border-bottom: 1px solid var(--pal-16);
+}
+.pow-skill .pow-meter {
+  margin-top: 0.3em;
+}
+.pow-bag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: calc(var(--px) * 1);
+}
+.pow-bag-cell {
+  aspect-ratio: 1;
+  min-height: 56px;
+  display: flex;
+}
+.pow-bag-cell.pow-empty {
+  border: 1px dashed var(--pal-16);
+}
+.pow-bag-slot {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-bag-slot[aria-pressed='true'] {
+  border-color: var(--pal-47);
+  background: var(--pal-18);
+}
+.pow-qty {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 0.7em;
+  text-shadow: 1px 1px 0 var(--pal-0);
+}
+.pow-detail {
+  margin-top: calc(var(--px) * 3);
+  padding-top: calc(var(--px) * 2);
+  border-top: 1px solid var(--pal-18);
+}
+.pow-detail .pow-h {
+  margin-top: 0;
+}
+.pow-detail-desc,
+.pow-detail-meta {
+  margin: 0.3em 0;
+}
+.pow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+  margin-top: calc(var(--px) * 2);
+}
+.pow-action {
+  position: relative;
+  overflow: hidden;
+}
+.pow-action.holding::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: calc(var(--px) * 2);
+  width: var(--hold, 0%);
+  background: var(--pal-47);
+}
+.pow-setting,
+.pow-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  min-height: 44px;
+  padding: calc(var(--px) * 1) 0;
+}
+.pow-setting-name {
+  flex: 1 1 8em;
+}
+.pow-setting-val {
+  color: var(--pal-47);
+}
+.pow-range {
+  flex: 2 1 8em;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--pal-47);
+}
+.pow-toggle {
+  box-sizing: border-box;
+  width: 100%;
+  justify-content: space-between;
+  font: inherit;
+  color: var(--pal-3);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--pal-16);
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.pow-seg {
+  display: flex;
+  gap: calc(var(--px) * 1);
+}
+.pow-seg-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 calc(var(--px) * 4);
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-seg-btn.on {
+  color: var(--pal-0);
+  background: var(--pal-47);
+}
+.pow-logout {
+  margin-top: calc(var(--px) * 4);
+}
+.pow-danger {
+  border-color: var(--pal-21);
+}
+.pow-coin,
+.pow-bag-count {
+  margin: 0.5em 0;
+}
+.ui-root.reduced-motion * {
+  transition: none !important;
+}
+.pow-slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(var(--px) * 2);
+  row-gap: 0;
+}
+.pow-slider .pow-range {
+  grid-column: 1 / -1;
 }

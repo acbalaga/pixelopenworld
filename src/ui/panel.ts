@@ -83,7 +83,8 @@ export class PanelCache {
     w: number,
     h: number,
     variant: PanelVariant = 'base',
+    alpha = 1,
   ): void {
-    r.drawSprite(Layer.Hud, this.get(w, h, variant), x, y);
+    r.drawSprite(Layer.Hud, this.get(w, h, variant), x, y, false, alpha);
   }
 }
