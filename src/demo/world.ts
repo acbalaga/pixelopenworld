@@ -23,6 +23,11 @@ import { computeLayout } from '../platform/input/layout';
 import { startBrowserLoop } from '../platform/loop';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
 import { browserSettingsEnv, SettingsStore } from '../platform/settings';
+import {
+  createSettingsBackend,
+  persistSettings,
+  restoreSettings,
+} from '../platform/settingsStorage';
 import { loadAtlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
@@ -268,6 +273,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   };
 
   const settings = new SettingsStore(browserSettingsEnv());
+  // Settings outlive a session and a Log Out. Not part of the save (tech/01).
+  if (!fly && params.get('nosave') !== '1') {
+    const backend = createSettingsBackend();
+    if (backend) {
+      await restoreSettings(settings, backend);
+      persistSettings(settings, backend);
+    }
+  }
   const uiImage = atlas.image(atlas.frame('ui.panel', 'base')) as HTMLImageElement;
   const panels = new PanelCache(atlas);
   const fonts = {
