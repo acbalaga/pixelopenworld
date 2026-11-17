@@ -57,6 +57,7 @@ import {
 import { showRecover, showUnsupported } from '../ui/dom/saveNotices';
 import { validateSave, intact } from '../save/integrity';
 import { exportBytes, exportFileName, planImport } from '../save/exportImport';
+import { warmSealMaterial } from '../save/seal/source';
 import {
   browserReminderStore,
   loadReminder,
@@ -188,6 +189,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           : {}),
       })
     : null;
+  // Fetch the seal material now, while online, so an import at the title works with no network.
+  if (savesWanted) void warmSealMaterial();
   let loaded = null as Awaited<ReturnType<SaveManager['load']>>;
   let loadFailed = false;
   if (saves) {
@@ -779,6 +782,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     });
     window.addEventListener('pagehide', () => requestSave('pagehide'));
     window.setInterval(checkReminder, 60_000);
+    window.setTimeout(checkReminder, 3000);
     // The crash handler writes the emergency slot, once, and touches nothing else.
     let crashed = false;
     const onCrash = (): void => {

@@ -35,3 +35,16 @@ export const defaultSealSource: SealSource = fromEnv() ?? {
   current: CURRENT_SEAL_VERSION,
   fragments: async (v) => (SEAL_VERSIONS.includes(v) ? loadCommitted(v) : null),
 };
+
+/**
+ * Loads every version's material now, so an import still works with the network gone. The
+ * committed modules are lazy chunks; this fetches them while the page is online. Never throws.
+ */
+export async function warmSealMaterial(): Promise<void> {
+  try {
+    if (fromEnv() !== null) return;
+    for (const v of SEAL_VERSIONS) await loadCommitted(v);
+  } catch {
+    // A failed warm-up only means the first import loads the chunk itself.
+  }
+}
