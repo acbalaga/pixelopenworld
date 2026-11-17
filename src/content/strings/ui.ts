@@ -175,6 +175,15 @@ export const UI_STRINGS = {
         'To install: open the browser menu and choose Install app or Add to Home screen. Once loaded, the game plays with no connection.',
     },
     installButton: 'Install',
+    update: {
+      none: 'You have the latest version.',
+      ready: 'A new version is ready. Updating saves your game first, then restarts.',
+      unsupported: 'Updates arrive each time the game is opened.',
+      checking: 'Checking for a new version.',
+      checkButton: 'Check for updates',
+      applyButton: 'Update now',
+      saving: 'Saving, then restarting.',
+    },
   },
   backup: {
     heading: 'Backup',

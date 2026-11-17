@@ -6,9 +6,9 @@
  * - Install precaches the whole app shell: the page, the code chunks, the atlases and chunks of
  *   the world, the icons and the manifest. Install fails if any of it cannot be fetched, so a
  *   half-cached version never becomes active.
- * - A new version installs in the background and WAITS. There is no skipWaiting and no
- *   clients.claim, so code never changes under a running session. The new version takes over the
- *   next time the game is opened with no old window left.
+ * - A new version installs in the background and WAITS, so code never changes under a running
+ *   session. It takes over the next time the game is opened with no old window left, or sooner
+ *   only when the player chooses Update now in System (a `skip-waiting` message). No clients.claim.
  * - Navigations get the cached shell. Hashed assets are cache-first. /api/* is never touched.
  */
 const VERSION = '__VERSION__';
@@ -68,6 +68,13 @@ function route(request) {
   if (request.mode === 'navigate') return shell(request);
   return cacheFirst(request);
 }
+
+// The one way a waiting version starts early: the player asks in System ("Update now"), after the
+// game has saved. Nothing else calls skipWaiting, and nothing claims clients: the page reloads
+// itself when the new worker takes control.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'skip-waiting') self.skipWaiting();
+});
 
 self.addEventListener('fetch', (event) => {
   const answer = route(event.request);

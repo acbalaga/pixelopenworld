@@ -194,3 +194,46 @@ test('System says whether storage is protected and how to install', async ({ pag
   );
   await expect(page.locator('[data-key="install-hint"]')).toContainText(/install|Installed/i);
 });
+
+test('Update now: System offers it when a version is waiting, saves, restarts on the new version', async ({
+  context,
+}) => {
+  const site = await deployServer();
+  try {
+    const page = await context.newPage();
+    await page.goto(`${site.url}/?at=40,31`);
+    await ready(page);
+    await controlled(page);
+    const openSystem = async (): Promise<void> => {
+      await page.touchscreen.tap(360 - 12 - 22, 12 + 22);
+      await page.locator('[data-tab="system"]').click();
+    };
+    // Nothing new yet: up to date, with a way to check.
+    await openSystem();
+    await expect(page.locator('[data-key="update-state"]')).toHaveAttribute('data-state', 'none');
+    await expect(page.locator('[data-key="update-apply"]')).toBeHidden();
+    const seq0 = Number((await attr(page, 'data-saved-seq')) ?? '0');
+
+    // A deploy lands. Check for updates finds it and offers Update now.
+    site.setVersion('next');
+    await page.locator('[data-key="update-check"]').click();
+    await expect(page.locator('[data-key="update-state"]')).toHaveAttribute('data-state', 'ready');
+    // The running session is untouched until the player chooses.
+    expect(await cacheKeys(page)).toHaveLength(2);
+    expect(
+      await page.evaluate(() => navigator.serviceWorker.controller?.state === 'activated'),
+    ).toBe(true);
+
+    await page.locator('[data-key="update-apply"]').click();
+    // It saved first, then the page restarted on the new version and the old cache went.
+    await page.waitForLoadState('load');
+    await ready(page);
+    await expect
+      .poll(() => cacheKeys(page).catch(() => []), { timeout: 20_000 })
+      .toEqual(['pow-next']);
+    await ready(page);
+    expect(Number((await attr(page, 'data-loaded-seq')) ?? '0')).toBeGreaterThan(seq0);
+  } finally {
+    site.close();
+  }
+});

@@ -46,6 +46,8 @@ export interface MenuDeps {
   trust: () => Trust;
   /** Export and import, shown under Backup in System. */
   backup: BackupDeps;
+  /** Writes the game before an update restarts it. */
+  beforeUpdate?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -638,7 +640,7 @@ export class MenuSheet {
     this.body.appendChild(createSeal(this.deps.trust()));
 
     this.body.appendChild(this.heading(S.device.heading));
-    this.body.appendChild(createDeviceSection());
+    this.body.appendChild(createDeviceSection({ beforeUpdate: this.deps.beforeUpdate }));
 
     this.body.appendChild(this.heading(S.backup.heading));
     this.body.appendChild(createBackupSection(this.root, this.deps.backup));

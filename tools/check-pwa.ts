@@ -28,8 +28,10 @@ for (const f of built) if (!listed.has(f)) problems.push(`built but not precache
 for (const f of listed)
   if (!existsSync(join(dist, f))) problems.push(`precached but missing: ${f}`);
 if (!listed.has('/')) problems.push('the shell (/) is not precached');
-if (/skipWaiting|clients\.claim/.test(sw.replace(/\/\*[\s\S]*?\*\//g, '')))
-  problems.push('sw.js must not call skipWaiting or clients.claim');
+const code = sw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+if (/clients\.claim/.test(code)) problems.push('sw.js must not call clients.claim');
+if ((code.match(/skipWaiting/g) ?? []).length !== 1 || !/skip-waiting/.test(code))
+  problems.push('sw.js may call skipWaiting only from the player-initiated message handler');
 if (problems.length > 0) {
   console.error(`check-pwa: FAIL\n  ${problems.join('\n  ')}`);
   process.exit(1);

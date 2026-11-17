@@ -7,11 +7,86 @@
 const VERSION_KEY = 'pow.version';
 const PERSIST_KEY = 'pow.persistAsked';
 
+let registration: ServiceWorkerRegistration | null = null;
+let armUpdate: () => void = () => undefined;
+const updateListeners = new Set<() => void>();
+
+/** True when a newer version is installed and waiting. */
+export function updateReady(): boolean {
+  return registration?.waiting != null;
+}
+
+/** Whether there is a worker to ask. False in dev builds and browsers without service workers. */
+export function updateSupported(): boolean {
+  return registration !== null;
+}
+
+/**
+ * Asks the server for a newer version and waits for it to install. Returns whether one is ready.
+ * Offline or any failure just reports what was already known.
+ */
+export async function checkForUpdate(): Promise<boolean> {
+  const r = registration;
+  if (!r) return false;
+  try {
+    await r.update();
+    const installing = r.installing;
+    if (installing && !r.waiting) {
+      await new Promise<void>((resolve) => {
+        const done = (): void => {
+          if (installing.state === 'installed' || installing.state === 'redundant') resolve();
+        };
+        installing.addEventListener('statechange', done);
+        done();
+      });
+    }
+  } catch {
+    // Offline: keep what we know.
+  }
+  updateListeners.forEach((f) => f());
+  return updateReady();
+}
+
+/**
+ * Starts the waiting version now. The caller saves first. The page reloads itself when the new
+ * worker takes control, and the old cache is dropped as it activates.
+ */
+export function applyUpdate(): void {
+  const w = registration?.waiting;
+  if (!w) return;
+  armUpdate();
+  w.postMessage({ type: 'skip-waiting' });
+}
+
+/** Calls `f` when update state may have changed. Returns an unsubscribe. */
+export function onUpdateChange(f: () => void): () => void {
+  updateListeners.add(f);
+  return () => updateListeners.delete(f);
+}
+
 /** Registers the worker in production builds. A failure changes nothing: the game plays online. */
 export function registerServiceWorker(): void {
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
   const go = (): void => {
-    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((r) => {
+        registration = r;
+        // A version that finished installing while this one runs is waiting for the player.
+        r.addEventListener('updatefound', () => {
+          r.installing?.addEventListener('statechange', () => updateListeners.forEach((f) => f()));
+        });
+        updateListeners.forEach((f) => f());
+      })
+      .catch(() => undefined);
+  };
+  // After the player asks for the update, the new worker takes control and the page restarts on it.
+  let updating = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (updating) location.reload();
+  });
+  armUpdate = () => {
+    updating = true;
   };
   if (document.readyState === 'complete') go();
   else window.addEventListener('load', go, { once: true });

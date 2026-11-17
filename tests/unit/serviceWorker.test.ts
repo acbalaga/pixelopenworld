@@ -11,7 +11,7 @@ type Handler = (event: unknown) => void;
 /** A tiny Cache API and fetch, enough to run the worker's own code. */
 function boot(version: string, urls: string[], net: Map<string, number | 'down'>) {
   const stores = new Map<string, Map<string, string>>();
-  const world = { stores, fetched: [] as string[] };
+  const world = { stores, fetched: [] as string[], skipped: 0 };
   const keyOf = (r: string | { url: string }): string =>
     new URL(typeof r === 'string' ? r : r.url, ORIGIN).pathname;
   const cacheApi = {
@@ -62,7 +62,7 @@ function boot(version: string, urls: string[], net: Map<string, number | 'down'>
     location: new URL(ORIGIN),
     addEventListener: (t: string, h: Handler) => listeners.set(t, h),
     skipWaiting: () => {
-      throw new Error('skipWaiting must not be called');
+      world.skipped += 1;
     },
     clients: {
       claim: () => {
@@ -110,10 +110,27 @@ function boot(version: string, urls: string[], net: Map<string, number | 'down'>
 const URLS = ['/', '/assets/app-AAA.js', '/assets/atlas-BBB.png', '/manifest.webmanifest'];
 
 describe('service worker', () => {
-  it('never skips waiting or claims clients, so code never changes mid-session', () => {
-    expect(SRC.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/skipWaiting|clients\.claim/);
-    const { listeners } = boot('v1', URLS, new Map());
-    expect([...listeners.keys()].sort()).toEqual(['activate', 'fetch', 'install']);
+  it('never claims clients, and skips waiting only when the player asks', async () => {
+    const code = SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    expect(code).not.toMatch(/clients\.claim/);
+    expect(code.match(/skipWaiting/g)).toHaveLength(1);
+    const { world, run, listeners } = boot('v1', URLS, new Map());
+    expect([...listeners.keys()].sort()).toEqual(['activate', 'fetch', 'install', 'message']);
+    // Installing, activating and serving never skip waiting by themselves.
+    await run('install');
+    await run('activate');
+    expect(world.skipped).toBe(0);
+  });
+
+  it('Update now: only the skip-waiting message starts a waiting version', async () => {
+    const { world, listeners } = boot('v1', URLS, new Map());
+    const send = (data: unknown): void => (listeners.get('message') as Handler)({ data });
+    send({ type: 'hello' });
+    send(null);
+    send('skip-waiting');
+    expect(world.skipped).toBe(0);
+    send({ type: 'skip-waiting' });
+    expect(world.skipped).toBe(1);
   });
 
   it('install precaches the whole shell under a versioned cache', async () => {

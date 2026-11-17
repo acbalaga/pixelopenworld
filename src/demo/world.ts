@@ -687,6 +687,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
     // Log Out saves, then returns to the title screen (a fresh page start shows it).
     trust: () => saves?.currentTrust() ?? intact(),
+    beforeUpdate: async () => {
+      if (!saves) return;
+      saver.request('manual');
+      await saver.idle();
+    },
     backup: {
       exportCurrent: () => exportFile(),
       planImport: (bytes) => planImport(bytes, undefined, () => clock.trustedNow()),
