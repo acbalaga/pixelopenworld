@@ -63,7 +63,18 @@ export type SimEvent =
     }
   | { type: 'nodeReady'; id: number }
   | { type: 'recipeDiscovered'; id: number; recipe: string }
-  | { type: 'cookFailed'; id: number };
+  | { type: 'cookFailed'; id: number }
+  | { type: 'doorOpened'; id: number; who: number }
+  | { type: 'doorLocked'; id: number; who: number; key: string }
+  | { type: 'gateOpened'; id: number }
+  | { type: 'plateChanged'; id: number; pressed: boolean }
+  | { type: 'blockPushed'; id: number }
+  | { type: 'blockReset'; id: number }
+  | { type: 'chestOpened'; id: number; who: number }
+  | { type: 'tabletRead'; id: number; who: number }
+  | { type: 'waystoneSet'; id: number; who: number }
+  /** The avatar took a portal. Render fades and snaps the camera. */
+  | { type: 'roomChanged'; who: number; from: string; to: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */
 export interface EventQueue {

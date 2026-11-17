@@ -34,6 +34,17 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
       return e.team === 1 ? 'sfx.creature_die' : 'sfx.hit_heavy';
     case 'staggerBreak':
       return 'sfx.ui_open';
+    case 'doorOpened':
+    case 'gateOpened':
+      return 'sfx.slam';
+    case 'doorLocked':
+      return 'sfx.error';
+    case 'chestOpened':
+      return 'sfx.pickup';
+    case 'blockPushed':
+      return 'sfx.step';
+    case 'waystoneSet':
+      return 'sfx.chime';
     default:
       return null;
   }

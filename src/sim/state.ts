@@ -229,6 +229,17 @@ export interface Interactable {
   kind: string;
 }
 
+/**
+ * A placed world fixture (door, plate, block, chest, portal...). Behavior comes from its kind in
+ * `content/world/fixtures`. `open` is the one piece of state: opened, solved or taken.
+ */
+export interface Fixture {
+  kind: string;
+  open: boolean;
+  /** Where it started, sub-pixel units. A block returns here when its room resets. */
+  home: Vec;
+}
+
 /** Components. `pos` is the feet position of a body, in sub-pixel units. */
 export interface Components {
   pos: Vec;
@@ -251,6 +262,7 @@ export interface Components {
   node: GatherNode;
   gather: Gather;
   fed: Fed;
+  fixture: Fixture;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -288,6 +300,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'node',
   'gather',
   'fed',
+  'fixture',
 ];
 
 /** Demo box size in sub-pixel units. */

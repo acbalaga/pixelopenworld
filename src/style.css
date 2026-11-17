@@ -573,3 +573,52 @@ canvas {
 .pow-slider .pow-range {
   grid-column: 1 / -1;
 }
+
+/* Short messages and the carved tablet (M1-07). */
+.pow-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  transform: translateX(-50%);
+  max-width: min(90vw, 28em);
+  padding: 0.4em 0.9em;
+  font-size: calc(1rem * var(--text-scale, 1));
+  color: var(--pal-3);
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+  text-align: center;
+  pointer-events: none;
+  animation: pow-toast-life 2.6s linear forwards;
+}
+@keyframes pow-toast-life {
+  0% {
+    opacity: 0;
+  }
+  8%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.reduced-motion .pow-toast {
+  animation: none;
+}
+.pow-tablet {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(26, 22, 20, 0.88);
+  border: 0;
+  cursor: pointer;
+}
+.pow-glyphs {
+  width: min(86vw, 640px);
+  fill: none;
+  stroke: var(--pal-47);
+  stroke-width: 0.7;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}

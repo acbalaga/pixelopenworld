@@ -19,7 +19,8 @@
     "bake:check": "tsx tools/bake-assets/index.ts --check",
     "e2e": "npm run build && playwright test",
     "validate": "tsx tools/bake-assets/index.ts --validate",
-    "check:dev": "tsx tools/check-dev-absent.ts"
+    "check:dev": "tsx tools/check-dev-absent.ts",
+    "map:png": "tsx tools/render-map.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",

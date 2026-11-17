@@ -92,5 +92,40 @@ for (const c of FLOWER_COLORS) {
   }
 }
 
+const baseTile = (id: string): TileDef => ({ ...ground, id, sprite: id, frame: 'base' });
+const solidTile = (id: string, extra: Partial<TileDef> = {}): TileDef => ({
+  id,
+  sprite: id,
+  frame: 'base',
+  layer: 'object',
+  collision: 'full',
+  tags: [],
+  ...extra,
+});
+
+/** Paving, bridge, cave rock, buildings, fences and props for the slice map. */
+const slice: TileDef[] = [
+  baseTile('tile.cobble_0'),
+  baseTile('tile.cobble_1'),
+  baseTile('tile.planks_0'),
+  baseTile('tile.cave_floor_0'),
+  baseTile('tile.cave_floor_1'),
+  solidTile('tile.cave_wall_top'),
+  solidTile('tile.cave_wall_face'),
+  solidTile('tile.torch', { frame: 'flame', animated: true }),
+  solidTile('tile.cave_arch', { collision: 'none' }),
+  ...(['red', 'slate'] as const).flatMap((c) =>
+    ([0, 1] as const).flatMap((row) =>
+      (['l', 'm', 'r'] as const).map((col) => solidTile(`tile.roof_${c}_${row}${col}`)),
+    ),
+  ),
+  ...['plaster', 'window', 'door', 'shop'].map((k) => solidTile(`tile.wall_${k}`)),
+  ...['h', 'v', 'post'].map((k) => solidTile(`tile.fence_${k}`)),
+  solidTile('tile.crate', { tags: ['flammable'] }),
+  solidTile('tile.barrel', { tags: ['flammable'] }),
+  solidTile('tile.sign_post', { tags: ['flammable'] }),
+  solidTile('tile.board', { tags: ['flammable'] }),
+];
+
 /** Terrain, props and generated nature tiles for the core group. */
-export const CORE_TILES: readonly TileDef[] = [...terrain, ...generated];
+export const CORE_TILES: readonly TileDef[] = [...terrain, ...generated, ...slice];

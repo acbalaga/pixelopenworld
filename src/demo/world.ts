@@ -25,6 +25,11 @@ import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
 import { browserSettingsEnv, SettingsStore } from '../platform/settings';
 import { loadAtlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
+import { Notices } from '../ui/dom/notices';
+import { FIXTURES } from '../content/world/fixtures';
+import { roomAt, OUTDOORS } from '../content/world/rooms';
+import { spawnFixture } from '../sim/systems/fixtures';
+import { UI_STRINGS } from '../content/strings/ui';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
@@ -58,14 +63,13 @@ import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../si
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
 import { px } from '../sim/kernel/fixed';
-import { setComp, spawn } from '../sim/kernel/entities';
 import { createDemoState } from '../sim/state';
 import { stepWorld } from '../sim/step';
 import { contextTarget } from '../sim/systems/interact';
 import { decodeChunk } from '../sim/world/chunk';
 import { TileWorld } from '../sim/world/world';
 
-const chunkUrls = import.meta.glob('../../baked/chunk-test-*.bin', {
+const chunkUrls = import.meta.glob('../../baked/chunk-slice-*.bin', {
   query: '?url',
   import: 'default',
   eager: true,
@@ -177,6 +181,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   applyPanelImages(document.documentElement, panelBase, panelPressed);
   applySettings(root, settings.get());
   settings.subscribe((st) => applySettings(root, st));
+  const notices = new Notices(root);
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
     renderer.resize(v);
     applyPixelScale(root, v.scale / v.dpr);
@@ -189,7 +194,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     scheme: () => settings.get().controlScheme,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
-    keysEnabled: () => !menuOpen,
+    keysEnabled: () => !menuOpen && !notices.tabletOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -209,18 +214,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   state.world = world;
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = createAvatar(state, px(feet.x), px(feet.y));
-  // A rock to bump into and use: solid, and the context target when faced.
-  const rockSprite = atlas.frame('prop.rock', 'base');
-  const rock = spawn(state.entities);
-  setComp(state.entities, rock, 'pos', { x: px(feet.x + 48), y: px(feet.y - 40) });
-  setComp(state.entities, rock, 'body', { w: px(12), h: px(8), solid: true });
-  setComp(state.entities, rock, 'interactable', { kind: 'rock' });
-
-  // Things to gather and cook with, near the start. Demo placement only.
-  spawnNode(state, 'node.herb_patch', feet.x - 40, feet.y - 8);
-  spawnNode(state, 'node.herb_patch', feet.x - 40, feet.y + 26);
-  spawnNode(state, 'node.berry_bush', feet.x - 70, feet.y + 8);
-  spawnCampPot(state, feet.x + 28, feet.y + 34);
+  // Map objects: fixtures, gathering nodes and the camp pot. `?foes=0` turns spawners off below.
+  for (const c of chunks)
+    for (const o of c.objects) {
+      const tx = c.cx * 32 + o.x;
+      const ty = c.cy * 32 + o.y;
+      if (o.kind.startsWith('fixture.') && FIXTURES[o.kind]) spawnFixture(state, o.kind, tx, ty);
+      else if (o.kind.startsWith('node.') && NODES[o.kind])
+        spawnNode(state, o.kind, tx * TILE_PX + 8, ty * TILE_PX + 14);
+      else if (o.kind === 'prop.camp_pot') spawnCampPot(state, tx * TILE_PX + 8, ty * TILE_PX + 14);
+    }
   const bag = state.entities.comps.inventory[who];
   if (bag) {
     addItem(bag, 'item.sword_iron', 1);
@@ -321,6 +324,65 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         );
     }
   };
+
+  /** Doors, gates, plates, blocks, chests, the tablet and the Waystone. Portals have no art. */
+  const fixtureHandle = new Map<string, number>();
+  const spriteFrame = (sprite: string, frame: string): number => {
+    const key = `${sprite}#${frame}`;
+    let h = fixtureHandle.get(key);
+    if (h === undefined) {
+      h = atlas.frame(sprite, frame);
+      fixtureHandle.set(key, h);
+    }
+    return h;
+  };
+  const drawFixtures = (now: number): void => {
+    const e = state.entities;
+    for (const id of e.comps.fixture.keys()) {
+      const f = e.comps.fixture[id];
+      const p = e.comps.pos[id];
+      const def = f ? FIXTURES[f.kind] : undefined;
+      if (!f || !p || !def?.sprite) continue;
+      const x = Math.round(p.x / 256);
+      const y = Math.round(p.y / 256);
+      if (def.type === 'waystone') {
+        const key = `${def.sprite}#glow`;
+        let a = fixtureHandle.get(key);
+        if (a === undefined) {
+          a = atlas.anim(def.sprite, 'glow');
+          fixtureHandle.set(key, a);
+        }
+        renderer.drawSprite(Layer.Objects, atlas.animFrame(a, now), x, y);
+        continue;
+      }
+      const frame =
+        def.type === 'plate'
+          ? f.open
+            ? 'down'
+            : 'up'
+          : def.type === 'door' || def.type === 'gate' || def.type === 'chest'
+            ? f.open
+              ? 'open'
+              : 'closed'
+            : 'base';
+      const layer =
+        def.type === 'plate' || (def.type === 'door' && f.open) ? Layer.Detail : Layer.Objects;
+      renderer.drawSprite(layer, spriteFrame(def.sprite, frame), x, y);
+    }
+  };
+
+  // Rooms: the camera is held to the room the avatar is in and snaps when it changes.
+  const ROOM_PX = TILE_PX;
+  let room = roomAt(spawnTile.x, spawnTile.y) ?? OUTDOORS;
+  const enterRoom = (r: typeof OUTDOORS): void => {
+    room = r;
+    camera.setBounds(r.x0 * ROOM_PX, r.y0 * ROOM_PX, r.x1 * ROOM_PX, r.y1 * ROOM_PX);
+    camera.snap();
+  };
+  if (!fly) enterRoom(room);
+  const FADE_MS = 300;
+  let fadeAt = -1e9;
+  const W_STR = UI_STRINGS.world;
 
   const avatar = state.entities.comps.avatar[who];
   const apos = state.entities.comps.pos[who];
@@ -493,6 +555,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               dollWithGear(baseDoll, state.entities.comps.inventory[who]?.equipment ?? startGear),
             );
         for (const e of state.events.list) {
+          if (e.type === 'roomChanged' && e.who === who) {
+            const tx = Math.floor(apos.x / 256 / TILE_PX);
+            const ty = Math.floor((apos.y / 256 - 1) / TILE_PX);
+            enterRoom(roomAt(tx, ty) ?? OUTDOORS);
+            fadeAt = performance.now();
+          } else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
+          else if (e.type === 'doorOpened') notices.toast(W_STR.unlocked);
+          else if (e.type === 'chestOpened') notices.toast(W_STR.chest);
+          else if (e.type === 'gateOpened') notices.toast(W_STR.gate);
+          else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);
+          else if (e.type === 'tabletRead') {
+            input.sampler.keyboard.reset();
+            notices.openTablet();
+          }
           const sfx = sfxFor(e, who);
           if (sfx) audio.playSfx(sfx);
           const h = hapticFor(e, who);
@@ -523,14 +599,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         { x: pxX, y: pxY },
         dt,
       );
-      const rp = state.entities.comps.pos[rock];
-      if (rp)
-        renderer.drawSprite(
-          Layer.Objects,
-          rockSprite,
-          Math.round(rp.x / 256),
-          Math.round(rp.y / 256),
-        );
+      drawFixtures(now);
       drawTelegraphs(renderer, state);
       drawItemsWorld();
       for (const id of state.entities.comps.ai.keys()) {
@@ -681,6 +750,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           );
         }
       }
+      const fade = 1 - (now - fadeAt) / FADE_MS;
+      if (fade > 0) renderer.drawRect(Layer.Hud, 0, 0, v.width, v.height, '#000000', fade);
       renderer.end();
       // Input, the Menu and the first frame are all live. Tests and tools wait for this.
       if (canvas.dataset.ready !== 'true') canvas.dataset.ready = 'true';

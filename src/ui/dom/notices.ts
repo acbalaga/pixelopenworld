@@ -1,0 +1,68 @@
+import { TABLET_GLYPHS } from '../../content/world/fixtures';
+import { UI_STRINGS as S } from '../../content/strings/ui';
+
+const SVG = 'http://www.w3.org/2000/svg';
+
+/** Short clear-text messages and the carved tablet. DOM only, built with createElement. */
+export class Notices {
+  private tabletEl: HTMLElement | null = null;
+  private timers = new Set<number>();
+
+  constructor(private readonly root: HTMLElement) {
+    window.addEventListener('keydown', (e) => {
+      if (this.tabletEl && (e.code === 'Escape' || e.code === 'Enter' || e.code === 'Space')) {
+        e.preventDefault();
+        this.closeTablet();
+      }
+    });
+  }
+
+  get tabletOpen(): boolean {
+    return this.tabletEl !== null;
+  }
+
+  /** A line of text near the bottom of the screen that fades by itself. */
+  toast(text: string): void {
+    const el = document.createElement('div');
+    el.className = 'pow-toast';
+    el.setAttribute('role', 'status');
+    el.textContent = text;
+    this.root.appendChild(el);
+    const t = window.setTimeout(() => {
+      el.remove();
+      this.timers.delete(t);
+    }, 2600);
+    this.timers.add(t);
+  }
+
+  /** The tablet: a line of glyphs and nothing else. Any tap or Escape closes it. */
+  openTablet(): void {
+    if (this.tabletEl) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pow-tablet';
+    b.setAttribute('aria-label', S.world.tabletLabel);
+    const svg = document.createElementNS(SVG, 'svg');
+    const cell = 8;
+    svg.setAttribute('viewBox', `-2 -2 ${TABLET_GLYPHS.length * cell + 2} 11`);
+    svg.setAttribute('class', 'pow-glyphs');
+    svg.setAttribute('aria-hidden', 'true');
+    TABLET_GLYPHS.forEach((strokes, i) => {
+      for (const line of strokes) {
+        const path = document.createElementNS(SVG, 'polyline');
+        path.setAttribute('points', line.map(([x, y]) => `${x + i * cell},${y + 1}`).join(' '));
+        svg.appendChild(path);
+      }
+    });
+    b.appendChild(svg);
+    b.addEventListener('click', () => this.closeTablet());
+    this.root.appendChild(b);
+    this.tabletEl = b;
+    b.focus();
+  }
+
+  closeTablet(): void {
+    this.tabletEl?.remove();
+    this.tabletEl = null;
+  }
+}

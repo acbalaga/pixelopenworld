@@ -1,7 +1,15 @@
 import type { TileCollision } from '../sprites/types';
 
 /** Terrain ids stored in the chunk ground layer. 0 means nothing. */
-export const Terrain = { None: 0, Grass: 1, Dirt: 2, Water: 3 } as const;
+export const Terrain = {
+  None: 0,
+  Grass: 1,
+  Dirt: 2,
+  Water: 3,
+  Cobble: 4,
+  Planks: 5,
+  Cave: 6,
+} as const;
 
 /** How each terrain is drawn. Overlays are autotiled on top of the base grass. */
 export interface TerrainInfo {
@@ -10,6 +18,8 @@ export interface TerrainInfo {
   collision: TileCollision;
   /** Overlay terrains draw a blob autotile sprite over the base. */
   overlay?: { sprite: string; phases: number };
+  /** Drawn in place of grass as the base, picked per tile by a hash. */
+  bases?: readonly string[];
 }
 
 export const TERRAINS: readonly TerrainInfo[] = [
@@ -20,6 +30,19 @@ export const TERRAINS: readonly TerrainInfo[] = [
     key: 'water',
     collision: 'water',
     overlay: { sprite: 'auto.water', phases: 2 },
+  },
+  {
+    id: Terrain.Cobble,
+    key: 'cobble',
+    collision: 'none',
+    bases: ['tile.cobble_0', 'tile.cobble_1'],
+  },
+  { id: Terrain.Planks, key: 'planks', collision: 'none', bases: ['tile.planks_0'] },
+  {
+    id: Terrain.Cave,
+    key: 'cave',
+    collision: 'none',
+    bases: ['tile.cave_floor_0', 'tile.cave_floor_1'],
   },
 ];
 
@@ -55,6 +78,27 @@ export const TILESET: readonly string[] = [
   'tile.flower_rose_0',
   'tile.flower_ochre_0',
   'tile.flower_violet_0',
+  // The slice map (M1-07).
+  'tile.cave_wall_top',
+  'tile.cave_wall_face',
+  'tile.torch',
+  'tile.cave_arch',
+  ...(['red', 'slate'] as const).flatMap((c) =>
+    ([0, 1] as const).flatMap((row) =>
+      (['l', 'm', 'r'] as const).map((col) => `tile.roof_${c}_${row}${col}`),
+    ),
+  ),
+  'tile.wall_plaster',
+  'tile.wall_window',
+  'tile.wall_door',
+  'tile.wall_shop',
+  'tile.fence_h',
+  'tile.fence_v',
+  'tile.fence_post',
+  'tile.crate',
+  'tile.barrel',
+  'tile.sign_post',
+  'tile.board',
 ];
 
 /** Tile id for a tile definition id. Throws for unknown ids. */

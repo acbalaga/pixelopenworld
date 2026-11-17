@@ -11,6 +11,7 @@ import { spawnerSystem } from './systems/spawner';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
+import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
 import { skillsSystem } from './systems/skills';
 import type { EntityId } from './kernel/entities';
@@ -37,6 +38,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   aiSystem,
   combatSystem,
   movementSystem,
+  fixturesSystem,
   knockSystem,
   projectileSystem,
   poolsSystem,

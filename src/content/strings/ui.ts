@@ -83,4 +83,13 @@ export const UI_STRINGS = {
   statusFed: 'Fed: {item}',
   statusWinded: 'Out of breath',
   bagFull: 'Bag is full',
+  world: {
+    locked: 'Locked. It needs a key.',
+    unlocked: 'Unlocked.',
+    chest: 'Opened.',
+    gate: 'A gate rattles open.',
+    waystone: 'The Waystone hums. You will wake here.',
+    tabletLabel: 'Carved tablet',
+    tabletClose: 'Close',
+  },
 } as const;

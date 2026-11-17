@@ -14,6 +14,8 @@ export interface TileSprite {
   sprite: string;
   frame: string;
   offset?: readonly [number, number];
+  /** `frame` names an animation, not a frame. */
+  animated?: boolean;
 }
 
 /** Fades roofs and canopies that an entity stands under. State is kept only while a fade is active. */
@@ -41,6 +43,8 @@ export class ChunkRenderer {
   private cache = new Map<string, HTMLCanvasElement[]>();
   private tileFrame: number[] = [];
   private grass: number[];
+  private bases = new Map<number, number[]>();
+  private tileAnim: number[] = [];
   private blob = new Map<string, number[]>();
   private fader = new OverheadFader();
   /** Chunks painted since creation. Painting is the expensive step and happens once per chunk. */
@@ -51,13 +55,25 @@ export class ChunkRenderer {
     private readonly world: TileWorld,
     tiles: Readonly<Record<string, TileSprite>>,
   ) {
-    this.tileFrame = TILESET.map((id) => {
+    this.tileFrame = TILESET.map((id, i) => {
       const t = tiles[id];
       if (!t) throw new Error(`tile ${id} missing from the manifest`);
+      if (t.animated) {
+        this.tileAnim[i] = atlas.anim(t.sprite, t.frame);
+        return atlas.animFrame(this.tileAnim[i] as number, 0);
+      }
+      this.tileAnim[i] = -1;
       return atlas.frame(t.sprite, t.frame);
     });
     this.tileOffset = TILESET.map((id) => tiles[id]?.offset ?? [0, 0]);
-    for (const t of TERRAINS) this.terrainInfo[t.id] = t;
+    for (const t of TERRAINS) {
+      this.terrainInfo[t.id] = t;
+      if (t.bases)
+        this.bases.set(
+          t.id,
+          t.bases.map((b) => atlas.frame(b, 'base')),
+        );
+    }
     this.grass = GRASS_VARIANTS.map((id) => atlas.frame(id, 'base'));
     for (const t of TERRAINS) {
       if (!t.overlay) continue;
@@ -97,7 +113,8 @@ export class ChunkRenderer {
           const terrain = chunk.ground[i] as number;
           if (terrain === 0) continue;
           const hash = (Math.imul(tx, 73856093) ^ Math.imul(ty, 19349663)) >>> 7;
-          this.draw(ctx, this.grass[hash % this.grass.length] as number, x * TILE_PX, y * TILE_PX);
+          const base = this.bases.get(terrain) ?? this.grass;
+          this.draw(ctx, base[hash % base.length] as number, x * TILE_PX, y * TILE_PX);
           const info = this.terrainInfo[terrain];
           if (info?.overlay) {
             const frames = this.blob.get(info.key) as number[];
@@ -226,7 +243,14 @@ export class ChunkRenderer {
         const ax = tx * TILE_PX + 8;
         const ay = ty * TILE_PX + 14;
         const o = chunk.object[i] as number;
-        if (o !== 0) r.drawSprite(Layer.Objects, this.tileFrame[o - 1] as number, ax, ay);
+        if (o !== 0) {
+          const anim = this.tileAnim[o - 1] as number;
+          const handle =
+            anim >= 0
+              ? this.atlas.animFrame(anim, phase * 500 + ((tx * 131 + ty * 71) % 400))
+              : (this.tileFrame[o - 1] as number);
+          r.drawSprite(Layer.Objects, handle, ax, ay);
+        }
         const h = chunk.overhead[i] as number;
         if (h !== 0) {
           const off = this.tileOffset[h - 1] as readonly [number, number];

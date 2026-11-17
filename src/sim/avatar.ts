@@ -7,6 +7,7 @@ import { newFighter, newPools } from './combat/fighter';
 import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 import { newSkills } from './skills';
+import { interactFixture } from './systems/fixtures';
 import { applyItemCommand, newInventory, recomputeGear } from './items';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
@@ -61,6 +62,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
     return;
   }
   applyItemCommand(state, who, c);
+  if (c.type === 'interact') interactFixture(state, who);
   applyFighterCommand(state, who, c);
 }
 
