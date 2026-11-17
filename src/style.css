@@ -613,6 +613,9 @@ canvas {
   background: rgba(26, 22, 20, 0.88);
   border: 0;
   cursor: pointer;
+  /* The overlay root passes touches through to the canvas. The tablet must take them, or a tap
+     cannot close it and a drag walks the avatar under it. */
+  pointer-events: auto;
 }
 .pow-glyphs {
   width: min(86vw, 640px);

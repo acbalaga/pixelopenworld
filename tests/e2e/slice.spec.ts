@@ -64,3 +64,36 @@ test('slice: a locked door says so', async ({ page }) => {
   await expect(page.locator('.pow-toast')).toContainText('Locked');
   expect(problems.pageErrors).toEqual([]);
 });
+
+test.describe('touch', () => {
+  test.use({ viewport: { width: 360, height: 800 }, hasTouch: true });
+
+  test('slice: a tap closes the tablet, and a touch cannot walk the avatar under it', async ({
+    page,
+  }) => {
+    const problems = await watchProblems(page);
+    await page.goto('/?foes=0&at=40,134');
+    await ready(page);
+    await page.keyboard.down('KeyA');
+    await page.waitForTimeout(250);
+    await page.keyboard.up('KeyA');
+    // The context button sits at the bottom right in Flow.
+    await page.touchscreen.tap(323, 763);
+    const tablet = page.locator('.pow-tablet');
+    await expect(tablet).toBeVisible();
+    // A drag on the screen goes to the overlay, not the stick: the tablet is still there.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: 100, y: 600, id: 1 }],
+    });
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: 160, y: 600, id: 1 }],
+    });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.touchscreen.tap(180, 400);
+    await expect(tablet).toHaveCount(0);
+    expect(problems.pageErrors).toEqual([]);
+  });
+});
