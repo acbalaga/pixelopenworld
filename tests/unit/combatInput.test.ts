@@ -18,6 +18,10 @@ describe('CommandMapper', () => {
     ]);
   });
 
+  it('maps the context button to interact', () => {
+    expect(new CommandMapper().map(rec({ context: true }))).toEqual([{ type: 'interact' }]);
+  });
+
   it('a tap that is not on the world sends no lock', () => {
     const m = new CommandMapper(() => null);
     expect(m.map(rec({ targetTap: { x: 1, y: 1 } }))).toEqual([]);

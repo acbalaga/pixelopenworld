@@ -5,6 +5,7 @@ import { tileDirt, tileGrass0, tileGrass1, tileGrass2, tileWater } from './core/
 import { autotileSprite } from './gen/autotile';
 import { creatureSprites } from './gen/creatures';
 import { dollLayers } from './gen/dolls';
+import { ITEM_ICONS } from './gen/items';
 import { natureSprites } from './gen/nature';
 import { UI_ICONS } from './ui/icons';
 import { uiPanel } from './ui/panel';
@@ -25,6 +26,7 @@ export const SPRITES: readonly SpriteDef[] = [
   ...creatureSprites(),
   uiPanel,
   ...UI_ICONS,
+  ...ITEM_ICONS,
   ...FONT_SPRITES,
 ];
 

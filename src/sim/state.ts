@@ -3,6 +3,7 @@ import { createEventQueue, type EventQueue } from './kernel/events';
 import { createStreams, int, type RngStreams } from './kernel/rng';
 import { px, type Direction, type Vec } from './kernel/fixed';
 import type { CollisionGrid } from './systems/collision';
+import type { EquipSlot } from '../content/items/types';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -99,6 +100,49 @@ export interface Combatant {
   kind: string;
   /** Creature tier 1 to 8, or 0 for the avatar. Sets how much XP fighting it is worth. */
   tier: number;
+}
+
+/** Some of one item in a bag slot. */
+export interface ItemStack {
+  item: string;
+  qty: number;
+}
+
+/** The bag, what is worn, and the recipes the avatar knows. Coin is `avatar.coin`, not a slot. */
+export interface Inventory {
+  slots: (ItemStack | null)[];
+  equipment: Record<EquipSlot, string | null>;
+  recipes: string[];
+}
+
+/** An item lying in the world. `age` counts ticks since it popped out. */
+export interface Pickup {
+  item: string;
+  qty: number;
+  age: number;
+  /** Told the player the bag was full, so it says so once. */
+  blocked: boolean;
+}
+
+/** A gathering node. Ready when the tick reaches `readyAt`. */
+export interface GatherNode {
+  kind: string;
+  readyAt: number;
+}
+
+/** A gather in progress: the node and ticks into the timing sweep. */
+export interface Gather {
+  node: number;
+  t: number;
+}
+
+/** The Fed buff from a meal. Bonuses to the pool maxima until `until`. One at a time. */
+export interface Fed {
+  item: string;
+  until: number;
+  hpMax: number;
+  staMax: number;
+  focMax: number;
 }
 
 /** Skill points and Trial progress for the avatar. Every key is a skill id from content. */
@@ -202,6 +246,11 @@ export interface Components {
   ai: Ai;
   spawner: Spawner;
   skills: Skills;
+  inventory: Inventory;
+  pickup: Pickup;
+  node: GatherNode;
+  gather: Gather;
+  fed: Fed;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -234,6 +283,11 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'ai',
   'spawner',
   'skills',
+  'inventory',
+  'pickup',
+  'node',
+  'gather',
+  'fed',
 ];
 
 /** Demo box size in sub-pixel units. */

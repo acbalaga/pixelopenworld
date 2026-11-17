@@ -38,6 +38,12 @@ import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
+import { ITEMS_BALANCE } from '../content/balance/items';
+import { ITEMS } from '../content/items';
+import { NODES, RECIPES } from '../content/items/recipes';
+import { dollWithGear } from '../render/gearDoll';
+import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
+import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
 import { px } from '../sim/kernel/fixed';
 import { setComp, spawn } from '../sim/kernel/entities';
@@ -119,15 +125,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     };
   })();
   const dolls = new DollFactory(atlas, m);
-  const player = dolls.create('char.player', {
-    ...randomDoll(rand),
-    mainHand: 'sword',
-    offHand: 'none',
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyR' && !e.repeat)
-      player.draw({ ...randomDoll(rand), mainHand: 'sword', offHand: 'none' });
-  });
+  let baseDoll = randomDoll(rand);
+  const startGear = { ...newInventory().equipment };
+  const player = dolls.create('char.player', dollWithGear(baseDoll, startGear));
   // Anim handles by sprite, action and facing, looked up once. A missing action (a rooted plant
   // has no walk) falls back to idle.
   const animCache = new Map<string, number>();
@@ -191,6 +191,43 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   setComp(state.entities, rock, 'body', { w: px(12), h: px(8), solid: true });
   setComp(state.entities, rock, 'interactable', { kind: 'rock' });
 
+  // Things to gather and cook with, near the start. Demo placement only.
+  spawnNode(state, 'node.herb_patch', feet.x - 40, feet.y - 8);
+  spawnNode(state, 'node.herb_patch', feet.x - 40, feet.y + 26);
+  spawnNode(state, 'node.berry_bush', feet.x - 70, feet.y + 8);
+  spawnCampPot(state, feet.x + 28, feet.y + 34);
+  const bag = state.entities.comps.inventory[who];
+  if (bag) {
+    addItem(bag, 'item.sword_iron', 1);
+    addItem(bag, 'item.outfit_leather', 1);
+    addItem(bag, 'item.shield_wood', 1);
+    addItem(bag, 'item.raw_meat', 2);
+  }
+  // Demo keys until the Menu exists (M1-06): G wear the next piece of gear, F eat, C cook a
+  // recipe from what the bag holds, or experiment with what it has.
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
+    const inv = state.entities.comps.inventory[who];
+    if (!inv) return;
+    if (e.code === 'KeyR') {
+      baseDoll = randomDoll(rand);
+      player.draw(dollWithGear(baseDoll, inv.equipment));
+    } else if (e.code === 'KeyG') {
+      const slot = inv.slots.findIndex((x) => x && ITEMS[x.item]?.equip);
+      if (slot >= 0) pendingCommands.push({ type: 'equip', slot });
+    } else if (e.code === 'KeyF') {
+      const slot = inv.slots.findIndex((x) => x && ITEMS[x.item]?.food);
+      if (slot >= 0) pendingCommands.push({ type: 'use', slot });
+    } else if (e.code === 'KeyC') {
+      const ok = Object.values(RECIPES).find((r) =>
+        r.ingredients.every(
+          (i) => countItem(inv, i) >= r.ingredients.filter((x) => x === i).length,
+        ),
+      );
+      if (ok) pendingCommands.push({ type: 'cook', items: [...ok.ingredients] });
+    }
+  });
+
   // Spawners come from the map's objects (`spawner.*`). `?foes=0` turns them off.
   if (!fly && params.get('foes') !== '0') {
     for (const c of chunks)
@@ -204,6 +241,61 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           );
   }
   const lastDrawn = new Map<number, { x: number; y: number }>();
+
+  // Item icons, looked up once.
+  const iconCache = new Map<string, number>();
+  const iconOf = (id: string): number => {
+    let h = iconCache.get(id);
+    if (h === undefined) {
+      h = atlas.frame(id, 'base');
+      iconCache.set(id, h);
+    }
+    return h;
+  };
+  /** Nodes, the camp pot and drops lying in the world. Drops arc out for a few ticks. */
+  const drawItemsWorld = (): void => {
+    const e = state.entities;
+    for (const id of e.comps.node.keys()) {
+      const n = e.comps.node[id];
+      const p = e.comps.pos[id];
+      const def = n ? NODES[n.kind] : undefined;
+      if (!n || !p || !def) continue;
+      const sprite = state.tick >= n.readyAt ? def.sprite.ready : def.sprite.spent;
+      renderer.drawSprite(
+        Layer.Objects,
+        iconOf(sprite),
+        Math.round(p.x / 256) - 6,
+        Math.round(p.y / 256) - 10,
+      );
+    }
+    for (const id of e.comps.interactable.keys()) {
+      const it = e.comps.interactable[id];
+      const p = e.comps.pos[id];
+      if (it?.kind !== 'camp_pot' || !p) continue;
+      const x = Math.round(p.x / 256);
+      const y = Math.round(p.y / 256);
+      renderer.drawRect(Layer.Objects, x - 5, y - 6, 10, 6, DARK);
+      renderer.drawRect(Layer.Objects, x - 4, y - 5, 8, 4, '#7a8088');
+      renderer.drawRect(Layer.Objects, x - 3, y - 3, 6, 1, '#3a3f46');
+      renderer.drawRect(Layer.Objects, x - 1, y - 1, 2, 2, '#ef8a2e');
+    }
+    for (const id of e.comps.pickup.keys()) {
+      const k = e.comps.pickup[id];
+      const p = e.comps.pos[id];
+      if (!k || !p) continue;
+      const pop = ITEMS_BALANCE.loot.popTicks;
+      const t = Math.min(1, k.age / pop);
+      const lift = k.age >= pop ? 0 : Math.round(10 * 4 * t * (1 - t));
+      const icon = ITEMS[k.item]?.icon;
+      if (icon)
+        renderer.drawSprite(
+          Layer.Objects,
+          iconOf(icon),
+          Math.round(p.x / 256) - 6,
+          Math.round(p.y / 256) - 10 - lift,
+        );
+    }
+  };
 
   const avatar = state.entities.comps.avatar[who];
   const apos = state.entities.comps.pos[who];
@@ -222,7 +314,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const path = document.createElementNS(SVG, 'path');
   icon.appendChild(path);
   schemeButton.appendChild(icon);
-  const pendingCommands: { type: 'scheme'; scheme: 'flow' | 'classic' }[] = [];
+  const pendingCommands: Command[] = [];
   const syncScheme = (): void => {
     const sc = settings.get().controlScheme;
     // Flow is a wave (move and explore). Classic is crossed blades (fight).
@@ -352,6 +444,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
         skillFeed.ingest(state.events.list, who, now);
+        for (const ev of state.events.list)
+          if (ev.type === 'equipped' && ev.id === who)
+            player.draw(
+              dollWithGear(baseDoll, state.entities.comps.inventory[who]?.equipment ?? startGear),
+            );
         for (const e of state.events.list) {
           const sfx = sfxFor(e, who);
           if (sfx) audio.playSfx(sfx);
@@ -392,6 +489,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           Math.round(rp.y / 256),
         );
       drawTelegraphs(renderer, state);
+      drawItemsWorld();
       for (const id of state.entities.comps.ai.keys()) {
         const ai = state.entities.comps.ai[id];
         const p = state.entities.comps.pos[id];
@@ -457,6 +555,38 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         v.safe.y + 23,
         settings.get().reducedMotion,
       );
+      // Bag and coin, and the gather timing sweep when working a node.
+      const bagNow = state.entities.comps.inventory[who];
+      if (bagNow) {
+        const used = bagNow.slots.filter(Boolean).length;
+        fonts.small.draw(
+          renderer,
+          `Bag ${used}/${bagNow.slots.length}  Coin ${avatar.coin}`,
+          v.safe.x + 3,
+          v.safe.y + v.safe.h - 20,
+          INK,
+          { outline: DARK },
+        );
+      }
+      const gat = state.entities.comps.gather[who];
+      if (gat) {
+        const g = ITEMS_BALANCE.gather;
+        const w = 40;
+        const gx = Math.floor(v.width / 2) - w / 2;
+        const gy = v.safe.y + v.safe.h - 40;
+        renderer.drawRect(Layer.Hud, gx - 1, gy - 1, w + 2, 7, DARK);
+        renderer.drawRect(Layer.Hud, gx, gy, w, 5, '#3a3f46');
+        const k = w / g.sweepTicks;
+        renderer.drawRect(
+          Layer.Hud,
+          gx + Math.round(g.sweetFrom * k),
+          gy,
+          Math.max(1, Math.round((g.sweetTo - g.sweetFrom + 1) * k)),
+          5,
+          GOLD,
+        );
+        renderer.drawRect(Layer.Hud, gx + Math.round(gat.t * k), gy - 1, 2, 7, INK);
+      }
       // Build id and time, bottom left, so a refreshed page can be told from a stale one.
       fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {
         outline: DARK,

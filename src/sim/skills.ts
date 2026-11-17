@@ -55,7 +55,10 @@ export function pendingTrial(s: Skills, skill: string): number | null {
   return null;
 }
 
-/** Sets Health, Stamina and Focus maxima from skill points (design/03). Gains fill the pool too. */
+/**
+ * Sets Health, Stamina and Focus maxima from skill points (design/03) and the Fed buff. Gains
+ * fill the pool too. Losses clamp it.
+ */
 export function recomputePools(state: SimState, who: EntityId): void {
   const s = getComp(state.entities, who, 'skills');
   const p = getComp(state.entities, who, 'pools');
@@ -74,10 +77,11 @@ export function recomputePools(state: SimState, who: EntityId): void {
         sums[k] += pts * a.perPoint;
     }
   }
+  const fed = getComp(state.entities, who, 'fed');
   const max = {
-    hp: C.pools.hpMax + sums.hp,
-    sta: C.pools.staMax + sums.sta,
-    foc: C.pools.focMax + sums.foc,
+    hp: C.pools.hpMax + sums.hp + (fed?.hpMax ?? 0),
+    sta: C.pools.staMax + sums.sta + (fed?.staMax ?? 0),
+    foc: C.pools.focMax + sums.foc + (fed?.focMax ?? 0),
   };
   for (const k of ['hp', 'sta', 'foc'] as const) {
     const key = `${k}Max` as 'hpMax' | 'staMax' | 'focMax';

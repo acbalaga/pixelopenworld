@@ -97,6 +97,7 @@ export class CommandMapper {
     this.full = r.full;
     if (r.attack) out.push({ type: 'attack' });
     if (r.dodge) out.push({ type: 'dodge', dir: r.dodge.dir });
+    if (r.context) out.push({ type: 'interact' });
     if (r.targetTap) {
       const w = this.toWorld(r.targetTap);
       if (w) out.push({ type: 'lock', x: w.x, y: w.y });

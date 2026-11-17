@@ -86,9 +86,14 @@ export function bakeAll(spritesIn: readonly SpriteDef[], tilesIn: readonly TileD
     out.set(`atlas-${group}.png`, encodePng(atlas));
     const isDoll = (s: SpriteDef): boolean => s.id.startsWith('doll.');
     const isFont = (s: SpriteDef): boolean => s.id.startsWith('font.');
+    const isItem = (s: SpriteDef): boolean => s.id.startsWith('icon.');
     const isNature = (s: SpriteDef): boolean => /^prop\.(tree|bush|flower)_/.test(s.id);
     const parts: [string, SpriteDef[]][] = [
-      [`contact-${group}.png`, members.filter((s) => !isDoll(s) && !isNature(s) && !isFont(s))],
+      [
+        `contact-${group}.png`,
+        members.filter((s) => !isDoll(s) && !isNature(s) && !isFont(s) && !isItem(s)),
+      ],
+      [`contact-items.png`, members.filter(isItem)],
       [`contact-${group}-nature.png`, members.filter(isNature)],
       [`contact-${group}-doll-layers.png`, members.filter(isDoll)],
     ];

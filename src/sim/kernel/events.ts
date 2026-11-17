@@ -42,7 +42,28 @@ export type SimEvent =
   /** XP has filled the bar but the next point waits on a Trial. */
   | { type: 'skillBanked'; id: number; skill: string }
   | { type: 'trialOffered'; id: number; trial: string }
-  | { type: 'trialPassed'; id: number; trial: string };
+  | { type: 'trialPassed'; id: number; trial: string }
+  | { type: 'lootDropped'; id: number; item: string; qty: number }
+  | { type: 'itemPickedUp'; id: number; item: string; qty: number }
+  | { type: 'bagFull'; id: number; item: string }
+  | { type: 'equipped'; id: number; slot: string; item: string }
+  | { type: 'unequipped'; id: number; slot: string; item: string }
+  | { type: 'eaten'; id: number; item: string }
+  | { type: 'fedStarted'; id: number; item: string; replaced: string | null }
+  | { type: 'fedEnded'; id: number; item: string }
+  | { type: 'gatherStarted'; id: number; node: number }
+  | { type: 'gatherCancelled'; id: number; node: number }
+  | {
+      type: 'gatherResolved';
+      id: number;
+      node: number;
+      sweet: boolean;
+      item: string;
+      qty: number;
+    }
+  | { type: 'nodeReady'; id: number }
+  | { type: 'recipeDiscovered'; id: number; recipe: string }
+  | { type: 'cookFailed'; id: number };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */
 export interface EventQueue {
