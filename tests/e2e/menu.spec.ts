@@ -148,18 +148,10 @@ test('the accessibility tree names ordered controls on each tab', async ({ page 
   ]);
 
   await goTab(page, 'skills');
-  inOrder(await snap(), [
-    'Arms',
-    'Blades',
-    'progressbar "Blades: Next point"',
-    'Magic',
-    'Gathering',
-    'Foraging',
-    'Crafting',
-    'Cooking',
-    'Exploration',
-    'Athletics',
-  ]);
+  // A new avatar has earned no skill yet, so none is listed or named.
+  const skills = await snap();
+  expect(skills).toContain('Nothing here yet');
+  expect(skills).not.toMatch(/Blades|Foraging|Cooking|Athletics|Ember|Evasion/);
 
   await goTab(page, 'bag');
   await page.locator('[data-key="slot-0"]').click();

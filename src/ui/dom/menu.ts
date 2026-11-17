@@ -335,7 +335,9 @@ export class MenuSheet {
 
   private renderSkills(): void {
     const { state, who } = this.deps.read();
-    for (const fam of skillsView(state, who)) {
+    const fams = skillsView(state, who);
+    if (fams.length === 0) this.body.appendChild(el('p', 'pow-hint', S.skillsEmpty));
+    for (const fam of fams) {
       const sec = el('section', 'pow-skill-family');
       const h = this.heading(fam.label);
       const hid = `pow-fam-${uid++}`;

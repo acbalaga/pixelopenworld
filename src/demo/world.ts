@@ -577,7 +577,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
-        skillFeed.ingest(state.events.list, who, now);
+        skillFeed.ingest(state.events.list, who);
         for (const ev of state.events.list)
           if (ev.type === 'equipped' && ev.id === who)
             player.draw(

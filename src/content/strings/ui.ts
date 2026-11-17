@@ -14,6 +14,7 @@ export const UI_STRINGS = {
     routines: 'Routines',
     system: 'System',
   },
+  skillsEmpty: 'Nothing here yet. Skills appear as you earn them.',
   tabUnavailable: '{tab}, not available yet',
   pools: { hp: 'Health', sta: 'Stamina', foc: 'Focus' },
   coin: 'Coin',
