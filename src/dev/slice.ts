@@ -7,7 +7,7 @@
 import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { spawnCreature } from '../sim/combat/enemy';
-import { countItem } from '../sim/items';
+import { addItem, countItem } from '../sim/items';
 import { getComp, type EntityId } from '../sim/kernel/entities';
 import type { SimState } from '../sim/state';
 
@@ -33,6 +33,8 @@ export interface PowDevApi {
   snapshot(): PowSnapshot;
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
+  /** Puts items in the bag, as if gathered. */
+  giveItem(item: string, qty: number): void;
 }
 
 const TILE = 16;
@@ -70,6 +72,10 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         recipes: [...(inv?.recipes ?? [])],
         held,
       };
+    },
+    giveItem(item, qty) {
+      const inv = getComp(state.entities, who, 'inventory');
+      if (inv) addItem(inv, item, qty);
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');

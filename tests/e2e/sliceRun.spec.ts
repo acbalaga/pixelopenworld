@@ -37,9 +37,9 @@ async function saveNow(page: Page): Promise<void> {
 }
 
 /** Walks a short burst in a direction so the avatar faces it. */
-async function face(page: Page, key: 'KeyW' | 'KeyA' | 'KeyS' | 'KeyD'): Promise<void> {
+async function face(page: Page, key: 'KeyW' | 'KeyA' | 'KeyS' | 'KeyD', ms = 250): Promise<void> {
   await page.keyboard.down(key);
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(ms);
   await page.keyboard.up(key);
 }
 
@@ -54,9 +54,8 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await inWorld(page);
   await saveNow(page);
 
-  // Back in through the title, standing south of the guard. The saved avatar moves to `?at=`.
+  // Back in, skipping the title with a developer parameter, standing south of the guard. The saved avatar moves to `?at=`.
   await page.goto('/?at=50,45');
-  await page.getByRole('button', { name: 'Log In as Runner_1' }).click();
   await inWorld(page);
 
   // Take the guard's request.
@@ -69,12 +68,13 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await expect(talk).toHaveCount(0);
   expect((await snap(page)).requests['request.clear_pests']?.state).toBe('active');
 
-  // Fight four Mosslings, one at a time, in front of the avatar.
+  // Fight four Mosslings, one at a time, in front of the avatar. Face south, away from Orla.
+  await face(page, 'KeyS');
   for (let i = 1; i <= 4; i++) {
     await page.evaluate(() =>
-      (
-        window as unknown as { __pow: { spawnFoeAhead(id: string): void } }
-      ).__pow.spawnFoeAhead('creature.mossling'),
+      (window as unknown as { __pow: { spawnFoeAhead(id: string): void } }).__pow.spawnFoeAhead(
+        'creature.mossling',
+      ),
     );
     await expect
       .poll(
@@ -93,6 +93,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
 
   // Turn it in. The reward pays coin once.
   const coinBefore = (await snap(page)).coin;
+  await face(page, 'KeyW');
   await page.keyboard.press('KeyE');
   await expect(talk).toBeVisible();
   await talk.getByRole('button').first().click();
@@ -105,12 +106,18 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
 
   // Cook at the camp pot: stand south of it, face it, press the cook key.
   await page.goto('/?at=42,41');
-  await page.getByRole('button', { name: 'Log In as Runner_1' }).click();
   await inWorld(page);
-  await face(page, 'KeyW');
-  expect((await snap(page)).held['item.raw_meat']).toBeGreaterThanOrEqual(2);
+  await face(page, 'KeyW', 60);
+  // Gathering is covered by the sim tests. Here the bag is stocked as if the herbs were picked.
+  await page.evaluate(() => {
+    const pow = (window as unknown as { __pow: { giveItem(item: string, qty: number): void } })
+      .__pow;
+    pow.giveItem('item.sunwort', 1);
+    pow.giveItem('item.dewmint', 1);
+  });
   await page.keyboard.press('KeyC');
-  await expect.poll(async () => (await snap(page)).held['item.raw_meat'] ?? 0).toBe(0);
+  await expect.poll(async () => (await snap(page)).held['item.herb_tea'] ?? 0).toBe(1);
+  expect((await snap(page)).recipes).toContain('recipe.herb_tea');
   await shot(page, 'run-cooked');
 
   // Reload: the request stays done, the recipe and coin stay as they were.
