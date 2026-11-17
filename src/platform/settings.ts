@@ -11,6 +11,10 @@ export interface Settings {
   textScale: number;
   /** HUD and control scale, 0.8 to 1.5. */
   hudScale: number;
+  /** Size of the on-screen buttons on their own, 0.8 to 1.5. Never below the touch minimum. */
+  buttonScale: number;
+  /** Opacity of the on-screen controls and HUD, 0.3 to 1. */
+  hudOpacity: number;
   handedness: Handedness;
   reducedMotion: boolean;
   /** Flow plays on its own swings; Classic has an attack button and a three hit combo. */
@@ -21,6 +25,8 @@ export interface Settings {
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
 export const HUD_SCALE_RANGE = [0.8, 1.5] as const;
+export const BUTTON_SCALE_RANGE = [0.8, 1.5] as const;
+export const HUD_OPACITY_RANGE = [0.3, 1] as const;
 
 const clamp = (v: number, [lo, hi]: readonly [number, number]): number =>
   Math.min(hi, Math.max(lo, v));
@@ -39,6 +45,8 @@ export class SettingsStore {
     this.value = {
       textScale: 1,
       hudScale: 1,
+      buttonScale: 1,
+      hudOpacity: 1,
       handedness: 'right',
       reducedMotion: env.prefersReducedMotion(),
       controlScheme: 'flow',
@@ -55,9 +63,13 @@ export class SettingsStore {
     const next: Settings = { ...this.value, ...patch };
     next.textScale = clamp(next.textScale, TEXT_SCALE_RANGE);
     next.hudScale = clamp(next.hudScale, HUD_SCALE_RANGE);
+    next.buttonScale = clamp(next.buttonScale, BUTTON_SCALE_RANGE);
+    next.hudOpacity = clamp(next.hudOpacity, HUD_OPACITY_RANGE);
     if (
       next.textScale === this.value.textScale &&
       next.hudScale === this.value.hudScale &&
+      next.buttonScale === this.value.buttonScale &&
+      next.hudOpacity === this.value.hudOpacity &&
       next.handedness === this.value.handedness &&
       next.reducedMotion === this.value.reducedMotion &&
       next.controlScheme === this.value.controlScheme &&

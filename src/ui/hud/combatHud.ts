@@ -7,8 +7,6 @@ const INK = PALETTE[3] as string;
 const DARK = PALETTE[0] as string;
 const BAR_BACK = PALETTE[16] as string;
 const HP = PALETTE[21] as string;
-const STAMINA = PALETTE[10] as string;
-const FOCUS = PALETTE[14] as string;
 const STAGGER = PALETTE[22] as string;
 
 function bar(
@@ -24,24 +22,6 @@ function bar(
   r.drawRect(Layer.Hud, x, y, w, h, BAR_BACK);
   const fill = Math.round(w * Math.min(1, Math.max(0, frac)));
   if (fill > 0) r.drawRect(Layer.Hud, x, y, fill, h, color);
-}
-
-/**
- * Pool bars for the avatar, top left inside the safe rect. A stand-in for the real status row
- * (M1-06), enough to read Health, Stamina and Focus while fighting.
- */
-export function drawPoolBars(
-  r: Renderer,
-  state: SimState,
-  who: number,
-  x: number,
-  y: number,
-): void {
-  const p = state.entities.comps.pools[who];
-  if (!p) return;
-  bar(r, x, y, 56, 5, p.hp / p.hpMax, HP);
-  bar(r, x, y + 8, 44, 4, p.sta / p.staMax, STAMINA);
-  bar(r, x, y + 15, 44, 4, p.foc / p.focMax, FOCUS);
 }
 
 /**

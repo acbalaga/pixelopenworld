@@ -28,6 +28,8 @@ export type Command =
   | { type: 'equip'; slot: number }
   /** Take off worn gear. */
   | { type: 'unequip'; slot: string }
+  /** Drop all of bag slot `slot` on the ground. */
+  | { type: 'drop'; slot: number }
   /** Eat or use the item in bag slot `slot`. */
   | { type: 'use'; slot: number }
   /** Cook these ingredients at the camp pot in front. Experiments are cooks with no recipe. */
@@ -87,6 +89,7 @@ export function validateCommand(raw: unknown): Validated {
       return { ok: true, command: { type: 'interact' } };
     case 'equip':
     case 'use':
+    case 'drop':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };
       return { ok: true, command: { type: r.type, slot: r.slot as number } };

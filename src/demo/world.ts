@@ -8,6 +8,8 @@
 import manifest from '../../baked/manifest.json';
 import coreUrl from '../../baked/atlas-core.png?url';
 import uiUrl from '../../baked/atlas-ui.png?url';
+import panelBase from '../../baked/ui-panel-base.png?url';
+import panelPressed from '../../baked/ui-panel-pressed.png?url';
 import { randomDoll } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
@@ -26,7 +28,17 @@ import { Camera } from '../render/camera';
 import { CombatFeedback } from '../render/feedback';
 import { PanelCache } from '../ui/panel';
 import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
-import { drawLockFrame, drawPoolBars } from '../ui/hud/combatHud';
+import { drawLockFrame } from '../ui/hud/combatHud';
+import { Hud, POOLS_HEIGHT, STATUS_HEIGHT } from '../ui/hud/hud';
+import { MenuSheet } from '../ui/dom/menu';
+import {
+  applyPaletteVars,
+  applyPanelImages,
+  applyPixelScale,
+  applySettings,
+  createOverlay,
+} from '../ui/dom/overlay';
+import { attachSwipe } from '../platform/input/swipe';
 import { SkillFeed } from '../ui/hud/skillFeed';
 import { PixelFont } from '../ui/text/pixelFont';
 import { CREATURES, SPAWNERS } from '../content/creatures';
@@ -156,8 +168,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   const probe = document.getElementById('safe-probe');
   if (!probe) throw new Error('safe-area probe missing');
+  // The DOM layer: the Menu and anything else read as clear text.
+  const root = createOverlay();
+  applyPaletteVars(document.documentElement);
+  applyPanelImages(document.documentElement, panelBase, panelPressed);
+  applySettings(root, settings.get());
+  settings.subscribe((st) => applySettings(root, st));
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
     renderer.resize(v);
+    applyPixelScale(root, v.scale / v.dpr);
     camera.setView(v.width, v.height, v.portrait);
   };
   const vp = watchViewport(probe, fit);
@@ -166,8 +185,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     leftHanded: () => settings.get().handedness === 'left',
     scheme: () => settings.get().controlScheme,
     hudScale: () => settings.get().hudScale,
+    buttonScale: () => settings.get().buttonScale,
+    keysEnabled: () => !menuOpen,
     insets: () => readSafeInsets(probe),
   });
+  let menuOpen = false;
 
   // The avatar lives in the sim. Feet position is the bottom center of its 10 x 8 box.
   const spawnTile = chunks.flatMap((c) =>
@@ -284,7 +306,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const p = e.comps.pos[id];
       if (!k || !p) continue;
       const pop = ITEMS_BALANCE.loot.popTicks;
-      const t = Math.min(1, k.age / pop);
+      const t = Math.min(1, Math.max(0, k.age / pop));
       const lift = k.age >= pop ? 0 : Math.round(10 * 4 * t * (1 - t));
       const icon = ITEMS[k.item]?.icon;
       if (icon)
@@ -303,43 +325,57 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const afight = state.entities.comps.fighter[who];
   if (!avatar || !apos || !avel || !afight) throw new Error('avatar missing');
 
-  // Scheme button, standing in for the settings screen (M1-06). T on a keyboard.
-  const schemeButton = document.createElement('button');
-  schemeButton.type = 'button';
-  schemeButton.className = 'scheme-icon';
-  schemeButton.id = 'scheme-toggle';
-  const SVG = 'http://www.w3.org/2000/svg';
-  const icon = document.createElementNS(SVG, 'svg');
-  icon.setAttribute('viewBox', '0 0 16 16');
-  const path = document.createElementNS(SVG, 'path');
-  icon.appendChild(path);
-  schemeButton.appendChild(icon);
+  // Control scheme changes from the Menu or the T key go to the sim as a command.
   const pendingCommands: Command[] = [];
   const syncScheme = (): void => {
-    const sc = settings.get().controlScheme;
-    // Flow is a wave (move and explore). Classic is crossed blades (fight).
-    path.setAttribute(
-      'd',
-      sc === 'flow'
-        ? 'M1 6q2-3 3.5 0t3.5 0 3.5 0 3.5 0M1 11q2-3 3.5 0t3.5 0 3.5 0 3.5 0'
-        : 'M3 3l10 10M13 3L3 13M2 11l3 3M11 2l3 3',
-    );
-    schemeButton.setAttribute(
-      'aria-label',
-      sc === 'flow' ? 'Flow controls. Switch to Classic' : 'Classic controls. Switch to Flow',
-    );
-    schemeButton.title = schemeButton.getAttribute('aria-label') ?? '';
-    pendingCommands.push({ type: 'scheme', scheme: sc });
+    pendingCommands.push({ type: 'scheme', scheme: settings.get().controlScheme });
   };
   settings.subscribe(syncScheme);
   syncScheme();
-  const toggleScheme = (): void =>
-    settings.set({ controlScheme: settings.get().controlScheme === 'flow' ? 'classic' : 'flow' });
-  schemeButton.addEventListener('click', toggleScheme);
   window.addEventListener('keydown', (e) => {
-    if (e.code === 'KeyT' && !e.repeat) toggleScheme();
+    if (e.code === 'KeyT' && !e.repeat && !menuOpen)
+      settings.set({ controlScheme: settings.get().controlScheme === 'flow' ? 'classic' : 'flow' });
   });
-  document.body.appendChild(schemeButton);
+
+  // The Menu (DOM). The sim is read through `read` and changed only through commands.
+  const blit = (canvas: HTMLCanvasElement, handle: number): void => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+      atlas.image(handle),
+      atlas.srcX(handle),
+      atlas.srcY(handle),
+      atlas.width(handle),
+      atlas.height(handle),
+      0,
+      0,
+      atlas.width(handle),
+      atlas.height(handle),
+    );
+  };
+  const menu = new MenuSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    settings,
+    drawIcon: (canvas, id) => blit(canvas, atlas.frame(id, 'base')),
+    drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
+    // The login screen arrives with M1-10. Until then Log Out reloads the page.
+    onLogOut: () => location.reload(),
+    onOpenChange: (open) => {
+      menuOpen = open;
+      if (open) input.sampler.keyboard.reset();
+    },
+  });
+  attachSwipe({
+    height: () => canvas.getBoundingClientRect().height,
+    bottomInset: () => readSafeInsets(probe).bottom,
+    onEdgeUp: () => menu.open(),
+    onDown: () => menu.close(),
+    downZone: (t) => menu.isOpen && menu.isGrip(t),
+  });
+  const hud = new Hud();
 
   // Screen tap to world px, for target lock.
   const mapper = new CommandMapper((p) => {
@@ -440,6 +476,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           avatar.facing = Math.abs(mx) > Math.abs(my) ? (mx > 0 ? 2 : 6) : my > 0 ? 4 : 0;
       } else {
         const rec = input.sampler.sample(performance.now());
+        if (rec.menu) menu.toggle();
+        if (rec.bag) menu.toggle('bag');
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
@@ -543,31 +581,30 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
       // Screen space: bars, lock frame, controls.
       const v = vp.current;
-      drawPoolBars(renderer, state, who, v.safe.x + 3, v.safe.y + 3);
-      drawLockFrame(renderer, fonts.small, state, who, Math.floor(v.width / 2), v.safe.y + 3);
+      hud.draw({
+        r: renderer,
+        fonts,
+        state,
+        who,
+        now,
+        safe: v.safe,
+        width: v.width,
+        mmPerLogicalPx: v.mmPerLogicalPx,
+        settings: settings.get(),
+        icon: iconOf,
+      });
+      drawLockFrame(renderer, fonts.small, state, who, Math.floor(v.width / 2), v.safe.y + 15);
       skillFeed.draw(
         renderer,
         fonts.small,
         now,
         Math.floor(v.width / 2),
-        v.safe.y + 28,
+        v.safe.y + 40,
         v.safe.x + 3,
-        v.safe.y + 23,
+        v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
         settings.get().reducedMotion,
       );
-      // Bag and coin, and the gather timing sweep when working a node.
-      const bagNow = state.entities.comps.inventory[who];
-      if (bagNow) {
-        const used = bagNow.slots.filter(Boolean).length;
-        fonts.small.draw(
-          renderer,
-          `Bag ${used}/${bagNow.slots.length}  Coin ${avatar.coin}`,
-          v.safe.x + 3,
-          v.safe.y + v.safe.h - 20,
-          INK,
-          { outline: DARK },
-        );
-      }
+      // The gather timing sweep when working a node.
       const gat = state.entities.comps.gather[who];
       if (gat) {
         const g = ITEMS_BALANCE.gather;
@@ -597,6 +634,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const layout = computeLayout(css.width, css.height, settings.get().handedness === 'left', {
           scheme: settings.get().controlScheme,
           hudScale: settings.get().hudScale,
+          buttonScale: settings.get().buttonScale,
           insets: readSafeInsets(probe),
         });
         const kit: ButtonKit = {
@@ -605,12 +643,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           mmPerLogicalPx: v.mmPerLogicalPx,
           ink: INK,
           outline: DARK,
+          opacity: settings.get().hudOpacity,
         };
         const held = new Set<string>(input.sampler.keyboard.held());
         const slotOf: Record<string, number> = { tech1: 0, tech2: 1, tech3: 2, tech4: 3 };
         const hasTarget = contextTarget(state, who) !== null;
         for (const [id, r] of Object.entries(layout.buttons)) {
-          if (id === 'menu' || id === 'bag') continue;
           // Slots with no technique and a context button with nothing to use are not shown.
           const slot = slotOf[id];
           if (slot !== undefined && !afight.slots[slot]) continue;
@@ -639,6 +677,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
       }
       renderer.end();
+      // Input, the Menu and the first frame are all live. Tests and tools wait for this.
+      if (canvas.dataset.ready !== 'true') canvas.dataset.ready = 'true';
       meter?.frameEnd(performance.now());
     },
   });
