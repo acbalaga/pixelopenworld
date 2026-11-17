@@ -1,4 +1,5 @@
 import type { DayPhase } from '../balance/time';
+import type { Quality } from '../items/types';
 
 export type SkillFamily = 'arms' | 'magic' | 'gathering' | 'crafting' | 'social' | 'exploration';
 
@@ -53,14 +54,52 @@ export interface SkillDef {
   weapon?: string;
 }
 
-/** A Trial: a short authored test, given by a person, that opens the next rank of a skill. */
+/**
+ * What a Trial asks for. Every kind counts manual play only (M3 rule 9): an event from an
+ * automated source never advances one.
+ */
+export type TrialObjective =
+  | {
+      kind: 'defeat';
+      /** A creature kind. Absent means any. */
+      creature?: string;
+      count: number;
+      /** The count resets when the avatar takes damage or dies. */
+      inARow?: boolean;
+      /** Only kills where every hit on the creature was by this weapon family or element. */
+      only?: { weapon?: string; element?: string };
+      /** The count resets when the avatar takes damage. */
+      untouched?: boolean;
+      /** The whole count must fall inside this many ticks from the first kill. */
+      withinTicks?: number;
+    }
+  | { kind: 'gather'; item?: string; tag?: string; count: number; phases?: DayPhase[] }
+  | {
+      kind: 'perform';
+      action: 'perfectDodge' | 'parry' | 'technique';
+      technique?: string;
+      count: number;
+      /** All within one fight (see `src/sim/fight.ts`). */
+      inOneFight?: boolean;
+    }
+  | { kind: 'craft'; recipe: string; minQuality: Quality }
+  | { kind: 'deliver'; item: string; qty: number; minQuality?: Quality; to: string }
+  | { kind: 'reach'; room: string; from: string; withinTicks: number };
+
+/** A Trial: a short authored test, given by a person or place, that opens the next rank of a skill. */
 export interface TrialDef {
+  /** `trial.<skill>.<threshold>`, for example `trial.blades.15`. */
   id: string;
   skill: string;
   /** The skill point it lets the player reach. */
-  threshold: number;
-  /** Who gives it. An id from the people content (M1-08). */
-  giver: string;
-  /** What passes it: this item, gathered during one of these phases of the day. */
-  gather: { item: string; phases: readonly DayPhase[] };
+  threshold: 15 | 30 | 50 | 75 | 100;
+  /** Who gives it: an NPC id, or a fixture kind (offered on interact). */
+  giver: { npc: string } | { fixture: string };
+  /** String key: what the giver says when offering. */
+  intro: string;
+  /** String key: the Skills tab line. Names the giver and a clue. */
+  hint: string;
+  objective: TrialObjective;
+  /** Minutes it takes, for the pacing ledger (M4-12). */
+  estMinutes: number;
 }

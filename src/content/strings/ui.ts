@@ -39,6 +39,12 @@ export const UI_STRINGS = {
     exploration: 'Exploration',
   },
   skillRow: '{name}, {rank}, {points} of 100',
+  trialsTitle: 'Trials',
+  trialsNone: 'No Trial is set.',
+  trialFrom: '{name}: {intro}',
+  trialProgress: '{n} of {count}',
+  trialPassed: 'Trial passed',
+  trialSeal: '\u25C6',
   trialReady: 'A Trial is waiting. Earned XP is kept for it.',
   trialOffered: 'A Trial has been set. See it through to go further.',
   /** Under a skill one point short of a Trial, or waiting on one, until a Trial for it is authored. */
@@ -298,6 +304,8 @@ export const UI_STRINGS = {
       POOL_MAX_MISMATCH: 'Health, Stamina or Focus maximums do not follow from the skills.',
       POOL_OVER_MAX: 'Health, Stamina or Focus is above its maximum.',
       RANK_XP_MISMATCH: 'A skill holds more experience than its rank allows.',
+      TRIAL_PROGRESS_ORPHAN:
+        'Trial progress is recorded for a Trial that is not set, or beyond what it asks.',
       TRIAL_UNPASSED: 'A skill is past a point that needs a Trial that was not passed.',
       REQUEST_STATE: 'A request is in a state it could not have reached.',
       TICK_PLAYTIME_MISMATCH: 'The play time does not match the game clock.',

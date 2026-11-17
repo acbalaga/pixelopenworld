@@ -7,13 +7,14 @@ import {
   type EquipSlot,
   type ItemDef,
 } from '../../content/items/types';
-import { SKILLS, TRIALS, type SkillFamily } from '../../content/skills';
+import { SKILLS, TRIALS, trialCount, type SkillFamily } from '../../content/skills';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { UI_STRINGS } from '../../content/strings/ui';
-import { fill } from '../../content/strings/skills';
+import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
+import { NPCS } from '../../content/dialogue';
 import { AFFIXES } from '../../content/items/affixes';
 import { gearStats, isBroken } from '../../sim/items';
-import { masteryName, pendingTrial, xpToNext } from '../../sim/skills';
+import { masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
 import { dayPhase } from '../../sim/time';
 import type { SimState } from '../../sim/state';
 
@@ -60,7 +61,20 @@ export interface SkillRowView {
    * short). The Trial's own `hint` string once authored (M3-03), else `trialUnknown`.
    */
   trialHint: string | null;
+  /** Thresholds whose Trial is passed. Shown as a seal under the row. */
+  sealed: number[];
   /** The line a screen reader reads for the row. */
+  label: string;
+}
+
+export interface TrialLogRow {
+  id: string;
+  /** Who gave it. */
+  giver: string;
+  intro: string;
+  n: number;
+  count: number;
+  skill: string;
   label: string;
 }
 
@@ -168,6 +182,36 @@ export function characterView(state: SimState, who: number): CharacterView {
   return { pools, gear, coin: a?.coin ?? 0 };
 }
 
+/** The Skills tab line for the Trial at a threshold: its authored hint, or "no one can test this yet". */
+function trialHintFor(skill: string, threshold: number): string {
+  const t = Object.values(TRIALS).find((x) => x.skill === skill && x.threshold === threshold);
+  return (t && TRIAL_STRINGS[t.hint]) || UI_STRINGS.trialUnknown;
+}
+
+/** The Trials the avatar holds now, with progress. Shown at the top of the Skills tab. */
+export function trialLog(state: SimState, who: number): TrialLogRow[] {
+  const s = state.entities.comps.skills[who];
+  const out: TrialLogRow[] = [];
+  for (const id of s?.offered ?? []) {
+    const t = TRIALS[id];
+    if (!t || !s) continue;
+    const giver = 'npc' in t.giver ? (NPCS[t.giver.npc]?.name ?? '') : '';
+    const n = s.trial[id]?.n ?? 0;
+    const count = trialCount(t.objective);
+    const intro = TRIAL_STRINGS[t.intro] ?? '';
+    out.push({
+      id,
+      giver,
+      intro,
+      n,
+      count,
+      skill: SKILLS[t.skill]?.name ?? '',
+      label: `${SKILLS[t.skill]?.name ?? ''}. ${fill(UI_STRINGS.trialFrom, { name: giver, intro })} ${fill(UI_STRINGS.trialProgress, { n, count })}`,
+    });
+  }
+  return out;
+}
+
 export function skillsView(state: SimState, who: number): SkillFamilyView[] {
   const s = state.entities.comps.skills[who];
   const out: SkillFamilyView[] = [];
@@ -198,7 +242,8 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
         mastery,
         progressPct: cost === 0 ? 100 : Math.min(100, Math.floor((xp * 100) / cost)),
         trial: pending !== null && xp >= cost ? (offered ? 'offered' : 'ready') : null,
-        trialHint: pending !== null && !offered ? UI_STRINGS.trialUnknown : null,
+        trialHint: pending !== null && !offered ? trialHintFor(id, pending) : null,
+        sealed: s ? SB.thresholds.filter((th) => trialPassed(s, id, th)) : [],
         label: fill(UI_STRINGS.skillRow, { name: def.name, rank: mastery, points }),
       });
     }
