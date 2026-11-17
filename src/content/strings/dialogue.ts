@@ -25,9 +25,22 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.orla.report': 'That is all four. Take this, you have earned it.',
   'dlg.orla.after': 'Quiet meadows at last. Thank you.',
 
+  'dlg.wren.ask':
+    'I study how a seed holds fire. The Spitblooms down in the cave keep theirs in the pods. Put two of them down and I will show you how it is done.',
+  'dlg.wren.c_accept': 'I will go and see.',
+  'dlg.wren.c_later': 'Not right now.',
+  'dlg.wren.accepted':
+    'The cave mouth is south-east of town, past the stream. They sit rooted in the side rooms and spit from a distance, so do not stand still.',
+  'dlg.wren.progress': 'Two Spitblooms, no more and no fewer. They are in the cave.',
+  'dlg.wren.report':
+    'Good. Now hold it, aim, and let go. It costs Focus, not breath. That is the Ember bolt, and it is yours.',
+  'dlg.wren.after': 'Mind your Focus. It comes back slower than breath.',
+
   'dlg.pilgrim.one': 'anyone know where the good loot is around here?',
   'dlg.pilgrim.two': 'also this dummy has 2000 hp. send help',
 
   'request.clear_pests.title': 'Clear the pests',
+  'request.ember_pods.title': 'A seed that holds fire',
+  'request.ember_pods.log': 'Spitblooms put down: {n} of {max}',
   'request.clear_pests.log': 'Mosslings cleared: {n} of {max}',
 };

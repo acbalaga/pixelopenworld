@@ -37,7 +37,7 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
     handle,
   });
   setComp(state.entities, id, 'pools', newPools(state.tick));
-  setComp(state.entities, id, 'fighter', newFighter(0, [...B.starter.techniques]));
+  setComp(state.entities, id, 'fighter', newFighter(0, [null, ...B.starter.techniques]));
   setComp(state.entities, id, 'combatant', {
     weapon: 'sword',
     power: WEAPONS.sword?.power ?? 10,

@@ -226,6 +226,7 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 43, 41, 'npc.cook', objects);
   object(g, 50, 44, 'npc.guard', objects);
   object(g, 55, 39, 'npc.pilgrim', objects);
+  object(g, 44, 35, 'npc.scholar', objects);
   object(g, 81, 78, 'fixture.portal_cave_mouth', objects);
   for (const [x, y] of [
     [24, 40],

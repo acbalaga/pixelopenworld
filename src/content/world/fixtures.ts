@@ -24,6 +24,8 @@ export interface FixtureDef {
   /** Block: the gate it is solving for, and the room that resets it. Open gate means solved. */
   gate?: string;
   room?: string;
+  /** Portal: hidden behind a solid wall slab (its `sprite`) until a creature of this kind is defeated, then the slab goes and the portal works. */
+  unlockedBy?: string;
   /** Chest: what is inside. `coin` is carried coin. */
   loot?: { items: readonly { item: string; qty: number }[]; coin?: number };
 }
@@ -67,6 +69,10 @@ const LIST: readonly FixtureDef[] = [
   {
     kind: 'fixture.portal_e_shortcut',
     type: 'portal',
+    // A slab of plain wall face stands over the arch, solid, until the boss is down.
+    sprite: 'tile.cave_wall_face',
+    size: 16,
+    unlockedBy: 'creature.old_bramblehide',
     to: 'fixture.arrival_a_shortcut',
     arrive: [0, 22],
   },

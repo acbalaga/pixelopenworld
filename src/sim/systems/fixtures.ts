@@ -20,6 +20,12 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
   const pos = { x: px(tx * TILE + 8), y: px(ty * TILE + TILE) };
   setComp(state.entities, id, 'pos', pos);
   setComp(state.entities, id, 'fixture', { kind, open: false, home: { ...pos } });
+  if (def.unlockedBy) {
+    // Hidden portal: a solid slab in the doorway until it is unlocked.
+    const slab = px(def.size ?? TILE);
+    setComp(state.entities, id, 'body', { w: slab, h: slab, solid: true });
+    return id;
+  }
   if (def.type === 'portal' || def.type === 'arrival' || def.type === 'plate') return id;
   const size = px(def.size ?? TILE);
   setComp(state.entities, id, 'body', { w: size, h: size, solid: true });
@@ -216,12 +222,27 @@ export function fixturesSystem(state: SimState): void {
     if (body) body.solid = false;
     emit(state.events, { type: 'gateOpened', id });
   }
+  // A hidden way opens for good when the creature that guards it falls.
+  for (const ev of state.events.list) {
+    if (ev.type !== 'died' || ev.team !== 1) continue;
+    const kind = getComp(state.entities, ev.id, 'combatant')?.kind;
+    if (!kind) continue;
+    for (const id of query(state.entities, 'fixture')) {
+      const f = getComp(state.entities, id, 'fixture');
+      if (!f || f.open || FIXTURES[f.kind]?.unlockedBy !== kind) continue;
+      f.open = true;
+      const body = getComp(state.entities, id, 'body');
+      if (body) body.solid = false;
+      emit(state.events, { type: 'shortcutOpened', id });
+    }
+  }
   // Portals.
   for (const id of query(state.entities, 'fixture', 'pos')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;
     const p = getComp(state.entities, id, 'pos');
     if (!f || def?.type !== 'portal' || !def.to || !p) continue;
+    if (def.unlockedBy && !f.open) continue;
     for (const a of avatars) {
       const q = getComp(state.entities, a, 'pos');
       if (!q) continue;

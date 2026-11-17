@@ -15,6 +15,7 @@ export type Effect =
   | { offerTrial: string }
   | { startRequest: string }
   | { turnIn: string }
+  | { learnTechnique: string }
   | { openShop: string };
 
 export interface Choice {
@@ -70,5 +71,10 @@ export interface RequestDef {
   title: string;
   log: string;
   goal: { kill: string; count: number };
-  reward: { coin: number; items: readonly { item: string; qty: number }[] };
+  reward: {
+    coin: number;
+    items: readonly { item: string; qty: number }[];
+    /** Techniques taught on turn-in. */
+    techniques?: readonly string[];
+  };
 }

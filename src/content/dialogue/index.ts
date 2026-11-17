@@ -55,6 +55,23 @@ export const NPCS: Readonly<Record<string, NpcDef>> = {
       offHand: 'shield',
     },
   },
+  'npc.scholar': {
+    id: 'npc.scholar',
+    name: 'Wren',
+    facing: 'down',
+    doll: {
+      body: 'b',
+      skin: 'pale',
+      hair: 'long',
+      hairColor: 'rose',
+      top: 'robe',
+      topColor: 'red',
+      bottom: 'skirt',
+      bottomColor: 'brown',
+      mainHand: 'staff',
+      offHand: 'none',
+    },
+  },
   'npc.pilgrim': {
     id: 'npc.pilgrim',
     name: 'Pilgrim',
@@ -99,9 +116,18 @@ export const REQUESTS: Readonly<Record<string, RequestDef>> = {
     goal: { kill: 'creature.mossling', count: 4 },
     reward: { coin: 50, items: [{ item: 'item.ring_copper', qty: 1 }] },
   },
+  'request.ember_pods': {
+    id: 'request.ember_pods',
+    giver: 'npc.scholar',
+    title: 'request.ember_pods.title',
+    log: 'request.ember_pods.log',
+    goal: { kill: 'creature.spitbloom', count: 2 },
+    reward: { coin: 30, items: [], techniques: ['technique.ember_bolt'] },
+  },
 };
 
 const asked = { request: 'request.clear_pests' } as const;
+const pods = { request: 'request.ember_pods' } as const;
 
 export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
   'npc.shopkeeper': {
@@ -188,6 +214,34 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         next: null,
       },
       after: { id: 'after', text: 'dlg.orla.after', next: null },
+    },
+  },
+  'npc.scholar': {
+    npc: 'npc.scholar',
+    entries: [
+      { if: [{ ...pods, is: 'ready' }], node: 'report' },
+      { if: [{ ...pods, is: 'active' }], node: 'progress' },
+      { if: [{ ...pods, is: 'done' }], node: 'after' },
+      { node: 'ask' },
+    ],
+    nodes: {
+      ask: {
+        id: 'ask',
+        text: 'dlg.wren.ask',
+        choices: [
+          { text: 'dlg.wren.c_accept', next: 'accepted', do: [{ startRequest: pods.request }] },
+          { text: 'dlg.wren.c_later', next: null },
+        ],
+      },
+      accepted: { id: 'accepted', text: 'dlg.wren.accepted', next: null },
+      progress: { id: 'progress', text: 'dlg.wren.progress', next: null },
+      report: {
+        id: 'report',
+        text: 'dlg.wren.report',
+        do: [{ turnIn: pods.request }],
+        next: null,
+      },
+      after: { id: 'after', text: 'dlg.wren.after', next: null },
     },
   },
   // A stand-in for the Travelers of M5: a static figure whose two lines read as chat messages.

@@ -572,6 +572,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const p = e.comps.pos[id];
       const def = f ? FIXTURES[f.kind] : undefined;
       if (!f || !p || !def?.sprite) continue;
+      // The slab over a hidden way is drawn only while the way is shut.
+      if (def.unlockedBy && f.open) continue;
       const x = Math.round(p.x / 256);
       const y = Math.round(p.y / 256);
       if (def.type === 'waystone') {
@@ -989,7 +991,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 ? W_STR.chestFound.replace('{items}', parts.join(', '))
                 : W_STR.chestEmpty,
             );
-          } else if (e.type === 'gateOpened') {
+          } else if (e.type === 'shortcutOpened') notices.toast(W_STR.shortcut);
+          else if (e.type === 'techniqueLearned' && e.who === who)
+            notices.toast(
+              W_STR.learned.replace('{name}', W_STR.techniques[e.technique] ?? e.technique),
+            );
+          else if (e.type === 'gateOpened') {
             openedAt.set(e.id, performance.now());
             notices.toast(W_STR.gate);
           } else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);

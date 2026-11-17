@@ -1,4 +1,5 @@
 import { SHOP_BALANCE as B } from '../../content/balance/shop';
+import { TECHNIQUES } from '../../content/combat/attacks';
 import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
 import type { Effect } from '../../content/dialogue/types';
 import { ITEMS } from '../../content/items';
@@ -86,8 +87,19 @@ function applyEffect(state: SimState, who: EntityId, e: Effect): void {
       emit(state.events, { type: 'requestStarted', who, request: e.startRequest });
     }
   } else if ('turnIn' in e) turnIn(state, who, e.turnIn);
+  else if ('learnTechnique' in e) learnTechnique(state, who, e.learnTechnique);
   else if ('openShop' in e && SHOPS[e.openShop])
     emit(state.events, { type: 'shopOpened', who, shop: e.openShop });
+}
+
+/** Teaches a technique: it takes the first free slot after the weapon's lunge. Known ones are skipped. */
+export function learnTechnique(state: SimState, who: EntityId, technique: string): void {
+  const f = getComp(state.entities, who, 'fighter');
+  if (!f || !TECHNIQUES[technique] || f.slots.includes(technique)) return;
+  const free = f.slots.findIndex((s, i) => i > 0 && s === null);
+  if (free < 0) return;
+  f.slots[free] = technique;
+  emit(state.events, { type: 'techniqueLearned', who, technique });
 }
 
 /** Pays a finished request, once. */
@@ -99,6 +111,7 @@ function turnIn(state: SimState, who: EntityId, requestId: string): void {
   j.requests[requestId] = { state: 'done', progress: def.goal.count };
   earnCoin(state, who, def.reward.coin, 'request');
   for (const r of def.reward.items) give(state, who, r.item, r.qty, 'request');
+  for (const t of def.reward.techniques ?? []) learnTechnique(state, who, t);
   emit(state.events, { type: 'requestCompleted', who, request: requestId });
 }
 
