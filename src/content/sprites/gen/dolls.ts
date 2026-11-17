@@ -379,6 +379,83 @@ function staffLayer(b: BodyType, p: Pose): Img {
   return im;
 }
 
+/**
+ * A spear: a long wooden shaft with a leaf-shaped steel head. Held low and tilted at rest, drawn
+ * back along the arm in the windup, thrust out at full length on the strike, and drawn in again
+ * on the recover. Pose rules follow the sword's so the figure and the haft read as one motion.
+ */
+function spearLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const side = p.dir === 'right';
+  const cx = side ? hx + 1 : hx + 2;
+  /** Shaft pixels from (x0,y0) to (x1,y1), one pixel thick, lit and shaded in runs. */
+  const shaft = (x0: number, y0: number, x1: number, y1: number): void => {
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) {
+      const x = Math.round(x0 + ((x1 - x0) * i) / Math.max(1, n));
+      const y = Math.round(y0 + ((y1 - y0) * i) / Math.max(1, n));
+      im.set(x, y, i % 4 === 1 ? WOOD.lit : i % 4 === 3 ? WOOD.shade : WOOD.main);
+    }
+  };
+  /** Head pointing along (dx,dy), a unit step on one axis. Tip is the last pixel. */
+  const head = (x: number, y: number, dx: number, dy: number): void => {
+    // Ferrule band, then a three pixel blade, then the tip.
+    im.set(x, y, METAL.edge);
+    const px = (i: number): [number, number] => [x + dx * i, y + dy * i];
+    const wide = (i: number, w: number): void => {
+      const [bx, by] = px(i);
+      for (let k = -w; k <= w; k++)
+        im.set(
+          bx + (dx === 0 ? k : 0),
+          by + (dy === 0 ? k : 0),
+          k === 0 ? METAL.blade : METAL.edge,
+        );
+    };
+    wide(1, 1);
+    wide(2, 1);
+    const [tx, ty] = px(3);
+    im.set(tx, ty, METAL.tip);
+  };
+  if (side) {
+    if (p.stance === 'windup') {
+      shaft(cx - 9, hy + 1, cx - 2, hy);
+      head(cx - 1, hy, 1, 0);
+    } else if (p.stance === 'strike') {
+      shaft(cx - 10, hy, cx + 1, hy);
+      head(cx + 2, hy, 1, 0);
+    } else if (p.stance === 'recover') {
+      shaft(cx - 8, hy + 1, cx, hy);
+      head(cx + 1, hy, 1, 0);
+    } else {
+      // Carried: shaft slanting up and forward, head high over the shoulder.
+      shaft(cx - 1, hy + 5, cx + 1, hy - 7);
+      head(cx + 1, hy - 8, 0, -1);
+    }
+    return im;
+  }
+  const dir = p.dir === 'up' ? -1 : 1;
+  if (p.stance === 'strike') {
+    // Thrust along the view axis: toward the viewer going down, away going up.
+    // The head stays inside the canvas margin, so it is drawn closer going down than going up.
+    if (dir > 0) {
+      shaft(cx, hy - 7, cx, hy + 1);
+      head(cx, hy + 2, 0, 1);
+    } else {
+      shaft(cx, hy + 3, cx, hy - 9);
+      head(cx, hy - 10, 0, -1);
+    }
+  } else if (p.stance === 'windup') {
+    // Drawn back: the head swings behind the hand.
+    shaft(cx, hy + 6 * dir, cx, hy - 5 * dir);
+    head(cx, hy - 6 * dir, 0, -dir);
+  } else {
+    shaft(cx, hy + 4, cx, hy - 7);
+    head(cx, hy - 8, 0, -1);
+  }
+  return im;
+}
+
 function shieldLayer(b: BodyType, p: Pose): Img {
   const im = new Img(24, 32);
   const [hx, hy] = hands(b, p).off;
@@ -451,6 +528,7 @@ export function dollLayers(): SpriteDef[] {
       out.push(layer(`doll.top_${k}_${b}`, (p) => topLayer(k, b, p)));
     out.push(layer(`doll.main_sword_${b}`, (p) => swordLayer(b, p), true));
     out.push(layer(`doll.main_staff_${b}`, (p) => staffLayer(b, p), true));
+    out.push(layer(`doll.main_spear_${b}`, (p) => spearLayer(b, p), true));
     out.push(layer(`doll.off_shield_${b}`, (p) => shieldLayer(b, p), true));
   }
   for (const k of ['short', 'long', 'ponytail', 'curly', 'bun'] as const)

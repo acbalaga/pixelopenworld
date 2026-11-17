@@ -6,6 +6,11 @@ export const ITEMS_BALANCE = {
   },
   /** What a new avatar carries and wears. Item ids from `content/items`. */
   starter: {
+    /**
+     * Techniques a new character knows. Only what the carried gear makes innate: a sword gives
+     * the Blades lunge. Anything else (Ember, say) has to be learned in play.
+     */
+    techniques: ['technique.blades_lunge'] as readonly string[],
     equipment: { main: 'item.sword_rusty' } as Readonly<Record<string, string>>,
     bag: [{ item: 'item.dish_bread', qty: 2 }] as readonly { item: string; qty: number }[],
   },

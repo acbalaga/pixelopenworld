@@ -48,7 +48,7 @@ export const BOTTOM_STYLES = ['trousers', 'skirt'] as const;
 export type BottomStyle = (typeof BOTTOM_STYLES)[number];
 
 /** Held items. They have fixed colors (metal, wood), so they are not recolored. */
-export const MAIN_HANDS = ['none', 'sword', 'staff'] as const;
+export const MAIN_HANDS = ['none', 'sword', 'staff', 'spear'] as const;
 export type MainHand = (typeof MAIN_HANDS)[number];
 export const OFF_HANDS = ['none', 'shield'] as const;
 export type OffHand = (typeof OFF_HANDS)[number];
@@ -123,7 +123,11 @@ export function randomDoll(rand: () => number): DollSpec {
     topColor,
     bottom: pickOf(rand, BOTTOM_STYLES),
     bottomColor: pickOf(rand, Object.keys(CLOTH_COLORS) as ClothColor[]),
-    mainHand: pickOf(rand, MAIN_HANDS),
+    // A new look starts with something a fresh character could hold. Spears come from gear.
+    mainHand: pickOf(
+      rand,
+      MAIN_HANDS.filter((h) => h !== 'spear'),
+    ),
     offHand: pickOf(rand, OFF_HANDS),
   };
 }

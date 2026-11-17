@@ -34,10 +34,9 @@ const LIST: readonly ItemDef[] = [
     tier: 2,
     equip: { slot: 'main', weapon: 'sword', power: 14, doll: { mainHand: 'sword' } },
   }),
-  // There is no spear layer in the paper doll yet, so it shows as a staff.
   item('item.spear_ash', 'weapon', {
     value: 40,
-    equip: { slot: 'main', weapon: 'spear', power: 11, doll: { mainHand: 'staff' } },
+    equip: { slot: 'main', weapon: 'spear', power: 11, doll: { mainHand: 'spear' } },
   }),
   item('item.shield_wood', 'armor', {
     value: 25,

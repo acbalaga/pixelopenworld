@@ -21,7 +21,15 @@ import { sfxFor, hapticFor, vibrate } from '../platform/combatFx';
 import { CommandMapper } from '../platform/input/sampler';
 import { computeLayout } from '../platform/input/layout';
 import { startBrowserLoop } from '../platform/loop';
-import { TrustedClock, browserClockEnv, dateAt } from '../platform/clock';
+import { itemName } from '../ui/menu/model';
+import {
+  TrustedClock,
+  browserClockEnv,
+  dateAt,
+  mergeClockMemory,
+  readDeviceClock,
+  writeDeviceClock,
+} from '../platform/clock';
 import { worldTickAt } from '../sim/time';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
@@ -320,14 +328,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // The boot sync has had the whole title screen to finish. Offline or blocked, it just says no.
   await bootSync;
   const timeMemory = restored && loaded ? loaded.plain.time : null;
-  clock.load(timeMemory);
+  clock.load(mergeClockMemory(timeMemory, readDeviceClock()));
   // The world clock counts from the save's epoch; a new character starts it now.
   const worldEpoch = timeMemory?.epoch ?? clock.trustedNow();
   canvas.dataset.timeSynced = String(clock.isSynced());
   canvas.dataset.closedMs = String(Math.round(clock.elapsedSinceLastSession()));
   /** The trusted-time record every save carries. */
   function saveTime(): SaveTime {
-    return { epoch: worldEpoch, ...clock.snapshot() };
+    const memory = clock.snapshot();
+    writeDeviceClock(memory);
+    return { epoch: worldEpoch, ...memory };
   }
   let baseDoll = entry ? entry.look : restored && loaded ? loaded.plain.look : randomDoll(rand);
   const startGear = startGear0;
@@ -551,6 +561,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     }
     return h;
   };
+  /** When each door, gate or chest opened this session, for its opening frames. */
+  const openedAt = new Map<number, number>();
+  const OPENING_STEP_MS = 90;
+  const OPENING_FRAMES = { door: 4, gate: 3, chest: 1 } as const;
   const drawFixtures = (now: number): void => {
     const e = state.entities;
     for (const id of e.comps.fixture.keys()) {
@@ -570,18 +584,24 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         renderer.drawSprite(Layer.Objects, atlas.animFrame(a, now), x, y);
         continue;
       }
-      const frame =
-        def.type === 'plate'
-          ? f.open
-            ? 'down'
-            : 'up'
-          : def.type === 'door' || def.type === 'gate' || def.type === 'chest'
-            ? f.open
-              ? 'open'
-              : 'closed'
-            : 'base';
+      let frame: string;
+      if (def.type === 'plate') frame = f.open ? 'down' : 'up';
+      else if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
+        frame = f.open ? 'open' : 'closed';
+        // A fixture opened this session plays its opening frames first. One loaded already open
+        // just shows open.
+        const since = f.open ? openedAt.get(id) : undefined;
+        if (since !== undefined) {
+          const steps = OPENING_FRAMES[def.type];
+          const k = Math.floor((now - since) / OPENING_STEP_MS);
+          if (k < steps) frame = `opening_${k}`;
+          else openedAt.delete(id);
+        }
+      } else frame = 'base';
       const layer =
-        def.type === 'plate' || (def.type === 'door' && f.open) ? Layer.Detail : Layer.Objects;
+        def.type === 'plate' || (def.type === 'door' && frame === 'open')
+          ? Layer.Detail
+          : Layer.Objects;
       renderer.drawSprite(layer, spriteFrame(def.sprite, frame), x, y);
     }
   };
@@ -954,10 +974,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             fadeAt = performance.now();
             requestSave('transition');
           } else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
-          else if (e.type === 'doorOpened') notices.toast(W_STR.unlocked);
-          else if (e.type === 'chestOpened') notices.toast(W_STR.chest);
-          else if (e.type === 'gateOpened') notices.toast(W_STR.gate);
-          else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);
+          else if (e.type === 'doorOpened') {
+            openedAt.set(e.id, performance.now());
+            notices.toast(W_STR.unlocked);
+          } else if (e.type === 'chestOpened') {
+            openedAt.set(e.id, performance.now());
+            const def = FIXTURES[state.entities.comps.fixture[e.id]?.kind ?? ''];
+            const parts = (def?.loot?.items ?? []).map((l) =>
+              l.qty > 1 ? `${l.qty} ${itemName(l.item)}` : itemName(l.item),
+            );
+            if (def?.loot?.coin) parts.push(W_STR.coin.replace('{n}', String(def.loot.coin)));
+            notices.toast(
+              parts.length
+                ? W_STR.chestFound.replace('{items}', parts.join(', '))
+                : W_STR.chestEmpty,
+            );
+          } else if (e.type === 'gateOpened') {
+            openedAt.set(e.id, performance.now());
+            notices.toast(W_STR.gate);
+          } else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);
           else if (e.type === 'tabletRead') {
             input.sampler.keyboard.reset();
             notices.openTablet();

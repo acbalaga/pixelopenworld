@@ -512,6 +512,8 @@ describe('weapons and techniques', () => {
 
   it('Ember bolt costs Focus, is aimed by holding, fires on release, and hits at range', () => {
     const a = arena();
+    // A new character does not know Ember. Slot it as if learned.
+    fighter(a.s, a.me).slots[1] = 'technique.ember_bolt';
     const en = enemyEast(a, 90);
     const foc0 = pools(a.s, a.me).foc;
     a.run(1, { type: 'technique', slot: 1, phase: 'aim', aim: Dir.E });
@@ -611,5 +613,12 @@ describe('time to kill', () => {
     const flow = fight('flow');
     const classic = fight('classic');
     expect(Math.abs(flow - classic) / Math.max(flow, classic)).toBeLessThanOrEqual(0.15);
+  });
+});
+
+describe('a new character', () => {
+  it('knows only what the carried sword makes innate', () => {
+    const a = arena();
+    expect(fighter(a.s, a.me).slots).toEqual(['technique.blades_lunge', null, null, null]);
   });
 });

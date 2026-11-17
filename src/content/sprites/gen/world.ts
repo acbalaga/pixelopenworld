@@ -324,24 +324,64 @@ function waystone(): SpriteDef {
   );
 }
 
+/**
+ * A stone door in two leaves. `slide` is how far each leaf has drawn back from the middle, in px
+ * (0 is shut). `lit` turns the lock gold for the frame where the key turns.
+ */
+function doorLeaves(slide: number, lit = false): Img {
+  const im = new Img(16, 16);
+  // The dark passage shows through the gap as the leaves part.
+  im.rect(2, 2, 13, 15, DARK);
+  const leaf = (x0: number, x1: number): void => {
+    if (x1 < x0) return;
+    im.rect(x0, 0, x1, 15, STONE[1]);
+    im.rect(Math.min(x0 + 1, x1), 1, x1, 15, STONE[2]);
+    im.rect(x0, 1, x1, 2, STONE[3]);
+    for (const y of [4, 11]) im.rect(x0, y, x1, y + 1, METAL[1]);
+  };
+  // Each leaf is clipped by the jamb as it slides, so it narrows rather than leaving the frame.
+  leaf(0, 7 - slide);
+  leaf(8 + slide, 15);
+  if (slide === 0) {
+    im.rect(6, 7, 9, 10, lit ? GOLD[3] : GOLD[2]);
+    im.rect(7, 8, 8, 9, lit ? GOLD[1] : DARK);
+  }
+  // The jambs stay put.
+  im.rect(0, 0, 1, 15, STONE[2]);
+  im.rect(14, 0, 15, 15, STONE[2]);
+  return im;
+}
+
 function lockedDoor(): SpriteDef {
-  const closed = new Img(16, 16);
-  closed.rect(0, 0, 15, 15, STONE[1]);
-  closed.rect(1, 1, 14, 15, STONE[2]);
-  closed.rect(1, 1, 14, 2, STONE[3]);
-  closed.rect(7, 1, 8, 15, STONE[1]);
-  for (const y of [4, 11]) closed.rect(1, y, 14, y + 1, METAL[1]);
-  closed.rect(6, 7, 9, 10, GOLD[2]);
-  closed.rect(7, 8, 8, 9, DARK);
   const open = new Img(16, 16);
   open.rect(0, 0, 15, 15, STONE[1]);
   open.rect(2, 2, 13, 15, DARK);
   open.rect(0, 0, 1, 15, STONE[2]);
   open.rect(14, 0, 15, 15, STONE[2]);
   return toSprite('prop.door_locked', 'core', ORIGIN_FEET, {
-    closed: outlined(closed),
+    closed: outlined(doorLeaves(0)),
+    // The key turns, then the leaves draw apart. The game steps through these on open.
+    opening_0: outlined(doorLeaves(0, true)),
+    opening_1: outlined(doorLeaves(2)),
+    opening_2: outlined(doorLeaves(4)),
+    opening_3: outlined(doorLeaves(5)),
     open: open,
   });
+}
+
+/** A portcullis with its bars lifted `rise` px. */
+function gateBars(rise: number): Img {
+  const im = new Img(16, 16);
+  // Only the part still below the lintel is drawn; the lintel itself is solid.
+  im.rect(0, 0, 15, 1, METAL[2]);
+  const top = 2;
+  const bottom = 15 - rise;
+  if (bottom >= top) {
+    for (let x = 1; x < 16; x += 4) im.rect(x, top, x + 1, bottom, METAL[1]);
+    im.rect(0, Math.min(bottom, 3), 15, Math.min(bottom, 4), METAL[2]);
+    if (bottom > 11) im.rect(0, 11, 15, 12, METAL[2]);
+  }
+  return im;
 }
 
 function gate(): SpriteDef {
@@ -357,6 +397,9 @@ function gate(): SpriteDef {
   for (let x = 3; x < 14; x += 4) open.rect(x, 0, x + 1, 2, METAL[1]);
   return toSprite('prop.gate', 'core', ORIGIN_FEET, {
     closed: outlined(closed),
+    opening_0: outlined(gateBars(4)),
+    opening_1: outlined(gateBars(8)),
+    opening_2: outlined(gateBars(11)),
     open: outlined(open),
   });
 }
@@ -402,8 +445,17 @@ function chest(): SpriteDef {
   open.rect(2, 2, 13, 2, WOOD[2]);
   open.rect(2, 13, 13, 14, WOOD[1]);
   open.rect(6, 9, 9, 10, GOLD[2]);
+  // Lid lifting: a wedge of dark under a raised front edge.
+  const ajar = new Img(16, 16);
+  ajar.rect(2, 7, 13, 14, WOOD[2]);
+  ajar.rect(3, 7, 12, 7, DARK);
+  ajar.rect(2, 4, 13, 6, WOOD[3]);
+  ajar.rect(2, 4, 13, 4, WOOD[2]);
+  ajar.rect(2, 13, 13, 14, WOOD[1]);
+  ajar.rect(7, 6, 8, 8, GOLD[2]);
   return toSprite('prop.chest', 'core', ORIGIN_FEET, {
     closed: outlined(closed),
+    opening_0: outlined(ajar),
     open: outlined(open),
   });
 }
