@@ -93,6 +93,11 @@ export class SaveManager {
     this.saveId = null;
   }
 
+  /** The id of the save in play, or null before the first commit or load. */
+  currentSaveId(): string | null {
+    return this.saveId;
+  }
+
   /** Trust as it stands: Intact, or Flagged with the reasons. */
   currentTrust(): Trust {
     return structuredClone(this.trust);
@@ -108,6 +113,16 @@ export class SaveManager {
     const checksum = await sha256Hex(bytes);
     const record: SaveRecord = { seq, savedAt: plain.createdAt, checksum, bytes };
     const had = await storage.readAll();
+    const next = this.rotate(had, record);
+    await storage.replaceAll(next);
+    this.deps.audit?.(plain);
+    this.seq = seq;
+    this.lastHash = await sha256Hex(bytes);
+    return seq;
+  }
+
+  /** The slots after `record` becomes the latest snapshot and the older ones move down. */
+  private rotate(had: Slots, record: SaveRecord): Slots {
     const next = emptySlots();
     next.latest = record;
     next.previous = had.latest;
@@ -117,12 +132,55 @@ export class SaveManager {
       .sort((a, b) => b.savedAt - a.savedAt)[0];
     next.old = old ?? had.old;
     next.emergency = had.emergency;
+    next.replaced = had.replaced;
     // A record that once failed to load stays where it was put, for a human to look at.
     next.quarantine = had.quarantine;
+    return next;
+  }
+
+  /**
+   * The newest snapshot as a save record, decoded and migrated, with no side effects. Null when
+   * there is none or it cannot be read. Export uses it after a commit, so it is current.
+   */
+  async latestPlain(): Promise<SavePlain | null> {
+    const rec = (await this.deps.storage.readAll()).latest;
+    if (!rec) return null;
+    try {
+      if ((await sha256Hex(rec.bytes)) !== rec.checksum) return null;
+      return migrate(await this.deps.codec.decode(rec.bytes));
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Makes an imported save the current one (M2-03). The caller has already opened, migrated and
+   * validated it, and the player has confirmed. It is written as the next snapshot in this
+   * device's chain and sealed under the device key by the codec. The save it replaces moves to
+   * `previous` and is also kept in `replaced`, which only an import overwrites, so it is
+   * recoverable however much is played afterwards. Returns the new sequence number.
+   */
+  async importSave(imported: SavePlain): Promise<number> {
+    const { codec, storage, now } = this.deps;
+    const had = await storage.readAll();
+    let maxSeq = 0;
+    for (const s of ['latest', 'previous', 'old', 'emergency'] as const)
+      maxSeq = Math.max(maxSeq, had[s]?.seq ?? 0);
+    const seq = maxSeq + 1;
+    const prevHash = had.latest?.checksum ?? '';
+    const plain: SavePlain = { ...imported, schema: CURRENT_SCHEMA, seq, prevHash };
+    const bytes = await codec.encode(plain);
+    const checksum = await sha256Hex(bytes);
+    const record: SaveRecord = { seq, savedAt: now(), checksum, bytes };
+    const next = this.rotate(had, record);
+    next.replaced = had.latest ?? had.replaced;
     await storage.replaceAll(next);
     this.deps.audit?.(plain);
+    this.saveId = plain.saveId;
+    this.startedAt = plain.startedAt;
+    this.trust = structuredClone(plain.trust);
     this.seq = seq;
-    this.lastHash = await sha256Hex(bytes);
+    this.lastHash = checksum;
     return seq;
   }
 

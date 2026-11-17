@@ -352,6 +352,7 @@ describe('SaveManager with the secure codec', () => {
       previous: null,
       old: null,
       emergency: null,
+      replaced: null,
       quarantine: null,
     });
     const k = keyProvider();

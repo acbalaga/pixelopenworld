@@ -1,4 +1,5 @@
 import type { Trust } from '../../save/integrity/reasons';
+import { createBackupSection, type BackupDeps } from './backup';
 import { createSeal } from './seal';
 import { UI_BALANCE } from '../../content/balance/ui';
 import { fill } from '../../content/strings/skills';
@@ -42,6 +43,8 @@ export interface MenuDeps {
   onLogOut: () => void;
   /** The save's trust state, read when System draws. */
   trust: () => Trust;
+  /** Export and import, shown under Backup in System. */
+  backup: BackupDeps;
   onOpenChange?: (open: boolean) => void;
 }
 
@@ -632,6 +635,9 @@ export class MenuSheet {
 
     this.body.appendChild(this.heading(S.title.sealLabel));
     this.body.appendChild(createSeal(this.deps.trust()));
+
+    this.body.appendChild(this.heading(S.backup.heading));
+    this.body.appendChild(createBackupSection(this.root, this.deps.backup));
 
     const out = el('div', 'pow-logout');
     const btn = el('button', 'pow-button pow-danger', sys.logOut);

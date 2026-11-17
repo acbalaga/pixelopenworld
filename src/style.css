@@ -1122,3 +1122,64 @@ canvas {
 .pow-seal-info[hidden] {
   display: none;
 }
+
+/* Backup: export and import (M2-03). */
+.pow-backup {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+  align-items: flex-start;
+}
+.pow-backup-status {
+  margin: 0;
+  min-height: 1.4em;
+}
+.pow-import,
+.pow-reminder {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  padding: calc(var(--px) * 4);
+  color: var(--pal-3);
+  background: var(--pal-0);
+  border: 1px solid var(--pal-18);
+  font-size: calc(1rem * var(--text-scale, 1));
+  line-height: 1.4;
+  overflow-y: auto;
+  z-index: 50;
+}
+.pow-reminder {
+  position: fixed;
+  left: 50%;
+  top: auto;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  transform: translateX(-50%);
+  width: min(calc(100% - var(--px) * 4), 28rem);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-reminder p {
+  margin: 0;
+}
+.pow-import-rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: calc(var(--px) * 1) calc(var(--px) * 3);
+  margin: 0;
+}
+.pow-import-rows dt {
+  opacity: 0.7;
+}
+.pow-import-rows dd {
+  margin: 0;
+}
+.pow-import-seal-label {
+  margin: 0;
+  opacity: 0.7;
+}
+.pow-import-buttons {
+  display: flex;
+  gap: calc(var(--px) * 3);
+  justify-content: flex-end;
+}
