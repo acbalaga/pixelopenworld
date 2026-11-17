@@ -62,7 +62,7 @@ function checkTrials(state: SimState, who: EntityId, item: string): void {
   for (const id of Object.keys(TRIALS).sort()) {
     const t = TRIALS[id];
     if (!t || !s.offered.includes(id) || t.gather.item !== item) continue;
-    if (t.gather.phases.includes(dayPhase(state.tick))) passTrial(state, who, id);
+    if (t.gather.phases.includes(dayPhase(state.worldTick))) passTrial(state, who, id);
   }
 }
 

@@ -4,7 +4,19 @@ import type { Trust } from './integrity/reasons';
 import type { SaveSummary } from '../shared/summary';
 
 /** The save layout version. Bump it for any change to saved state, and add a migration. */
-export const CURRENT_SCHEMA = 4;
+export const CURRENT_SCHEMA = 5;
+
+/**
+ * The trusted-time record a save carries (M2-04). `epoch` is the trusted ms the world clock
+ * counts from, so the in-game time of day is a function of trusted time. The rest lets the next
+ * session pick the clock up (see `platform/clock.ts`).
+ */
+export interface SaveTime {
+  epoch: number;
+  lastTrustedNow: number;
+  offset: number;
+  accrualUsedMs: number;
+}
 
 /**
  * What a save holds, before any encoding (tech/02). `sim` is the canonical text from
@@ -32,6 +44,8 @@ export interface SavePlain {
   startedAt: number;
   /** Intact or Flagged, with the reasons. Permanent once Flagged (tech/02). */
   trust: Trust;
+  /** Trusted time record. Schema 5. */
+  time: SaveTime;
 }
 
 /** The slots, newest first. `emergency` is written by the crash handler. `replaced` holds the save an import replaced, until the next import. `quarantine` keeps a record that failed to load, so nothing is ever lost. */

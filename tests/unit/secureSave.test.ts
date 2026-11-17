@@ -65,6 +65,12 @@ function plainOf(s: SimState, seq = 1, prevHash = ''): SavePlain {
     ledger: structuredClone(s.ledger),
     startedAt: 1_700_000_000_000 - 300_000,
     trust: { state: 'intact', reasons: [], flaggedAt: null },
+    time: {
+      epoch: 1_700_000_000_000 - 300_000,
+      lastTrustedNow: 1_700_000_000_000 + seq * 1000,
+      offset: 0,
+      accrualUsedMs: 0,
+    },
   };
 }
 

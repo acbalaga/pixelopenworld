@@ -4,6 +4,7 @@
  * asked to confirm. Nothing here touches storage: `SaveManager.importSave` does that, after the
  * player says yes.
  */
+import { wallNow } from '../platform/clock';
 import { findAvatar } from '../shared/summary';
 import { deserializeState } from '../sim/state';
 import { mergeTrust, validateSave, type Trust } from './integrity';
@@ -40,7 +41,7 @@ export interface ImportPlan {
 export async function planImport(
   bytes: Uint8Array,
   source?: SealSource,
-  now: () => number = Date.now,
+  now: () => number = wallNow,
 ): Promise<ImportPlan> {
   let opened: SavePlain;
   try {

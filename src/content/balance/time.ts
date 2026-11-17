@@ -13,6 +13,11 @@ export const TIME = {
   ],
   /** Minutes into the cycle at tick 0. 4 is the start of full day. */
   startMinute: 4,
+  /**
+   * Offline accrual cap at base, in ms (design/06): 8 hours. At most this much accrues in total
+   * between two successful time syncs (tech/02), so a week offline pays one cap period.
+   */
+  offlineCapBaseMs: 8 * 60 * 60 * 1000,
 } as const;
 
 export type DayPhase = (typeof TIME.phases)[number]['phase'];

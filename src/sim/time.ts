@@ -13,3 +13,13 @@ export function dayPhase(tick: number): DayPhase {
   }
   return TIME.phases[0].phase;
 }
+
+/**
+ * The world tick for a trusted wall time: how many sim ticks of in-game time have passed since
+ * `epochMs`. The platform passes `trustedNow` in, the sim never reads a clock. Before the epoch
+ * (a save from the future of a corrected clock) it is 0.
+ */
+export function worldTickAt(trustedNowMs: number, epochMs: number): number {
+  const ms = trustedNowMs - epochMs;
+  return ms > 0 ? Math.floor((ms * TIME.ticksPerMinute) / 60_000) : 0;
+}

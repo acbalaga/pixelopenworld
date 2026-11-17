@@ -1,3 +1,4 @@
+import { TIME } from '../content/balance/time';
 import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
@@ -81,6 +82,27 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     startedAt: old.createdAt - old.playSeconds * 1000,
     trust: intact(),
   }),
+  /**
+   * 4 to 5 (M2-04): the save carries a trusted-time record. The world clock counts from an epoch,
+   * and an old save's epoch is picked so the time of day at its last write is what it was under
+   * the tick clock, then runs in real time from there. Its trusted time starts at its last write,
+   * with no offset and no offline accrual used.
+   */
+  4: (old) => {
+    const tickMs = Math.floor(
+      ((JSON.parse(old.sim) as { tick: number }).tick * 60_000) / TIME.ticksPerMinute,
+    );
+    return {
+      ...old,
+      schema: 5,
+      time: {
+        epoch: old.createdAt - tickMs,
+        lastTrustedNow: old.createdAt,
+        offset: 0,
+        accrualUsedMs: 0,
+      },
+    };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

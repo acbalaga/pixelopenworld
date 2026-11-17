@@ -22,6 +22,13 @@ export function route(request: Request): Response {
     }
     return json({ ok: true, version: __APP_VERSION__ });
   }
+  if (pathname === '/api/time') {
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return json({ error: 'method not allowed' }, 405);
+    }
+    // Server epoch milliseconds. No bindings, no secrets, never cached (tech/02 "Trusted time").
+    return json({ now: Date.now() });
+  }
   return json({ error: 'not found' }, 404);
 }
 
