@@ -48,6 +48,15 @@ export function validateItems(
         if (!d.equip.power || d.equip.power <= 0) errors.push(`${l}: main hand needs power`);
       }
     }
+    if (d.tool && d.stack !== 1) errors.push(`${l}: tools must not stack`);
+    if (d.durability !== undefined && !(d.equip || d.tool))
+      errors.push(`${l}: only gear and tools have durability`);
+    if ((d.equip || d.tool) && (d.durability === undefined || d.durability < 1))
+      errors.push(`${l}: gear and tools need durability`);
+    if ((d.affixSlots ?? 0) > 0 && !d.equip) errors.push(`${l}: only gear has affix slots`);
+    if (d.quality && d.category === 'currency') errors.push(`${l}: currency has no quality`);
+    if (!['gear', 'tools', 'food', 'materials', 'other'].includes(d.bag))
+      errors.push(`${l}: unknown bag filter ${d.bag}`);
     if (d.food && (d.food.hp < 0 || d.food.sta < 0 || d.food.foc < 0))
       errors.push(`${l}: food restores a negative amount`);
     if (d.food?.fed && d.food.fed.ticks <= 0) errors.push(`${l}: fed buff needs a duration`);

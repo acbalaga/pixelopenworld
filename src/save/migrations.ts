@@ -1,4 +1,6 @@
+import { ITEMS_BALANCE } from '../content/balance/items';
 import { TIME } from '../content/balance/time';
+import { ITEMS } from '../content/items';
 import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
@@ -118,6 +120,54 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       sk.nightAcc = 0;
     }
     return { ...old, schema: 6, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 6 to 7 (M3-05): items become instances. Every worn item (a string until now) becomes a stack
+   * with durability at its maximum, gear and tools in the bag gain full durability, the avatar
+   * gets wear counters and an empty storage chest, and the ledger gains `masterworks` and
+   * `marked`. Nothing is lost: the same items are held, in the same places.
+   */
+  6: (old) => {
+    type Stack = { item: string; qty: number; dur?: number };
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        capacity: number;
+        comps: {
+          inventory: ({
+            slots: (Stack | null)[];
+            equipment: Record<string, string | Stack | null>;
+            wear?: unknown;
+          } | null)[];
+          storage?: ({ slots: null[] } | null)[];
+        };
+      };
+      ledger?: Record<string, unknown>;
+    };
+    const full = (item: string): number | undefined => ITEMS[item]?.durability;
+    const comps = raw.entities.comps;
+    const storage: ({ slots: null[] } | null)[] = comps.inventory.map(() => null);
+    comps.inventory.forEach((inv, i) => {
+      if (!inv) return;
+      for (const [slot, item] of Object.entries(inv.equipment)) {
+        if (typeof item !== 'string') continue;
+        const dur = full(item);
+        inv.equipment[slot] = dur === undefined ? { item, qty: 1 } : { item, qty: 1, dur };
+      }
+      for (const s of inv.slots) {
+        const dur = s ? full(s.item) : undefined;
+        if (s && dur !== undefined && s.dur === undefined) s.dur = dur;
+      }
+      inv.wear = { hits: 0, taken: 0, uses: 0 };
+      storage[i] = { slots: Array.from({ length: ITEMS_BALANCE.storage.slots }, () => null) };
+    });
+    comps.storage = storage;
+    if (raw.ledger) Object.assign(raw.ledger, { masterworks: {}, marked: {} });
+    return {
+      ...old,
+      schema: 7,
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
+      ledger: { ...old.ledger, masterworks: {}, marked: {} },
+    };
   },
 };
 

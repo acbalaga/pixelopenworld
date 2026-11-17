@@ -118,7 +118,7 @@ describe('stacking and overflow', () => {
   it('capacity comes from balance data, and a new avatar has the starter kit', () => {
     const r = rig();
     expect(inv(r).slots).toHaveLength(B.inventory.slots);
-    expect(inv(r).equipment.main).toBe('item.sword_rusty');
+    expect(inv(r).equipment.main?.item).toBe('item.sword_rusty');
     expect(countItem(inv(r), 'item.dish_bread')).toBe(2);
   });
 });
@@ -133,8 +133,8 @@ describe('equipment', () => {
     const slot = stash(r, 'item.sword_iron');
     r.tick({ type: 'equip', slot });
     expect(cb(r).power).toBe(14);
-    expect(inv(r).equipment.main).toBe('item.sword_iron');
-    expect(inv(r).slots[slot]).toEqual({ item: 'item.sword_rusty', qty: 1 });
+    expect(inv(r).equipment.main?.item).toBe('item.sword_iron');
+    expect(inv(r).slots[slot]).toMatchObject({ item: 'item.sword_rusty', qty: 1 });
     expect(ofType(r.events, 'equipped')).toHaveLength(1);
   });
   it('a spear changes the weapon family as well as the power', () => {
@@ -193,7 +193,7 @@ describe('equipment', () => {
     for (let i = 0; i < inv(r).slots.length; i++)
       if (!inv(r).slots[i]) inv(r).slots[i] = { item: 'item.old_key', qty: 1 };
     expect(unequip(r.s, r.me, 'head')).toBe(false);
-    expect(inv(r).equipment.head).toBe('item.cap_wool');
+    expect(inv(r).equipment.head?.item).toBe('item.cap_wool');
   });
   it('cannot equip food, or anything while mid swing', () => {
     const r = rig();

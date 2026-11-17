@@ -9,9 +9,9 @@ describe('equipment on the paper doll', () => {
     expect(dollWithGear(base, none)).toMatchObject({ mainHand: 'none', offHand: 'none' });
     const worn = dollWithGear(base, {
       ...none,
-      main: 'item.sword_iron',
-      off: 'item.shield_wood',
-      body: 'item.outfit_scholar',
+      main: { item: 'item.sword_iron' },
+      off: { item: 'item.shield_wood' },
+      body: { item: 'item.outfit_scholar' },
     });
     expect(worn).toMatchObject({
       mainHand: 'sword',
@@ -20,7 +20,7 @@ describe('equipment on the paper doll', () => {
       topColor: 'violet',
       skin: base.skin,
     });
-    expect(dollWithGear(base, { ...none, body: 'item.outfit_leather' })).toMatchObject({
+    expect(dollWithGear(base, { ...none, body: { item: 'item.outfit_leather' } })).toMatchObject({
       top: 'vest',
       topColor: 'brown',
     });

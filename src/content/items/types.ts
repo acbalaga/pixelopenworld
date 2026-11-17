@@ -1,6 +1,16 @@
 import type { BottomStyle, ClothColor, MainHand, OffHand, TopStyle } from '../dolls/parts';
 
-export type ItemCategory = 'weapon' | 'armor' | 'consumable' | 'material' | 'currency' | 'misc';
+export type ItemCategory =
+  'weapon' | 'armor' | 'tool' | 'consumable' | 'material' | 'currency' | 'misc';
+
+/** Common, Fine, Superior, Masterwork. Only items with `quality: true` can carry one. */
+export type Quality = 0 | 1 | 2 | 3;
+
+/** The tool kinds gathering and crafting ask for (M3-06, M3-07, M3-14). */
+export type ToolKind = 'pick' | 'axe' | 'sickle' | 'rod' | 'hammer' | 'needle';
+
+/** The Bag tab filters. Every item belongs to exactly one. */
+export type BagFilter = 'gear' | 'tools' | 'food' | 'materials' | 'other';
 
 /** Where gear is worn. */
 export const EQUIP_SLOTS = ['main', 'off', 'head', 'body', 'legs', 'accessory'] as const;
@@ -59,6 +69,15 @@ export interface ItemDef {
   value: number;
   equip?: EquipDef;
   food?: FoodDef;
+  /** This item can carry a quality. Others never do (`QUALITY_ON_PLAIN`). */
+  quality?: true;
+  /** Most durability. Gear and tools only. Absent means the item does not wear. */
+  durability?: number;
+  /** Affixes it can hold. Enchanting fills them (M3-14). Absent means 0. */
+  affixSlots?: 0 | 1 | 2;
+  tool?: { kind: ToolKind; tier: number };
+  /** Which Bag filter lists it. */
+  bag: BagFilter;
 }
 
 /** A recipe: these ingredients, together, make this. Order does not matter. */

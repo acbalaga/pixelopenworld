@@ -286,7 +286,7 @@ describe('the other consistency and ledger rules', () => {
       'gear in the wrong slot',
       'EQUIP_SLOT',
       (s, me) => {
-        s.entities.comps.inventory[me]!.equipment.head = 'item.sword_rusty';
+        s.entities.comps.inventory[me]!.equipment.head = { item: 'item.sword_rusty', qty: 1 };
       },
     ],
     [

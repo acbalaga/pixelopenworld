@@ -16,7 +16,7 @@ export function ledgerRules(v: View): Reason[] {
   const fail = (code: Reason['code'], detail: string): void => {
     out.push({ code, layer: 'ledger', detail });
   };
-  const { avatar, inv, skills, journal, ledger } = v;
+  const { avatar, inv, storage, skills, journal, ledger } = v;
 
   // Coin held equals earned minus spent.
   const expected = sum(ledger.coinEarned) - sum(ledger.coinSpent);
@@ -36,7 +36,8 @@ export function ledgerRules(v: View): Reason[] {
   // Items held never exceed items made, and every item came from a source that can make it.
   const held: Record<string, number> = {};
   for (const s of inv.slots) if (s) held[s.item] = (held[s.item] ?? 0) + s.qty;
-  for (const item of Object.values(inv.equipment)) if (item) held[item] = (held[item] ?? 0) + 1;
+  for (const s of storage.slots) if (s) held[s.item] = (held[s.item] ?? 0) + s.qty;
+  for (const s of Object.values(inv.equipment)) if (s) held[s.item] = (held[s.item] ?? 0) + 1;
   const made: Record<string, number> = {};
   for (const [src, items] of Object.entries(ledger.itemsMade)) {
     for (const [item, n] of Object.entries(items)) {

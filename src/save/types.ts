@@ -4,7 +4,7 @@ import type { Trust } from './integrity/reasons';
 import type { SaveSummary } from '../shared/summary';
 
 /** The save layout version. Bump it for any change to saved state, and add a migration. */
-export const CURRENT_SCHEMA = 6;
+export const CURRENT_SCHEMA = 7;
 
 /**
  * The trusted-time record a save carries (M2-04). `epoch` is the trusted ms the world clock

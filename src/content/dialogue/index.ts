@@ -21,6 +21,57 @@ export const NPCS: Readonly<Record<string, NpcDef>> = {
       offHand: 'none',
     },
   },
+  'npc.smith': {
+    id: 'npc.smith',
+    name: 'Tobin',
+    facing: 'down',
+    doll: {
+      body: 'a',
+      skin: 'deep',
+      hair: 'none',
+      hairColor: 'black',
+      top: 'vest',
+      topColor: 'slate',
+      bottom: 'trousers',
+      bottomColor: 'brown',
+      mainHand: 'none',
+      offHand: 'none',
+    },
+  },
+  'npc.outfitter': {
+    id: 'npc.outfitter',
+    name: 'Mara',
+    facing: 'down',
+    doll: {
+      body: 'b',
+      skin: 'light',
+      hair: 'ponytail',
+      hairColor: 'auburn',
+      top: 'tunic',
+      topColor: 'green',
+      bottom: 'skirt',
+      bottomColor: 'brown',
+      mainHand: 'none',
+      offHand: 'none',
+    },
+  },
+  'npc.herbalist': {
+    id: 'npc.herbalist',
+    name: 'Ilse',
+    facing: 'down',
+    doll: {
+      body: 'b',
+      skin: 'pale',
+      hair: 'bun',
+      hairColor: 'blue',
+      top: 'robe',
+      topColor: 'green',
+      bottom: 'skirt',
+      bottomColor: 'slate',
+      mainHand: 'none',
+      offHand: 'none',
+    },
+  },
   'npc.cook': {
     id: 'npc.cook',
     name: 'Hesper',
@@ -105,6 +156,54 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       'item.lantern_oil',
     ],
   },
+  // Tier 1 trade for the new item set. Purses are small and capped, so no one buys without end.
+  'shop.tobin': {
+    id: 'shop.tobin',
+    npc: 'npc.smith',
+    purse: { start: 120, max: 200 },
+    stock: [
+      'item.sword_bronze',
+      'item.spear_hunter',
+      'item.shield_buckler',
+      'item.pick_copper',
+      'item.axe_copper',
+      'item.sickle_copper',
+      'item.hammer_copper',
+      'item.rod_ash',
+      'item.whetstone',
+    ],
+  },
+  'shop.mara': {
+    id: 'shop.mara',
+    npc: 'npc.outfitter',
+    purse: { start: 100, max: 180 },
+    stock: [
+      'item.trousers_wool',
+      'item.cap_leather',
+      'item.jerkin_leather',
+      'item.chaps_leather',
+      'item.coif_mail',
+      'item.belt_leather',
+      'item.amulet_bone',
+      'item.thread_spool',
+      'item.flute_reed',
+    ],
+  },
+  'shop.ilse': {
+    id: 'shop.ilse',
+    npc: 'npc.herbalist',
+    purse: { start: 90, max: 160 },
+    stock: [
+      'item.potion_health_s',
+      'item.potion_stamina',
+      'item.potion_focus',
+      'item.dew_vial',
+      'item.salt',
+      'item.spark_dust',
+      'item.trail_biscuit',
+      'item.apple_tart',
+    ],
+  },
 };
 
 export const REQUESTS: Readonly<Record<string, RequestDef>> = {
@@ -148,6 +247,75 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.brin.again',
         choices: [
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+    },
+  },
+  'npc.smith': {
+    npc: 'npc.smith',
+    entries: [{ if: [{ flag: 'met_tobin' }], node: 'again' }, { node: 'greet' }],
+    nodes: {
+      greet: {
+        id: 'greet',
+        text: 'dlg.tobin.greet',
+        do: [{ setFlag: 'met_tobin' }],
+        choices: [
+          { text: 'dlg.tobin.c_shop', next: null, do: [{ openShop: 'shop.tobin' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      again: {
+        id: 'again',
+        text: 'dlg.tobin.again',
+        choices: [
+          { text: 'dlg.tobin.c_shop', next: null, do: [{ openShop: 'shop.tobin' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+    },
+  },
+  'npc.outfitter': {
+    npc: 'npc.outfitter',
+    entries: [{ if: [{ flag: 'met_mara' }], node: 'again' }, { node: 'greet' }],
+    nodes: {
+      greet: {
+        id: 'greet',
+        text: 'dlg.mara.greet',
+        do: [{ setFlag: 'met_mara' }],
+        choices: [
+          { text: 'dlg.mara.c_shop', next: null, do: [{ openShop: 'shop.mara' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      again: {
+        id: 'again',
+        text: 'dlg.mara.again',
+        choices: [
+          { text: 'dlg.mara.c_shop', next: null, do: [{ openShop: 'shop.mara' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+    },
+  },
+  'npc.herbalist': {
+    npc: 'npc.herbalist',
+    entries: [{ if: [{ flag: 'met_ilse' }], node: 'again' }, { node: 'greet' }],
+    nodes: {
+      greet: {
+        id: 'greet',
+        text: 'dlg.ilse.greet',
+        do: [{ setFlag: 'met_ilse' }],
+        choices: [
+          { text: 'dlg.ilse.c_shop', next: null, do: [{ openShop: 'shop.ilse' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      again: {
+        id: 'again',
+        text: 'dlg.ilse.again',
+        choices: [
+          { text: 'dlg.ilse.c_shop', next: null, do: [{ openShop: 'shop.ilse' }] },
           { text: 'dlg.c_bye', next: null },
         ],
       },

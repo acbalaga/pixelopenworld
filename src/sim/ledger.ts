@@ -23,6 +23,10 @@ export interface Ledger {
   kills: Tally;
   /** Successful crafts, by recipe id. */
   crafts: Tally;
+  /** Masterwork items made by crafting, by item id (filled by M3-07). */
+  masterworks: Tally;
+  /** Items crafted by the avatar and so carrying its maker's mark, by item id (M3-07). */
+  marked: Tally;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
@@ -33,7 +37,16 @@ export type ItemSource =
 
 /** An empty ledger. */
 export function newLedger(): Ledger {
-  return { coinEarned: {}, coinSpent: {}, xpEarned: {}, itemsMade: {}, kills: {}, crafts: {} };
+  return {
+    coinEarned: {},
+    coinSpent: {},
+    xpEarned: {},
+    itemsMade: {},
+    kills: {},
+    crafts: {},
+    masterworks: {},
+    marked: {},
+  };
 }
 
 const bump = (t: Tally, key: string, n: number): void => {

@@ -54,6 +54,7 @@ export class TalkSheet {
   private shopMsg = '';
   private shopTab: 'buy' | 'sell' = 'buy';
   private ready = false;
+  private storageOpen = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -79,6 +80,7 @@ export class TalkSheet {
     this.log = null;
     this.actions = null;
     this.shopId = null;
+    this.storageOpen = false;
     this.deps.onOpenChange(false);
   }
 
@@ -171,6 +173,8 @@ export class TalkSheet {
   onEvent(e: SimEvent): void {
     if (e.type === 'talkStarted') this.openTalk(e.npc);
     else if (e.type === 'shopOpened') this.openShop(e.shop);
+    else if (e.type === 'storageOpened') this.openStorage();
+    else if (this.storageOpen && e.type === 'storageMoved') this.renderStorage();
     else if (this.shopId && e.type === 'bought') {
       this.shopMsg = fill(S.shop.bought, { item: nameOf(e.item), n: String(e.coin) });
       this.renderShop();
@@ -287,8 +291,74 @@ export class TalkSheet {
     this.ready = true;
   }
 
+  /** The storage chest: two lists, tap a stack to move it across. */
+  openStorage(): void {
+    this.mount('pow-shop pow-storage', S.storage.title);
+    this.storageOpen = true;
+    this.renderStorage();
+  }
+
+  private renderStorage(): void {
+    const s = this.sheet;
+    if (!s || !this.storageOpen) return;
+    const { state, who } = this.deps.read();
+    const inv = state.entities.comps.inventory[who];
+    const store = state.entities.comps.storage[who];
+    s.textContent = '';
+    const head = el('header', 'pow-shop-head');
+    put(head, el('h2', 'pow-talk-name', S.storage.title));
+    const close = el('button', 'pow-button pow-close', S.storage.close);
+    close.type = 'button';
+    close.addEventListener('click', () => this.close());
+    head.appendChild(close);
+    const column = (
+      title: string,
+      slots: readonly ({ item: string; qty: number; q?: number } | null)[],
+      dir: 'in' | 'out',
+    ): HTMLElement => {
+      const col = el('section', 'pow-storage-col');
+      const used = slots.filter((x) => x).length;
+      put(
+        col,
+        el('h3', 'pow-h', title),
+        el('p', 'pow-hint', fill(S.storage.count, { used, total: slots.length })),
+      );
+      const list = el('ul', 'pow-shop-list');
+      slots.forEach((stack, slot) => {
+        if (!stack) return;
+        const li = el('li', 'pow-shop-row');
+        const icon = el('canvas', 'pow-icon');
+        icon.width = 12;
+        icon.height = 12;
+        icon.setAttribute('aria-hidden', 'true');
+        this.deps.drawIcon(icon, ITEMS[stack.item]?.icon ?? '');
+        const q = stack.q ? ` ${S.qualityGlyph[stack.q] ?? ''}` : '';
+        const name = el('span', 'pow-shop-name', `${nameOf(stack.item)}${q} x${stack.qty}`);
+        const label = dir === 'in' ? S.storage.toChest : S.storage.toBag;
+        const b = el('button', 'pow-button', label);
+        b.type = 'button';
+        b.setAttribute('aria-label', `${label} ${nameOf(stack.item)}`);
+        b.addEventListener('click', () => this.deps.send({ type: 'store', dir, slot }));
+        put(li, icon, name, b);
+        list.appendChild(li);
+      });
+      if (used === 0) list.appendChild(el('li', 'pow-hint', S.storage.empty));
+      col.appendChild(list);
+      return col;
+    };
+    const cols = el('div', 'pow-storage-cols');
+    put(
+      cols,
+      column(S.storage.bag, inv?.slots ?? [], 'in'),
+      column(S.storage.chest, store?.slots ?? [], 'out'),
+    );
+    put(s, head, cols);
+    (s.querySelector('.pow-shop-list button') as HTMLElement | null)?.focus();
+  }
+
   /** Re-draws the shop, so coin and the bag stay current. Cheap enough to call when the sheet is open. */
   refresh(): void {
+    if (this.storageOpen) this.renderStorage();
     if (this.shopId && this.ready) this.renderShop();
   }
 }

@@ -30,6 +30,8 @@ export type Command =
   | { type: 'unequip'; slot: string }
   /** Drop all of bag slot `slot` on the ground. */
   | { type: 'drop'; slot: number }
+  /** Move a whole stack between the bag and the storage chest in front: `in` from bag slot `slot`, `out` from chest slot `slot`. */
+  | { type: 'store'; dir: 'in' | 'out'; slot: number }
   /** Eat or use the item in bag slot `slot`. */
   | { type: 'use'; slot: number }
   /** Cook these ingredients at the camp pot in front. Experiments are cooks with no recipe. */
@@ -103,6 +105,11 @@ export function validateCommand(raw: unknown): Validated {
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };
       return { ok: true, command: { type: r.type, slot: r.slot as number } };
+    case 'store':
+      if (r.dir !== 'in' && r.dir !== 'out') return { ok: false, reason: 'bad direction' };
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
+        return { ok: false, reason: 'bad slot' };
+      return { ok: true, command: { type: 'store', dir: r.dir, slot: r.slot as number } };
     case 'unequip':
       if (typeof r.slot !== 'string' || !EQUIP_SLOTS.includes(r.slot as never))
         return { ok: false, reason: 'bad slot' };

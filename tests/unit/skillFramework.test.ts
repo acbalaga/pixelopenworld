@@ -12,6 +12,7 @@ import { addXp, pointsOf, xpToNext } from '../../src/sim/skills';
 import { createDemoState, deserializeState, type SimState } from '../../src/sim/state';
 import { skillsSystem } from '../../src/sim/systems/skills';
 import { skillsView } from '../../src/ui/menu/model';
+import { CURRENT_SCHEMA } from '../../src/save/types';
 import { tamper } from '../support/saves';
 
 const OPEN = {
@@ -78,7 +79,7 @@ describe('schema 5 to 6 migration', () => {
       deserializeState(fixture.plain.sim).entities.comps.skills.find((x) => x)!.seen,
     ).toContain('skill.cooking:cook:recipe.herb_tea');
     const now = await migrated();
-    expect(now.schema).toBe(6);
+    expect(now.schema).toBe(CURRENT_SCHEMA);
     const s = deserializeState(now.sim);
     const me = findAvatar(s)!;
     const sk = s.entities.comps.skills[me]!;

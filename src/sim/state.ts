@@ -3,7 +3,7 @@ import { createEventQueue, type EventQueue } from './kernel/events';
 import { createStreams, int, type RngStreams } from './kernel/rng';
 import { px, type Direction, type Vec } from './kernel/fixed';
 import type { CollisionGrid } from './systems/collision';
-import type { EquipSlot } from '../content/items/types';
+import type { EquipSlot, Quality } from '../content/items/types';
 import { newLedger, type Ledger } from './ledger';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
@@ -109,13 +109,28 @@ export interface Combatant {
 export interface ItemStack {
   item: string;
   qty: number;
+  /** Absent means Common (0). */
+  q?: Quality;
+  /** Durability left. Gear and tools only. Absent for everything else. */
+  dur?: number;
+  /** Crafted by this avatar: shows the avatar's handle. */
+  mark?: 1;
+  /** At most the item's `affixSlots`. */
+  affixes?: string[];
+}
+
+/** The storage chest's slots, held on the avatar (M3-05). */
+export interface Storage {
+  slots: (ItemStack | null)[];
 }
 
 /** The bag, what is worn, and the recipes the avatar knows. Coin is `avatar.coin`, not a slot. */
 export interface Inventory {
   slots: (ItemStack | null)[];
-  equipment: Record<EquipSlot, string | null>;
+  equipment: Record<EquipSlot, ItemStack | null>;
   recipes: string[];
+  /** Hits landed, hits taken and gathers made since the last durability point was lost. */
+  wear: { hits: number; taken: number; uses: number };
 }
 
 /** An item lying in the world. `age` counts ticks since it popped out. */
@@ -125,6 +140,8 @@ export interface Pickup {
   age: number;
   /** Told the player the bag was full, so it says so once. */
   blocked: boolean;
+  /** Quality, durability, mark and affixes of a dropped item, so they survive the drop. */
+  stack?: ItemStack;
 }
 
 /** A gathering node. Ready when the tick reaches `readyAt`. */
@@ -280,6 +297,7 @@ export interface Components {
   spawner: Spawner;
   skills: Skills;
   inventory: Inventory;
+  storage: Storage;
   pickup: Pickup;
   node: GatherNode;
   gather: Gather;
@@ -324,6 +342,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'spawner',
   'skills',
   'inventory',
+  'storage',
   'pickup',
   'node',
   'gather',
