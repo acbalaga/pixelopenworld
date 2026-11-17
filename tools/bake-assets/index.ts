@@ -10,6 +10,7 @@ import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { SFX } from '../../src/content/audio/sfx';
 import { validateDefs } from './validate';
 import { validateCreatures } from './validateCreatures';
+import { validateRealItems } from './validateItems';
 
 /** Sprite, creature and spawner validation together. */
 function validateAll(): string[] {
@@ -20,6 +21,7 @@ function validateAll(): string[] {
       sprites: new Set(SPRITES.map((s) => s.id)),
       sfx: new Set(SFX.map((s) => s.id)),
     }),
+    ...validateRealItems(new Set(SPRITES.map((s) => s.id))),
   ];
 }
 

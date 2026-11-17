@@ -1,3 +1,5 @@
+import { ITEMS_BALANCE } from '../../content/balance/items';
+import { EQUIP_SLOTS } from '../../content/items/types';
 import { isDirection, type Direction } from './fixed';
 
 /** Commands are the only way the outside changes the sim. */
@@ -19,7 +21,17 @@ export type Command =
    * fires now (others). `release` fires an aimed technique along `aim`.
    */
   | { type: 'technique'; slot: number; phase: 'press' | 'aim' | 'release'; aim: Direction | null }
-  | { type: 'scheme'; scheme: 'flow' | 'classic' };
+  | { type: 'scheme'; scheme: 'flow' | 'classic' }
+  /** The context button: work the node in front, or take the second press of a gather. */
+  | { type: 'interact' }
+  /** Wear the gear in bag slot `slot`. */
+  | { type: 'equip'; slot: number }
+  /** Take off worn gear. */
+  | { type: 'unequip'; slot: string }
+  /** Eat or use the item in bag slot `slot`. */
+  | { type: 'use'; slot: number }
+  /** Cook these ingredients at the camp pot in front. Experiments are cooks with no recipe. */
+  | { type: 'cook'; items: string[] };
 
 /** Result of validating a raw command. */
 export type Validated = { ok: true; command: Command } | { ok: false; reason: string };
@@ -71,6 +83,26 @@ export function validateCommand(raw: unknown): Validated {
       if (r.scheme === 'flow' || r.scheme === 'classic')
         return { ok: true, command: { type: 'scheme', scheme: r.scheme } };
       return { ok: false, reason: 'bad scheme' };
+    case 'interact':
+      return { ok: true, command: { type: 'interact' } };
+    case 'equip':
+    case 'use':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
+        return { ok: false, reason: 'bad slot' };
+      return { ok: true, command: { type: r.type, slot: r.slot as number } };
+    case 'unequip':
+      if (typeof r.slot !== 'string' || !EQUIP_SLOTS.includes(r.slot as never))
+        return { ok: false, reason: 'bad slot' };
+      return { ok: true, command: { type: 'unequip', slot: r.slot } };
+    case 'cook':
+      if (
+        !Array.isArray(r.items) ||
+        r.items.length < 1 ||
+        r.items.length > ITEMS_BALANCE.cook.maxIngredients ||
+        !r.items.every((i) => typeof i === 'string' && /^item\.[a-z0-9_]{1,40}$/.test(i))
+      )
+        return { ok: false, reason: 'bad ingredients' };
+      return { ok: true, command: { type: 'cook', items: [...(r.items as string[])] } };
     default:
       return { ok: false, reason: 'unknown command type' };
   }

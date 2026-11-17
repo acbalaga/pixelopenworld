@@ -7,6 +7,7 @@ import { newFighter, newPools } from './combat/fighter';
 import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 import { newSkills } from './skills';
+import { applyItemCommand, newInventory, recomputeGear } from './items';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
 export function createAvatar(state: SimState, x: number, y: number): EntityId {
@@ -45,6 +46,8 @@ export function createAvatar(state: SimState, x: number, y: number): EntityId {
     tier: 0,
   });
   setComp(state.entities, id, 'skills', newSkills());
+  setComp(state.entities, id, 'inventory', newInventory());
+  recomputeGear(state, id);
   return id;
 }
 
@@ -57,6 +60,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
     a.full = c.dir !== null && c.full === true;
     return;
   }
+  applyItemCommand(state, who, c);
   applyFighterCommand(state, who, c);
 }
 
