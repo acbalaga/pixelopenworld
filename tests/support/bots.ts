@@ -47,6 +47,8 @@ export class Run {
   readonly snapshots: Snapshot[] = [];
   /** Wall clock ms added on top of play time: time spent with the game closed. */
   offlineMs = 0;
+  /** World ticks added to the sim tick, so a run can start at night. 0 is the start of day. */
+  worldOffset = 0;
   events: SimEvent[] = [];
   private lastCommit = 0;
 
@@ -75,7 +77,7 @@ export class Run {
   }
 
   tick(...cmds: Command[]): void {
-    stepWorld(this.s, this.me, { commands: cmds });
+    stepWorld(this.s, this.me, { commands: cmds, worldTick: this.s.tick + 1 + this.worldOffset });
     this.events.push(...this.s.events.list);
     if (this.events.length > 5000) this.events = this.events.slice(-1000);
   }

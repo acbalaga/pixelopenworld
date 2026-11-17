@@ -162,6 +162,8 @@ export interface Skills {
   seen: string[];
   /** Sprint distance: last feet position and sub-pixel distance not yet paid. */
   stride: { x: number; y: number; acc: number };
+  /** Ticks of night spent outdoors that have not yet been paid as an in-game hour (Survival). */
+  nightAcc: number;
 }
 
 export interface Stagger {

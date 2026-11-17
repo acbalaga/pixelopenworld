@@ -9,7 +9,7 @@ import { migrate } from '../../src/save/migrations';
 import { MemoryStorage } from '../../src/save/storage';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
 import { findAvatar } from '../../src/shared/summary';
-import { deserializeState } from '../../src/sim/state';
+import { deserializeState, serializeState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { LOOK, T0, honestState } from '../support/saves';
 
@@ -163,6 +163,13 @@ describe('trust through the save manager', () => {
   });
 });
 
+/** Schema 6 adds `skills.nightAcc`. Takes it off so an older save's state can be compared whole. */
+function withoutNightAcc(sim: string): string {
+  const s = deserializeState(sim);
+  for (const sk of s.entities.comps.skills) if (sk) delete (sk as { nightAcc?: number }).nightAcc;
+  return serializeState(s);
+}
+
 describe('older saves migrate to the current schema and validate clean', () => {
   it('schema 3 gains a start time and an Intact trust', () => {
     const f = fixture('schema-3.json').plain;
@@ -171,7 +178,7 @@ describe('older saves migrate to the current schema and validate clean', () => {
     expect(now.schema).toBe(CURRENT_SCHEMA);
     expect(now.startedAt).toBe(f.createdAt - f.playSeconds * 1000);
     expect(now.trust).toEqual({ state: 'intact', reasons: [], flaggedAt: null });
-    expect(now.sim).toBe(f.sim);
+    expect(withoutNightAcc(now.sim)).toBe(f.sim);
     expect(validateSave(now).reasons).toEqual([]);
   });
 
@@ -190,7 +197,7 @@ describe('older saves migrate to the current schema and validate clean', () => {
     // The world tick at the last write equals the tick it was saved at.
     expect(worldTickAt(f.createdAt, now.time.epoch)).toBeGreaterThanOrEqual(tick - 1);
     expect(worldTickAt(f.createdAt, now.time.epoch)).toBeLessThanOrEqual(tick);
-    expect(now.sim).toBe(f.sim);
+    expect(withoutNightAcc(now.sim)).toBe(f.sim);
     expect(validateSave(now).reasons).toEqual([]);
   });
 

@@ -8,7 +8,15 @@ import { earnedXp } from './ledger';
 
 /** An avatar with no skill points. */
 export function newSkills(): Skills {
-  return { points: {}, xp: {}, passed: [], offered: [], seen: [], stride: { x: 0, y: 0, acc: 0 } };
+  return {
+    points: {},
+    xp: {},
+    passed: [],
+    offered: [],
+    seen: [],
+    stride: { x: 0, y: 0, acc: 0 },
+    nightAcc: 0,
+  };
 }
 
 /** XP needed to go from `points` to `points + 1`. Grows smoothly. */

@@ -40,6 +40,8 @@ export interface FoodDef {
   sta: number;
   foc: number;
   fed?: FedDef;
+  /** Eaten as found, uncooked. Eating it pays Survival XP (eatRaw). */
+  raw?: true;
 }
 
 /** One item. Text lives in `content/strings/items.ts` under the two keys. */

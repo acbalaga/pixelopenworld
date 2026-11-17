@@ -59,10 +59,22 @@ const LIST: readonly ItemDef[] = [
   item('item.cap_wool', 'armor', { value: 12, equip: { slot: 'head', defense: 1 } }),
   item('item.ring_copper', 'armor', { value: 20, equip: { slot: 'accessory', defense: 1 } }),
   // Materials.
-  item('item.sunwort', 'material', { value: 4 }),
-  item('item.dewmint', 'material', { value: 4 }),
-  item('item.berry_red', 'material', { value: 3 }),
-  item('item.berry_blue', 'material', { value: 3 }),
+  item('item.sunwort', 'material', {
+    value: 4,
+    food: { hp: 2, sta: 0, foc: 50, raw: true },
+  }),
+  item('item.dewmint', 'material', {
+    value: 4,
+    food: { hp: 1, sta: 50, foc: 50, raw: true },
+  }),
+  item('item.berry_red', 'material', {
+    value: 3,
+    food: { hp: 3, sta: 50, foc: 0, raw: true },
+  }),
+  item('item.berry_blue', 'material', {
+    value: 3,
+    food: { hp: 3, sta: 0, foc: 50, raw: true },
+  }),
   item('item.raw_meat', 'material', { value: 5 }),
   item('item.moss_tuft', 'material', { value: 2 }),
   item('item.seed_pod', 'material', { value: 2 }),

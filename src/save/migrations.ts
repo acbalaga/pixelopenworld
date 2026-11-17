@@ -103,6 +103,22 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       },
     };
   },
+  /**
+   * 5 to 6 (M3-02): Cooking pays on the `craft` event instead of `cook`, so its first-time keys
+   * `<skill>:cook:<recipe>` become `<skill>:craft:<recipe>` and no bonus is paid twice. Skills
+   * gain a `nightAcc` counter (Survival), which starts at 0.
+   */
+  5: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { skills: ({ seen: string[]; nightAcc?: number } | null)[] } };
+    };
+    for (const sk of raw.entities.comps.skills) {
+      if (!sk) continue;
+      sk.seen = sk.seen.map((k) => k.replace(/^([^:]+):cook:/, '$1:craft:'));
+      sk.nightAcc = 0;
+    }
+    return { ...old, schema: 6, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

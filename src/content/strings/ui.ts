@@ -41,6 +41,8 @@ export const UI_STRINGS = {
   skillRow: '{name}, {rank}, {points} of 100',
   trialReady: 'A Trial is waiting. Earned XP is kept for it.',
   trialOffered: 'A Trial has been set. See it through to go further.',
+  /** Under a skill one point short of a Trial, or waiting on one, until a Trial for it is authored. */
+  trialUnknown: 'No one here can test this yet.',
   nextPoint: 'Next point',
   bagTitle: 'Bag',
   bagCount: '{used} of {total} slots',
@@ -247,6 +249,7 @@ export const UI_STRINGS = {
       LEDGER_COPY_MISMATCH: 'The saved record of earnings does not match the game state.',
       AVATAR_COUNT: 'There is not exactly one character in the save.',
       UNKNOWN_ID: 'The save names something that does not exist in the game.',
+      SKILL_UNKNOWN: 'The save holds points or experience in a skill that does not exist.',
       BAD_QUANTITY: 'A quantity in the save is not possible.',
       STACK_OVER_CAP: 'A stack holds more than one slot can.',
       BAG_SIZE: 'The bag is not a size the game allows.',

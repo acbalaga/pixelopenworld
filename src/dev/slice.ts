@@ -10,6 +10,7 @@ import { spawnCreature } from '../sim/combat/enemy';
 import { addItem, countItem } from '../sim/items';
 import { madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
+import { addXp } from '../sim/skills';
 import type { SimState } from '../sim/state';
 
 /** What the hooks need from the running scene. */
@@ -36,6 +37,8 @@ export interface PowDevApi {
   spawnFoeAhead(creatureId: string): void;
   /** Puts items in the bag, as if gathered. */
   giveItem(item: string, qty: number): void;
+  /** Pays XP to a skill, as if earned. For screenshots and checks of the Skills tab. */
+  giveXp(skill: string, amount: number): void;
 }
 
 const TILE = 16;
@@ -79,6 +82,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       if (!inv) return;
       addItem(inv, item, qty);
       madeItems(state, 'seed', item, qty);
+    },
+    giveXp(skill, amount) {
+      addXp(state, who, skill, amount);
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');
