@@ -333,3 +333,25 @@ test('the Menu keeps the keyboard, and the game does not move under it', async (
   await page.keyboard.press('Escape');
   await expect(menu(page)).toBeHidden();
 });
+
+test('clear text uses the bundled font, loaded from our own origin', async ({ page }) => {
+  const problems = await watchProblems(page);
+  const fontFiles: string[] = [];
+  page.on('response', (r) => {
+    if (r.url().endsWith('.woff2')) fontFiles.push(new URL(r.url()).origin);
+  });
+  await boot(page);
+  await openMenu(page);
+  await goTab(page, 'skills');
+  await expect
+    .poll(() => page.evaluate(() => document.fonts.check('1rem "Atkinson Hyperlegible"')))
+    .toBe(true);
+  const family = await page
+    .locator('.pow-menu-body')
+    .evaluate((n) => getComputedStyle(n).fontFamily);
+  expect(family.startsWith('"Atkinson Hyperlegible"')).toBe(true);
+  expect(fontFiles.length).toBeGreaterThan(0);
+  expect(new Set(fontFiles)).toEqual(new Set([new URL(page.url()).origin]));
+  await shot(page, 'menu-skills-font');
+  expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
+});

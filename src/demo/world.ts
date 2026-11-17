@@ -168,6 +168,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   const probe = document.getElementById('safe-probe');
   if (!probe) throw new Error('safe-area probe missing');
+  // Fetch the clear text font now, so the Menu does not flash in the fallback the first time.
+  void document.fonts?.load('400 1rem "Atkinson Hyperlegible"');
+  void document.fonts?.load('700 1rem "Atkinson Hyperlegible"');
   // The DOM layer: the Menu and anything else read as clear text.
   const root = createOverlay();
   applyPaletteVars(document.documentElement);
