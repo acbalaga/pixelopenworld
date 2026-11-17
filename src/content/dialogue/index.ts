@@ -341,7 +341,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
       },
       trial: {
         id: 'trial',
-        text: 'dlg.hesper.trial',
+        text: 'trial.foraging.15.intro',
         do: [{ offerTrial: 'trial.foraging.15' }],
         next: null,
       },
@@ -353,7 +353,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           { text: 'dlg.c_bye', next: null },
         ],
       },
-      trial_again: { id: 'trial_again', text: 'dlg.hesper.trial', next: null },
+      trial_again: { id: 'trial_again', text: 'trial.foraging.15.intro', next: null },
     },
   },
   'npc.guard': {
@@ -370,6 +370,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.orla.ask',
         choices: [
           { text: 'dlg.orla.c_accept', next: 'accepted', do: [{ startRequest: asked.request }] },
+          { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.orla.c_later', next: null },
         ],
       },
@@ -381,7 +382,42 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         do: [{ turnIn: asked.request }],
         next: null,
       },
-      after: { id: 'after', text: 'dlg.orla.after', next: null },
+      after: {
+        id: 'after',
+        text: 'dlg.orla.after',
+        choices: [
+          { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      tests: {
+        id: 'tests',
+        text: 'dlg.orla.tests',
+        choices: [
+          {
+            text: 'dlg.orla.c_blades',
+            next: 'offer_blades',
+            if: [{ trial: 'trial.blades.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.blades.15' }],
+          },
+          {
+            text: 'dlg.orla.c_polearms',
+            next: 'offer_polearms',
+            if: [{ trial: 'trial.polearms.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.polearms.15' }],
+          },
+          {
+            text: 'dlg.orla.c_evasion',
+            next: 'offer_evasion',
+            if: [{ trial: 'trial.evasion.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.evasion.15' }],
+          },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      offer_blades: { id: 'offer_blades', text: 'trial.blades.15.intro', next: null },
+      offer_polearms: { id: 'offer_polearms', text: 'trial.polearms.15.intro', next: null },
+      offer_evasion: { id: 'offer_evasion', text: 'trial.evasion.15.intro', next: null },
     },
   },
   'npc.scholar': {
@@ -398,6 +434,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.wren.ask',
         choices: [
           { text: 'dlg.wren.c_accept', next: 'accepted', do: [{ startRequest: pods.request }] },
+          { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.wren.c_later', next: null },
         ],
       },
@@ -409,7 +446,28 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         do: [{ turnIn: pods.request }],
         next: null,
       },
-      after: { id: 'after', text: 'dlg.wren.after', next: null },
+      after: {
+        id: 'after',
+        text: 'dlg.wren.after',
+        choices: [
+          { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      tests: {
+        id: 'tests',
+        text: 'dlg.wren.tests',
+        choices: [
+          {
+            text: 'dlg.wren.c_ember',
+            next: 'offer_ember',
+            if: [{ trial: 'trial.ember.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.ember.15' }],
+          },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      offer_ember: { id: 'offer_ember', text: 'trial.ember.15.intro', next: null },
     },
   },
   // A stand-in for the Travelers of M5: a static figure whose two lines read as chat messages.
@@ -419,7 +477,28 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
     entries: [{ node: 'one' }],
     nodes: {
       one: { id: 'one', text: 'dlg.pilgrim.one', next: 'two' },
-      two: { id: 'two', text: 'dlg.pilgrim.two', next: null },
+      two: {
+        id: 'two',
+        text: 'dlg.pilgrim.two',
+        choices: [
+          { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      tests: {
+        id: 'tests',
+        text: 'dlg.pilgrim.tests',
+        choices: [
+          {
+            text: 'dlg.pilgrim.c_athletics',
+            next: 'offer_athletics',
+            if: [{ trial: 'trial.athletics.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.athletics.15' }],
+          },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      offer_athletics: { id: 'offer_athletics', text: 'trial.athletics.15.intro', next: null },
     },
   },
 };

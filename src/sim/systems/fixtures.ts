@@ -1,3 +1,4 @@
+import { offerFromFixture } from './trials';
 import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import { FIXTURES } from '../../content/world/fixtures';
 import { roomAt } from '../../content/world/rooms';
@@ -162,6 +163,7 @@ export function interactFixture(state: SimState, who: EntityId): void {
   const f = getComp(state.entities, target, 'fixture');
   const def = f ? FIXTURES[f.kind] : undefined;
   if (!f || !def) return;
+  offerFromFixture(state, who, f.kind);
   switch (def.type) {
     case 'door':
       return useDoor(state, who, target);

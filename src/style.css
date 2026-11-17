@@ -1245,3 +1245,13 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* Trials log and passed seals (M3-03). */
+.pow-seals {
+  margin: 0.2em 0 0;
+  color: var(--pal-47);
+  letter-spacing: 0.3em;
+}
+.pow-trial-log {
+  margin-bottom: calc(var(--px) * 3);
+}

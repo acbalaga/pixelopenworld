@@ -3,11 +3,11 @@ import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
 import { roomAt } from '../../content/world/rooms';
 import { WEAPONS } from '../../content/combat/attacks';
-import { SKILLS, TRIALS, type XpEvent } from '../../content/skills';
+import { SKILLS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
 import { SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
-import { addXp, challengePct, passTrial, pointsOf } from '../skills';
+import { addXp, challengePct, pointsOf } from '../skills';
 import { dayPhase } from '../time';
 
 const TILE = 16;
@@ -57,17 +57,6 @@ function syncWeaponRank(state: SimState, who: EntityId): void {
       cb.skillRank = pointsOf(state, who, id);
       return;
     }
-  }
-}
-
-/** Passes a Trial that was offered and asks for the item just gathered, at the right time of day. */
-function checkTrials(state: SimState, who: EntityId, item: string): void {
-  const s = getComp(state.entities, who, 'skills');
-  if (!s) return;
-  for (const id of Object.keys(TRIALS).sort()) {
-    const t = TRIALS[id];
-    if (!t || !s.offered.includes(id) || t.gather.item !== item) continue;
-    if (t.gather.phases.includes(dayPhase(state.worldTick))) passTrial(state, who, id);
   }
 }
 
@@ -140,7 +129,6 @@ export function skillsSystem(state: SimState): void {
         });
       } else if (e.type === 'gathered' && e.id === who) {
         practice(state, who, { on: 'gather', tag: e.tag, tier: e.tier, subject: e.item });
-        checkTrials(state, who, e.item);
       } else if (e.type === 'cooked' && e.id === who) {
         // Cooking is the craft event with tag `cooking`.
         practice(state, who, { on: 'craft', tag: e.tag, tier: e.tier, subject: e.recipe });

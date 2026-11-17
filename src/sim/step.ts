@@ -17,6 +17,7 @@ import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
 import { wearSystem } from './items';
 import { skillsSystem } from './systems/skills';
+import { trialsSystem } from './systems/trials';
 import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
@@ -48,8 +49,10 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   itemsSystem,
   requestsSystem,
   hintsSystem,
-  // Last, so it sees every event the other systems sent this tick.
+  // Last, so they see every event the other systems sent this tick. Trials run before skills,
+  // so a pass releases banked XP in the same tick.
   wearSystem,
+  trialsSystem,
   skillsSystem,
 ];
 

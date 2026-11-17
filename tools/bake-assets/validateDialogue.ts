@@ -56,6 +56,8 @@ export function validateDialogue(
     if ('item' in c && !refs.items.has(c.item)) errors.push(`${where}: unknown item ${c.item}`);
     if ('skill' in c && !refs.skills.has(c.skill))
       errors.push(`${where}: unknown skill ${c.skill}`);
+    if ('trial' in c && !refs.trials.has(c.trial))
+      errors.push(`${where}: unknown trial ${c.trial}`);
     if ('request' in c && !refs.requests[c.request])
       errors.push(`${where}: unknown request ${c.request}`);
   };

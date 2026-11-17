@@ -2,6 +2,7 @@ import { COMBAT as C } from '../content/balance/combat';
 import { SKILLS_BALANCE as B } from '../content/balance/skills';
 import { SKILLS, TRIALS, trialKey } from '../content/skills';
 import { activeMods, modAdd } from './mods';
+import { NO_FIGHT } from './fight';
 import { getComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import type { SimState, Skills } from './state';
@@ -17,6 +18,8 @@ export function newSkills(): Skills {
     seen: [],
     stride: { x: 0, y: 0, acc: 0 },
     nightAcc: 0,
+    trial: {},
+    fight: { id: 0, last: NO_FIGHT },
   };
 }
 
@@ -153,6 +156,7 @@ export function offerTrial(state: SimState, who: EntityId, trialId: string): boo
   const t = TRIALS[trialId];
   if (!s || !t || s.offered.includes(trialId) || trialPassed(s, t.skill, t.threshold)) return false;
   s.offered.push(trialId);
+  s.trial[trialId] = { n: 0, t0: 0 };
   emit(state.events, { type: 'trialOffered', id: who, trial: trialId });
   return true;
 }
@@ -164,6 +168,7 @@ export function passTrial(state: SimState, who: EntityId, trialId: string): bool
   if (!s || !t || trialPassed(s, t.skill, t.threshold)) return false;
   s.passed.push(trialKey(t.skill, t.threshold));
   s.offered = s.offered.filter((o) => o !== trialId);
+  delete s.trial[trialId];
   emit(state.events, { type: 'trialPassed', id: who, trial: trialId });
   settle(state, who, t.skill);
   return true;

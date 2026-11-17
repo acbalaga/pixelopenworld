@@ -19,6 +19,7 @@ import {
 import { createDemoState, hashState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { skillsSystem } from '../../src/sim/systems/skills';
+import { trialsSystem } from '../../src/sim/systems/trials';
 import { dayPhase } from '../../src/sim/time';
 
 const OPEN = {
@@ -36,6 +37,8 @@ function world(): { s: SimState; me: number } {
 function feed(s: SimState, ...evs: SimEvent[]): void {
   s.events.list.length = 0;
   s.events.list.push(...evs);
+  // The order the world runs them in: Trials first, so a pass releases banked XP this tick.
+  trialsSystem(s);
   skillsSystem(s);
 }
 
@@ -385,7 +388,7 @@ describe('content', () => {
     for (const t of Object.values(TRIALS)) {
       expect(SKILLS[t.skill], t.id).toBeDefined();
       expect(B.thresholds as readonly number[], t.id).toContain(t.threshold);
-      expect(t.gather.phases.length).toBeGreaterThan(0);
+      expect(t.id).toBe(`trial.${t.skill.replace('skill.', '')}.${t.threshold}`);
     }
     for (const d of Object.values(SKILLS)) {
       // A skill with no source is pending, and a pending skill has none (never wire XP to one).

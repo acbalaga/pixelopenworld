@@ -4,6 +4,7 @@ import { ITEMS } from '../content/items';
 import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
+import { NO_FIGHT } from '../sim/fight';
 import { deserializeState, serializeState } from '../sim/state';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
 
@@ -168,6 +169,29 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       sim: serializeState(deserializeState(JSON.stringify(raw))),
       ledger: { ...old.ledger, masterworks: {}, marked: {} },
     };
+  },
+  /**
+   * 7 to 8 (M3-03): skills gain Trial progress and the fight record. A Trial that was already
+   * offered (the Foraging Trial of M1) starts with no progress.
+   */
+  7: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          skills: ({
+            offered: string[];
+            trial?: Record<string, unknown>;
+            fight?: unknown;
+          } | null)[];
+        };
+      };
+    };
+    for (const sk of raw.entities.comps.skills) {
+      if (!sk) continue;
+      sk.trial = Object.fromEntries(sk.offered.map((id) => [id, { n: 0, t0: 0 }]));
+      sk.fight = { id: 0, last: NO_FIGHT };
+    }
+    return { ...old, schema: 8, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
 };
 

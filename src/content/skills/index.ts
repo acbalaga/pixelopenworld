@@ -145,16 +145,86 @@ export const PENDING_SKILLS: string[] = [
 ];
 
 /**
- * Trials. One is built to prove the mechanism: the Foraging Trial at 15, given by the cook.
- * `item.sunwort` is the herb. Its item definition arrives with the items ticket (M1-05).
+ * Trials (design/03). Six rank 15 Trials are authored on the slice map. The rest of rank 15 and
+ * rank 30 come with Hearthford in M4-12. Text is in `content/strings/skills.ts`.
  */
 export const TRIALS: Record<string, TrialDef> = {
+  'trial.blades.15': {
+    id: 'trial.blades.15',
+    skill: 'skill.blades',
+    threshold: 15,
+    giver: { npc: 'npc.guard' },
+    intro: 'trial.blades.15.intro',
+    hint: 'trial.blades.15.hint',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.mossling',
+      count: 3,
+      inARow: true,
+      untouched: true,
+      only: { weapon: 'blades' },
+    },
+    estMinutes: 4,
+  },
+  'trial.polearms.15': {
+    id: 'trial.polearms.15',
+    skill: 'skill.polearms',
+    threshold: 15,
+    giver: { npc: 'npc.guard' },
+    intro: 'trial.polearms.15.intro',
+    hint: 'trial.polearms.15.hint',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.bramble_boar',
+      count: 2,
+      only: { weapon: 'polearms' },
+    },
+    estMinutes: 6,
+  },
+  'trial.evasion.15': {
+    id: 'trial.evasion.15',
+    skill: 'skill.evasion',
+    threshold: 15,
+    giver: { npc: 'npc.guard' },
+    intro: 'trial.evasion.15.intro',
+    hint: 'trial.evasion.15.hint',
+    objective: { kind: 'perform', action: 'perfectDodge', count: 5, inOneFight: true },
+    estMinutes: 5,
+  },
+  'trial.ember.15': {
+    id: 'trial.ember.15',
+    skill: 'skill.ember',
+    threshold: 15,
+    giver: { npc: 'npc.scholar' },
+    intro: 'trial.ember.15.intro',
+    hint: 'trial.ember.15.hint',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.spitbloom',
+      count: 3,
+      only: { element: 'ember' },
+    },
+    estMinutes: 5,
+  },
+  'trial.athletics.15': {
+    id: 'trial.athletics.15',
+    skill: 'skill.athletics',
+    threshold: 15,
+    giver: { npc: 'npc.pilgrim' },
+    intro: 'trial.athletics.15.intro',
+    hint: 'trial.athletics.15.hint',
+    objective: { kind: 'reach', room: 'room.a', from: 'fixture.waystone', withinTicks: 40 * 30 },
+    estMinutes: 2,
+  },
   'trial.foraging.15': {
     id: 'trial.foraging.15',
     skill: 'skill.foraging',
     threshold: 15,
-    giver: 'npc.cook',
-    gather: { item: 'item.sunwort', phases: ['dawn', 'dusk'] },
+    giver: { npc: 'npc.cook' },
+    intro: 'trial.foraging.15.intro',
+    hint: 'trial.foraging.15.hint',
+    objective: { kind: 'gather', item: 'item.sunwort', count: 1, phases: ['dawn', 'dusk'] },
+    estMinutes: 3,
   },
 };
 
@@ -181,4 +251,13 @@ export function unregisterTrial(id: string): void {
 /** Key of the flag that records a passed Trial for a skill and threshold. */
 export function trialKey(skill: string, threshold: number): string {
   return `${skill}@${threshold}`;
+}
+
+/** How many steps a Trial's objective counts. */
+export function trialCount(o: TrialDef['objective']): number {
+  return o.kind === 'defeat' || o.kind === 'gather' || o.kind === 'perform'
+    ? o.count
+    : o.kind === 'deliver'
+      ? o.qty
+      : 1;
 }

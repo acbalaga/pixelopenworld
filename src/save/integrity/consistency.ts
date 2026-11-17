@@ -7,7 +7,7 @@ import { ITEMS } from '../../content/items';
 import type { ItemStack } from '../../sim/state';
 import { EQUIP_SLOTS } from '../../content/items/types';
 import { RECIPES } from '../../content/items/recipes';
-import { SKILLS } from '../../content/skills';
+import { SKILLS, TRIALS, trialCount } from '../../content/skills';
 import { deriveSummary } from '../../shared/summary';
 import { stackSize } from '../../sim/items';
 import { recomputePools, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
@@ -114,6 +114,18 @@ export function consistency(v: View): Reason[] {
       if (p >= t && !trialPassed(skills, id, t)) fail('TRIAL_UNPASSED', `${id}@${t}`);
     if (p < SB.maxPoints && pendingTrial(skills, id) === null && xp >= xpToNext(p))
       fail('RANK_XP_MISMATCH', `${id} holds ${xp} xp at ${p} points`);
+  }
+  for (const [id, pr] of Object.entries(skills.trial)) {
+    const def = TRIALS[id];
+    const max = def ? trialCount(def.objective) : 0;
+    if (
+      !def ||
+      !skills.offered.includes(id) ||
+      trialPassed(skills, def.skill, def.threshold) ||
+      !isCount(pr.n) ||
+      pr.n > max
+    )
+      fail('TRIAL_PROGRESS_ORPHAN', id);
   }
   for (const key of skills.passed) {
     const m = /^(.+)@(\d+)$/.exec(key);

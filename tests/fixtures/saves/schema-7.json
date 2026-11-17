@@ -1,0 +1,93 @@
+{
+  "expectedHash": "0b830eaeba851a",
+  "plain": {
+    "schema": 7,
+    "saveId": "00112233445566778899aabbccddeeff",
+    "seq": 1,
+    "prevHash": "",
+    "createdAt": 1700000200000,
+    "playSeconds": 100,
+    "look": {
+      "body": "a",
+      "skin": "light",
+      "hair": "short",
+      "hairColor": "brown",
+      "top": "tunic",
+      "topColor": "blue",
+      "bottom": "trousers",
+      "bottomColor": "brown",
+      "mainHand": "sword",
+      "offHand": "none"
+    },
+    "sim": "{\"entities\":{\"alive\":[true],\"capacity\":1,\"comps\":{\"ai\":[null],\"avatar\":[{\"coin\":61,\"facing\":4,\"full\":false,\"fullTicks\":0,\"handle\":\"Honest_1\",\"intent\":null,\"respawn\":{\"x\":83968,\"y\":85504},\"sprinting\":false,\"winded\":false}],\"body\":[{\"h\":2048,\"solid\":true,\"w\":2560}],\"combatant\":[{\"defense\":0,\"kind\":\"avatar\",\"name\":\"You\",\"power\":10,\"skillRank\":0,\"tier\":0,\"weapon\":\"sword\"}],\"echo\":[null],\"fed\":[null],\"fighter\":[{\"aim\":{\"x\":0,\"y\":1},\"aiming\":-1,\"atk\":null,\"casting\":null,\"combo\":0,\"cooldowns\":[0,0,0,0],\"deadT\":0,\"dodgeStart\":-1000,\"dv\":{\"x\":0,\"y\":0},\"gap\":0,\"hit\":[],\"hitstop\":0,\"invuln\":0,\"lock\":null,\"queued\":false,\"scheme\":\"flow\",\"slots\":[\"technique.blades_lunge\",null,null,null],\"state\":\"idle\",\"t\":0,\"team\":0}],\"fixture\":[null],\"gather\":[null],\"interactable\":[null],\"inventory\":[{\"equipment\":{\"accessory\":null,\"body\":null,\"head\":null,\"legs\":null,\"main\":{\"dur\":60,\"item\":\"item.sword_rusty\",\"qty\":1},\"off\":null},\"recipes\":[\"recipe.herb_tea\"],\"slots\":[{\"item\":\"item.dish_bread\",\"qty\":3},{\"item\":\"item.moss_tuft\",\"qty\":10},{\"item\":\"item.sunwort\",\"qty\":2},{\"item\":\"item.dewmint\",\"qty\":1},{\"item\":\"item.herb_tea\",\"qty\":1},{\"dur\":30,\"item\":\"item.ring_copper\",\"qty\":1},null,null,null,null,null,null,null,null,null,null,null,null,null,null],\"wear\":{\"hits\":0,\"taken\":0,\"uses\":0}}],\"journal\":[{\"flags\":[],\"hint\":null,\"hints\":[],\"requests\":{\"request.clear_pests\":{\"progress\":4,\"state\":\"done\"}}}],\"knock\":[null],\"node\":[null],\"npc\":[null],\"pickup\":[null],\"pools\":[{\"foc\":1000,\"focMax\":1000,\"hp\":102,\"hpMax\":102,\"lastCombat\":-150,\"lastSpend\":-20,\"sta\":1080,\"staMax\":1080}],\"pos\":[{\"x\":83968,\"y\":85504}],\"projectile\":[null],\"skills\":[{\"nightAcc\":0,\"offered\":[\"trial.foraging.15\"],\"passed\":[],\"points\":{\"skill.blades\":2,\"skill.foraging\":14},\"seen\":[],\"stride\":{\"acc\":0,\"x\":0,\"y\":0},\"xp\":{\"skill.blades\":82,\"skill.foraging\":16071}}],\"spawner\":[null],\"stagger\":[null],\"storage\":[{\"slots\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}],\"vel\":[{\"x\":0,\"y\":0}]},\"free\":[]},\"ledger\":{\"coinEarned\":{\"loot\":18,\"request\":50,\"sale\":2},\"coinSpent\":{\"purchase\":9},\"crafts\":{\"recipe.herb_tea\":1},\"itemsMade\":{\"cook\":{\"item.herb_tea\":1},\"gather\":{\"item.dewmint\":2,\"item.sunwort\":3},\"loot\":{\"item.moss_tuft\":12},\"request\":{\"item.ring_copper\":1},\"shop\":{\"item.dish_bread\":1},\"start\":{\"item.dish_bread\":2,\"item.sword_rusty\":1}},\"kills\":{\"creature.mossling\":10},\"marked\":{},\"masterworks\":{},\"xpEarned\":{\"skill.blades\":400,\"skill.foraging\":20000}},\"rng\":{\"combat\":{\"s\":[2016403597,2084504341,2103632211,1261692359]},\"loot\":{\"s\":[1876909825,-1978698765,615873866,-1091702614]},\"misc\":{\"s\":[-161334691,883813355,1576671281,-320265836]},\"travelers\":{\"s\":[-1627279002,-1275033904,-2019217037,980591053]},\"world\":{\"s\":[-975869646,-207060707,-1003807693,156986375]}},\"seed\":6,\"tick\":3000}",
+    "summary": {
+      "tick": 3000,
+      "playSeconds": 100,
+      "coin": 61,
+      "skillPoints": {
+        "skill.blades": 2,
+        "skill.foraging": 14
+      },
+      "totalSkillPoints": 16,
+      "itemCount": 18,
+      "requestsDone": 1,
+      "flags": 0
+    },
+    "ledger": {
+      "coinEarned": {
+        "loot": 18,
+        "sale": 2,
+        "request": 50
+      },
+      "coinSpent": {
+        "purchase": 9
+      },
+      "xpEarned": {
+        "skill.blades": 400,
+        "skill.foraging": 20000
+      },
+      "itemsMade": {
+        "start": {
+          "item.dish_bread": 2,
+          "item.sword_rusty": 1
+        },
+        "loot": {
+          "item.moss_tuft": 12
+        },
+        "gather": {
+          "item.sunwort": 3,
+          "item.dewmint": 2
+        },
+        "cook": {
+          "item.herb_tea": 1
+        },
+        "shop": {
+          "item.dish_bread": 1
+        },
+        "request": {
+          "item.ring_copper": 1
+        }
+      },
+      "kills": {
+        "creature.mossling": 10
+      },
+      "crafts": {
+        "recipe.herb_tea": 1
+      },
+      "masterworks": {},
+      "marked": {}
+    },
+    "startedAt": 1700000000000,
+    "trust": {
+      "state": "intact",
+      "reasons": [],
+      "flaggedAt": null
+    },
+    "time": {
+      "epoch": 1700000000000,
+      "lastTrustedNow": 1700000200000,
+      "offset": 0,
+      "accrualUsedMs": 0
+    }
+  }
+}
