@@ -84,6 +84,10 @@ export const UI_STRINGS = {
   statusFed: 'Fed: {item}',
   statusWinded: 'Out of breath',
   bagFull: 'Bag is full',
+  save: {
+    fellBack: 'Your latest save could not be read, so an earlier one was loaded.',
+    unreadable: 'Your saves could not be read, so a new game started. The damaged save was kept.',
+  },
   talk: {
     log: 'Conversation',
     continue: 'Continue',
