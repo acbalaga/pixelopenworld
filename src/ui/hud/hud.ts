@@ -93,7 +93,7 @@ export class Hud {
     });
 
     // Clock, top center, with a small phase shape (sun or moon).
-    const clock = clockView(state.tick);
+    const clock = clockView(state.worldTick);
     this.fade.observe('clock', clock.phase, now);
     const ca = this.fade.alpha('clock', now, reduced) * op;
     const label = clock.hhmm;

@@ -21,6 +21,9 @@ import { sfxFor, hapticFor, vibrate } from '../platform/combatFx';
 import { CommandMapper } from '../platform/input/sampler';
 import { computeLayout } from '../platform/input/layout';
 import { startBrowserLoop } from '../platform/loop';
+import { TrustedClock, browserClockEnv, dateAt } from '../platform/clock';
+import { worldTickAt } from '../sim/time';
+import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
 import { browserSettingsEnv, SettingsStore } from '../platform/settings';
 import {
@@ -167,12 +170,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       return;
     }
   }
+  // Trusted time (tech/02): the boot sync starts now and settles before the world starts, so the
+  // game never waits on the network for more than its timeout and plays fine with none.
+  const clock = new TrustedClock(browserClockEnv());
+  const bootSync = clock.sync();
   const deviceKey = savesWanted ? loadDeviceKey(new IdbKeyStore()) : null;
   const saves = savesWanted
     ? new SaveManager({
         codec: new SecureCodec(() => deviceKey as Promise<CryptoKey>, true),
         storage: createStorage(),
-        now: () => Date.now(),
+        now: () => clock.trustedNow(),
         newId: newSaveId,
         // Dev builds check every save as it is written and warn, so a legitimate change that
         // would trip a rule is found by the developer, not by a player.
@@ -257,7 +264,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const result = await runFrontEnd({
       root,
       importer: {
-        planImport: (bytes) => planImport(bytes),
+        planImport: (bytes) => planImport(bytes, undefined, () => clock.trustedNow()),
         hasSave: () => loaded !== null,
         // At the title the import becomes the save to continue from, with no reload: the loaded
         // save and state are replaced here, and the title then steps into the world.
@@ -309,6 +316,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // The newest save could not be used: say which one was loaded and why.
   if (!entry && restored && loaded?.report.fellBack) {
     await showRecover(root, loaded.report, loaded.plain.createdAt);
+  }
+  // The boot sync has had the whole title screen to finish. Offline or blocked, it just says no.
+  await bootSync;
+  const timeMemory = restored && loaded ? loaded.plain.time : null;
+  clock.load(timeMemory);
+  // The world clock counts from the save's epoch; a new character starts it now.
+  const worldEpoch = timeMemory?.epoch ?? clock.trustedNow();
+  canvas.dataset.timeSynced = String(clock.isSynced());
+  canvas.dataset.closedMs = String(Math.round(clock.elapsedSinceLastSession()));
+  /** The trusted-time record every save carries. */
+  function saveTime(): SaveTime {
+    return { epoch: worldEpoch, ...clock.snapshot() };
   }
   let baseDoll = entry ? entry.look : restored && loaded ? loaded.plain.look : randomDoll(rand);
   const startGear = startGear0;
@@ -389,6 +408,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   }
   const state = restored ?? createDemoState(1, 0);
   state.world = world;
+  state.worldTick = worldTickAt(clock.trustedNow(), worldEpoch);
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = restored
     ? (findAvatar(restored) as number)
@@ -633,7 +653,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     trust: () => saves?.currentTrust() ?? intact(),
     backup: {
       exportCurrent: () => exportFile(),
-      planImport: (bytes) => planImport(bytes),
+      planImport: (bytes) => planImport(bytes, undefined, () => clock.trustedNow()),
       hasSave: () => saves !== null,
       applyImport: async (plan) => {
         if (!saves) throw new Error('saving is off');
@@ -720,7 +740,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     async () => {
       if (!saves) return;
       const h = hashState(state);
-      const seq = await saves.commit({ sim: state, look: baseDoll, playSeconds: state.tick / 30 });
+      const seq = await saves.commit({
+        sim: state,
+        look: baseDoll,
+        playSeconds: state.tick / 30,
+        time: saveTime(),
+      });
       canvas.dataset.savedSeq = String(seq);
       canvas.dataset.savedHash = h;
     },
@@ -737,7 +762,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const plain = await saves.latestPlain();
     if (!plain) throw new Error('nothing to export');
     const handle = state0Avatar(state)?.handle ?? 'save';
-    return { bytes: await exportBytes(plain), fileName: exportFileName(handle, new Date()) };
+    return {
+      bytes: await exportBytes(plain),
+      fileName: exportFileName(handle, dateAt(clock.trustedNow())),
+    };
   }
   // The backup reminder: after 5 hours of play since the last export, ask once, dismissible.
   // Declared before the Menu uses `markExported`, so it is a function declaration.
@@ -773,6 +801,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       () => saveReminder(reminderStore, id, { ...st, dismissedAt: playSeconds() }),
     );
   };
+  // Keep the clock honest while playing: ask the server again every few minutes and whenever the
+  // network comes back. A failure changes nothing.
+  window.setInterval(() => void clock.sync(), 5 * 60_000);
+  window.addEventListener('online', () => void clock.sync());
   const requestSave = (reason: SaveReason): void => {
     if (saves) saver.request(reason);
   };
@@ -789,7 +821,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (crashed) return;
       crashed = true;
       void saves
-        .commitEmergency({ sim: state, look: baseDoll, playSeconds: state.tick / 30 })
+        .commitEmergency({
+          sim: state,
+          look: baseDoll,
+          playSeconds: state.tick / 30,
+          time: saveTime(),
+        })
         .catch(() => undefined);
     };
     window.addEventListener('error', onCrash);
@@ -891,7 +928,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const rec = input.sampler.sample(performance.now());
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
-        stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
+        stepWorld(state, who, {
+          commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
+          worldTick: worldTickAt(clock.trustedNow(), worldEpoch),
+        });
         hintLine.set(state.entities.comps.journal[who]?.hint?.id.replace('hint.', '') ?? null);
         chat.update(state.tick / 30);
         if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {

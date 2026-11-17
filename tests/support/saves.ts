@@ -48,6 +48,12 @@ export function plainFor(
     ledger: structuredClone(s.ledger),
     startedAt: o.startedAt ?? T0,
     trust: { state: 'intact', reasons: [], flaggedAt: null },
+    time: {
+      epoch: o.startedAt ?? T0,
+      lastTrustedNow: o.createdAt ?? T0 + 200_000,
+      offset: 0,
+      accrualUsedMs: 0,
+    },
   };
 }
 

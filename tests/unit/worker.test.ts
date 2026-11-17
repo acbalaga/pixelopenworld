@@ -19,3 +19,20 @@ describe('worker routes', () => {
     expect(route(new Request('https://x.test/api/health', { method: 'POST' })).status).toBe(405);
   });
 });
+
+describe('worker /api/time', () => {
+  it('returns server epoch ms, uncached, with security headers', async () => {
+    const before = Date.now();
+    const r = route(new Request('https://x.test/api/time'));
+    const after = Date.now();
+    expect(r.status).toBe(200);
+    expect(r.headers.get('Cache-Control')).toBe('no-store');
+    expect(r.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
+    const body = (await r.json()) as { now: number };
+    expect(body.now).toBeGreaterThanOrEqual(before);
+    expect(body.now).toBeLessThanOrEqual(after);
+  });
+  it('rejects non-GET', () => {
+    expect(route(new Request('https://x.test/api/time', { method: 'POST' })).status).toBe(405);
+  });
+});

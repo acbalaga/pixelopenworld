@@ -13,6 +13,7 @@ import {
   type SaveRecord,
   type SaveStorage,
   type Slot,
+  type SaveTime,
   type Slots,
 } from './types';
 
@@ -42,6 +43,8 @@ export interface CommitInput {
   sim: SimState;
   look: DollSpec;
   playSeconds: number;
+  /** The trusted-time record to store: the world epoch and the clock's memory. The game always passes it; when absent (tests) the clock starts at the write time. */
+  time?: SaveTime;
 }
 
 export interface SaveManagerDeps {
@@ -80,6 +83,9 @@ export class SaveManager {
       ledger: structuredClone(input.sim.ledger),
       startedAt: this.startedAt,
       trust: structuredClone(this.trust),
+      time: input.time
+        ? { ...input.time }
+        : { epoch: at, lastTrustedNow: at, offset: 0, accrualUsedMs: 0 },
     };
   }
 

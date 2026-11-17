@@ -279,18 +279,18 @@ describe('the Foraging Trial', () => {
     };
     const flag = () => sk(s, me).passed.includes(trialKey('skill.foraging', 15));
 
-    s.tick = 44 * m;
+    s.worldTick = 44 * m;
     feed(s, herb);
     expect(flag()).toBe(false);
 
     expect(offerTrial(s, me, 'trial.foraging.15')).toBe(true);
     expect(offerTrial(s, me, 'trial.foraging.15')).toBe(false);
 
-    s.tick = 10 * m;
+    s.worldTick = 10 * m;
     feed(s, herb);
     expect(flag()).toBe(false);
 
-    s.tick = 44 * m;
+    s.worldTick = 44 * m;
     feed(s, { ...herb, item: 'item.other' } as SimEvent);
     expect(flag()).toBe(false);
 
@@ -301,7 +301,7 @@ describe('the Foraging Trial', () => {
   it('passes at dusk too', () => {
     const { s, me } = world();
     offerTrial(s, me, 'trial.foraging.15');
-    s.tick = 31 * TIME.ticksPerMinute;
+    s.worldTick = 31 * TIME.ticksPerMinute;
     feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1 });
     expect(sk(s, me).passed).toContain(trialKey('skill.foraging', 15));
   });

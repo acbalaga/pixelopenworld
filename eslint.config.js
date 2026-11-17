@@ -12,7 +12,17 @@ const boundary = (forbiddenDirs, message) => ({
 });
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'baked', '.wrangler', 'test-results', 'playwright-report', 'e2e-screenshots'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      'baked',
+      '.wrangler',
+      'test-results',
+      'playwright-report',
+      'e2e-screenshots',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,
@@ -36,6 +46,47 @@ export default tseslint.config(
       ],
       'no-restricted-syntax': [
         'error',
+        {
+          selector:
+            "CallExpression[callee.name=/^(setTimeout|setInterval)$/][arguments.0.type='Literal']",
+          message: 'String arguments to timers are banned.',
+        },
+        {
+          selector:
+            "CallExpression[callee.name=/^(setTimeout|setInterval)$/][arguments.0.type='TemplateLiteral']",
+          message: 'String arguments to timers are banned.',
+        },
+        {
+          selector: 'AssignmentExpression[left.property.name=/^(innerHTML|outerHTML)$/]',
+          message: 'innerHTML and outerHTML are banned.',
+        },
+      ],
+    },
+  },
+  // Trusted time (tech/02): the device clock is read in exactly one module. The Worker is the
+  // server, so it reads its own clock.
+  {
+    files: ['src/**/*.ts'],
+    ignores: ['src/platform/clock.ts', 'src/sim/**'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Date',
+          property: 'now',
+          message: 'Read time through platform/clock.ts (trusted time), not the device clock.',
+        },
+        ...['innerHTML', 'outerHTML', 'insertAdjacentHTML'].map((property) => ({
+          property,
+          message: `${property} is banned (CSP and injection safety). Use textContent.`,
+        })),
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message: 'new Date() reads the device clock. Use platform/clock.ts (dateAt).',
+        },
         {
           selector:
             "CallExpression[callee.name=/^(setTimeout|setInterval)$/][arguments.0.type='Literal']",

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { worldTickAt } from '../../src/sim/time';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { JsonCodec, sha256Hex } from '../../src/save/codec';
@@ -170,6 +171,25 @@ describe('older saves migrate to the current schema and validate clean', () => {
     expect(now.schema).toBe(CURRENT_SCHEMA);
     expect(now.startedAt).toBe(f.createdAt - f.playSeconds * 1000);
     expect(now.trust).toEqual({ state: 'intact', reasons: [], flaggedAt: null });
+    expect(now.sim).toBe(f.sim);
+    expect(validateSave(now).reasons).toEqual([]);
+  });
+
+  it('schema 4 gains a trusted-time record that keeps the time of day', () => {
+    const f = fixture('schema-4.json').plain;
+    expect(f.schema).toBe(4);
+    const now = migrate(f);
+    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const tick = (JSON.parse(f.sim) as { tick: number }).tick;
+    expect(now.time).toEqual({
+      epoch: f.createdAt - Math.floor((tick * 60_000) / 1800),
+      lastTrustedNow: f.createdAt,
+      offset: 0,
+      accrualUsedMs: 0,
+    });
+    // The world tick at the last write equals the tick it was saved at.
+    expect(worldTickAt(f.createdAt, now.time.epoch)).toBeGreaterThanOrEqual(tick - 1);
+    expect(worldTickAt(f.createdAt, now.time.epoch)).toBeLessThanOrEqual(tick);
     expect(now.sim).toBe(f.sim);
     expect(validateSave(now).reasons).toEqual([]);
   });

@@ -292,6 +292,8 @@ export interface SimState {
   /** Master seed the sim started from. */
   seed: number;
   tick: number;
+  /** Transient. The world clock's tick from trusted time, set each step. Not saved. */
+  worldTick: number;
   rng: RngStreams;
   entities: EntityStore<Components>;
   /** Lifetime totals for the integrity check (tech/02). Saved. */
@@ -337,6 +339,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
   const state: SimState = {
     seed: seed >>> 0,
     tick: 0,
+    worldTick: 0,
     rng: createStreams(seed),
     entities: createStore<Components>(COMPONENT_KEYS),
     ledger: newLedger(),
@@ -369,7 +372,7 @@ export function canonical(v: unknown): string {
     .join(',')}}`;
 }
 
-function persistent(state: SimState): Omit<SimState, 'events' | 'world'> {
+function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'worldTick'> {
   return {
     seed: state.seed,
     tick: state.tick,
@@ -386,7 +389,7 @@ export function serializeState(state: SimState): string {
 
 /** Rebuilds a state from {@link serializeState} output. Round trip is exact. */
 export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
-  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world' | 'ledger'> & {
+  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world' | 'ledger' | 'worldTick'> & {
     ledger?: Ledger;
   };
   if (
@@ -398,7 +401,13 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     throw new Error('malformed sim state');
   }
   // A state written before the ledger existed has none. The save migration seeds the real one.
-  return { ...raw, ledger: raw.ledger ?? newLedger(), events: createEventQueue(), world };
+  return {
+    ...raw,
+    worldTick: raw.tick,
+    ledger: raw.ledger ?? newLedger(),
+    events: createEventQueue(),
+    world,
+  };
 }
 
 /** Stable 53-bit hash of the saved state, as 14 hex chars. For tests and save checks. */
