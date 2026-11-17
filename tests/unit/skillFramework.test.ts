@@ -56,10 +56,11 @@ describe('Skills tab model', () => {
     expect(row().trialHint).toBeNull();
     addXp(s, me, 'skill.foraging', xpToNext(13));
     expect(pointsOf(s, me, 'skill.foraging')).toBe(14);
-    expect(row().trialHint).toBe('No one here can test this yet.');
+    // Foraging has an authored Trial, so its hint names the giver.
+    expect(row().trialHint).toBe('Hesper wants sunwort picked at the turn of the day.');
     addXp(s, me, 'skill.foraging', xpToNext(14) + 5);
     expect(row().trial).toBe('ready');
-    expect(row().trialHint).toBe('No one here can test this yet.');
+    expect(row().trialHint).toBe('Hesper wants sunwort picked at the turn of the day.');
   });
 });
 

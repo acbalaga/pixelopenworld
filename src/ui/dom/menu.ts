@@ -19,6 +19,7 @@ import {
   characterView,
   itemDetail,
   skillsView,
+  trialLog,
   type BagFilterId,
   type BagSortId,
   type ItemAction,
@@ -354,7 +355,28 @@ export class MenuSheet {
   private renderSkills(): void {
     const { state, who } = this.deps.read();
     const fams = skillsView(state, who);
-    if (fams.length === 0) this.body.appendChild(el('p', 'pow-hint', S.skillsEmpty));
+    const log = trialLog(state, who);
+    if (log.length > 0) {
+      const sec = el('section', 'pow-trial-log');
+      sec.setAttribute('aria-label', S.trialsTitle);
+      const h = this.heading(S.trialsTitle);
+      const ul = el('ul', 'pow-skills');
+      for (const r of log) {
+        const li = el('li', 'pow-skill');
+        li.setAttribute('aria-label', r.label);
+        put(
+          li,
+          el('span', 'pow-skill-name', `${r.skill}, ${r.giver}`),
+          el('span', 'pow-skill-rank', fill(S.trialProgress, { n: r.n, count: r.count })),
+          el('p', 'pow-hint', r.intro),
+        );
+        ul.appendChild(li);
+      }
+      put(sec, h, ul);
+      this.body.appendChild(sec);
+    }
+    if (fams.length === 0 && log.length === 0)
+      this.body.appendChild(el('p', 'pow-hint', S.skillsEmpty));
     for (const fam of fams) {
       const sec = el('section', 'pow-skill-family');
       const h = this.heading(fam.label);
@@ -384,6 +406,18 @@ export class MenuSheet {
             el('p', 'pow-hint', r.trial === 'offered' ? S.trialOffered : S.trialReady),
           );
         if (r.trialHint) li.appendChild(el('p', 'pow-hint', r.trialHint));
+        if (r.sealed.length > 0) {
+          const seals = el('p', 'pow-seals');
+          for (const th of r.sealed) {
+            const s = el('span', 'pow-seal', S.trialSeal);
+            // Long press (or hover) says what it is; screen readers read it directly.
+            s.title = `${S.trialPassed}: ${th}`;
+            s.setAttribute('role', 'img');
+            s.setAttribute('aria-label', `${S.trialPassed}: ${th}`);
+            seals.appendChild(s);
+          }
+          li.appendChild(seals);
+        }
         ul.appendChild(li);
       }
       put(sec, h, ul);

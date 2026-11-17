@@ -1,6 +1,18 @@
+import { TRIAL_STRINGS } from './skills';
+
 /** Dialogue, request and shop text. Plain voices, nothing about the world's hidden layer. No em dashes. */
 export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
+  ...TRIAL_STRINGS,
   'dlg.c_bye': 'Goodbye.',
+  'dlg.c_test': 'I want to be tested.',
+  'dlg.orla.tests': 'Which test?',
+  'dlg.orla.c_blades': 'The blade test.',
+  'dlg.orla.c_polearms': 'The spear test.',
+  'dlg.orla.c_evasion': 'The dodging test.',
+  'dlg.wren.tests': 'Which test do you want?',
+  'dlg.wren.c_ember': 'Test my fire.',
+  'dlg.pilgrim.tests': 'Which road shall we try?',
+  'dlg.pilgrim.c_athletics': 'Test my legs.',
 
   'dlg.brin.greet': 'Welcome to the counter. Looking, buying, or selling?',
   'dlg.brin.again': 'Back again. What will it be?',

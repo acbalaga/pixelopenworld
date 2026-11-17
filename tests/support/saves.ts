@@ -124,7 +124,12 @@ export function tamper(
  * stacks and bag durability (7).
  */
 export function asSchema5(s: SimState): SimState {
-  for (const sk of s.entities.comps.skills) if (sk) delete (sk as { nightAcc?: number }).nightAcc;
+  for (const sk of s.entities.comps.skills) {
+    if (!sk) continue;
+    delete (sk as { nightAcc?: number }).nightAcc;
+    delete (sk as { trial?: unknown }).trial;
+    delete (sk as { fight?: unknown }).fight;
+  }
   delete (s.entities.comps as { storage?: unknown }).storage;
   for (const inv of s.entities.comps.inventory) {
     if (!inv) continue;

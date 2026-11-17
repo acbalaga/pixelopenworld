@@ -9,6 +9,7 @@ import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kerne
 import { emit } from '../kernel/events';
 import { px, SUBPX } from '../kernel/fixed';
 import { offerTrial } from '../skills';
+import { deliverTrials } from './trials';
 import type { Npc, SimState } from '../state';
 import { contextTarget } from './interact';
 import { earnCoin, madeItems, spendCoin } from '../ledger';
@@ -70,7 +71,10 @@ export function interactNpc(state: SimState, who: EntityId): void {
   if (getComp(state.entities, who, 'fighter')?.state !== 'idle') return;
   const t = contextTarget(state, who);
   const n = t === null ? undefined : getComp(state.entities, t, 'npc');
-  if (n) emit(state.events, { type: 'talkStarted', who, npc: n.id });
+  if (n) {
+    deliverTrials(state, who, n.id);
+    emit(state.events, { type: 'talkStarted', who, npc: n.id });
+  }
 }
 
 function applyEffect(state: SimState, who: EntityId, e: Effect): void {

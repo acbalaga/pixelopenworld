@@ -181,6 +181,16 @@ export interface Skills {
   stride: { x: number; y: number; acc: number };
   /** Ticks of night spent outdoors that have not yet been paid as an in-game hour (Survival). */
   nightAcc: number;
+  /** Trial progress by Trial id: for offered, unpassed Trials only. `n` counts, `t0` is a start tick or fight number, `bad` lists creatures hit the wrong way. */
+  trial: Record<string, TrialProgress>;
+  /** The current fight: its number and the tick of its latest combat (see `sim/fight.ts`). */
+  fight: { id: number; last: number };
+}
+
+export interface TrialProgress {
+  n: number;
+  t0: number;
+  bad?: number[];
 }
 
 export interface Stagger {

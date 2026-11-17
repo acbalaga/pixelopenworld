@@ -10,7 +10,7 @@ import { spawnCreature } from '../sim/combat/enemy';
 import { addItem, countItem } from '../sim/items';
 import { madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
-import { addXp } from '../sim/skills';
+import { addXp, offerTrial, passTrial } from '../sim/skills';
 import type { SimState } from '../sim/state';
 
 /** What the hooks need from the running scene. */
@@ -39,6 +39,8 @@ export interface PowDevApi {
   giveItem(item: string, qty: number, q?: 0 | 1 | 2 | 3, dur?: number): void;
   /** Pays XP to a skill, as if earned. For screenshots and checks of the Skills tab. */
   giveXp(skill: string, amount: number): void;
+  /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
+  trial(id: string, what: 'offer' | 'pass'): void;
 }
 
 const TILE = 16;
@@ -84,6 +86,13 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       if (dur !== undefined)
         for (const s of inv.slots) if (s?.item === item && s.q === (q || undefined)) s.dur = dur;
       madeItems(state, 'seed', item, qty);
+    },
+    trial(id, what) {
+      if (what === 'offer') offerTrial(state, who, id);
+      else {
+        offerTrial(state, who, id);
+        passTrial(state, who, id);
+      }
     },
     giveXp(skill, amount) {
       addXp(state, who, skill, amount);
