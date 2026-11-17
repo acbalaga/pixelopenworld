@@ -618,6 +618,11 @@ export class MenuSheet {
       () => st.get().haptics,
       (v) => st.set({ haptics: v }),
     );
+    toggle(
+      sys.mute,
+      () => st.get().muted,
+      (v) => st.set({ muted: v }),
+    );
 
     const out = el('div', 'pow-logout');
     const btn = el('button', 'pow-button pow-danger', sys.logOut);

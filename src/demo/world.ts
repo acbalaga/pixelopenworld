@@ -390,6 +390,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   const audio = createGameAudio();
   attachAudioLifecycle(audio);
+  audio.setMuted('master', settings.get().muted);
+  settings.subscribe((st) => audio.setMuted('master', st.muted));
   const feedback = new CombatFeedback({ hit: INK, crit: GOLD, hurt: HURT });
   const skillFeed = new SkillFeed();
   const centerOf = (id: number): { x: number; y: number } | null => {
