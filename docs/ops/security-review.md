@@ -43,3 +43,9 @@ This is a client-only scheme with no secret that stays secret. A programmer who 
 1. **Debug attributes on the canvas.** The page sets `data-saved-hash`, `data-loaded-hash` and similar on the canvas element so the end to end tests can read what was saved. They hold hashes, not state, so nothing useful is exposed. They are left in because the tests need them in the production build. Say if they should be stripped from deployed builds.
 2. **Hardening gap closed.** CI did not run `check:seal` or `check:pwa`; both, plus `check:prod` and `check:deps`, now run in CI.
 3. **No Help section existed.** System now has Help with the privacy note, as tech/02 requires.
+
+## Gate G2 result
+
+Owner run, 2026-11-17. Every section of `docs/ops/gate-g2.md` passed except section 4 step 4 (two or three days in airplane mode), which needs real days and was still running.
+
+**Accepted residual risk.** The owner accepted starting M3 while that step finishes. The behavior it checks is covered by `clock.test.ts` ("a week offline pays one cap period"), `pwa.spec.ts` (offline boot from the service worker) and `secure.spec.ts`, so the open risk is limited to a device- or browser-specific storage or service worker quirk over days. If the step fails, the finding is fixed before any further M3 ticket that changes saved state merges.

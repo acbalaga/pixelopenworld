@@ -9,7 +9,7 @@
 
 ## Skills
 
-Thirty-six skills in six families. Each runs 0 to 100.
+Thirty-six skills in six families. Each runs 0 to 100. The full table (XP sources, what each rank band grants) is in [11-skill-table](11-skill-table.md).
 
 | Family          | Skills                                                                    |
 | --------------- | ------------------------------------------------------------------------- |

@@ -4,19 +4,19 @@ Real-time, top-down, readable on a small screen, playable with one thumb. Fights
 
 ## Control schemes
 
-Two schemes ship. Gate G1 decides the default. Both are always available in settings.
+Two schemes ship. Both are always available in settings. Gate G1 (2026-11-17) set the defaults: Flow in portrait, Classic in landscape and on gamepad or keyboard.
 
-### Flow (one thumb, portrait default candidate)
+### Flow (one thumb, portrait default)
 
-| Gesture                                   | Action                                                                                                                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Touch and drag anywhere in the lower zone | Floating stick appears under the thumb. Move.                                                                                                                            |
-| Basic attack                              | Automatic. While an enemy is in weapon reach and in the facing arc, the avatar attacks on the weapon's cadence, including while moving.                                  |
-| Tap an enemy                              | Lock target. Avatar faces it. Tap empty ground to unlock.                                                                                                                |
-| Flick (fast short swipe)                  | Dodge in the flick direction. Costs Stamina. Has invulnerable frames.                                                                                                    |
-| Tap one of four technique buttons         | Use technique. Buttons sit in an arc above the thumb rest. When the thumb leaves the stick the avatar keeps its heading for 200 ms so a tap does not stop movement dead. |
-| Hold a technique button                   | Aim (shows a cone or line), release to fire.                                                                                                                             |
-| Tap the context button                    | Interact, gather, talk, pick up. Appears only when something is in range.                                                                                                |
+| Gesture                                   | Action                                                                                                                                                                                                                                                            |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Touch and drag anywhere in the lower zone | Floating stick appears under the thumb. Move.                                                                                                                                                                                                                     |
+| Basic attack                              | Automatic. While an enemy is in weapon reach and in the facing arc, the avatar attacks on the weapon's cadence, including while moving.                                                                                                                           |
+| Tap an enemy                              | Lock target. Avatar faces it. Tap empty ground to unlock.                                                                                                                                                                                                         |
+| Tap the dodge button                      | Dodge in the direction the stick is held, or the way the avatar faces when the stick is released. Costs Stamina. Has invulnerable frames. A fast swipe does not dodge: flick dodge was removed after the G1 playtest because it fired by accident while steering. |
+| Tap one of four technique buttons         | Use technique. Buttons sit in an arc above the thumb rest. When the thumb leaves the stick the avatar keeps its heading for 200 ms so a tap does not stop movement dead.                                                                                          |
+| Hold a technique button                   | Aim (shows a cone or line), release to fire.                                                                                                                                                                                                                      |
+| Tap the context button                    | Interact, gather, talk, pick up. Appears only when something is in range.                                                                                                                                                                                         |
 
 Skill in Flow is positioning, dodge timing, and technique choice. Not button mashing.
 
@@ -45,6 +45,8 @@ Five weapon families, each tied to an Arms skill, each with a distinct cadence, 
 | Fists, claws               | Unarmed    | Very fast, tiny reach | Hits refund Stamina                               |
 
 Off-hand: shield (Shieldcraft, hold to block, timed block parries), focus orb (magic strength), tool (lantern, instrument), or nothing (faster dodge recovery).
+
+With a shield equipped, a Guard button appears next to dodge in both schemes. Hold it to block (slower walk, frontal hits reduced, Stamina per blocked hit). A block begun just before an impact is a parry. In Flow, the hold-versus-toggle setting lets the player guard while moving without a second touch. Bows have no ammunition.
 
 Two loadouts can be saved and swapped with one tap out of combat, with a short lockout in combat.
 
