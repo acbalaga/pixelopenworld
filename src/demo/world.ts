@@ -34,8 +34,10 @@ import { DIALOGUE_STRINGS } from '../content/strings/dialogue';
 import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
 import { spawnNpc } from '../sim/systems/npcs';
-import { pinnedRequest } from '../sim/journal';
+import { newJournal, pinnedRequest } from '../sim/journal';
 import { TalkSheet } from '../ui/dom/talk';
+import { ChatTicker, HintLine } from '../ui/dom/ambient';
+import { runFrontEnd, type FrontEndResult } from '../ui/dom/frontEnd';
 import {
   AutoSaver,
   createStorage,
@@ -123,6 +125,12 @@ const LABELS: Record<string, string> = {
 // Anim sets are indexed up, down, right, left; the sim facing is N, E, S, W (0, 2, 4, 6).
 const FACE_NAME = { 0: 'up', 2: 'right', 4: 'down', 6: 'left' } as const;
 
+/** The avatar component of a state, or null. */
+function state0Avatar(st: SimState): { handle: string } | null {
+  const id = findAvatar(st);
+  return id === null ? null : (st.entities.comps.avatar[id] ?? null);
+}
+
 export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const params = new URLSearchParams(location.search);
   const auto = params.get('auto') === '1';
@@ -176,6 +184,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const camera = new Camera(worldW, worldH);
   const chunkRenderer = new ChunkRenderer(atlas, world, m.tiles);
 
+  const startGear0 = { ...newInventory().equipment };
   const rand = ((): (() => number) => {
     let s = (Math.random() * 1e9) >>> 0;
     return () => {
@@ -184,8 +193,60 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     };
   })();
   const dolls = new DollFactory(atlas, m);
-  let baseDoll = restored && loaded ? loaded.plain.look : randomDoll(rand);
-  const startGear = { ...newInventory().equipment };
+  // Audio exists from the start so the first tap, on the title screen, can unlock it.
+  const audio = createGameAudio();
+  attachAudioLifecycle(audio);
+  // The DOM layer comes up first: the title and setup screens are DOM too.
+  const root = createOverlay();
+  applyPaletteVars(document.documentElement);
+  applyPanelImages(document.documentElement, panelBase, panelPressed);
+
+  // The front end: title, then setup for a new character or a short connecting beat for a saved
+  // one. Developer parameters (`?at=`, `?foes=`, `?nosave=`, `?fly=`, `?skip=1`) go straight in.
+  const direct = fly || ['at', 'foes', 'nosave', 'skip'].some((k) => params.has(k));
+  let entry: Extract<FrontEndResult, { mode: 'new' }> | null = null;
+  if (!direct) {
+    const savedAvatar = restored ? state0Avatar(restored) : null;
+    const previewDolls = dolls.create('char.setup', randomDoll(rand));
+    const result = await runFrontEnd({
+      root,
+      save:
+        restored && savedAvatar && loaded
+          ? {
+              handle: savedAvatar.handle,
+              playSeconds: loaded.plain.playSeconds,
+              look: loaded.plain.look,
+            }
+          : null,
+      drawPreview: (canvas, look) => {
+        previewDolls.draw(dollWithGear(look, startGear0));
+        const h = atlas.animFrame(atlas.anim('char.setup', 'idle_down'), 0);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          atlas.image(h),
+          atlas.srcX(h),
+          atlas.srcY(h),
+          atlas.width(h),
+          atlas.height(h),
+          0,
+          0,
+          atlas.width(h),
+          atlas.height(h),
+        );
+      },
+      rand,
+    });
+    if (result.mode === 'new') {
+      entry = result;
+      // A new character starts a new game, even if an unreadable save was lying around.
+      restored = null;
+    }
+  }
+  let baseDoll = entry ? entry.look : restored && loaded ? loaded.plain.look : randomDoll(rand);
+  const startGear = startGear0;
   const player = dolls.create('char.player', dollWithGear(baseDoll, startGear));
   for (const n of Object.values(NPCS)) dolls.create(`char.${n.id}`, n.doll);
   // Anim handles by sprite, action and facing, looked up once. A missing action (a rooted plant
@@ -220,12 +281,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   void document.fonts?.load('400 1rem "Atkinson Hyperlegible"');
   void document.fonts?.load('700 1rem "Atkinson Hyperlegible"');
   // The DOM layer: the Menu and anything else read as clear text.
-  const root = createOverlay();
-  applyPaletteVars(document.documentElement);
-  applyPanelImages(document.documentElement, panelBase, panelPressed);
   applySettings(root, settings.get());
   settings.subscribe((st) => applySettings(root, st));
   const notices = new Notices(root);
+  const hintLine = new HintLine(root);
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
     renderer.resize(v);
     applyPixelScale(root, v.scale / v.dpr);
@@ -260,7 +319,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = restored
     ? (findAvatar(restored) as number)
-    : createAvatar(state, px(feet.x), px(feet.y));
+    : createAvatar(state, px(feet.x), px(feet.y), entry?.handle);
   // `?at=` also moves a loaded avatar, for screenshots and tests.
   if (restored && at && at.length === 2 && at.every(Number.isFinite)) {
     const p = state.entities.comps.pos[who];
@@ -442,7 +501,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   };
   if (!fly) enterRoom(room);
   const FADE_MS = 300;
-  let fadeAt = -1e9;
+  // Arriving: a short fade up from black, and the avatar materializes in a column of light.
+  const MATERIALIZE_MS = 1100;
+  const arriveAt = performance.now();
+  let fadeAt = arriveAt;
+  const born = (now: number): number => (fly ? 1 : Math.min(1, (now - arriveAt) / MATERIALIZE_MS));
   const W_STR = UI_STRINGS.world;
 
   const avatar = state.entities.comps.avatar[who];
@@ -487,11 +550,22 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     settings,
     drawIcon: (canvas, id) => blit(canvas, atlas.frame(id, 'base')),
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
-    // The login screen arrives with M1-10. Until then Log Out reloads the page.
-    onLogOut: () => location.reload(),
+    // Log Out saves, then returns to the title screen (a fresh page start shows it).
+    onLogOut: () => {
+      void (async () => {
+        if (saves) {
+          saver.request('manual');
+          await saver.idle();
+        }
+        location.reload();
+      })();
+    },
     onOpenChange: (open) => {
       menuOpen = open;
-      if (open) input.sampler.keyboard.reset();
+      if (open) {
+        input.sampler.keyboard.reset();
+        pendingCommands.push({ type: 'hint', id: 'hint.menu' });
+      }
     },
   });
   const FACING = { up: 0, right: 2, down: 4, left: 6 } as const;
@@ -531,8 +605,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     return { x: Math.round(p.x * k + camera.x), y: Math.round(p.y * k + camera.y) };
   });
 
-  const audio = createGameAudio();
-  attachAudioLifecycle(audio);
   audio.setMuted('master', settings.get().muted);
   settings.subscribe((st) => audio.setMuted('master', st.muted));
   const feedback = new CombatFeedback({ hit: INK, crit: GOLD, hurt: HURT });
@@ -541,6 +613,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const p = state.entities.comps.pos[id];
     return p ? { x: Math.round(p.x / 256), y: Math.round(p.y / 256) - 4 } : null;
   };
+
+  // Scripted chat, scaffolding until M5.
+  const chat = new ChatTicker(root, state.tick / 30);
 
   // Autosave (tech/02): every 60 seconds of play, on room changes and Trials, when the page is
   // hidden or closed. One save runs at a time. `data-saved-seq` and `data-saved-hash` let tests
@@ -628,7 +703,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       x,
       y,
       atlas.animFlip(a),
-      dead ? 0.35 : blink ? 0.45 : 1,
+      (dead ? 0.35 : blink ? 0.45 : 1) * (id === who ? born(now) : 1),
     );
   };
 
@@ -666,6 +741,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
         stepWorld(state, who, { commands: [...pendingCommands.splice(0), ...mapper.map(rec)] });
+        hintLine.set(state.entities.comps.journal[who]?.hint?.id.replace('hint.', '') ?? null);
+        chat.update(state.tick / 30);
         if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {
           lastSaveTick = state.tick;
           requestSave('timer');
@@ -775,6 +852,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const a = animOf('char.player', moving ? 'walk' : 'idle', avatar.facing);
         renderer.drawSprite(Layer.Objects, atlas.animFrame(a, now), pxX, pxY, atlas.animFlip(a));
       } else drawActor('char.player', who, now, pxX, pxY);
+      const b = born(now);
+      if (b < 1) {
+        // The materialize beam: wide and bright at first, narrowing to nothing as the avatar fills in.
+        const k = 1 - b;
+        const w = 2 + Math.round(12 * k);
+        renderer.drawRect(Layer.Objects, pxX - Math.floor(w / 2), pxY - 46, w, 46, GOLD, 0.5 * k);
+        renderer.drawRect(Layer.Objects, pxX - 1, pxY - 46, 2, 46, INK, 0.7 * k);
+      }
       const target = contextTarget(state, who);
       const tp = target === null ? undefined : state.entities.comps.pos[target];
       if (tp) {
@@ -840,7 +925,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         settings.get().reducedMotion,
       );
       // The pinned request line, bottom left above the build label.
-      const pin = pinnedRequest(state.entities.comps.journal[who] ?? { flags: [], requests: {} });
+      const pin = pinnedRequest(state.entities.comps.journal[who] ?? newJournal());
       if (pin) {
         const text = fill(DIALOGUE_STRINGS[pin.log] ?? pin.log, {
           n: String(pin.n),

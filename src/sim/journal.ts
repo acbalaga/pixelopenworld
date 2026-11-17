@@ -6,7 +6,7 @@ import type { Journal, SimState } from './state';
 
 /** A fresh journal. */
 export function newJournal(): Journal {
-  return { flags: [], requests: {} };
+  return { flags: [], hints: [], hint: null, requests: {} };
 }
 
 /** State of a request for the avatar: `none` if never taken. */

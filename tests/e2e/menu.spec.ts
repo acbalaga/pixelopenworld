@@ -9,7 +9,7 @@ const SIZES = [
 const TABS = ['character', 'skills', 'bag', 'system'] as const;
 
 async function boot(page: Page): Promise<void> {
-  await page.goto('/');
+  await page.goto('/?skip=1');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
 }
 

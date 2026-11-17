@@ -39,6 +39,8 @@ export type Command =
    * The sim looks the effects up itself, so only real conversations can change anything.
    */
   | { type: 'talk'; npc: string; node: string; choice: number }
+  /** The interface reports that the action a hint asked for happened (the Menu opened). */
+  | { type: 'hint'; id: string }
   | { type: 'buy'; shop: string; item: string; qty: number }
   /** Sell from bag slot `slot` to the shop in front of you. */
   | { type: 'sell'; shop: string; slot: number; qty: number };
@@ -126,6 +128,10 @@ export function validateCommand(raw: unknown): Validated {
         command: { type: 'talk', npc: r.npc, node: r.node, choice: r.choice as number },
       };
     }
+    case 'hint':
+      if (typeof r.id !== 'string' || !/^hint\.[a-z_]{1,24}$/.test(r.id))
+        return { ok: false, reason: 'bad hint' };
+      return { ok: true, command: { type: 'hint', id: r.id } };
     case 'buy':
     case 'sell': {
       if (typeof r.shop !== 'string' || !/^shop\.[a-z0-9_]{1,40}$/.test(r.shop))

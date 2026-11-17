@@ -87,6 +87,8 @@ export type SimEvent =
       who: number;
       reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' | 'purse';
     }
+  | { type: 'hintShown'; who: number; hint: string }
+  | { type: 'hintEnded'; who: number; hint: string; how: 'done' | 'expired' }
   | { type: 'roomChanged'; who: number; from: string; to: string };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */

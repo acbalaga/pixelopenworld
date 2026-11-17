@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { deriveSummary } from '../../src/shared/summary';
+import { deriveSummary, findAvatar } from '../../src/shared/summary';
+import { HINTS } from '../../src/content/hints';
 import {
   AutoSaver,
   CURRENT_SCHEMA,
@@ -209,14 +210,29 @@ describe('migrations', () => {
     readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-1.json'), 'utf8'),
   ) as { expectedHash: string; plain: SavePlain };
 
-  it('the schema 1 fixture loads cleanly into the current schema (a no-op migration)', async () => {
+  it('the schema 1 fixture migrates to the current schema: same game, new fields filled in', async () => {
     expect(fixture.plain.schema).toBe(1);
     const bytes = new TextEncoder().encode(JSON.stringify(fixture.plain));
     const decoded = await new JsonCodec().decode(bytes);
     const now = migrate(decoded);
     expect(now.schema).toBe(CURRENT_SCHEMA);
-    expect(now).toEqual(fixture.plain);
-    expect(hashState(deserializeState(now.sim))).toBe(fixture.expectedHash);
+    expect(now.saveId).toBe(fixture.plain.saveId);
+    expect(now.look).toEqual(fixture.plain.look);
+    const s = deserializeState(now.sim);
+    const me = findAvatar(s)!;
+    // The upgrade adds a handle, and marks every hint as seen: an old save is not a new player.
+    expect(s.entities.comps.avatar[me]!.handle).toBe('Traveler');
+    expect(s.entities.comps.journal[me]!.hint).toBeNull();
+    expect(s.entities.comps.journal[me]!.hints).toEqual(
+      expect.arrayContaining(HINTS.map((h) => h.id)),
+    );
+    // Everything else is untouched: remove the new fields and the old hash comes back.
+    s.entities.comps.avatar[me] = { ...s.entities.comps.avatar[me]!, handle: undefined as never };
+    delete (s.entities.comps.avatar[me] as { handle?: string }).handle;
+    const j = s.entities.comps.journal[me] as { hints?: unknown; hint?: unknown };
+    delete j.hints;
+    delete j.hint;
+    expect(hashState(s)).toBe(fixture.expectedHash);
   });
 
   it('the fixture also loads through the manager, from storage', async () => {
@@ -235,7 +251,7 @@ describe('migrations', () => {
       newId: () => 'x',
     }).load();
     expect(got!.plain.summary.coin).toBe(42);
-    expect(hashState(deserializeState(got!.plain.sim))).toBe(fixture.expectedHash);
+    expect(got!.plain.schema).toBe(CURRENT_SCHEMA);
   });
 
   it('runs steps in order, one schema at a time (the pattern for future migrations)', () => {

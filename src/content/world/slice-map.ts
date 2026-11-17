@@ -218,7 +218,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
   ] as const)
     clear(cx, cy, rad);
   // Objects.
-  object(g, 48, 40, 'spawn.player', objects);
+  // A new character appears just south of the Waystone.
+  object(g, 47, 39, 'spawn.player', objects);
   object(g, 47, 37, 'fixture.waystone', objects);
   object(g, 42, 40, 'prop.camp_pot', objects);
   object(g, 40, 30, 'npc.shopkeeper', objects);

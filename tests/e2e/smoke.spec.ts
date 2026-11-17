@@ -16,7 +16,7 @@ async function canvasHasWorld(page: Page): Promise<boolean> {
 
 test('boots, taps to start, drags to move, no console or CSP problems', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/');
+  await page.goto('/?skip=1');
   await expect.poll(() => canvasHasWorld(page)).toBe(true);
   await shot(page, '01-boot');
 
@@ -26,6 +26,9 @@ test('boots, taps to start, drags to move, no console or CSP problems', async ({
   if (!box) throw new Error('canvas has no box');
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
 
+  // Let the arrival fade and the materialize effect finish, so the idle control measures only
+  // ambient animation.
+  await page.waitForTimeout(1800);
   // Idle control: how much the canvas changes with no input (water and other animation).
   const idleA = await canvas.screenshot();
   await page.waitForTimeout(1000);
