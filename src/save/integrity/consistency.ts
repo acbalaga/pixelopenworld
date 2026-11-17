@@ -77,7 +77,7 @@ export function consistency(v: View): Reason[] {
   // Skills: ids, counts, rank follows XP, banked XP only while a Trial is pending.
   for (const id of new Set([...Object.keys(skills.points), ...Object.keys(skills.xp)])) {
     if (!SKILLS[id]) {
-      fail('UNKNOWN_ID', id);
+      fail('SKILL_UNKNOWN', id);
       continue;
     }
     const p = skills.points[id] ?? 0;

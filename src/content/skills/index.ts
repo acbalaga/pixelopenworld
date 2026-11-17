@@ -2,57 +2,147 @@ import type { SkillDef, TrialDef } from './types';
 
 export type { SkillDef, TrialDef, XpSource, XpEvent, SkillFamily } from './types';
 
+const damage = (tag: string): SkillDef['sources'] => [
+  { on: 'damage', tag, base: 10, firstTime: 100 },
+];
+
 /**
- * The skills built so far. The sim never counts them: anything here, or added with
+ * All 36 skills (design/03, design/11), in table order: families in design/03 order, skills in
+ * table order within a family. The sim never counts them: anything here, or added with
  * {@link registerSkill}, is a skill. Every skill gets points, a pool contribution by its family,
- * a place on the HUD and the Trial gate with no code change.
+ * a place on the HUD and the Trial gate with no code change. A skill with no `sources` yet is
+ * listed in {@link PENDING_SKILLS}.
  */
-export const SKILLS: Record<string, SkillDef> = {
-  'skill.blades': {
-    id: 'skill.blades',
-    name: 'Blades',
-    family: 'arms',
-    weapon: 'blades',
-    sources: [{ on: 'damage', tag: 'blades', base: 10, firstTime: 100 }],
-  },
-  'skill.polearms': {
-    id: 'skill.polearms',
-    name: 'Polearms',
-    family: 'arms',
-    weapon: 'polearms',
-    sources: [{ on: 'damage', tag: 'polearms', base: 10, firstTime: 100 }],
-  },
-  'skill.ember': {
-    id: 'skill.ember',
-    name: 'Ember',
-    family: 'magic',
-    sources: [{ on: 'damage', tag: 'ember', base: 10, firstTime: 100 }],
-  },
-  'skill.evasion': {
-    id: 'skill.evasion',
-    name: 'Evasion',
-    family: 'arms',
-    sources: [{ on: 'dodge', base: 12 }],
-  },
-  'skill.foraging': {
-    id: 'skill.foraging',
-    name: 'Foraging',
-    family: 'gathering',
-    sources: [{ on: 'gather', tag: 'foraging', base: 20, firstTime: 100 }],
-  },
-  'skill.cooking': {
-    id: 'skill.cooking',
-    name: 'Cooking',
-    family: 'crafting',
-    sources: [{ on: 'cook', tag: 'cooking', base: 25, firstTime: 100 }],
-  },
-  'skill.athletics': {
-    id: 'skill.athletics',
-    name: 'Athletics',
-    family: 'exploration',
-    sources: [{ on: 'sprint', base: 3, scaled: false }],
-  },
-};
+export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
+  (
+    [
+      // Arms.
+      {
+        id: 'skill.blades',
+        name: 'Blades',
+        family: 'arms',
+        weapon: 'blades',
+        sources: damage('blades'),
+      },
+      { id: 'skill.heavy_arms', name: 'Heavy Arms', family: 'arms', sources: [] },
+      {
+        id: 'skill.polearms',
+        name: 'Polearms',
+        family: 'arms',
+        weapon: 'polearms',
+        sources: damage('polearms'),
+      },
+      { id: 'skill.archery', name: 'Archery', family: 'arms', sources: [] },
+      { id: 'skill.unarmed', name: 'Unarmed', family: 'arms', sources: [] },
+      { id: 'skill.shieldcraft', name: 'Shieldcraft', family: 'arms', sources: [] },
+      {
+        id: 'skill.evasion',
+        name: 'Evasion',
+        family: 'arms',
+        sources: [{ on: 'dodge', base: 12 }],
+      },
+      // Magic.
+      { id: 'skill.ember', name: 'Ember', family: 'magic', sources: damage('ember') },
+      { id: 'skill.tide', name: 'Tide', family: 'magic', sources: [] },
+      { id: 'skill.gale', name: 'Gale', family: 'magic', sources: [] },
+      { id: 'skill.stone', name: 'Stone', family: 'magic', sources: [] },
+      { id: 'skill.mending', name: 'Mending', family: 'magic', sources: [] },
+      { id: 'skill.hexing', name: 'Hexing', family: 'magic', sources: [] },
+      // Gathering.
+      { id: 'skill.mining', name: 'Mining', family: 'gathering', sources: [] },
+      { id: 'skill.logging', name: 'Logging', family: 'gathering', sources: [] },
+      {
+        id: 'skill.foraging',
+        name: 'Foraging',
+        family: 'gathering',
+        sources: [{ on: 'gather', tag: 'foraging', base: 20, firstTime: 100 }],
+      },
+      { id: 'skill.fishing', name: 'Fishing', family: 'gathering', sources: [] },
+      { id: 'skill.farming', name: 'Farming', family: 'gathering', sources: [] },
+      { id: 'skill.husbandry', name: 'Husbandry', family: 'gathering', sources: [] },
+      // Crafting.
+      { id: 'skill.smithing', name: 'Smithing', family: 'crafting', sources: [] },
+      { id: 'skill.woodworking', name: 'Woodworking', family: 'crafting', sources: [] },
+      { id: 'skill.tailoring', name: 'Tailoring', family: 'crafting', sources: [] },
+      {
+        id: 'skill.cooking',
+        name: 'Cooking',
+        family: 'crafting',
+        sources: [{ on: 'craft', tag: 'cooking', base: 25, firstTime: 100 }],
+      },
+      { id: 'skill.alchemy', name: 'Alchemy', family: 'crafting', sources: [] },
+      { id: 'skill.enchanting', name: 'Enchanting', family: 'crafting', sources: [] },
+      { id: 'skill.tinkering', name: 'Tinkering', family: 'crafting', sources: [] },
+      // Social.
+      { id: 'skill.bartering', name: 'Bartering', family: 'social', sources: [] },
+      { id: 'skill.performance', name: 'Performance', family: 'social', sources: [] },
+      { id: 'skill.leadership', name: 'Leadership', family: 'social', sources: [] },
+      { id: 'skill.taming', name: 'Taming', family: 'social', sources: [] },
+      { id: 'skill.stealth', name: 'Stealth', family: 'social', sources: [] },
+      // Exploration.
+      { id: 'skill.cartography', name: 'Cartography', family: 'exploration', sources: [] },
+      {
+        id: 'skill.survival',
+        name: 'Survival',
+        family: 'exploration',
+        sources: [
+          { on: 'outdoorsNight', base: 30, scaled: false },
+          { on: 'eatRaw', base: 8, scaled: false },
+        ],
+      },
+      {
+        id: 'skill.athletics',
+        name: 'Athletics',
+        family: 'exploration',
+        sources: [{ on: 'sprint', base: 3, scaled: false }],
+      },
+      {
+        id: 'skill.deciphering',
+        name: 'Deciphering',
+        family: 'exploration',
+        // First reading of a tablet kind only. A tablet read again pays nothing.
+        sources: [{ on: 'tabletRead', base: 0, scaled: false, firstTime: 100 }],
+      },
+      { id: 'skill.delving', name: 'Delving', family: 'exploration', sources: [] },
+    ] satisfies SkillDef[]
+  ).map((d) => [d.id, d]),
+);
+
+/**
+ * Skills with no XP source yet. The six late skills wait for their milestone. The rest wait for
+ * the M3 ticket that adds their system, and that ticket removes them from this list. Never wire
+ * XP to a skill listed here. A test checks that every skill not listed earns XP.
+ */
+export const PENDING_SKILLS: string[] = [
+  'skill.heavy_arms',
+  'skill.archery',
+  'skill.unarmed',
+  'skill.shieldcraft',
+  'skill.tide',
+  'skill.gale',
+  'skill.stone',
+  'skill.mending',
+  'skill.hexing',
+  'skill.mining',
+  'skill.logging',
+  'skill.fishing',
+  'skill.smithing',
+  'skill.woodworking',
+  'skill.tailoring',
+  'skill.alchemy',
+  'skill.enchanting',
+  'skill.tinkering',
+  'skill.bartering',
+  'skill.performance',
+  'skill.stealth',
+  // Late skills, M4 to M6.
+  'skill.farming',
+  'skill.husbandry',
+  'skill.leadership',
+  'skill.taming',
+  'skill.cartography',
+  'skill.delving',
+];
 
 /**
  * Trials. One is built to prove the mechanism: the Foraging Trial at 15, given by the cook.

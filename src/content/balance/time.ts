@@ -13,6 +13,8 @@ export const TIME = {
   ],
   /** Minutes into the cycle at tick 0. 4 is the start of full day. */
   startMinute: 4,
+  /** In-game hour: the 48 minute cycle is 24 hours, so an hour is two real minutes. */
+  hourTicks: 3600,
   /**
    * Offline accrual cap at base, in ms (design/06): 8 hours. At most this much accrues in total
    * between two successful time syncs (tech/02), so a week offline pays one cap period.

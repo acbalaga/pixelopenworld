@@ -26,7 +26,8 @@
     "check:deps": "tsx tools/check-deps.ts",
     "tamper": "tsx tools/tamper/index.ts",
     "seal:gen": "tsx tools/gen-seal-material.ts",
-    "map:png": "tsx tools/render-map.ts"
+    "map:png": "tsx tools/render-map.ts",
+    "xp-report": "tsx tools/xp-report.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",

@@ -120,7 +120,9 @@ describe('bag view and item actions', () => {
   it('offers Eat for food, Wear for gear, and Drop for everything', () => {
     expect(itemActions(ITEMS['item.dish_bread']!)).toEqual(['use', 'drop']);
     expect(itemActions(ITEMS['item.sword_iron']!)).toEqual(['equip', 'drop']);
-    expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['drop']);
+    expect(itemActions(ITEMS['item.moss_tuft']!)).toEqual(['drop']);
+    // Raw forage can be eaten as found (it pays Survival XP).
+    expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['use', 'drop']);
     expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'drop']);
   });
   it('shows an item detail from the slot, and nothing for an empty slot', () => {

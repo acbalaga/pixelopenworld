@@ -375,6 +375,7 @@ export class MenuSheet {
           li.appendChild(
             el('p', 'pow-hint', r.trial === 'offered' ? S.trialOffered : S.trialReady),
           );
+        if (r.trialHint) li.appendChild(el('p', 'pow-hint', r.trialHint));
         ul.appendChild(li);
       }
       put(sec, h, ul);

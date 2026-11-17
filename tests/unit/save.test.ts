@@ -233,6 +233,7 @@ describe('migrations', () => {
     delete j.hints;
     delete j.hint;
     delete (s as { ledger?: unknown }).ledger;
+    delete (s.entities.comps.skills[me] as { nightAcc?: number }).nightAcc;
     expect(hashState(s)).toBe(fixture.expectedHash);
   });
 
@@ -257,6 +258,7 @@ describe('migrations', () => {
     expect(now.ledger.xpEarned['skill.blades']).toBe(25);
     // Everything else is untouched: remove the ledger and the old hash comes back.
     delete (s as { ledger?: unknown }).ledger;
+    delete (s.entities.comps.skills[me] as { nightAcc?: number }).nightAcc;
     expect(hashState(s)).toBe(f2.expectedHash);
     expect(now.playSeconds).toBe(f2.plain.playSeconds);
     expect(now.look).toEqual(f2.plain.look);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { COMBAT as C } from '../../src/content/balance/combat';
 import { SKILLS_BALANCE as B } from '../../src/content/balance/skills';
 import { TIME } from '../../src/content/balance/time';
-import { registerSkill, unregisterSkill, trialKey } from '../../src/content/skills';
+import { PENDING_SKILLS, registerSkill, unregisterSkill, trialKey } from '../../src/content/skills';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnEnemy } from '../../src/sim/combat/enemy';
 import type { SimEvent } from '../../src/sim/kernel/events';
@@ -388,9 +388,11 @@ describe('content', () => {
       expect(t.gather.phases.length).toBeGreaterThan(0);
     }
     for (const d of Object.values(SKILLS)) {
-      expect(d.sources.length, d.id).toBeGreaterThan(0);
+      // A skill with no source is pending, and a pending skill has none (never wire XP to one).
+      expect(d.sources.length > 0, d.id).toBe(!PENDING_SKILLS.includes(d.id));
       for (const src of d.sources) {
-        expect(src.base, d.id).toBeGreaterThan(0);
+        // A source pays something: a base, or a first-time lump (Deciphering has only the lump).
+        expect(src.base + (src.firstTime ?? 0), d.id).toBeGreaterThan(0);
         expect(d.name).not.toMatch(/—/);
       }
     }

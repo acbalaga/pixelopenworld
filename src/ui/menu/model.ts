@@ -48,6 +48,11 @@ export interface SkillRowView {
   progressPct: number;
   /** 'ready' when XP is waiting on a Trial, 'offered' when a Trial has been given. */
   trial: 'ready' | 'offered' | null;
+  /**
+   * Where the next Trial is, shown while the next point waits on one (XP banked, or one point
+   * short). The Trial's own `hint` string once authored (M3-03), else `trialUnknown`.
+   */
+  trialHint: string | null;
   /** The line a screen reader reads for the row. */
   label: string;
 }
@@ -151,7 +156,8 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
   const out: SkillFamilyView[] = [];
   for (const family of FAMILY_ORDER) {
     const rows: SkillRowView[] = [];
-    for (const id of Object.keys(SKILLS).sort()) {
+    // Table order: the order skills are declared in, which is the order of design/11.
+    for (const id of Object.keys(SKILLS)) {
       const def = SKILLS[id];
       if (!def || def.family !== family) continue;
       const points = s?.points[id] ?? 0;
@@ -175,6 +181,7 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
         mastery,
         progressPct: cost === 0 ? 100 : Math.min(100, Math.floor((xp * 100) / cost)),
         trial: pending !== null && xp >= cost ? (offered ? 'offered' : 'ready') : null,
+        trialHint: pending !== null && !offered ? UI_STRINGS.trialUnknown : null,
         label: fill(UI_STRINGS.skillRow, { name: def.name, rank: mastery, points }),
       });
     }

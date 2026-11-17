@@ -147,6 +147,30 @@ describe('recorded sessions: honest play is never flagged', () => {
     expect(report(run)).toBe('ok');
   }, 120_000);
 
+  it('survivor: spends a night outdoors and eats forage raw (Survival XP)', async () => {
+    const run = new Run(505);
+    // Night falls two minutes in, and lasts ten.
+    run.worldOffset = (30 + 4 + 4 - 4) * 1800 - 2 * 60 * TPS;
+    await run.save();
+    let loops = 0;
+    while (run.ticks < MINUTES_30) {
+      run.gather(21, loops % 2 === 0 ? 30 : 32, true);
+      run.eat();
+      run.stand(30, 30, 2);
+      run.run(600);
+      if (run.dead) run.recover();
+      loops++;
+      await run.autosave();
+    }
+    await run.save();
+
+    const l = run.s.ledger;
+    // Ten minutes of night is five in-game hours, so at least four payments, plus raw eating.
+    expect(l.xpEarned['skill.survival']).toBeGreaterThan(4 * 30);
+    expect(l.xpEarned['skill.foraging']).toBeGreaterThan(0);
+    expect(report(run)).toBe('ok');
+  }, 120_000);
+
   it('a run that is then edited is flagged (the harness can see a problem)', async () => {
     const run = new Run(404);
     await run.save();

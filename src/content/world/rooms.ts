@@ -5,7 +5,14 @@ import type { RoomDef } from './fixtures';
  * (96 x 96 tiles). The cave sits below it in chunk rows 3 and 4, on a grid of 32 tile cells, one
  * room per cell, so rooms never touch and nothing notices a creature through a wall.
  */
-export const OUTDOORS: RoomDef = { id: 'room.outdoors', x0: 0, y0: 0, x1: 96, y1: 96 };
+export const OUTDOORS: RoomDef = {
+  id: 'room.outdoors',
+  x0: 0,
+  y0: 0,
+  x1: 96,
+  y1: 96,
+  outdoors: true,
+};
 
 /** Cave rooms, walls included. The camera snaps to the one the avatar is in. */
 export const CAVE_ROOMS: readonly RoomDef[] = [

@@ -5,6 +5,7 @@
  * says so, and it is generous: a legitimate player must never reach one.
  */
 import { SKILLS_BALANCE } from '../../content/balance/skills';
+import { TIME } from '../../content/balance/time';
 import { COMBAT } from '../../content/balance/combat';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { MOVEMENT } from '../../content/balance/movement';
@@ -72,24 +73,48 @@ export const KILLS_PER_SECOND_MAX = 2;
 export const COUNT_SLACK = 20;
 export const XP_SLACK = 300;
 
-const rateOf = (on: XpSource['on']): number =>
-  on === 'damage'
-    ? DAMAGE_EVENTS_PER_SECOND
-    : on === 'dodge'
-      ? DODGE_EVENTS_PER_SECOND
-      : on === 'gather'
-        ? GATHER_EVENTS_PER_SECOND
-        : on === 'cook'
-          ? COOK_EVENTS_PER_SECOND
-          : SPRINT_EVENTS_PER_SECOND;
+/** Hours of night per second: one in-game hour is `hourTicks` of sim time. */
+export const NIGHT_HOURS_PER_SECOND = TPS / TIME.hourTicks;
+
+/**
+ * The fastest each XP event can fire, per second. Events whose system does not exist yet
+ * (block, parry, heal, statusApplied, repair, haggle, sale, perform, sneak) get a judgement of
+ * two a second until their ticket measures it. Each such ticket replaces its entry.
+ */
+const RATES: Record<XpSource['on'], number> = {
+  damage: DAMAGE_EVENTS_PER_SECOND,
+  dodge: DODGE_EVENTS_PER_SECOND,
+  gather: GATHER_EVENTS_PER_SECOND,
+  craft: COOK_EVENTS_PER_SECOND,
+  sprint: SPRINT_EVENTS_PER_SECOND,
+  outdoorsNight: NIGHT_HOURS_PER_SECOND,
+  /** Eating takes a command each, so the cooking bound is far past a hand. */
+  eatRaw: COOK_EVENTS_PER_SECOND,
+  /** A tablet pays only the first-time lump, which is counted below. */
+  tabletRead: 0,
+  block: 2,
+  parry: 2,
+  heal: 2,
+  statusApplied: 2,
+  repair: 2,
+  haggle: 2,
+  sale: 2,
+  perform: 2,
+  sneak: 2,
+};
+
+const rateOf = (on: XpSource['on']): number => RATES[on];
 
 /** Most XP one event of a source can pay: base, scaled up to the challenge ceiling. */
 const perEvent = (s: XpSource): number =>
   s.scaled === false ? s.base : Math.floor((s.base * SKILLS_BALANCE.challenge.ceilPct) / 100);
 
-/** Things a first-time lump can key on: creatures, items and recipes. */
+/** Things a first-time lump can key on: creatures, items, recipes and fixture kinds. */
 const FIRST_TIME_SUBJECTS =
-  Object.keys(CREATURES).length + Object.keys(ITEMS).length + Object.keys(RECIPES).length;
+  Object.keys(CREATURES).length +
+  Object.keys(ITEMS).length +
+  Object.keys(RECIPES).length +
+  Object.keys(FIXTURES).length;
 
 /**
  * The most XP a skill can have earned in `seconds` of play: every source firing at its fastest

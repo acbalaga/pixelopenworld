@@ -130,6 +130,8 @@ export interface RoomDef {
   y0: number;
   x1: number;
   y1: number;
+  /** Open sky. Night spent here pays Survival XP. */
+  outdoors?: true;
 }
 
 /** Glyphs the tablet shows. Each is a polyline set on a 5 by 7 grid. Not a language: a placeholder. */

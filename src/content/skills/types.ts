@@ -3,7 +3,24 @@ import type { DayPhase } from '../balance/time';
 export type SkillFamily = 'arms' | 'magic' | 'gathering' | 'crafting' | 'social' | 'exploration';
 
 /** The sim happenings that can pay skill XP. */
-export type XpEvent = 'damage' | 'dodge' | 'gather' | 'cook' | 'sprint';
+export type XpEvent =
+  | 'damage'
+  | 'dodge'
+  | 'block'
+  | 'parry'
+  | 'heal'
+  | 'statusApplied'
+  | 'gather'
+  | 'craft'
+  | 'repair'
+  | 'haggle'
+  | 'sale'
+  | 'perform'
+  | 'sneak'
+  | 'sprint'
+  | 'outdoorsNight'
+  | 'eatRaw'
+  | 'tabletRead';
 
 /**
  * One row of the XP mapping table: when `on` happens, and its `tag` matches, the skill earns
@@ -13,15 +30,16 @@ export interface XpSource {
   on: XpEvent;
   /**
    * Narrows the event. For `damage` it is the weapon family or spell element that dealt it. For
-   * `gather` and `cook` it is the tag the gathering or crafting system gave the event.
+   * `gather` and `craft` it is the tag the gathering or crafting system gave the event.
    */
   tag?: string;
   base: number;
   /** Default true. Sprint and other flat sources set false. */
   scaled?: boolean;
   /**
-   * Lump of XP the first time. For damage it is the first kill of each creature. For gather and
-   * cook it is the first of each item or recipe. Fires once ever per subject.
+   * Lump of XP the first time. The subject per event: damage the creature kind at the kill,
+   * gather the item, craft the recipe, tabletRead the tablet kind, perform the technique, sneak
+   * the creature kind, haggle the shop. Other events have none. Fires once ever per subject.
    */
   firstTime?: number;
 }

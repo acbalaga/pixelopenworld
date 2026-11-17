@@ -1,4 +1,7 @@
 import { SKILLS_BALANCE as B } from '../../content/balance/skills';
+import { TIME } from '../../content/balance/time';
+import { ITEMS } from '../../content/items';
+import { roomAt } from '../../content/world/rooms';
 import { WEAPONS } from '../../content/combat/attacks';
 import { SKILLS, TRIALS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
@@ -6,6 +9,8 @@ import { SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { addXp, challengePct, passTrial, pointsOf } from '../skills';
 import { dayPhase } from '../time';
+
+const TILE = 16;
 
 /** What one happening is worth to skills. `tag` and `subject` pick the rows of the mapping table. */
 interface Practice {
@@ -89,6 +94,24 @@ function sprint(state: SimState, who: EntityId): void {
 }
 
 /**
+ * Survival: one payment for each in-game hour of night spent in a room marked outdoors. Time is
+ * counted a tick at a time, so an hour is the sum of visits, not one moment on a boundary.
+ */
+function outdoorsNight(state: SimState, who: EntityId): void {
+  const s = getComp(state.entities, who, 'skills');
+  const p = getComp(state.entities, who, 'pos');
+  if (!s || !p || getComp(state.entities, who, 'fighter')?.state === 'dead') return;
+  if (dayPhase(state.worldTick) !== 'night') return;
+  const room = roomAt(Math.floor(p.x / SUBPX / TILE), Math.floor((p.y / SUBPX - 1) / TILE));
+  if (!room?.outdoors) return;
+  s.nightAcc += 1;
+  while (s.nightAcc >= TIME.hourTicks) {
+    s.nightAcc -= TIME.hourTicks;
+    practice(state, who, { on: 'outdoorsNight', tag: undefined, tier: 0, subject: null });
+  }
+}
+
+/**
  * Turns this tick's sim events into skill XP for each avatar. Runs last, so it sees everything
  * the other systems sent. Events it sends itself are appended after the ones it reads.
  */
@@ -119,10 +142,17 @@ export function skillsSystem(state: SimState): void {
         practice(state, who, { on: 'gather', tag: e.tag, tier: e.tier, subject: e.item });
         checkTrials(state, who, e.item);
       } else if (e.type === 'cooked' && e.id === who) {
-        practice(state, who, { on: 'cook', tag: e.tag, tier: e.tier, subject: e.recipe });
+        // Cooking is the craft event with tag `cooking`.
+        practice(state, who, { on: 'craft', tag: e.tag, tier: e.tier, subject: e.recipe });
+      } else if (e.type === 'eaten' && e.id === who && ITEMS[e.item]?.food?.raw) {
+        practice(state, who, { on: 'eatRaw', tag: undefined, tier: 0, subject: null });
+      } else if (e.type === 'tabletRead' && e.who === who) {
+        const kind = getComp(state.entities, e.id, 'fixture')?.kind ?? null;
+        practice(state, who, { on: 'tabletRead', tag: undefined, tier: 0, subject: kind });
       }
     }
     sprint(state, who);
+    outdoorsNight(state, who);
     syncWeaponRank(state, who);
   }
 }
