@@ -38,8 +38,12 @@ export function validateCreatures(
       errors.push(`${label}: leash ${c.leash} is shorter than notice ${c.notice}`);
     if (c.lose < c.notice)
       errors.push(`${label}: lose ${c.lose} is shorter than notice ${c.notice}`);
-    if (c.archetype !== 'shooter' && c.speed === 0)
-      errors.push(`${label}: only a shooter may be rooted`);
+    if (c.archetype !== 'shooter' && c.archetype !== 'dummy' && c.speed === 0)
+      errors.push(`${label}: only a shooter or a dummy may be rooted`);
+    if (c.archetype !== 'dummy' && c.attacks.length === 0)
+      errors.push(`${label}: needs at least one attack`);
+    if (c.archetype === 'dummy' && c.attacks.length > 0)
+      errors.push(`${label}: a dummy does not attack`);
     if (c.archetype === 'shooter' && !c.keepRange)
       errors.push(`${label}: a shooter needs keepRange`);
     for (const d of c.drops)

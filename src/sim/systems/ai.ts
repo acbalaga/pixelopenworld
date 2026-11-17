@@ -129,6 +129,12 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
   const me = centerPx(state, id);
   if (!ai || !f || !pos || !pools || !def || !me) return;
   if (f.state === 'dead') return;
+  if (def.archetype === 'dummy') {
+    // A dummy is pinned to where it was placed, so knockback never moves it.
+    pos.x = ai.home.x;
+    pos.y = ai.home.y;
+    return;
+  }
   for (let i = 0; i < ai.cooldowns.length; i++)
     if ((ai.cooldowns[i] ?? 0) > 0) (ai.cooldowns[i] as number)--;
   if (f.hitstop > 0 || f.state !== 'idle') return;

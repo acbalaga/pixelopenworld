@@ -7,7 +7,7 @@ const pos = z.number().int().nonnegative();
 export const creatureSchema = z.object({
   id,
   name: z.string().min(1).max(24),
-  archetype: z.enum(['chaser', 'shooter', 'charger']),
+  archetype: z.enum(['chaser', 'shooter', 'charger', 'dummy']),
   tier: z.number().int().min(1).max(8),
   hp: z.number().int().positive(),
   defense: pos,
@@ -32,7 +32,8 @@ export const creatureSchema = z.object({
         phase: pos.optional(),
       }),
     )
-    .min(1),
+    // A dummy has none. Every other archetype needs one, checked in the validator.
+    .min(0),
   phases: z
     .array(
       z.object({

@@ -234,6 +234,7 @@ function outdoors(g: Grid, objects: Obj[]): void {
   ] as const)
     object(g, x, y, 'node.berry_bush', objects);
   // Spawners ramp up from the square: gentle Mosslings first, then a shooter, boars past the stream.
+  object(g, 53, 38, 'spawner.training_dummy', objects);
   object(g, 30, 44, 'spawner.mossling', objects);
   object(g, 66, 40, 'spawner.mossling', objects);
   object(g, 60, 50, 'spawner.spitbloom', objects);

@@ -333,7 +333,43 @@ const bramblehide = boarMaker('creature.old_bramblehide', 48, 2.1, {
   tusk: 3,
 });
 
+// ---- Training dummy: a post with a crossbar and a straw head. 16 x 24, feet at (8, 22).
+const dummy: Maker = {
+  id: 'creature.training_dummy',
+  size: 24,
+  origin: [8, 22],
+  walks: false,
+  draw(p) {
+    const im = new Img(16, 24);
+    const sway = p.hurt ? 1 : p.step === -1 && p.stretch === 1 ? 0 : 0;
+    const x = 8 + (p.hurt ? (p.view === 'up' ? -1 : 1) : 0) + sway;
+    // Post and foot.
+    im.rect(x - 1, 8, x, 21, WOOD[1]);
+    im.rect(x - 1, 8, x - 1, 21, WOOD[2]);
+    im.rect(x - 4, 20, x + 3, 21, WOOD[0]);
+    if (p.view === 'right') {
+      // Edge on: the crossbar is a thin plank.
+      im.rect(x - 1, 11, x, 12, WOOD[2]);
+    } else {
+      im.rect(x - 6, 11, x + 5, 12, WOOD[2]);
+      im.rect(x - 6, 11, x + 5, 11, WOOD[3]);
+      im.rect(x - 7, 12, x - 6, 15, WOOD[1]);
+      im.rect(x + 5, 12, x + 6, 15, WOOD[1]);
+    }
+    // Sack body tied to the post.
+    shadedEllipse(im, x - 0.5, 15.5, 3.4, 4, [44, 45, 46, 47]);
+    im.rect(x - 3, 14, x + 2, 14, WOOD[1]);
+    // Head.
+    shadedEllipse(im, x - 0.5, 6, 3, 3, [44, 45, 46, 47]);
+    if (p.view === 'down') {
+      im.set(x - 2, 6, 0);
+      im.set(x + 1, 6, 0);
+    }
+    return im;
+  },
+};
+
 /** Every creature sprite. */
 export function creatureSprites(): SpriteDef[] {
-  return [mossling, spitbloom, boar, bramblehide].map(sprite);
+  return [mossling, spitbloom, boar, bramblehide, dummy].map(sprite);
 }

@@ -1,7 +1,7 @@
 /** Creature data types. Pure types, so the client never pulls in zod (the schema is build-time). */
 
 /** The behavior archetypes built so far. The full set of 12 arrives with later milestones. */
-export type Archetype = 'chaser' | 'shooter' | 'charger';
+export type Archetype = 'chaser' | 'shooter' | 'charger' | 'dummy';
 
 /** One attack a creature can use, with when it will choose it. */
 export interface CreatureAttack {

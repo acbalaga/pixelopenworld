@@ -9,7 +9,7 @@ async function ready(page: Page): Promise<void> {
 
 // Places seen in the slice, as `?at=tx,ty` starts. `foes=0` keeps creatures out of the pictures.
 const PLACES: readonly [name: string, at: string][] = [
-  ['slice-square', '48,41'],
+  ['slice-square', '50,40'],
   ['slice-meadow', '26,42'],
   ['slice-bridge', '47,56'],
   ['slice-cave-mouth', '81,81'],
@@ -20,7 +20,7 @@ const PLACES: readonly [name: string, at: string][] = [
 for (const [name, at] of PLACES) {
   test(`slice: ${name} draws with no console or CSP problems`, async ({ page }) => {
     const problems = await watchProblems(page);
-    await page.goto(`/?foes=0&at=${at}`);
+    await page.goto(`/?foes=${name === 'slice-square' ? 1 : 0}&at=${at}`);
     await ready(page);
     await shot(page, name);
     expect(problems.console).toEqual([]);
