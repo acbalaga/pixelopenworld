@@ -12,6 +12,7 @@ const hit = (over: Partial<Extract<SimEvent, { type: 'damageDealt' }>> = {}): Si
   crit: false,
   bonus: false,
   heavy: false,
+  tag: 'blades',
   ...over,
 });
 const colors = { hit: '#fff', crit: '#ff0', hurt: '#f00' };

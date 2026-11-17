@@ -11,6 +11,7 @@ import { spawnerSystem } from './systems/spawner';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
+import { skillsSystem } from './systems/skills';
 import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
@@ -38,6 +39,8 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   knockSystem,
   projectileSystem,
   poolsSystem,
+  // Last, so it sees every event the other systems sent this tick.
+  skillsSystem,
 ];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */
