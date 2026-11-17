@@ -76,6 +76,8 @@ export type SimEvent =
   /** The avatar took a portal. Render fades and snaps the camera. */
   | { type: 'talkStarted'; who: number; npc: string }
   | { type: 'requestStarted'; who: number; request: string }
+  | { type: 'shortcutOpened'; id: number }
+  | { type: 'techniqueLearned'; who: number; technique: string }
   | { type: 'requestProgress'; who: number; request: string; progress: number }
   | { type: 'requestReady'; who: number; request: string }
   | { type: 'requestCompleted'; who: number; request: string }

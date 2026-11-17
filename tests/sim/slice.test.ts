@@ -9,7 +9,9 @@ import type { Command } from '../../src/sim/kernel/commands';
 import { countItem } from '../../src/sim/items';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
-import { spawnFixture } from '../../src/sim/systems/fixtures';
+import { fixturesSystem, spawnFixture } from '../../src/sim/systems/fixtures';
+import { spawnCreature } from '../../src/sim/combat/enemy';
+import { kill } from '../../src/sim/combat/fighter';
 import { buildChunks } from '../../src/sim/world/stamp';
 import { TileWorld } from '../../src/sim/world/world';
 import { collisionOfCell } from '../../tools/bake-assets/world';
@@ -289,6 +291,15 @@ describe('the cave run', () => {
     expect(b.count('doorOpened')).toBe(1);
     expect(b.walkTo(at('fixture.portal_b_east'))).toBe(true);
     expect(b.room()).toBe('room.e');
+
+    // The shortcut is plain wall and shut until the boss is down.
+    const shortcut = (): boolean | undefined =>
+      b.s.entities.comps.fixture.find((f) => f?.kind === 'fixture.portal_e_shortcut')?.open;
+    expect(shortcut()).toBe(false);
+    const boss = spawnCreature(b.s, 'creature.old_bramblehide', 10, 10);
+    kill(b.s, boss);
+    fixturesSystem(b.s);
+    expect(shortcut()).toBe(true);
 
     // The shortcut leads to the entrance room, and the entrance room leads outside.
     expect(b.walkTo(at('fixture.portal_e_shortcut'))).toBe(true);

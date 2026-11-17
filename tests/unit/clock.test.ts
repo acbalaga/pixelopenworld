@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TrustedClock, type ClockEnv, type ClockMemory } from '../../src/platform/clock';
+import {
+  TrustedClock,
+  mergeClockMemory,
+  type ClockEnv,
+  type ClockMemory,
+} from '../../src/platform/clock';
 import { worldTickAt } from '../../src/sim/time';
 import { TIME } from '../../src/content/balance/time';
 
@@ -216,5 +221,42 @@ describe('the world clock', () => {
     const b = new TrustedClock(env);
     b.load(saved);
     expect(worldTickAt(b.trustedNow(), epoch) - before).toBe(20 * m);
+  });
+});
+
+describe('the device copy of the clock memory', () => {
+  const m = (lastTrustedNow: number, accrualUsedMs = 0): ClockMemory => ({
+    lastTrustedNow,
+    offset: 7,
+    accrualUsedMs,
+  });
+  it('takes the later trusted time and the larger budget used', () => {
+    expect(mergeClockMemory(m(100, 5), m(200, 9))).toEqual({
+      lastTrustedNow: 200,
+      offset: 7,
+      accrualUsedMs: 9,
+    });
+    expect(mergeClockMemory(m(300, 1), m(200, 9))?.lastTrustedNow).toBe(300);
+  });
+  it('uses whichever exists', () => {
+    expect(mergeClockMemory(null, m(1))).toEqual(m(1));
+    expect(mergeClockMemory(m(1), null)).toEqual(m(1));
+    expect(mergeClockMemory(null, null)).toBeNull();
+  });
+  it('restoring an old save cannot claim the same offline time twice', () => {
+    const { env, d } = device(5_000_000);
+    // Session 1 played to 5_000_000, saved an export (used 0), then played on offline and took 8h.
+    const exportFile = m(5_000_000);
+    const first = new TrustedClock(env);
+    d.date = 5_000_000 + 8 * H;
+    first.load(exportFile);
+    expect(first.claimOffline(CAP)).toBe(CAP);
+    const deviceCopy = first.snapshot();
+    // Back at the device 1 minute later, the old export is imported over the save.
+    d.date += 60_000;
+    const again = new TrustedClock(env);
+    again.load(mergeClockMemory(exportFile, deviceCopy));
+    expect(again.elapsedSinceLastSession()).toBe(60_000);
+    expect(again.claimOffline(CAP)).toBe(0);
   });
 });

@@ -226,6 +226,7 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 43, 41, 'npc.cook', objects);
   object(g, 50, 44, 'npc.guard', objects);
   object(g, 55, 39, 'npc.pilgrim', objects);
+  object(g, 44, 35, 'npc.scholar', objects);
   object(g, 81, 78, 'fixture.portal_cave_mouth', objects);
   for (const [x, y] of [
     [24, 40],
@@ -297,7 +298,8 @@ function cave(g: Grid, objects: Obj[]): void {
   carve('room.a', (x0, y0) => {
     portal(x0 + 9, y0 + 13, 'fixture.portal_a_entry');
     portal(x0 + 17, y0 + 7, 'fixture.portal_a_east');
-    g.set(x0 + 9, y0, ARCH);
+    // The way back from the boss room lands here. From this side it is plain wall: no arch, no
+    // portal, nothing to find until it is used from the other side.
     fixture(x0 + 9, y0, 'fixture.arrival_a_shortcut');
     object(g, x0 + 5, y0 + 6, 'spawner.mossling', objects);
   });

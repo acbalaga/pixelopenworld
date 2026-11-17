@@ -157,6 +157,9 @@ export function recomputeGear(state: SimState, who: EntityId): void {
     }
   }
   cb.defense = defense;
+  // Slot 1 is the lunge of whatever is held: every blade and every polearm has one.
+  const fighter = getComp(state.entities, who, 'fighter');
+  if (fighter) fighter.slots[0] = WEAPONS[cb.weapon]?.lunge ?? null;
 }
 
 /** Only while standing free of a fight move or a swing. */

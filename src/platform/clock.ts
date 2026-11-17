@@ -34,6 +34,51 @@ export interface ClockMemory {
   accrualUsedMs: number;
 }
 
+/**
+ * The device keeps its own copy of the clock memory, outside any save (tech/02 T5). Restoring an
+ * older save or importing an older export therefore cannot hand back time or budget already
+ * taken: the later trusted time wins, and so does the larger budget used. (A successful sync
+ * resets the budget in any case.)
+ */
+export function mergeClockMemory(
+  save: ClockMemory | null,
+  device: ClockMemory | null,
+): ClockMemory | null {
+  if (!save || !device) return save ?? device;
+  const later = save.lastTrustedNow >= device.lastTrustedNow ? save : device;
+  return {
+    lastTrustedNow: later.lastTrustedNow,
+    offset: later.offset,
+    accrualUsedMs: Math.max(save.accrualUsedMs, device.accrualUsedMs),
+  };
+}
+
+const DEVICE_KEY = 'pow.clock';
+
+/** Reads the device copy. Missing, blocked or malformed storage gives null. */
+export function readDeviceClock(): ClockMemory | null {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(DEVICE_KEY) ?? 'null');
+    if (!raw || typeof raw !== 'object') return null;
+    const m = raw as Record<string, unknown>;
+    const ok = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+    if (!ok(m.lastTrustedNow) || !ok(m.offset) || !ok(m.accrualUsedMs) || m.accrualUsedMs < 0)
+      return null;
+    return { lastTrustedNow: m.lastTrustedNow, offset: m.offset, accrualUsedMs: m.accrualUsedMs };
+  } catch {
+    return null;
+  }
+}
+
+/** Writes the device copy. Storage that is full or blocked is ignored. */
+export function writeDeviceClock(m: ClockMemory): void {
+  try {
+    localStorage.setItem(DEVICE_KEY, JSON.stringify(m));
+  } catch {
+    // The save still carries the same record.
+  }
+}
+
 /** A server answer further than this from our own trusted time re-anchors a running session. */
 const REANCHOR_MS = 2000;
 

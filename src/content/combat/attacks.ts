@@ -192,6 +192,22 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     cost: { pool: 'sta', amount: 250 },
     heavy: true,
   },
+  /** Polearms technique: a stepping thrust that runs the whole line through. Longer and narrower than the blades lunge. */
+  'technique.polearms_lunge': {
+    id: 'technique.polearms_lunge',
+    family: 'polearms',
+    windup: 4,
+    active: 3,
+    recover: 7,
+    mult: 160,
+    stagger: 12,
+    knock: 14,
+    shape: { kind: 'line', reach: 34, halfWidth: 7 },
+    dash: 28,
+    cost: { pool: 'sta', amount: 250 },
+    pierce: true,
+    heavy: true,
+  },
   /** Ember technique: casting only. The bolt itself is a projectile. */
   'technique.ember_bolt': {
     id: 'technique.ember_bolt',
@@ -311,6 +327,8 @@ export interface WeaponDef {
   chainWindow: number;
   /** Reach used to decide whether Flow has a target. */
   reach: number;
+  /** The lunge every weapon of this family gives its holder, in slot 1. Null for none. */
+  lunge: string | null;
 }
 
 export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
@@ -322,6 +340,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.sword_combo_1', 'attack.sword_combo_2', 'attack.sword_combo_3'],
     chainWindow: 4,
     reach: 24,
+    lunge: 'technique.blades_lunge',
   },
   spear: {
     id: 'spear',
@@ -331,6 +350,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.spear_combo_1', 'attack.spear_combo_2', 'attack.spear_combo_3'],
     chainWindow: 4,
     reach: 40,
+    lunge: 'technique.polearms_lunge',
   },
   /** What the avatar fights with when nothing is held. */
   fists: {
@@ -341,6 +361,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.fist_combo_1', 'attack.fist_combo_2', 'attack.fist_combo_3'],
     chainWindow: 4,
     reach: 16,
+    lunge: null,
   },
   /** What a common creature fights with. */
   claws: {
@@ -351,6 +372,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.creature_swipe', 'attack.creature_swipe', 'attack.creature_swipe'],
     chainWindow: 0,
     reach: 20,
+    lunge: null,
   },
 };
 
@@ -369,6 +391,13 @@ export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
   'technique.blades_lunge': {
     id: 'technique.blades_lunge',
     attack: 'technique.blades_lunge',
+    aimed: false,
+    cooldown: 45,
+    icon: 'ui.icon_lunge',
+  },
+  'technique.polearms_lunge': {
+    id: 'technique.polearms_lunge',
+    attack: 'technique.polearms_lunge',
     aimed: false,
     cooldown: 45,
     icon: 'ui.icon_lunge',
