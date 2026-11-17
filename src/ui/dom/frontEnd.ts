@@ -1,4 +1,5 @@
 import type { Trust } from '../../save/integrity/reasons';
+import { startImport, type ImportDeps } from './backup';
 import { createSeal } from './seal';
 import {
   BODY_TYPES,
@@ -24,6 +25,8 @@ export interface FrontEndDeps {
   /** Paints the character preview (24 x 32) into a canvas. */
   drawPreview: (canvas: HTMLCanvasElement, look: DollSpec) => void;
   rand: () => number;
+  /** Restoring a save file from the title. `onImported` is set here; the game applies the import. */
+  importer: Omit<ImportDeps, 'onImported'>;
   /** How long the "connecting" beat lasts, ms. */
   connectMs?: number;
 }
@@ -133,7 +136,18 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       const ver = el('p', 'pow-front-version', fill(S.title.version, { id: BUILD_ID }));
       put(screen, stage, status);
       if (deps.save) put(screen, createSeal(deps.save.trust));
-      put(screen, ver);
+      const imp = el('button', 'pow-button pow-front-import', S.backup.import);
+      imp.type = 'button';
+      imp.addEventListener('click', () =>
+        startImport(
+          deps.root,
+          { ...deps.importer, onImported: () => finish({ mode: 'continue' }) },
+          (text) => {
+            if (text) status.textContent = text;
+          },
+        ),
+      );
+      put(screen, imp, ver);
       go.focus();
     };
 

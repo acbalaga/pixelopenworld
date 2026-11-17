@@ -34,8 +34,8 @@ export interface SavePlain {
   trust: Trust;
 }
 
-/** The slots, newest first. `emergency` is written by the crash handler. `quarantine` keeps a record that failed to load, so nothing is ever lost. */
-export const SLOTS = ['latest', 'previous', 'old', 'emergency', 'quarantine'] as const;
+/** The slots, newest first. `emergency` is written by the crash handler. `replaced` holds the save an import replaced, until the next import. `quarantine` keeps a record that failed to load, so nothing is ever lost. */
+export const SLOTS = ['latest', 'previous', 'old', 'emergency', 'replaced', 'quarantine'] as const;
 export type Slot = (typeof SLOTS)[number];
 
 /** One stored snapshot. `bytes` is the codec's output. `checksum` is SHA-256 (hex) of `bytes`. */
@@ -64,5 +64,12 @@ export interface SaveStorage {
 }
 
 export function emptySlots(): Slots {
-  return { latest: null, previous: null, old: null, emergency: null, quarantine: null };
+  return {
+    latest: null,
+    previous: null,
+    old: null,
+    emergency: null,
+    replaced: null,
+    quarantine: null,
+  };
 }

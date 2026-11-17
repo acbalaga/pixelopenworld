@@ -23,6 +23,26 @@ The site and its Worker deploy through Cloudflare's Git integration (Workers Bui
 - Security headers for static responses come from `public/_headers`. The same values for API responses live in `src/shared/headers.ts`. Keep the two in step with tech/02 "Client hardening".
 - `/assets/*` (hashed) is cached for a year, immutable. `/` and `/index.html` are `no-cache`.
 
+## Optional: keep the seal material out of the repository
+
+Exported save files (`.powsave`) are sealed with a key derived at runtime from four byte fragments, per `sealVersion` (tech/02). By default the fragments are committed under `src/save/seal/v<N>/`, generated once by `npm run seal:gen -- --version <N>`. Old versions are never removed, so old backups always open.
+
+This is worth doing only if the repository is public and you want to raise the bar slightly. The built game still contains the material, so a programmer who reads the bundle can still get it. It only keeps it out of source control.
+
+To turn it on, set a build variable `POW_SEAL_MATERIAL` in the Cloudflare build settings (and in the GitHub Actions environment if CI builds should match). It is a JSON object with the current version and four hex fragments per version, 24 bytes (48 hex characters) each:
+
+```
+{"current":2,"versions":{"1":["<48 hex>","<48 hex>","<48 hex>","<48 hex>"],"2":["...","...","...","..."]}}
+```
+
+- Every version that players might still hold a backup of must be in the variable. A version missing from it cannot be imported.
+- With the variable set, the build leaves `src/save/seal/v*/` out of the bundle, and `npm run check:seal` also searches the bundle for the combined material of every version in the variable.
+- With the variable unset (the default), nothing changes.
+- Treat the variable as a build secret, but note it is not protecting against anyone who has the built game.
+- Changing the material for an existing `sealVersion` makes every backup sealed under it unreadable. Add a new version instead.
+
+`npm run check:seal` runs inside `npm run verify`. It fails the build if the combined seal material, in any common text form, appears in `dist/client`.
+
 ## Fallback: deploy from a local machine
 
 ```

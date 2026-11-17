@@ -56,6 +56,15 @@ import {
 } from '../save';
 import { showRecover, showUnsupported } from '../ui/dom/saveNotices';
 import { validateSave, intact } from '../save/integrity';
+import { exportBytes, exportFileName, planImport } from '../save/exportImport';
+import { warmSealMaterial } from '../save/seal/source';
+import {
+  browserReminderStore,
+  loadReminder,
+  reminderDue,
+  saveReminder,
+} from '../platform/exportReminder';
+import { download, showReminder } from '../ui/dom/backup';
 import type { SavePlain } from '../save';
 import { findAvatar } from '../shared/summary';
 import { CombatFeedback } from '../render/feedback';
@@ -180,6 +189,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           : {}),
       })
     : null;
+  // Fetch the seal material now, while online, so an import at the title works with no network.
+  if (savesWanted) void warmSealMaterial();
   let loaded = null as Awaited<ReturnType<SaveManager['load']>>;
   let loadFailed = false;
   if (saves) {
@@ -245,6 +256,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const previewDolls = dolls.create('char.setup', randomDoll(rand));
     const result = await runFrontEnd({
       root,
+      importer: {
+        planImport: (bytes) => planImport(bytes),
+        hasSave: () => loaded !== null,
+        // At the title the import becomes the save to continue from, with no reload: the loaded
+        // save and state are replaced here, and the title then steps into the world.
+        applyImport: async (plan) => {
+          if (!saves) throw new Error('saving is off');
+          await saves.importSave(plan.plain);
+          loaded = await saves.load();
+          restored = loaded ? deserializeState(loaded.plain.sim) : null;
+          if (restored && findAvatar(restored) === null) restored = null;
+        },
+      },
       save:
         restored && savedAvatar && loaded
           ? {
@@ -607,6 +631,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
     // Log Out saves, then returns to the title screen (a fresh page start shows it).
     trust: () => saves?.currentTrust() ?? intact(),
+    backup: {
+      exportCurrent: () => exportFile(),
+      planImport: (bytes) => planImport(bytes),
+      hasSave: () => saves !== null,
+      applyImport: async (plan) => {
+        if (!saves) throw new Error('saving is off');
+        await saves.importSave(plan.plain);
+      },
+      // The game in memory is the old one. Reloading starts from the imported save.
+      onImported: () => location.reload(),
+      onExported: () => markExported(),
+    },
     onLogOut: () => {
       void (async () => {
         if (saves) {
@@ -693,6 +729,50 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       saveGlyphAt = performance.now();
     },
   );
+  /** Writes the game as it is now, then seals exactly what was written. */
+  async function exportFile(): Promise<{ bytes: Uint8Array; fileName: string }> {
+    if (!saves) throw new Error('saving is off');
+    saver.request('manual');
+    await saver.idle();
+    const plain = await saves.latestPlain();
+    if (!plain) throw new Error('nothing to export');
+    const handle = state0Avatar(state)?.handle ?? 'save';
+    return { bytes: await exportBytes(plain), fileName: exportFileName(handle, new Date()) };
+  }
+  // The backup reminder: after 5 hours of play since the last export, ask once, dismissible.
+  // Declared before the Menu uses `markExported`, so it is a function declaration.
+  const reminderStore = browserReminderStore();
+  let reminderShown = false;
+  function playSeconds(): number {
+    return state.tick / 30;
+  }
+  function markExported(): void {
+    const id = saves?.currentSaveId();
+    if (id)
+      saveReminder(reminderStore, id, { exportedAt: playSeconds(), dismissedAt: playSeconds() });
+    reminderShown = false;
+  }
+  const checkReminder = (): void => {
+    const id = saves?.currentSaveId();
+    if (!saves || !id || reminderShown) return;
+    const st = loadReminder(reminderStore, id, playSeconds());
+    if (!reminderDue(playSeconds(), st)) return;
+    reminderShown = true;
+    showReminder(
+      root,
+      async () => {
+        try {
+          const file = await exportFile();
+          download(file.bytes, file.fileName);
+          markExported();
+        } catch {
+          // The reminder comes back at the next check.
+          reminderShown = false;
+        }
+      },
+      () => saveReminder(reminderStore, id, { ...st, dismissedAt: playSeconds() }),
+    );
+  };
   const requestSave = (reason: SaveReason): void => {
     if (saves) saver.request(reason);
   };
@@ -701,6 +781,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (document.hidden) requestSave('hidden');
     });
     window.addEventListener('pagehide', () => requestSave('pagehide'));
+    window.setInterval(checkReminder, 60_000);
+    window.setTimeout(checkReminder, 3000);
     // The crash handler writes the emergency slot, once, and touches nothing else.
     let crashed = false;
     const onCrash = (): void => {
