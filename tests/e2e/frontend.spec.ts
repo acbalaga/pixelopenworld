@@ -9,30 +9,6 @@ async function inWorld(page: Page): Promise<void> {
   await page.waitForTimeout(400);
 }
 
-const handleOf = (page: Page): Promise<string> =>
-  page.evaluate(
-    () =>
-      new Promise<string>((resolve, reject) => {
-        const open = indexedDB.open('pow-save', 1);
-        open.onerror = () => reject(open.error);
-        open.onsuccess = () => {
-          const req = open.result.transaction('slots').objectStore('slots').get('latest');
-          req.onsuccess = () => {
-            const plain = JSON.parse(new TextDecoder().decode(req.result.bytes)) as {
-              sim: string;
-              look: unknown;
-            };
-            const avatars = (
-              JSON.parse(plain.sim) as {
-                entities: { comps: { avatar: ({ handle: string } | null)[] } };
-              }
-            ).entities.comps.avatar;
-            resolve(`${avatars.find((a) => a)?.handle}|${JSON.stringify(plain.look)}`);
-          };
-        };
-      }),
-  );
-
 test('fresh profile: title, avatar setup, world. Second launch: title, world, same avatar', async ({
   page,
 }) => {
@@ -84,11 +60,10 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
   await expect
     .poll(async () => Number((await page.locator('#game').getAttribute('data-saved-seq')) ?? '0'))
     .toBeGreaterThan(seq0);
-  const first = await handleOf(page);
-  expect(first).toContain('Fred_77');
-  expect(first).toContain('"body":"b"');
-  expect(first).toContain('"skin":"deep"');
-  expect(first).toContain('"hair":"curly"');
+  // The stored save is sealed, so it is checked through what the game reports: the hash of the
+  // state that was written, and (below) the same hash after loading it.
+  const savedHash = await page.locator('#game').getAttribute('data-saved-hash');
+  expect(savedHash).not.toBeNull();
 
   await page.goto('/');
   await expect(page.getByText('Signed in as Fred_77.')).toBeVisible();
@@ -97,9 +72,8 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
   await page.getByRole('button', { name: 'Log In as Fred_77' }).click();
   await expect(page.getByText('Connecting')).toBeVisible();
   await inWorld(page);
-  // Same avatar: the save was loaded, and a new save still holds the same look and handle.
-  expect(await page.locator('#game').getAttribute('data-loaded-hash')).not.toBeNull();
-  expect(await handleOf(page)).toBe(first);
+  // Same avatar: the loaded state hashes exactly as the saved one did, handle included.
+  expect(await page.locator('#game').getAttribute('data-loaded-hash')).toBe(savedHash);
   await expect(page.locator('[role="dialog"]:visible')).toHaveCount(0);
 });
 
