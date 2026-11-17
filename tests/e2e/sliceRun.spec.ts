@@ -66,7 +66,9 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await talk.getByRole('button', { name: 'I will handle it.' }).click();
   await talk.getByRole('button', { name: 'Done' }).click();
   await expect(talk).toHaveCount(0);
-  expect((await snap(page)).requests['request.clear_pests']?.state).toBe('active');
+  await expect
+    .poll(async () => (await snap(page)).requests['request.clear_pests']?.state)
+    .toBe('active');
 
   // Fight four Mosslings, one at a time, in front of the avatar. Face south, away from Orla.
   await face(page, 'KeyS');
