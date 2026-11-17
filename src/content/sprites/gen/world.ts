@@ -265,23 +265,43 @@ function board(): SpriteDef {
   return toSprite('tile.board', 'core', ORIGIN_TILE, { base: outlined(im) });
 }
 
-/** A rooted stone with a pulsing rune, the Waystone. */
+/** The Waystone: a square-cut stone obelisk on a stepped base, with runes that pulse. */
 function waystone(): SpriteDef {
   const frame = (glow: number): Img => {
     const im = new Img(16, 24);
-    im.rect(5, 6, 10, 21, STONE[2]);
-    im.rect(4, 10, 11, 21, STONE[2]);
-    im.rect(6, 3, 9, 6, STONE[2]);
-    im.rect(7, 1, 8, 2, STONE[3]);
-    im.rect(5, 6, 6, 21, STONE[3]);
-    im.rect(4, 10, 4, 21, STONE[3]);
-    im.rect(10, 8, 11, 21, STONE[1]);
-    im.rect(3, 20, 12, 22, STONE[1]);
-    im.rect(3, 22, 12, 22, STONE[0]);
+    // Plinth.
+    im.rect(3, 21, 12, 22, STONE[1]);
+    im.rect(3, 21, 12, 21, STONE[2]);
+    im.rect(4, 20, 11, 20, STONE[3]);
+    // Shaft: straight four sided sides that widen by one pixel each way near the foot. Lit left,
+    // shaded right, so it reads as a cut block of stone.
+    for (let y = 6; y <= 19; y++) {
+      const inset = y < 13 ? 1 : 0;
+      const x0 = 4 + inset;
+      const x1 = 11 - inset;
+      im.rect(x0, y, x1, y, STONE[2]);
+      im.rect(x0, y, x0 + 1, y, STONE[3]);
+      im.rect(x1 - 1, y, x1, y, STONE[1]);
+    }
+    // Pyramid tip, the same width as the top of the shaft, with a carved line below it.
+    im.rect(5, 4, 10, 5, STONE[2]);
+    im.rect(5, 4, 6, 5, STONE[3]);
+    im.rect(9, 4, 10, 5, STONE[1]);
+    im.rect(6, 3, 9, 3, STONE[2]);
+    im.rect(6, 3, 7, 3, STONE[3]);
+    im.rect(7, 2, 8, 2, STONE[3]);
+    im.rect(5, 6, 10, 6, STONE[1]);
+    im.rect(4, 13, 11, 13, STONE[1]);
+    // Runes: three small marks down the middle of the face, in a glow that pulses.
     const rune = glow === 0 ? WATER[3] : WATER[2];
-    im.rect(7, 9, 8, 15, rune);
-    im.rect(6, 11, 9, 11, rune);
-    im.set(7, 8, rune);
+    im.rect(7, 8, 8, 8, rune);
+    im.rect(7, 10, 8, 10, rune);
+    im.set(7, 9, WATER[1]);
+    im.set(8, 9, WATER[1]);
+    im.rect(7, 15, 8, 15, rune);
+    im.rect(7, 17, 8, 17, rune);
+    im.set(7, 16, WATER[1]);
+    im.set(8, 16, WATER[1]);
     return outlined(im);
   };
   return toSprite(

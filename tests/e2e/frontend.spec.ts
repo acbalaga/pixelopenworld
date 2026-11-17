@@ -92,7 +92,9 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
 
   await page.goto('/');
   await expect(page.getByText('Signed in as Fred_77.')).toBeVisible();
-  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.waitForTimeout(500);
+  await shot(page, 'frontend-title-saved');
+  await page.getByRole('button', { name: 'Log In as Fred_77' }).click();
   await expect(page.getByText('Connecting')).toBeVisible();
   await inWorld(page);
   // Same avatar: the save was loaded, and a new save still holds the same look and handle.

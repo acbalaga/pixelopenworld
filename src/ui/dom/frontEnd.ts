@@ -12,12 +12,13 @@ import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { checkHandle, HANDLE_MAX } from '../../shared/handle';
 import { BUILD_ID } from '../../shared/version';
+import { PortalScene } from './portalScene';
 
 /** What the front end needs from the game around it. */
 export interface FrontEndDeps {
   root: HTMLElement;
   /** A saved character on this device, or null. */
-  save: { handle: string; playSeconds: number } | null;
+  save: { handle: string; playSeconds: number; look: DollSpec } | null;
   /** Paints the character preview (24 x 32) into a canvas. */
   drawPreview: (canvas: HTMLCanvasElement, look: DollSpec) => void;
   rand: () => number;
@@ -65,10 +66,57 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       resolve(r);
     };
 
+    let scene: PortalScene | null = null;
+    const finish = (r: FrontEndResult): void => {
+      scene?.destroy();
+      done(r);
+    };
+
+    /**
+     * The title: a portal into the game's world, with the game's name on a small signpost beside
+     * it. Whoever is signed in on this device stands in front of the gate. Tap them to step
+     * through. With nobody yet, a silhouette stands there for a new character.
+     */
     const title = (): void => {
       screen.textContent = '';
-      const logo = el('h1', 'pow-logo');
-      put(logo, el('span', 'pow-logo-a', 'Pixel'), el('span', 'pow-logo-b', 'Open World'));
+      scene?.destroy();
+      scene = new PortalScene();
+      const stage = el('div', 'pow-portal-stage');
+      stage.appendChild(scene.canvas);
+
+      const sign = el('div', 'pow-sign');
+      const board = el('div', 'pow-sign-board');
+      put(
+        board,
+        el('h1', 'pow-sign-title', 'Pixel Open World'),
+        el('span', 'pow-sign-arrow', '\u2192'),
+      );
+      put(sign, board, el('div', 'pow-sign-post'));
+      sign.querySelector('.pow-sign-arrow')?.setAttribute('aria-hidden', 'true');
+
+      const chars = el('div', 'pow-portal-chars');
+      const go = el('button', 'pow-portal-char');
+      go.type = 'button';
+      const portrait = el('canvas', 'pow-portal-doll');
+      portrait.width = 24;
+      portrait.height = 32;
+      portrait.setAttribute('aria-hidden', 'true');
+      const label = el('span', 'pow-portal-name');
+      if (deps.save) {
+        deps.drawPreview(portrait, deps.save.look);
+        label.textContent = deps.save.handle;
+        go.setAttribute('aria-label', fill(S.title.logInAs, { name: deps.save.handle }));
+      } else {
+        deps.drawPreview(portrait, { ...randomDoll(deps.rand), mainHand: 'none', offHand: 'none' });
+        portrait.classList.add('pow-silhouette');
+        label.textContent = S.title.newCharacter;
+        go.setAttribute('aria-label', S.title.logIn);
+      }
+      put(go, portrait, label);
+      go.addEventListener('click', () => (deps.save ? stepThrough(go) : setup()));
+      chars.appendChild(go);
+      put(stage, sign, chars);
+
       const status = el(
         'p',
         'pow-front-status',
@@ -80,35 +128,36 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
           : S.title.noSave,
       );
       status.setAttribute('role', 'status');
-      const go = el('button', 'pow-button pow-big', S.title.logIn);
-      go.type = 'button';
-      go.addEventListener('click', () => (deps.save ? connect() : setup()));
       const ver = el('p', 'pow-front-version', fill(S.title.version, { id: BUILD_ID }));
-      put(screen, logo, status, go, ver);
+      put(screen, stage, status, ver);
       go.focus();
     };
 
-    /** A short "connecting" beat for a saved character. Any tap or key skips it. */
-    const connect = (): void => {
-      screen.textContent = '';
-      const line = el('p', 'pow-connect', S.title.connecting);
-      line.setAttribute('role', 'status');
-      const dots = el('span', 'pow-dots', '...');
-      line.appendChild(dots);
-      const skip = el('button', 'pow-button', S.title.skipHint);
-      skip.type = 'button';
-      put(screen, line, skip);
-      skip.focus();
+    /**
+     * The character walks into the gate. It is the "connecting" beat, about 0.9 seconds, and any
+     * tap or key skips it.
+     */
+    const stepThrough = (go: HTMLButtonElement): void => {
+      go.disabled = true;
+      go.classList.add('pow-walking');
+      scene?.enter();
+      const status = screen.querySelector('.pow-front-status');
+      if (status) status.textContent = S.title.connecting;
       let finished = false;
-      const finish = (): void => {
+      const end = (): void => {
         if (finished) return;
         finished = true;
-        window.removeEventListener('keydown', finish);
-        done({ mode: 'continue' });
+        window.removeEventListener('keydown', end);
+        screen.removeEventListener('click', end);
+        finish({ mode: 'continue' });
       };
-      skip.addEventListener('click', finish);
-      window.addEventListener('keydown', finish);
-      window.setTimeout(finish, deps.connectMs ?? 700);
+      // Registered after this click has finished bubbling, so it does not skip itself.
+      window.setTimeout(() => {
+        if (finished) return;
+        window.addEventListener('keydown', end);
+        screen.addEventListener('click', end);
+      }, 0);
+      window.setTimeout(end, deps.connectMs ?? 900);
     };
 
     const setup = (): void => {
@@ -236,7 +285,7 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
           input.focus();
           return;
         }
-        done({ mode: 'new', handle: input.value.trim(), look: { ...look } });
+        finish({ mode: 'new', handle: input.value.trim(), look: { ...look } });
       });
 
       put(

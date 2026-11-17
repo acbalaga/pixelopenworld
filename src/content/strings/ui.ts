@@ -86,6 +86,8 @@ export const UI_STRINGS = {
   bagFull: 'Bag is full',
   title: {
     logIn: 'Log In',
+    logInAs: 'Log In as {name}',
+    newCharacter: 'New character',
     saveFound: 'Signed in as {name}. {time} played.',
     noSave: 'No character on this device yet.',
     connecting: 'Connecting',

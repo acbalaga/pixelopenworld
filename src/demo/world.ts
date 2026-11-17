@@ -212,7 +212,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       root,
       save:
         restored && savedAvatar && loaded
-          ? { handle: savedAvatar.handle, playSeconds: loaded.plain.playSeconds }
+          ? {
+              handle: savedAvatar.handle,
+              playSeconds: loaded.plain.playSeconds,
+              look: loaded.plain.look,
+            }
           : null,
       drawPreview: (canvas, look) => {
         previewDolls.draw(dollWithGear(look, startGear0));
