@@ -1,6 +1,8 @@
 import { deriveSummary } from '../shared/summary';
 import type { DollSpec } from '../content/dolls/parts';
 import { serializeState, type SimState } from '../sim/state';
+import { intact, mergeTrust, type Reason, type Trust } from './integrity/reasons';
+import { validateSave } from './integrity';
 import { migrate } from './migrations';
 import { sha256Hex } from './codec';
 import {
@@ -48,6 +50,8 @@ export interface SaveManagerDeps {
   now: () => number;
   /** Random 128-bit id for a new save, as hex. */
   newId: () => string;
+  /** Called with every committed save. Dev builds use it to run the validator on each save. */
+  audit?: (plain: SavePlain) => void;
 }
 
 /** The save module's front door: commit snapshots, load with fallback. Callers never see storage or encoding. */
@@ -55,26 +59,41 @@ export class SaveManager {
   private saveId: string | null = null;
   private seq = 0;
   private lastHash = '';
+  private startedAt: number | null = null;
+  private trust: Trust = intact();
 
   constructor(private readonly deps: SaveManagerDeps) {}
+
+  /** The record for a snapshot. Trust is whatever this save has earned so far. */
+  private plainFor(input: CommitInput, saveId: string, seq: number, at: number): SavePlain {
+    this.startedAt ??= at;
+    return {
+      schema: CURRENT_SCHEMA,
+      saveId,
+      seq,
+      prevHash: this.lastHash,
+      createdAt: at,
+      playSeconds: input.playSeconds,
+      look: input.look,
+      sim: serializeState(input.sim),
+      summary: deriveSummary(input.sim, input.playSeconds),
+      ledger: structuredClone(input.sim.ledger),
+      startedAt: this.startedAt,
+      trust: structuredClone(this.trust),
+    };
+  }
+
+  /** Trust as it stands: Intact, or Flagged with the reasons. */
+  currentTrust(): Trust {
+    return structuredClone(this.trust);
+  }
 
   /** Writes a snapshot. Rotates the older ones in the same atomic write. Returns the new seq. */
   async commit(input: CommitInput): Promise<number> {
     const { codec, storage, now } = this.deps;
     this.saveId ??= this.deps.newId();
     const seq = this.seq + 1;
-    const plain: SavePlain = {
-      schema: CURRENT_SCHEMA,
-      saveId: this.saveId,
-      seq,
-      prevHash: this.lastHash,
-      createdAt: now(),
-      playSeconds: input.playSeconds,
-      look: input.look,
-      sim: serializeState(input.sim),
-      summary: deriveSummary(input.sim, input.playSeconds),
-      ledger: structuredClone(input.sim.ledger),
-    };
+    const plain = this.plainFor(input, this.saveId, seq, now());
     const bytes = await codec.encode(plain);
     const checksum = await sha256Hex(bytes);
     const record: SaveRecord = { seq, savedAt: plain.createdAt, checksum, bytes };
@@ -91,6 +110,7 @@ export class SaveManager {
     // A record that once failed to load stays where it was put, for a human to look at.
     next.quarantine = had.quarantine;
     await storage.replaceAll(next);
+    this.deps.audit?.(plain);
     this.seq = seq;
     this.lastHash = await sha256Hex(bytes);
     return seq;
@@ -102,18 +122,7 @@ export class SaveManager {
    */
   async commitEmergency(input: CommitInput): Promise<void> {
     const { codec, storage, now } = this.deps;
-    const plain: SavePlain = {
-      schema: CURRENT_SCHEMA,
-      saveId: this.saveId ?? this.deps.newId(),
-      seq: this.seq + 1,
-      prevHash: this.lastHash,
-      createdAt: now(),
-      playSeconds: input.playSeconds,
-      look: input.look,
-      sim: serializeState(input.sim),
-      summary: deriveSummary(input.sim, input.playSeconds),
-      ledger: structuredClone(input.sim.ledger),
-    };
+    const plain = this.plainFor(input, this.saveId ?? this.deps.newId(), this.seq + 1, now());
     const bytes = await codec.encode(plain);
     const had = await storage.readAll();
     await storage.replaceAll({
@@ -146,7 +155,14 @@ export class SaveManager {
       if (!rec) continue;
       try {
         if ((await sha256Hex(rec.bytes)) !== rec.checksum) throw new Error('checksum mismatch');
-        const plain = migrate(await codec.decode(rec.bytes));
+        const migrated = migrate(await codec.decode(rec.bytes));
+        const chain = chainOf(migrated, s, slots);
+        // The validator runs on every load. A Flagged save stays Flagged; a new finding adds to it.
+        const found: Reason[] = validateSave(migrated, { chain }).reasons;
+        const trust = mergeTrust(migrated.trust, found, this.deps.now());
+        const plain: SavePlain = { ...migrated, trust };
+        this.trust = trust;
+        this.startedAt = plain.startedAt;
         this.saveId = plain.saveId;
         this.seq = maxSeq;
         // The next commit chains to whatever sits in `latest` now, even a record that failed to
@@ -159,7 +175,7 @@ export class SaveManager {
             slot: s,
             fellBack: s !== 'latest' && (skipped.length > 0 || s === 'emergency'),
             skipped,
-            chain: chainOf(plain, s, slots),
+            chain,
           },
         };
       } catch (e) {

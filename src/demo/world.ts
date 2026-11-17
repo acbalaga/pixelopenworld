@@ -381,7 +381,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       ['item.raw_meat', 2],
     ] as const) {
       addItem(bag, item, qty);
-      madeItems(state, 'start', item, qty);
+      // Demo scaffolding, not the starter kit: recorded as seeded until M3 replaces it.
+      madeItems(state, 'seed', item, qty);
     }
   }
   // Demo keys until the Menu exists (M1-06): G wear the next piece of gear, F eat, C cook a
