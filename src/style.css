@@ -764,42 +764,48 @@ canvas {
 }
 .pow-sign {
   position: absolute;
-  left: 1%;
-  bottom: 1%;
-  width: 33%;
+  left: 2%;
+  bottom: 2%;
+  width: 36%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
+/* A small holographic panel: a thin lit frame and glowing text, floating over the ground. */
 .pow-sign-board {
   box-sizing: border-box;
   width: 100%;
-  padding: 0.35em 0.5em;
+  padding: 0.4em 0.6em;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.3em;
-  color: var(--pal-7);
-  background: var(--pal-5);
-  border: 2px solid var(--pal-4);
-  box-shadow: inset 0 -3px 0 var(--pal-4);
+  gap: 0.4em;
+  color: var(--pal-15);
+  background:
+    repeating-linear-gradient(0deg, rgba(159, 212, 234, 0.07) 0 1px, transparent 1px 3px),
+    rgba(31, 47, 107, 0.45);
+  border: 1px solid var(--pal-14);
+  border-left-width: 3px;
+  box-shadow:
+    0 0 8px rgba(79, 149, 208, 0.55),
+    inset 0 0 8px rgba(79, 149, 208, 0.25);
 }
 .pow-sign-title {
   margin: 0;
-  font-size: 0.72em;
-  line-height: 1.15;
+  font-size: 0.68em;
+  line-height: 1.2;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--pal-14);
 }
 .pow-sign-arrow {
   font-size: 1.1em;
-  color: var(--pal-47);
+  color: var(--pal-14);
+  text-shadow: 0 0 6px var(--pal-14);
 }
 .pow-sign-post {
-  width: 10%;
-  height: 2.2em;
-  background: var(--pal-4);
-  border-left: 2px solid var(--pal-5);
+  display: none;
 }
 .pow-portal-chars {
   position: absolute;

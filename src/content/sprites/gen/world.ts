@@ -265,51 +265,62 @@ function board(): SpriteDef {
   return toSprite('tile.board', 'core', ORIGIN_TILE, { base: outlined(im) });
 }
 
-/** The Waystone: a square-cut stone obelisk on a stepped base, with runes that pulse. */
+/**
+ * The Waystone: a floating diamond pylon. A faceted crystal hangs above a small emitter plate,
+ * bobbing and pulsing, with a few shards orbiting it. Four frames loop as one animation.
+ */
 function waystone(): SpriteDef {
-  const frame = (glow: number): Img => {
+  const frame = (n: number): Img => {
     const im = new Img(16, 24);
-    // Plinth.
+    // Emitter plate on the ground, with a ring of light that breathes.
     im.rect(3, 21, 12, 22, STONE[1]);
+    im.rect(4, 20, 11, 20, STONE[2]);
     im.rect(3, 21, 12, 21, STONE[2]);
-    im.rect(4, 20, 11, 20, STONE[3]);
-    // Shaft: straight four sided sides that widen by one pixel each way near the foot. Lit left,
-    // shaded right, so it reads as a cut block of stone.
-    for (let y = 6; y <= 19; y++) {
-      const inset = y < 13 ? 1 : 0;
-      const x0 = 4 + inset;
-      const x1 = 11 - inset;
-      im.rect(x0, y, x1, y, STONE[2]);
-      im.rect(x0, y, x0 + 1, y, STONE[3]);
-      im.rect(x1 - 1, y, x1, y, STONE[1]);
+    im.rect(5, 22, 10, 22, STONE[0]);
+    const ring = n % 2 === 0 ? WATER[3] : WATER[2];
+    im.rect(6, 21, 9, 21, ring);
+    // The diamond. It bobs one pixel up and down over the four frames.
+    const bob = [0, -1, 0, 1][n] as number;
+    const cy = 10 + bob;
+    const half = 8;
+    for (let dy = -half; dy <= half; dy++) {
+      const w = Math.round(((half - Math.abs(dy)) * 5.5) / half);
+      for (let dx = -w; dx <= w; dx++) {
+        const x = 8 + dx - (dx > 0 ? 1 : 0);
+        const y = cy + dy;
+        // Facets: top lit, left lit, right in shade, and a bright seam down the middle.
+        let c = dx < 0 ? WATER[2] : dx > 0 ? WATER[1] : WATER[3];
+        if (dy < 0 && dx < 0) c = dx < -1 ? WATER[3] : WATER[2];
+        if (dy > 2 && dx > 0) c = WATER[0];
+        im.set(x, y, c);
+      }
     }
-    // Pyramid tip, the same width as the top of the shaft, with a carved line below it.
-    im.rect(5, 4, 10, 5, STONE[2]);
-    im.rect(5, 4, 6, 5, STONE[3]);
-    im.rect(9, 4, 10, 5, STONE[1]);
-    im.rect(6, 3, 9, 3, STONE[2]);
-    im.rect(6, 3, 7, 3, STONE[3]);
-    im.rect(7, 2, 8, 2, STONE[3]);
-    im.rect(5, 6, 10, 6, STONE[1]);
-    im.rect(4, 13, 11, 13, STONE[1]);
-    // Runes: three small marks down the middle of the face, in a glow that pulses.
-    const rune = glow === 0 ? WATER[3] : WATER[2];
-    im.rect(7, 8, 8, 8, rune);
-    im.rect(7, 10, 8, 10, rune);
-    im.set(7, 9, WATER[1]);
-    im.set(8, 9, WATER[1]);
-    im.rect(7, 15, 8, 15, rune);
-    im.rect(7, 17, 8, 17, rune);
-    im.set(7, 16, WATER[1]);
-    im.set(8, 16, WATER[1]);
+    // A bright core that pulses, and a highlight on the upper left edge.
+    const core = n === 1 || n === 2 ? 3 : 2;
+    im.rect(7, cy - 1, 8, cy + 1, WATER[core as 2 | 3]);
+    im.set(6, cy - 3, 3);
+    im.set(5, cy - 2, 3);
+    // Two shards circling the crystal.
+    const orbit: [number, number][] = [
+      [2, 6],
+      [13, 9],
+      [13, 14],
+      [2, 12],
+    ];
+    const a = orbit[n] as [number, number];
+    const b = orbit[(n + 2) % 4] as [number, number];
+    im.set(a[0], a[1] + bob, WATER[3]);
+    im.set(b[0], b[1] + bob, WATER[2]);
+    // A faint beam of light between the crystal and the plate.
+    for (let y = cy + half + 1; y <= 19; y++) if ((y + n) % 2 === 0) im.set(7, y, WATER[1]);
     return outlined(im);
   };
   return toSprite(
     'prop.waystone',
     'core',
     [8, 23],
-    { glow_0: frame(0), glow_1: frame(1) },
-    { glow: { frames: ['glow_0', 'glow_1'], fps: 2 } },
+    { glow_0: frame(0), glow_1: frame(1), glow_2: frame(2), glow_3: frame(3) },
+    { glow: { frames: ['glow_0', 'glow_1', 'glow_2', 'glow_3'], fps: 4 } },
   );
 }
 
