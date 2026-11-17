@@ -22,6 +22,12 @@ export interface LoadReport {
   slot: Slot;
   fellBack: boolean;
   skipped: { slot: Slot; reason: string }[];
+  /**
+   * The hash chain between the loaded snapshot and the one before it (tech/02). `unchecked` when
+   * there is no adjacent older snapshot to compare with. The integrity check (M2-02) turns
+   * `broken` into a Flagged save.
+   */
+  chain: 'ok' | 'broken' | 'unchecked';
 }
 
 export interface LoadResult {
@@ -67,6 +73,7 @@ export class SaveManager {
       look: input.look,
       sim: serializeState(input.sim),
       summary: deriveSummary(input.sim, input.playSeconds),
+      ledger: structuredClone(input.sim.ledger),
     };
     const bytes = await codec.encode(plain);
     const checksum = await sha256Hex(bytes);
@@ -80,12 +87,44 @@ export class SaveManager {
       .filter((r): r is SaveRecord => r !== null && record.savedAt - r.savedAt >= OLD_SNAPSHOT_MS)
       .sort((a, b) => b.savedAt - a.savedAt)[0];
     next.old = old ?? had.old;
+    next.emergency = had.emergency;
     // A record that once failed to load stays where it was put, for a human to look at.
     next.quarantine = had.quarantine;
     await storage.replaceAll(next);
     this.seq = seq;
     this.lastHash = await sha256Hex(bytes);
     return seq;
+  }
+
+  /**
+   * The crash handler's write. Touches only the emergency slot, so a crash can never push a good
+   * snapshot out of rotation, and it does not move the chain or the sequence.
+   */
+  async commitEmergency(input: CommitInput): Promise<void> {
+    const { codec, storage, now } = this.deps;
+    const plain: SavePlain = {
+      schema: CURRENT_SCHEMA,
+      saveId: this.saveId ?? this.deps.newId(),
+      seq: this.seq + 1,
+      prevHash: this.lastHash,
+      createdAt: now(),
+      playSeconds: input.playSeconds,
+      look: input.look,
+      sim: serializeState(input.sim),
+      summary: deriveSummary(input.sim, input.playSeconds),
+      ledger: structuredClone(input.sim.ledger),
+    };
+    const bytes = await codec.encode(plain);
+    const had = await storage.readAll();
+    await storage.replaceAll({
+      ...had,
+      emergency: {
+        seq: plain.seq,
+        savedAt: plain.createdAt,
+        checksum: await sha256Hex(bytes),
+        bytes,
+      },
+    });
   }
 
   /**
@@ -96,7 +135,8 @@ export class SaveManager {
   async load(): Promise<LoadResult | null> {
     const { codec, storage } = this.deps;
     const slots = await storage.readAll();
-    const order: Slot[] = ['latest', 'previous', 'old'];
+    // The emergency slot is last: a crash may have been caused by the state it holds.
+    const order: Slot[] = ['latest', 'previous', 'old', 'emergency'];
     const skipped: LoadReport['skipped'] = [];
     let maxSeq = 0;
     for (const s of order) maxSeq = Math.max(maxSeq, slots[s]?.seq ?? 0);
@@ -109,11 +149,18 @@ export class SaveManager {
         const plain = migrate(await codec.decode(rec.bytes));
         this.saveId = plain.saveId;
         this.seq = maxSeq;
-        this.lastHash = rec.checksum;
+        // The next commit chains to whatever sits in `latest` now, even a record that failed to
+        // load: it becomes `previous`, so an honest fallback does not read as a broken chain.
+        this.lastHash = slots.latest?.checksum ?? rec.checksum;
         if (firstBad) await this.quarantine(slots, firstBad);
         return {
           plain,
-          report: { slot: s, fellBack: s !== 'latest' && skipped.length > 0, skipped },
+          report: {
+            slot: s,
+            fellBack: s !== 'latest' && (skipped.length > 0 || s === 'emergency'),
+            skipped,
+            chain: chainOf(plain, s, slots),
+          },
         };
       } catch (e) {
         skipped.push({ slot: s, reason: e instanceof Error ? e.message : String(e) });
@@ -128,4 +175,11 @@ export class SaveManager {
     if (slots.quarantine && slots.quarantine.seq >= rec.seq) return;
     await this.deps.storage.replaceAll({ ...slots, quarantine: rec });
   }
+}
+
+/** Checks the loaded snapshot's `prevHash` against the snapshot just before it, when one is there. */
+function chainOf(plain: SavePlain, slot: Slot, slots: Slots): LoadReport['chain'] {
+  const older = slot === 'latest' ? slots.previous : slot === 'previous' ? slots.old : null;
+  if (!older || older.seq !== plain.seq - 1) return 'unchecked';
+  return older.checksum === plain.prevHash ? 'ok' : 'broken';
 }

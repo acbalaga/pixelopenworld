@@ -77,7 +77,7 @@ describe('save and load', () => {
 
     const got = await reload(storage, clock).load();
     expect(got).not.toBeNull();
-    expect(got!.report).toEqual({ slot: 'latest', fellBack: false, skipped: [] });
+    expect(got!.report).toMatchObject({ slot: 'latest', fellBack: false, skipped: [] });
     expect(got!.plain.look).toEqual(LOOK);
     expect(got!.plain.summary).toEqual(deriveSummary(s, s.tick / 30));
     expect(hashState(deserializeState(got!.plain.sim))).toBe(hashState(s));
@@ -197,7 +197,7 @@ describe('damaged saves', () => {
     storage.failNext = true;
     await expect(m.commit(input(s))).rejects.toThrow('aborted');
     const got = await reload(storage, clock).load();
-    expect(got!.report).toEqual({ slot: 'latest', fellBack: false, skipped: [] });
+    expect(got!.report).toMatchObject({ slot: 'latest', fellBack: false, skipped: [] });
     expect(hashState(deserializeState(got!.plain.sim))).toBe(before);
     // And the next save goes through.
     await m.commit(input(s));
@@ -232,7 +232,34 @@ describe('migrations', () => {
     const j = s.entities.comps.journal[me] as { hints?: unknown; hint?: unknown };
     delete j.hints;
     delete j.hint;
+    delete (s as { ledger?: unknown }).ledger;
     expect(hashState(s)).toBe(fixture.expectedHash);
+  });
+
+  it('the schema 2 fixture gains a ledger seeded from what the avatar holds', async () => {
+    const f2 = JSON.parse(
+      readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-2.json'), 'utf8'),
+    ) as { expectedHash: string; plain: SavePlain };
+    expect(f2.plain.schema).toBe(2);
+    const bytes = new TextEncoder().encode(JSON.stringify(f2.plain));
+    const now = migrate(await new JsonCodec().decode(bytes));
+    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const s = deserializeState(now.sim);
+    expect(s.ledger).toEqual(now.ledger);
+    const me = findAvatar(s)!;
+    // Coin held equals earned minus spent: the whole 137 is seeded as earned.
+    expect(s.entities.comps.avatar[me]!.coin).toBe(137);
+    expect(now.ledger.coinEarned).toEqual({ seed: 137 });
+    expect(now.ledger.coinSpent).toEqual({});
+    // Every item held, worn or in the bag, is seeded as made.
+    expect(now.ledger.itemsMade.seed?.['item.raw_meat']).toBe(3);
+    expect(now.ledger.itemsMade.seed?.['item.sunwort']).toBe(2);
+    expect(now.ledger.xpEarned['skill.blades']).toBe(25);
+    // Everything else is untouched: remove the ledger and the old hash comes back.
+    delete (s as { ledger?: unknown }).ledger;
+    expect(hashState(s)).toBe(f2.expectedHash);
+    expect(now.playSeconds).toBe(f2.plain.playSeconds);
+    expect(now.look).toEqual(f2.plain.look);
   });
 
   it('the fixture also loads through the manager, from storage', async () => {
@@ -242,6 +269,7 @@ describe('migrations', () => {
       latest: { seq: 7, savedAt: 1, checksum: await sha256Hex(bytes), bytes },
       previous: null,
       old: null,
+      emergency: null,
       quarantine: null,
     });
     const got = await new SaveManager({

@@ -126,6 +126,33 @@ export const UI_STRINGS = {
   save: {
     fellBack: 'Your latest save could not be read, so an earlier one was loaded.',
     unreadable: 'Your saves could not be read, so a new game started. The damaged save was kept.',
+    unsupportedTitle: 'This browser cannot keep a safe save',
+    unsupportedBody:
+      'Saving needs features this browser does not have. Nothing was stored. Open the game in a recent version of Chrome, Safari or Firefox.',
+    unsupportedMissing: 'Missing:',
+    recoverTitle: 'Save recovered',
+    recoverLoaded: {
+      latest: 'your latest save',
+      previous: 'the save before your latest',
+      old: 'an older save',
+      emergency: 'the save the game wrote when it last stopped unexpectedly',
+    },
+    recoverBody:
+      'Your newest save could not be used, so the game loaded {what}, saved {when}. Play since then is not in it. The damaged save was kept aside and nothing was deleted.',
+    recoverBodyEmergency:
+      'The game loaded {what}, saved {when}. It is the most recent state the game could keep.',
+    recoverWhy: {
+      latest: 'Your latest save',
+      previous: 'The save before it',
+      old: 'The older save',
+      emergency: 'The emergency save',
+    },
+    recoverReason: {
+      integrity: 'failed its integrity check.',
+      damaged: 'was damaged.',
+      unreadable: 'could not be read.',
+    },
+    recoverContinue: 'Continue',
   },
   talk: {
     log: 'Conversation',

@@ -1,0 +1,79 @@
+import { getComp, type EntityId } from './kernel/entities';
+import type { SimState } from './state';
+
+/** A tally by name. Only ever grows. */
+export type Tally = Record<string, number>;
+
+/**
+ * Lifetime totals that only grow, updated by the sim as things happen (tech/02). The integrity
+ * validator (M2-02) reconciles current state against them: coin held equals earned minus spent.
+ * Every system that creates or removes value reports here. A new income source adds its entry in
+ * the same ticket that adds the source.
+ */
+export interface Ledger {
+  /** Coin that entered the purse, by source. Echo is coin picked back up. */
+  coinEarned: Tally;
+  /** Coin that left the purse, by sink. Echo is coin left behind on death. */
+  coinSpent: Tally;
+  /** XP earned, by skill id. */
+  xpEarned: Tally;
+  /** Items created from nothing: source, then item id, then quantity. */
+  itemsMade: Record<string, Tally>;
+  /** Creatures killed, by creature id. */
+  kills: Tally;
+  /** Successful crafts, by recipe id. */
+  crafts: Tally;
+}
+
+/** Sources of coin and items. Named so the validator can refer to them. */
+export type CoinSource = 'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed';
+export type CoinSink = 'purchase' | 'echo';
+export type ItemSource =
+  'start' | 'loot' | 'gather' | 'cook' | 'chest' | 'request' | 'dialogue' | 'shop' | 'seed';
+
+/** An empty ledger. */
+export function newLedger(): Ledger {
+  return { coinEarned: {}, coinSpent: {}, xpEarned: {}, itemsMade: {}, kills: {}, crafts: {} };
+}
+
+const bump = (t: Tally, key: string, n: number): void => {
+  t[key] = (t[key] ?? 0) + n;
+};
+
+/** Pays coin into the avatar's purse and records where it came from. */
+export function earnCoin(state: SimState, who: EntityId, amount: number, source: CoinSource): void {
+  const a = getComp(state.entities, who, 'avatar');
+  if (!a || amount <= 0) return;
+  a.coin += amount;
+  bump(state.ledger.coinEarned, source, amount);
+}
+
+/** Takes coin out of the purse and records where it went. The caller has checked the balance. */
+export function spendCoin(state: SimState, who: EntityId, amount: number, sink: CoinSink): void {
+  const a = getComp(state.entities, who, 'avatar');
+  if (!a || amount <= 0) return;
+  a.coin -= amount;
+  bump(state.ledger.coinSpent, sink, amount);
+}
+
+/** Records items that came into being, wherever they ended up (bag or ground). */
+export function madeItems(state: SimState, source: ItemSource, item: string, qty: number): void {
+  if (qty <= 0) return;
+  const by = (state.ledger.itemsMade[source] ??= {});
+  bump(by, item, qty);
+}
+
+/** Records XP earned in a skill. */
+export function earnedXp(state: SimState, skill: string, amount: number): void {
+  if (amount > 0) bump(state.ledger.xpEarned, skill, amount);
+}
+
+/** Records a creature killed. */
+export function recordKill(state: SimState, creature: string): void {
+  bump(state.ledger.kills, creature, 1);
+}
+
+/** Records a successful craft. */
+export function recordCraft(state: SimState, recipe: string): void {
+  bump(state.ledger.crafts, recipe, 1);
+}

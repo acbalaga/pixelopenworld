@@ -8,6 +8,7 @@ import { give, removeItem } from '../items';
 import type { SimState } from '../state';
 import { overlapsSolid, type Box } from './collision';
 import { contextTarget } from './interact';
+import { earnCoin } from '../ledger';
 
 const TILE = 16;
 
@@ -99,8 +100,8 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   const a = getComp(state.entities, who, 'avatar');
   if (!f || !def?.loot || f.open) return;
   f.open = true;
-  for (const l of def.loot.items) give(state, who, l.item, l.qty);
-  if (a && def.loot.coin) a.coin += def.loot.coin;
+  for (const l of def.loot.items) give(state, who, l.item, l.qty, 'chest');
+  if (a && def.loot.coin) earnCoin(state, who, def.loot.coin, 'chest');
   emit(state.events, { type: 'chestOpened', id, who });
 }
 

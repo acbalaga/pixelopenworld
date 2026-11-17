@@ -12,6 +12,7 @@ import { hintSeen } from './systems/hints';
 import { buy, interactNpc, sell, talk } from './systems/npcs';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, recomputeGear } from './items';
+import { madeItems } from './ledger';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
 export function createAvatar(state: SimState, x: number, y: number, handle = 'Traveler'): EntityId {
@@ -51,7 +52,10 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
     tier: 0,
   });
   setComp(state.entities, id, 'skills', newSkills());
-  setComp(state.entities, id, 'inventory', newInventory());
+  const inv = newInventory();
+  setComp(state.entities, id, 'inventory', inv);
+  for (const s of inv.slots) if (s) madeItems(state, 'start', s.item, s.qty);
+  for (const item of Object.values(inv.equipment)) if (item) madeItems(state, 'start', item, 1);
   setComp(state.entities, id, 'journal', newJournal());
   recomputeGear(state, id);
   return id;

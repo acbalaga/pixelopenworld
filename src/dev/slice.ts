@@ -8,6 +8,7 @@ import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { spawnCreature } from '../sim/combat/enemy';
 import { addItem, countItem } from '../sim/items';
+import { madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
 import type { SimState } from '../sim/state';
 
@@ -75,7 +76,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     },
     giveItem(item, qty) {
       const inv = getComp(state.entities, who, 'inventory');
-      if (inv) addItem(inv, item, qty);
+      if (!inv) return;
+      addItem(inv, item, qty);
+      madeItems(state, 'seed', item, qty);
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');

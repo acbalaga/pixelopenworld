@@ -4,6 +4,7 @@ import { SKILLS, TRIALS, trialKey } from '../content/skills';
 import { getComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import type { SimState, Skills } from './state';
+import { earnedXp } from './ledger';
 
 /** An avatar with no skill points. */
 export function newSkills(): Skills {
@@ -125,6 +126,7 @@ export function addXp(state: SimState, who: EntityId, skill: string, amount: num
   if (p >= B.maxPoints) return;
   const before = s.xp[skill] ?? 0;
   s.xp[skill] = before + amount;
+  earnedXp(state, skill, amount);
   emit(state.events, { type: 'skillXp', id: who, skill, amount });
   if (pendingTrial(s, skill) !== null) {
     const cost = xpToNext(p);
