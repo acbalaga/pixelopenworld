@@ -10,6 +10,8 @@ import { emit } from './kernel/events';
 import type { Command } from './kernel/commands';
 import { SUBPX } from './kernel/fixed';
 import { hasShield } from './combat/guard';
+import { learnedFlag, syncSignature } from './combat/knowledge';
+import { learnTechnique } from './combat/techniques';
 import { int, next, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
 import { applyStatus, clearStatus, statusesOf } from './statuses';
@@ -268,9 +270,9 @@ export function recomputeGear(state: SimState, who: EntityId): void {
     }
   }
   cb.defense = defense;
-  // Slot 1 is the band 0 technique of whatever is held: every weapon family has one.
+  // Slot 1 is the band 0 technique of whatever is held, once it is known (M4-15).
   const fighter = getComp(state.entities, who, 'fighter');
-  if (fighter) fighter.slots[0] = WEAPONS[cb.weapon]?.signature ?? null;
+  if (fighter) syncSignature(state, who);
   // No shield, no guard.
   if (fighter && !hasShield(state, who)) fighter.guard = false;
   recomputePools(state, who);
@@ -402,6 +404,29 @@ export function readScroll(state: SimState, who: EntityId, slot: number): boolea
   return true;
 }
 
+/**
+ * Reads a manual from a bag slot (M4-15): awakens its skill, learns its technique and uses it up.
+ * A manual whose technique is already known is kept, and the avatar is told.
+ */
+export function readManual(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  const manual = stack ? ITEMS[stack.item]?.manual : undefined;
+  if (!inv || !stack || !manual) return false;
+  if (getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
+  const j = getComp(state.entities, who, 'journal');
+  if (j?.flags.includes(learnedFlag(manual.technique))) {
+    emit(state.events, { type: 'manualKnown', who, item: stack.item, technique: manual.technique });
+    return true;
+  }
+  const item = stack.item;
+  stack.qty--;
+  if (stack.qty === 0) inv.slots[slot] = null;
+  learnTechnique(state, who, manual.technique, 'manual');
+  emit(state.events, { type: 'manualRead', who, item, technique: manual.technique });
+  return true;
+}
+
 /** Teaches a recipe, for example from an NPC. Returns false if already known or unknown. */
 export function learnRecipe(state: SimState, who: EntityId, recipeId: string): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -445,7 +470,11 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       unequip(state, who, c.slot as EquipSlot);
       return;
     case 'use':
-      if (!eat(state, who, c.slot) && !readScroll(state, who, c.slot))
+      if (
+        !eat(state, who, c.slot) &&
+        !readScroll(state, who, c.slot) &&
+        !readManual(state, who, c.slot)
+      )
         useGadget(state, who, c.slot);
       return;
     case 'drop':

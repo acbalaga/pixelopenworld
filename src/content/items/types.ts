@@ -93,6 +93,8 @@ export interface ItemDef {
   status?: { clear?: readonly string[]; apply?: { status: string; ticks: number } };
   /** Reading it (the Use button) teaches this recipe and uses it up. */
   teaches?: string;
+  /** Reading it (the Use button) teaches this technique, awakens its skill, and uses it up (M4-15). */
+  manual?: { technique: string; skill: string };
   /** Which Bag filter lists it. */
   bag: BagFilter;
 }

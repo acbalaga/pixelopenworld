@@ -21,11 +21,6 @@ export const ITEMS_BALANCE = {
   wear: { weaponHits: 50, armorHits: 50, toolUses: 25, deathPct: 10 },
   /** What a new avatar carries and wears. Item ids from `content/items`. */
   starter: {
-    /**
-     * Techniques a new character knows beyond the basic swing. Slot 1 always follows the weapon
-     * held (see `recomputeGear`), so this is empty: anything else is learned in play.
-     */
-    techniques: [] as readonly string[],
     /** Kit 2 (M4-14): a wooden dagger and ragged clothes, and one bread. Nothing else. */
     equipment: { main: 'item.dagger_wood', body: 'item.outfit_ragged' } as Readonly<
       Record<string, string>

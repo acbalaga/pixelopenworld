@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
 import { SLICE_MAP } from '../../src/content/world/slice-map';
 import { WAKE_IDS, WAKE_LANDMARKS, WAKE_POINTS, type WakeId } from '../../src/content/world/wake';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
+import { knownTechniques } from '../../src/sim/combat/techniques';
 import { kill } from '../../src/sim/combat/fighter';
 import { Dir } from '../../src/sim/kernel/fixed';
 import { countItem } from '../../src/sim/items';
@@ -98,14 +98,9 @@ describe('the bare kit', () => {
     expect(inv.equipment.accessory).toBeNull();
     expect(inv.slots.filter(Boolean)).toHaveLength(1);
     expect(countItem(inv, 'item.dish_bread')).toBe(1);
-    expect(B.starter.techniques).toEqual([]);
-    // Slot 1 follows the weapon; the others are empty.
-    expect(s.entities.comps.fighter[me]!.slots).toEqual([
-      'technique.blades_lunge',
-      null,
-      null,
-      null,
-    ]);
+    // No technique is known yet: the basic swing is all there is, so every slot is empty.
+    expect(s.entities.comps.fighter[me]!.slots).toEqual([null, null, null, null]);
+    expect(knownTechniques(s, me)).toEqual([]);
     expect(s.ledger.startKit).toBe(2);
   });
 });

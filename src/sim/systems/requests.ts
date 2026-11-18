@@ -231,7 +231,7 @@ export function turnIn(state: SimState, who: EntityId, rid: string): boolean {
   rec.doneDay = dayIndex(state.worldTick);
   earnCoin(state, who, def.reward.coin, 'request');
   for (const r of def.reward.items) give(state, who, r.item, r.qty, 'request');
-  for (const t of def.reward.techniques ?? []) learnTechnique(state, who, t);
+  for (const t of def.reward.techniques ?? []) learnTechnique(state, who, t, 'request');
   addRenown(state, who, def.region, def.reward.renown);
   if (def.kind === 'standing') {
     const t = state.ledger.requestRewards;

@@ -3,7 +3,8 @@ import { REQUEST_BALANCE } from '../content/balance/requests';
 import { TIME } from '../content/balance/time';
 import { REQUESTS } from '../content/requests';
 import { ITEMS } from '../content/items';
-import { TECHNIQUES } from '../content/combat/techniques';
+import { TECHNIQUES, TECHNIQUE_LIST } from '../content/combat/techniques';
+import { SKILLS } from '../content/skills';
 import { RECIPES } from '../content/items/recipes';
 import { createStream } from '../sim/kernel/rng';
 import { intact } from './integrity/reasons';
@@ -354,7 +355,8 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       for (const id of f.slots) {
         const t = id ? TECHNIQUES[id] : undefined;
         const j = c.journal[i];
-        if (t?.taught && j && !j.flags.includes(`learned.${t.id}`)) j.flags.push(`learned.${t.id}`);
+        if (t?.source === 'taught' && j && !j.flags.includes(`learned.${t.id}`))
+          j.flags.push(`learned.${t.id}`);
       }
       return {
         active: 0,
@@ -499,6 +501,56 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       schema: 18,
       sim: serializeState(deserializeState(JSON.stringify(raw))),
       ledger: { ...old.ledger, startKit },
+    };
+  },
+  /**
+   * 18 to 19 (M4-15): skills awaken and every technique has a source. `awake` is every skill with
+   * points or XP. Every technique the old rule called known (its band reached, and taught if it
+   * needed that) gets its `learned.<id>` flag so nothing is lost, and its skill awakens with it,
+   * so a slotted technique stays valid. Insight starts empty. Nothing came from a manual.
+   */
+  18: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          avatar: unknown[];
+          skills: ({
+            points: Record<string, number>;
+            xp: Record<string, number>;
+            awake?: string[];
+            insight?: Record<string, number>;
+          } | null)[];
+          journal: ({ flags: string[]; learnedVia?: Record<string, string> } | null)[];
+        };
+      };
+    };
+    const c = raw.entities.comps;
+    c.skills.forEach((sk, i) => {
+      const j = c.journal[i];
+      if (!sk || !j || !c.avatar[i]) return;
+      const awake = new Set<string>();
+      for (const id of Object.keys(SKILLS))
+        if ((sk.points[id] ?? 0) > 0 || (sk.xp[id] ?? 0) > 0) awake.add(id);
+      for (const t of TECHNIQUE_LIST) {
+        const known =
+          (sk.points[t.skill] ?? 0) >= t.band &&
+          (t.source !== 'taught' || j.flags.includes(`learned.${t.id}`));
+        if (!known) continue;
+        awake.add(t.skill);
+        if (t.band === 0 && !j.flags.includes(`learned.${t.id}`)) j.flags.push(`learned.${t.id}`);
+      }
+      sk.awake = [...awake].sort();
+      sk.insight = {};
+      j.learnedVia = {};
+    });
+    // The learned flags count in the summary's flag total, so it is kept in step.
+    const me = c.avatar.findIndex((a) => a);
+    const flags = c.journal[me]?.flags.length ?? 0;
+    return {
+      ...old,
+      schema: 19,
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
+      ...(old.summary ? { summary: { ...old.summary, flags } } : {}),
     };
   },
 };

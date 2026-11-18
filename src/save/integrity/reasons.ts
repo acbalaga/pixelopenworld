@@ -44,6 +44,7 @@ export const REASON_CODES = [
   'BUYBACK_EXCEEDS_SOLD',
   'ECHO_EXCEEDS_DROPPED',
   'START_KIT_MISMATCH',
+  'MANUAL_READ_UNSOURCED',
   // Plausibility: the totals are not possible in the recorded time.
   'COIN_IMPLAUSIBLE',
   'XP_IMPLAUSIBLE',

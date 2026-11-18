@@ -1,6 +1,7 @@
 import type { ItemDef } from './types';
 import { ARMOR_ITEMS } from './armor';
 import { FOOD_ITEMS } from './food';
+import { MANUAL_ITEMS } from './manuals';
 import { MATERIAL_ITEMS } from './materials';
 import { MISC_ITEMS } from './misc';
 import { POTION_ITEMS } from './potions';
@@ -22,6 +23,7 @@ const LIST: readonly ItemDef[] = [
   ...FOOD_ITEMS,
   ...POTION_ITEMS,
   ...MISC_ITEMS,
+  ...MANUAL_ITEMS,
 ];
 
 /** Every item by id. */

@@ -3,6 +3,8 @@ import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
 import { roomAt } from '../../content/world/rooms';
 import { WEAPONS } from '../../content/combat/attacks';
+import { TECHNIQUE_LIST } from '../../content/combat/techniques';
+import { countInsight } from '../combat/techniques';
 import { SKILLS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
 import { SUBPX } from '../kernel/fixed';
@@ -20,6 +22,8 @@ interface Practice {
   tier: number;
   /** What the first-time bonus keys on: a creature, an item or a recipe. Null for none. */
   subject: string | null;
+  /** The target was a training dummy: it counts toward insight only while the skill is young. */
+  dummy?: boolean;
 }
 
 /** Pays every skill whose table rows match `p`. Skills are visited in id order. */
@@ -41,7 +45,21 @@ function practice(state: SimState, who: EntityId, p: Practice): void {
         }
       }
       addXp(state, who, id, amount);
+      if (amount > 0) insight(state, who, id, p);
     }
+  }
+}
+
+/** Counts a paid use toward every insight technique of the skill that follows this event. */
+function insight(state: SimState, who: EntityId, skill: string, p: Practice): void {
+  const s = getComp(state.entities, who, 'skills');
+  if (!s) return;
+  if (p.dummy && (s.points[skill] ?? 0) >= B.dummyInsightUntil) return;
+  for (const t of TECHNIQUE_LIST) {
+    if (t.skill !== skill || t.source !== 'insight' || !t.insight) continue;
+    if (t.insight.event !== p.on || (t.insight.tag !== undefined && t.insight.tag !== p.tag))
+      continue;
+    countInsight(state, who, t);
   }
 }
 
@@ -118,6 +136,7 @@ export function skillsSystem(state: SimState): void {
           tag: e.tag,
           tier: target?.tier ?? 0,
           subject: dead ? (target?.kind ?? null) : null,
+          dummy: target?.kind === 'creature.training_dummy',
         });
       } else if (e.type === 'statusApplied' && e.src === who && e.id !== who) {
         const target = getComp(state.entities, e.id, 'combatant');
@@ -142,6 +161,11 @@ export function skillsSystem(state: SimState): void {
         practice(state, who, { on: 'haggle', tag: undefined, tier: 0, subject: e.shop });
       } else if (e.type === 'sold' && e.who === who) {
         practice(state, who, { on: 'sale', tag: undefined, tier: 0, subject: null });
+      } else if (e.type === 'perfectDodge' && e.id === who) {
+        // A perfect dodge pays no XP of its own. It only counts toward Light Feet.
+        for (const t of TECHNIQUE_LIST)
+          if (t.source === 'insight' && t.insight?.event === 'perfectDodge')
+            countInsight(state, who, t);
       } else if (e.type === 'dodged' && e.dst === who) {
         const attacker = getComp(state.entities, e.src, 'combatant');
         practice(state, who, {

@@ -1,3 +1,4 @@
+import { TECHNIQUES } from '../../src/content/combat/techniques';
 import { RECIPES } from '../../src/content/items/recipes';
 import { REQUESTS } from '../../src/content/requests';
 import type { DollSpec } from '../../src/content/dolls/parts';
@@ -159,6 +160,21 @@ export function asSchema5(s: SimState): SimState {
   // Schema 17: requests v2. The old request record is a state and a count, Renown and the pin
   // are new, and so are the board component, its stream and the standing-reward tally.
   delete (s.rng as { requests?: unknown }).requests;
+  // Schema 19: awake skills, insight counts, how techniques were learned, and the `learned.*`
+  // flags of the techniques an old save already knew (taught ones were flagged before).
+  for (const sk of s.entities.comps.skills) {
+    if (!sk) continue;
+    delete (sk as { awake?: unknown }).awake;
+    delete (sk as { insight?: unknown }).insight;
+  }
+  for (const j of s.entities.comps.journal) {
+    if (!j) continue;
+    delete (j as { learnedVia?: unknown }).learnedVia;
+    j.flags = j.flags.filter((f) => {
+      const t = f.startsWith('learned.') ? TECHNIQUES[f.slice(8)] : undefined;
+      return !t || t.source === 'taught';
+    });
+  }
   // Schema 18: the `start` stream and the ledger's start kit.
   delete (s.rng as { start?: unknown }).start;
   if (s.ledger) delete (s.ledger as { startKit?: unknown }).startKit;

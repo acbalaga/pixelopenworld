@@ -281,6 +281,28 @@ const supper = requestFlow('supper', 'request.watch_supper', 'hesper', 'request.
 const anvil = requestFlow('anvil', 'request.anvil_metal', 'brin', 'request.anvil_metal.ask');
 const deep = requestFlow('deep', 'request.deep_room', 'pilgrim', 'request.deep_room.ask');
 
+/**
+ * A lesson (M4-15): a teacher shows one technique for a small ask. `ask` is an item to hand over
+ * or a skill that must already be awake ("show me what you have done"). Teaching awakens the
+ * skill, so a person can open a skill the player has never used.
+ */
+const lesson = (
+  text: string,
+  technique: string,
+  ask: { item: string; qty: number } | { awake: string },
+): Choice => ({
+  text,
+  next: 'taught',
+  if: [
+    { flag: `learned.${technique}`, not: true },
+    'item' in ask ? { item: ask.item, atLeast: ask.qty } : { awake: ask.awake },
+  ],
+  do: [
+    ...('item' in ask ? [{ takeItem: ask.item, qty: ask.qty }] : []),
+    { learnTechnique: technique },
+  ],
+});
+
 const asked = { request: 'request.clear_pests' } as const;
 const pods = { request: 'request.ember_pods' } as const;
 
@@ -338,14 +360,28 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         do: [{ setFlag: 'met_tobin' }],
         choices: [
           { text: 'dlg.tobin.c_shop', next: null, do: [{ openShop: 'shop.tobin' }] },
+          { text: 'dlg.tobin.c_lesson', next: 'lesson' },
           { text: 'dlg.c_bye', next: null },
         ],
       },
+      lesson: {
+        id: 'lesson',
+        text: 'dlg.tobin.lesson',
+        choices: [
+          lesson('dlg.tobin.c_overhead', 'technique.heavy_overhead', {
+            item: 'item.copper_ore',
+            qty: 3,
+          }),
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      taught: { id: 'taught', text: 'dlg.tobin.taught', next: null },
       again: {
         id: 'again',
         text: 'dlg.tobin.again',
         choices: [
           { text: 'dlg.tobin.c_shop', next: null, do: [{ openShop: 'shop.tobin' }] },
+          { text: 'dlg.tobin.c_lesson', next: 'lesson' },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -429,6 +465,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           supper.offer,
           supper.remind,
           { text: 'dlg.hesper.c_test', next: 'trial_again' },
+          { text: 'dlg.hesper.c_lesson', next: 'lesson' },
           {
             text: 'dlg.hesper.c_cook',
             next: 'offer_cooking',
@@ -438,6 +475,15 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           { text: 'dlg.c_bye', next: null },
         ],
       },
+      lesson: {
+        id: 'lesson',
+        text: 'dlg.hesper.lesson',
+        choices: [
+          lesson('dlg.hesper.c_hum', 'technique.performance_hum', { item: 'item.sunwort', qty: 2 }),
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      taught: { id: 'taught', text: 'dlg.hesper.taught', next: null },
       offer_cooking: { id: 'offer_cooking', text: 'trial.cooking.15.intro', next: null },
       trial_again: { id: 'trial_again', text: 'trial.foraging.15.intro', next: null },
     },
@@ -459,6 +505,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         choices: [
           { text: 'dlg.orla.c_accept', next: 'accepted', do: [{ startRequest: asked.request }] },
           { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.orla.c_lesson', next: 'lessons' },
           { text: 'dlg.orla.c_later', next: null },
         ],
       },
@@ -477,6 +524,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           boar.offer,
           boar.remind,
           { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.orla.c_lesson', next: 'lessons' },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -505,6 +553,20 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           { text: 'dlg.c_bye', next: null },
         ],
       },
+      lessons: {
+        id: 'lessons',
+        text: 'dlg.orla.lessons',
+        choices: [
+          lesson('dlg.orla.c_polearm_lunge', 'technique.polearms_lunge', {
+            item: 'item.moss_tuft',
+            qty: 3,
+          }),
+          lesson('dlg.orla.c_aimed', 'technique.archery_aimed', { item: 'item.moss_tuft', qty: 3 }),
+          lesson('dlg.orla.c_bash', 'technique.shieldcraft_bash', { awake: 'skill.shieldcraft' }),
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      taught: { id: 'taught', text: 'dlg.orla.taught', next: null },
       offer_blades: { id: 'offer_blades', text: 'trial.blades.15.intro', next: null },
       offer_polearms: { id: 'offer_polearms', text: 'trial.polearms.15.intro', next: null },
       offer_evasion: { id: 'offer_evasion', text: 'trial.evasion.15.intro', next: null },
@@ -568,6 +630,12 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.wren.teach',
         choices: [
           {
+            text: 'dlg.wren.c_ember_school',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.ember_bolt', not: true }],
+            do: [{ learnTechnique: 'technique.ember_bolt' }],
+          },
+          {
             text: 'dlg.wren.c_tide',
             next: 'taught',
             if: [{ flag: 'learned.technique.tide_splash', not: true }],
@@ -579,11 +647,19 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
             if: [{ flag: 'learned.technique.gale_gust', not: true }],
             do: [{ learnTechnique: 'technique.gale_gust' }],
           },
+          { text: 'dlg.wren.c_more', next: 'teach_more' },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      teach_more: {
+        id: 'teach_more',
+        text: 'dlg.wren.teach',
+        choices: [
           {
             text: 'dlg.wren.c_stone',
             next: 'taught',
-            if: [{ flag: 'learned.technique.stone_stone_fist', not: true }],
-            do: [{ learnTechnique: 'technique.stone_stone_fist' }],
+            if: [{ flag: 'learned.technique.stone_fist', not: true }],
+            do: [{ learnTechnique: 'technique.stone_fist' }],
           },
           {
             text: 'dlg.wren.c_mending',
@@ -618,6 +694,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           deep.offer,
           deep.remind,
           { text: 'dlg.c_test', next: 'tests' },
+          { text: 'dlg.pilgrim.c_lesson', next: 'lesson' },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -634,6 +711,18 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
           { text: 'dlg.c_bye', next: null },
         ],
       },
+      lesson: {
+        id: 'lesson',
+        text: 'dlg.pilgrim.lesson',
+        choices: [
+          lesson('dlg.pilgrim.c_hide', 'technique.stealth_hide', {
+            item: 'item.dish_bread',
+            qty: 1,
+          }),
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      taught: { id: 'taught', text: 'dlg.pilgrim.taught', next: null },
       offer_athletics: { id: 'offer_athletics', text: 'trial.athletics.15.intro', next: null },
     },
   },

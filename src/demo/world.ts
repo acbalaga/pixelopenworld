@@ -126,6 +126,8 @@ import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
+import { SKILLS } from '../content/skills';
+import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
@@ -1238,7 +1240,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             );
           } else if (e.type === 'techniqueLearned' && e.who === who)
             notices.toast(
-              W_STR.learned.replace('{name}', W_STR.techniques[e.technique] ?? e.technique),
+              W_STR.learned.replace(
+                '{name}',
+                TECHNIQUE_STRINGS[`${e.technique}.name`] ?? e.technique,
+              ),
+            );
+          else if (e.type === 'skillAwakened' && e.id === who)
+            notices.toast(W_STR.awakens.replace('{skill}', SKILLS[e.skill]?.name ?? e.skill));
+          else if (e.type === 'manualKnown' && e.who === who)
+            notices.toast(
+              W_STR.manualKnown.replace(
+                '{name}',
+                TECHNIQUE_STRINGS[`${e.technique}.name`] ?? e.technique,
+              ),
             );
           else if (e.type === 'gateOpened') {
             openedAt.set(e.id, performance.now());

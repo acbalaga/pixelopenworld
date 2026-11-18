@@ -10,6 +10,7 @@ import { createAvatar, feetAt } from '../../src/sim/avatar';
 import type { Command } from '../../src/sim/kernel/commands';
 import { Dir, px, type Direction } from '../../src/sim/kernel/fixed';
 import type { SimEvent } from '../../src/sim/kernel/events';
+import { know } from '../support/know';
 import { withRustySword } from '../support/oldKit';
 import { createDemoState, hashState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
@@ -34,6 +35,7 @@ function arena(scheme: 'flow' | 'classic' = 'flow'): Arena {
   const me = createAvatar(s, f.x, f.y);
   // The combat balance is written against the base sword, not the starting dagger.
   withRustySword(s, me);
+  know(s, me, 'technique.blades_lunge');
   const events: SimEvent[] = [];
   const tick = (...cmds: Command[]): void => {
     stepWorld(s, me, { commands: cmds });
@@ -620,8 +622,10 @@ describe('time to kill', () => {
 });
 
 describe('a new character', () => {
-  it('knows only what the carried sword makes innate', () => {
-    const a = arena();
-    expect(fighter(a.s, a.me).slots).toEqual(['technique.blades_lunge', null, null, null]);
+  it('knows no technique at all, so nothing sits in a slot', () => {
+    const s = createDemoState(7, 0);
+    const f = feetAt(20, 20);
+    const me = createAvatar(s, f.x, f.y);
+    expect(fighter(s, me).slots).toEqual([null, null, null, null]);
   });
 });

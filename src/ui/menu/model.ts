@@ -15,7 +15,7 @@ import { UI_STRINGS } from '../../content/strings/ui';
 import { PATH_LIST } from '../../content/paths';
 import { PATH_STRINGS } from '../../content/strings/paths';
 import { anyRequirementMet } from '../../sim/systems/deeds';
-import { TECHNIQUE_LIST } from '../../content/combat/techniques';
+import { TECHNIQUE_LIST, type TechniqueDef } from '../../content/combat/techniques';
 import { TECHNIQUE_STRINGS } from '../../content/strings/techniques';
 import { knows } from '../../sim/combat/techniques';
 import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
@@ -23,7 +23,7 @@ import { NPCS } from '../../content/dialogue';
 import { AFFIXES, parseAffix } from '../../content/items/affixes';
 import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
-import { masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
+import { isAwake, masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
 import { dayPhase } from '../../sim/time';
 import type { SimState } from '../../sim/state';
 
@@ -281,8 +281,8 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
       const def = SKILLS[id];
       if (!def || def.family !== family) continue;
       const points = s?.points[id] ?? 0;
-      // A skill stays hidden until it first ranks up, so earning one is a surprise.
-      if (points < 1) continue;
+      // A dormant skill shows nowhere. It awakens on its first XP, a manual or a lesson.
+      if (!s || !isAwake(s, id)) continue;
       const xp = s?.xp[id] ?? 0;
       const pending = s ? pendingTrial(s, id) : null;
       const cost = points >= SB.maxPoints ? 0 : xpToNext(points);
@@ -309,6 +309,24 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
     if (rows.length > 0) out.push({ family, label: UI_STRINGS.skillsFamilies[family], rows });
   }
   return out;
+}
+
+/** What a technique that is not known yet is waiting on, as a line to show. */
+export function sourceState(t: TechniqueDef, insight: number, points: number): string {
+  const skill = SKILLS[t.skill]?.name ?? '';
+  if (points < t.band) return fill(UI_STRINGS.techNeedSkill, { skill, n: t.band });
+  switch (t.source) {
+    case 'insight':
+      return fill(UI_STRINGS.techInsight, { n: insight, count: SB.insight[t.id] ?? 0 });
+    case 'taught':
+      return UI_STRINGS.techTaught;
+    case 'manual':
+      return UI_STRINGS.techManual;
+    case 'trial':
+      return fill(UI_STRINGS.techTrial, { n: t.band });
+    default:
+      return UI_STRINGS.techInnate;
+  }
 }
 
 export interface TechniqueRowView {
@@ -352,14 +370,10 @@ export function techniquesView(state: SimState, who: number): TechniquesView {
       if (t.skill !== id) continue;
       const known = s !== undefined && s !== null ? knows(state, who, t) : false;
       const points = s?.points[id] ?? 0;
-      // A locked technique shows only once its skill has been ranked, so there is still a surprise.
-      if (!known && points < 1) continue;
+      // Only awake skills show, with every technique they will give and where it comes from.
+      if (!s || !isAwake(s, id)) continue;
       let need: string | null = null;
-      if (!known)
-        need =
-          points < t.band
-            ? fill(UI_STRINGS.techNeedSkill, { skill: SKILLS[id]?.name ?? '', n: t.band })
-            : UI_STRINGS.techNeedTeacher;
+      if (!known) need = sourceState(t, s.insight[t.id] ?? 0, points);
       rows.push({
         id: t.id,
         name: TECHNIQUE_STRINGS[t.nameKey] ?? t.id,

@@ -7,6 +7,8 @@ export type Cond =
   | { flag: string; not?: boolean }
   | { item: string; atLeast: number }
   | { skill: string; atLeast: number }
+  /** The skill has awakened (M4-15): first XP, a manual or a lesson. */
+  | { awake: string }
   | { request: string; is: 'none' | 'active' | 'ready' | 'done' }
   | { trial: string; is: 'offered' | 'passed'; not?: boolean }
   | { pathWorn: string; not?: boolean }
