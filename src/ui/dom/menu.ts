@@ -53,6 +53,8 @@ export interface MenuDeps {
   /** Paints the avatar preview into a canvas. */
   drawAvatar: (canvas: HTMLCanvasElement) => void;
   onLogOut: () => void;
+  /** Asks to delete the character and start a new one. The game confirms and does it. */
+  onDeleteCharacter: () => void;
   /** The save's trust state, read when System draws. */
   trust: () => Trust;
   /** Export and import, shown under Backup in System. */
@@ -828,6 +830,11 @@ export class MenuSheet {
     btn.type = 'button';
     btn.addEventListener('click', () => this.deps.onLogOut());
     put(out, btn, el('p', 'pow-hint', sys.logOutNote));
+    const del = el('button', 'pow-button pow-danger', S.retire.button);
+    del.type = 'button';
+    del.dataset.key = 'delete-character';
+    del.addEventListener('click', () => this.deps.onDeleteCharacter());
+    put(out, del, el('p', 'pow-hint', S.retire.note));
     this.body.appendChild(out);
   }
 }

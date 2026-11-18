@@ -1,6 +1,14 @@
 import type { Trust } from '../../save/integrity/reasons';
 import { startImport, type ImportDeps } from './backup';
 import { createSeal } from './seal';
+import { confirmRetire } from './retire';
+import {
+  applyUpdate,
+  checkForUpdate,
+  onUpdateChange,
+  updateReady,
+  updateSupported,
+} from '../../platform/pwa';
 import {
   BODY_TYPES,
   CLOTH_COLORS,
@@ -27,6 +35,10 @@ export interface FrontEndDeps {
   rand: () => number;
   /** Restoring a save file from the title. `onImported` is set here; the game applies the import. */
   importer: Omit<ImportDeps, 'onImported'>;
+  /** Exports the saved character as a sealed file, for the delete confirm. */
+  exportSaved: () => Promise<{ bytes: Uint8Array; fileName: string }>;
+  /** Removes the saved character from this device (kept as a recovery snapshot). */
+  retire: () => Promise<void>;
   /** True when this launch runs a newer build than the last one seen. Shows a small note. */
   updated?: boolean;
   /** How long the "connecting" beat lasts, ms. */
@@ -73,8 +85,12 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       resolve(r);
     };
 
+    // The saved character shown on the title. Deleting it turns the title into a new-character one.
+    let save = deps.save;
+    let offUpdate: (() => void) | null = null;
     let scene: PortalScene | null = null;
     const finish = (r: FrontEndResult): void => {
+      offUpdate?.();
       scene?.destroy();
       done(r);
     };
@@ -86,6 +102,7 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
      */
     const title = (): void => {
       screen.textContent = '';
+      offUpdate?.();
       scene?.destroy();
       scene = new PortalScene();
       const stage = el('div', 'pow-portal-stage');
@@ -109,10 +126,10 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       portrait.height = 32;
       portrait.setAttribute('aria-hidden', 'true');
       const label = el('span', 'pow-portal-name');
-      if (deps.save) {
-        deps.drawPreview(portrait, deps.save.look);
-        label.textContent = deps.save.handle;
-        go.setAttribute('aria-label', fill(S.title.logInAs, { name: deps.save.handle }));
+      if (save) {
+        deps.drawPreview(portrait, save.look);
+        label.textContent = save.handle;
+        go.setAttribute('aria-label', fill(S.title.logInAs, { name: save.handle }));
       } else {
         deps.drawPreview(portrait, { ...randomDoll(deps.rand), mainHand: 'none', offHand: 'none' });
         portrait.classList.add('pow-silhouette');
@@ -120,24 +137,24 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
         go.setAttribute('aria-label', S.title.logIn);
       }
       put(go, portrait, label);
-      go.addEventListener('click', () => (deps.save ? stepThrough(go) : setup()));
+      go.addEventListener('click', () => (save ? stepThrough(go) : setup()));
       chars.appendChild(go);
       put(stage, sign, chars);
 
       const status = el(
         'p',
         'pow-front-status',
-        deps.save
+        save
           ? fill(S.title.saveFound, {
-              name: deps.save.handle,
-              time: minutes(deps.save.playSeconds),
+              name: save.handle,
+              time: minutes(save.playSeconds),
             })
           : S.title.noSave,
       );
       status.setAttribute('role', 'status');
       const ver = el('p', 'pow-front-version', fill(S.title.version, { id: BUILD_ID }));
       put(screen, stage, status);
-      if (deps.save) put(screen, createSeal(deps.save.trust));
+      if (save) put(screen, createSeal(save.trust));
       const imp = el('button', 'pow-button pow-front-import', S.backup.import);
       imp.type = 'button';
       imp.addEventListener('click', () =>
@@ -149,13 +166,89 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
           },
         ),
       );
-      put(screen, imp, ver);
+      put(screen, imp);
+      if (save) {
+        const del = el('button', 'pow-button pow-front-delete', S.title.deleteCharacter);
+        del.type = 'button';
+        del.addEventListener('click', () => {
+          const who = save;
+          if (!who) return;
+          void confirmRetire(deps.root, {
+            handle: who.handle,
+            playSeconds: who.playSeconds,
+            exportCurrent: deps.exportSaved,
+          }).then(async (yes) => {
+            if (!yes) return;
+            try {
+              await deps.retire();
+              save = null;
+              title();
+            } catch {
+              status.textContent = S.retire.failed;
+            }
+          });
+        });
+        put(screen, del);
+      }
+      put(screen, updateBlock(), ver);
       if (deps.updated) {
         const note = el('p', 'pow-front-version', fill(S.title.updated, { id: BUILD_ID }));
         note.setAttribute('role', 'status');
         put(screen, note);
       }
       go.focus();
+    };
+
+    /**
+     * Whether a newer build is waiting, and the way to take it before logging in. A save loads into
+     * whatever build is running, so updating here is what makes new content show up for it. Nothing
+     * is running at the title, so there is nothing to save first.
+     */
+    const updateBlock = (): HTMLElement => {
+      const box = el('div', 'pow-front-update');
+      const msg = el('p', 'pow-front-version');
+      msg.setAttribute('role', 'status');
+      const check = el('button', 'pow-button', S.title.updateCheck);
+      check.type = 'button';
+      const apply = el('button', 'pow-button', S.title.updateNow);
+      apply.type = 'button';
+      let asked = false;
+      const show = (): void => {
+        const ready = updateReady();
+        apply.hidden = !ready;
+        check.hidden = ready || !updateSupported();
+        if (ready) msg.textContent = S.title.updateReady;
+        else if (!msg.dataset.busy) msg.textContent = updateSupported() ? S.title.updateNone : '';
+        // The first time the worker is known, look for a newer build without being asked.
+        if (updateSupported() && !asked) {
+          asked = true;
+          msg.dataset.busy = '1';
+          msg.textContent = S.title.updateChecking;
+          void checkForUpdate().then(() => {
+            delete msg.dataset.busy;
+            show();
+          });
+        }
+      };
+      check.addEventListener('click', () => {
+        msg.dataset.busy = '1';
+        msg.textContent = S.title.updateChecking;
+        check.disabled = true;
+        void checkForUpdate().then(() => {
+          delete msg.dataset.busy;
+          check.disabled = false;
+          show();
+        });
+      });
+      apply.addEventListener('click', () => {
+        apply.disabled = true;
+        msg.textContent = S.title.updateRestarting;
+        applyUpdate();
+      });
+      show();
+      offUpdate = onUpdateChange(show);
+      put(box, msg, check, apply);
+      return box;
     };
 
     /**

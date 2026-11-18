@@ -32,3 +32,7 @@ Any change to what `serializeState` writes, or to `SavePlain`, is a schema chang
 2. Add `MIGRATIONS[oldSchema] = (old) => ({ ...old, schema: oldSchema + 1, /* upgrade fields */ })` in `migrations.ts`.
 3. Commit a fixture of the old schema under `tests/fixtures/saves/schema-N.json`. Do not regenerate old fixtures.
 4. Add a case to `tests/unit/save.test.ts` that loads the fixture through `migrate`, then checks the upgraded fields and that `deserializeState` works on the result.
+
+## Retiring a character
+
+`SaveManager.retire()` backs Delete character (System, and the title). The newest snapshot moves to `replaced` (kept until the next retire or import), the working slots are cleared, and the next character starts a new chain. The UI offers an export first. The game stops all saving before it calls this, so the old game is never written back.
