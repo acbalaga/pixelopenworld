@@ -1181,11 +1181,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 sparks.push({ x: w.x, y: w.y, born: now });
         }
         skillFeed.ingest(state.events.list, who);
-        for (const ev of state.events.list)
-          if (ev.type === 'equipped' && ev.id === who)
-            player.draw(
-              dollWithGear(baseDoll, state.entities.comps.inventory[who]?.equipment ?? startGear),
-            );
+        // Redress on any change of gear, taking an item off included, so an unarmed avatar holds nothing.
+        if (
+          state.events.list.some(
+            (ev) => (ev.type === 'equipped' || ev.type === 'unequipped') && ev.id === who,
+          )
+        )
+          player.draw(
+            dollWithGear(baseDoll, state.entities.comps.inventory[who]?.equipment ?? startGear),
+          );
         for (const e of state.events.list) {
           if (e.type === 'roomChanged' && e.who === who) {
             const tx = Math.floor(apos.x / 256 / TILE_PX);
