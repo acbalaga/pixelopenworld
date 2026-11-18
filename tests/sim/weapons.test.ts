@@ -506,7 +506,8 @@ describe('time to kill with techniques', () => {
     process.stdout.write(
       `TTK with technique ${weapons.map(([n], i) => `${n}=${times[i]}`).join(' ')}\n`,
     );
-    expect(Math.max(...times) / Math.min(...times)).toBeLessThanOrEqual(1.15);
+    // About the same: within a fifth (M3-12 raised Mossling health, which spreads the ticks).
+    expect(Math.max(...times) / Math.min(...times)).toBeLessThanOrEqual(1.2);
     // Techniques may bring a kill a little under the 4 second basic floor, never past 8.
     expect(Math.min(...times)).toBeGreaterThanOrEqual(3 * 30);
     expect(Math.max(...times)).toBeLessThanOrEqual(8 * 30);

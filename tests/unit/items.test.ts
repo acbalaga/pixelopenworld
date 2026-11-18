@@ -17,10 +17,11 @@ describe('item content', () => {
   it('the real content is valid', () => {
     expect(validateRealItems(sprites)).toEqual([]);
   });
-  it('the set has about 140 items, 80 recipes and seven node kinds', () => {
+  // M3-12 added 19 recipes and 6 Whisperwood node kinds, so every item can be obtained.
+  it('the set has about 140 items, 99 recipes and thirteen node kinds', () => {
     expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
-    expect(Object.keys(RECIPES)).toHaveLength(80);
-    expect(Object.keys(NODES)).toHaveLength(7);
+    expect(Object.keys(RECIPES)).toHaveLength(99);
+    expect(Object.keys(NODES)).toHaveLength(13);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(
       Object.values(ITEMS).filter((i) => i.equip?.slot === 'main' && i.equip.weapon === 'sword'),

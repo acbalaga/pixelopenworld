@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { SKILLS } from '../../src/content/skills';
 import { JsonCodec } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
 import { migrate } from '../../src/save/migrations';
@@ -100,8 +101,10 @@ describe('schema 5 to 6 migration', () => {
       quality: 0,
       source: 'manual',
     });
-    // Only the base 25. The 100 lump was paid before the upgrade.
-    expect(earned(s, me, 'skill.cooking') - before).toBe(25);
+    // Only the base. The 100 lump was paid before the upgrade.
+    expect(earned(s, me, 'skill.cooking') - before).toBe(
+      (SKILLS['skill.cooking']?.sources[0] as { base: number }).base,
+    );
   });
 
   it('validates clean after the upgrade', async () => {

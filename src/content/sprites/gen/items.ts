@@ -722,6 +722,27 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
     line(im, 5, 1, 9, 5, WOOD[3]);
     line(im, 4, 1, 4, 10, CREAM[3]);
   }),
+  icon('maul_iron', (im) => {
+    line(im, 3, 10, 8, 4, WOOD[2]);
+    line(im, 4, 10, 9, 4, WOOD[1]);
+    im.rect(5, 0, 11, 4, STEEL[2]);
+    im.rect(5, 0, 11, 0, STEEL[3]);
+    im.rect(5, 4, 11, 4, STEEL[1]);
+  }),
+  icon('bow_long', (im) => {
+    line(im, 5, 0, 9, 5, WOOD[2]);
+    line(im, 9, 5, 5, 11, WOOD[2]);
+    line(im, 6, 0, 10, 5, WOOD[3]);
+    line(im, 5, 0, 5, 11, CREAM[3]);
+  }),
+  icon('wraps_leather', (im) => {
+    im.rect(2, 4, 9, 8, LEATHER[2]);
+    im.rect(2, 4, 9, 5, LEATHER[3]);
+    im.rect(2, 8, 9, 8, LEATHER[1]);
+    im.rect(4, 4, 4, 8, LEATHER[0]);
+    im.rect(7, 4, 7, 8, LEATHER[0]);
+    im.rect(9, 9, 10, 10, LEATHER[1]);
+  }),
   icon('wraps_cloth', (im) => {
     im.rect(2, 4, 9, 8, CREAM[2]);
     im.rect(2, 4, 9, 5, CREAM[3]);

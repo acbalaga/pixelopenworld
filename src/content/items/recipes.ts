@@ -263,6 +263,63 @@ const LIST: readonly RecipeDef[] = [
     ['item.salt'],
     ['item.spark_dust'],
   ]),
+
+  // ---- Supply recipes (M3-12). The intermediates and the gear that nothing made before. ----
+  // Cloth and leather stock, at the loom: spun from what Whisperwood grows and sheds.
+  make('tailoring', LOOM, 1, 'item.linen_cloth', [['item.flax_fiber', 2]]),
+  make('tailoring', LOOM, 1, 'item.wool_cloth', [['item.wool_tuft', 2]]),
+  make('tailoring', LOOM, 1, 'item.leather', [['item.hide_rough'], ['item.salt']]),
+  make('tailoring', LOOM, 1, 'item.leather_strip', [['item.leather']], 'experiment', 2),
+  make('tailoring', LOOM, 1, 'item.outfit_scholar', [
+    ['item.linen_cloth'],
+    ['item.wool_cloth'],
+    ['item.thread_spool'],
+  ]),
+  // Smithing and woodworking gear that had no recipe.
+  make('smithing', ANVIL, 1, 'item.greaves_mail', [
+    ['item.copper_ingot', 2],
+    ['item.leather_strip'],
+  ]),
+  make('smithing', ANVIL, 2, 'item.spear_steel', [
+    ['item.iron_ingot', 2],
+    ['item.ash_plank'],
+    ['item.leather_strip'],
+  ]),
+  make('smithing', ANVIL, 2, 'item.cuirass_iron', [
+    ['item.iron_ingot', 2],
+    ['item.leather', 2],
+  ]),
+  make('smithing', ANVIL, 2, 'item.greaves_iron', [['item.iron_ingot', 3]]),
+  make('smithing', ANVIL, 2, 'item.band_iron', [['item.iron_ingot', 2]]),
+  make('smithing', ANVIL, 2, 'item.hammer_iron', [['item.iron_ingot', 3], ['item.oak_plank']]),
+  make('smithing', ANVIL, 2, 'item.maul_iron', [
+    ['item.iron_ingot', 2],
+    ['item.ash_plank', 2],
+  ]),
+  make('woodworking', BENCH, 2, 'item.bow_long', [['item.ash_plank', 2], ['item.linen_cloth']]),
+  make('tailoring', LOOM, 2, 'item.wraps_leather', [['item.leather', 2], ['item.linen_cloth']]),
+  make('woodworking', BENCH, 2, 'item.rod_yew', [['item.ash_plank', 2], ['item.thread_spool']]),
+  // Four remedies of the second tier, made from the essences the forest creatures carry.
+  make('alchemy', ALCH, 2, 'item.potion_swift', [
+    ['item.essence_gale'],
+    ['item.dewmint'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.potion_ward', [
+    ['item.essence_stone'],
+    ['item.glowcap'],
+    ['item.salt'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.potion_clarity', [
+    ['item.essence_tide'],
+    ['item.glowcap'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.potion_vigor', [
+    ['item.essence_ember'],
+    ['item.sunwort'],
+    ['item.berry_red'],
+  ]),
 ];
 
 /** Every recipe by id. Ingredient order never matters. */
@@ -376,5 +433,57 @@ export const NODES: Record<string, NodeDef> = {
     fishing: true,
     sweep: { baseMin: 1, baseMax: 1, sweetBonus: 1 },
     sprite: { ready: 'icon.node_fish', spent: 'icon.node_fish_spent' },
+  },
+  // ---- Whisperwood supply (M3-12): tier 2 materials, placed by that region's map, not the first one. ----
+  'node.flax_patch': {
+    id: 'node.flax_patch',
+    tag: 'foraging',
+    tier: 2,
+    yields: [{ item: 'item.flax_fiber', weight: 1 }],
+    respawn: 4 * MIN,
+    sprite: { ready: 'icon.flax_fiber', spent: 'icon.moss_tuft' },
+  },
+  'node.briar_tuft': {
+    id: 'node.briar_tuft',
+    tag: 'foraging',
+    tier: 2,
+    yields: [{ item: 'item.wool_tuft', weight: 1 }],
+    respawn: 4 * MIN,
+    sprite: { ready: 'icon.wool_tuft', spent: 'icon.moss_tuft' },
+  },
+  'node.glowcap_cluster': {
+    id: 'node.glowcap_cluster',
+    tag: 'foraging',
+    tier: 2,
+    yields: [{ item: 'item.glowcap', weight: 1 }],
+    respawn: 5 * MIN,
+    sprite: { ready: 'icon.glowcap', spent: 'icon.moss_tuft' },
+  },
+  'node.nightshade_bush': {
+    id: 'node.nightshade_bush',
+    tag: 'foraging',
+    tier: 2,
+    yields: [{ item: 'item.nightshade', weight: 1 }],
+    respawn: 5 * MIN,
+    sprite: { ready: 'icon.nightshade', spent: 'icon.moss_tuft' },
+  },
+  'node.river_bank': {
+    id: 'node.river_bank',
+    tag: 'foraging',
+    tier: 2,
+    yields: [
+      { item: 'item.clay', weight: 3 },
+      { item: 'item.river_pebble', weight: 2 },
+    ],
+    respawn: 4 * MIN,
+    sprite: { ready: 'icon.clay', spent: 'icon.moss_tuft' },
+  },
+  'node.silk_web': {
+    id: 'node.silk_web',
+    tag: 'foraging',
+    tier: 2,
+    yields: [{ item: 'item.silk_cloth', weight: 1 }],
+    respawn: 8 * MIN,
+    sprite: { ready: 'icon.silk_cloth', spent: 'icon.moss_tuft' },
   },
 };

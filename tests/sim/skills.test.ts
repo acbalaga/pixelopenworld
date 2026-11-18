@@ -1,3 +1,4 @@
+import { SKILLS } from '../../src/content/skills';
 import { describe, expect, it } from 'vitest';
 import { COMBAT as C } from '../../src/content/balance/combat';
 import { SKILLS_BALANCE as B } from '../../src/content/balance/skills';
@@ -64,6 +65,11 @@ function earned(s: SimState, me: number, skill: string): number {
 function setPoints(s: SimState, me: number, skill: string, points: number): void {
   sk(s, me).points[skill] = points;
 }
+
+/** The base XP of a skill's first source, so tuning it does not break the tests. */
+const baseOf = (skill: string): number => (SKILLS[skill]?.sources[0] as { base: number }).base;
+const lumpOf = (skill: string): number =>
+  (SKILLS[skill]?.sources[0] as { firstTime: number }).firstTime;
 
 describe('XP curve and challenge', () => {
   it('xp to next point grows smoothly with points', () => {
@@ -143,8 +149,10 @@ describe('XP mapping from sim events', () => {
     });
     expect(earned(s, me, 'skill.ember')).toBe(10);
     expect(earned(s, me, 'skill.evasion')).toBe(12);
-    expect(earned(s, me, 'skill.foraging')).toBe(20 + 100);
-    expect(earned(s, me, 'skill.cooking')).toBe(25 + 100);
+    expect(earned(s, me, 'skill.foraging')).toBe(
+      baseOf('skill.foraging') + lumpOf('skill.foraging'),
+    );
+    expect(earned(s, me, 'skill.cooking')).toBe(baseOf('skill.cooking') + lumpOf('skill.cooking'));
     expect(earned(s, me, 'skill.blades')).toBe(0);
   });
   it('ignores events from other fighters and tags nobody maps', () => {
@@ -204,12 +212,20 @@ describe('XP mapping from sim events', () => {
 describe('first-time bonus', () => {
   it('fires once per item gathered, then pays the plain rate', () => {
     const { s, me } = world();
+    const base = baseOf('skill.foraging');
     feed(s, gather(me, 'item.herb'));
-    expect(earned(s, me, 'skill.foraging')).toBe(120);
+    const first = earned(s, me, 'skill.foraging');
+    expect(first).toBe(base + lumpOf('skill.foraging'));
+    // The same item again pays the plain rate: no lump, and at most the base (the rate falls as
+    // the skill rises past a tier 1 target).
     feed(s, gather(me, 'item.herb'));
-    expect(earned(s, me, 'skill.foraging')).toBe(140);
+    const second = earned(s, me, 'skill.foraging') - first;
+    expect(second).toBeGreaterThan(0);
+    expect(second).toBeLessThanOrEqual(base);
+    // A new item carries its own lump.
+    const before = earned(s, me, 'skill.foraging');
     feed(s, gather(me, 'item.berry'));
-    expect(earned(s, me, 'skill.foraging')).toBe(260);
+    expect(earned(s, me, 'skill.foraging') - before).toBeGreaterThan(lumpOf('skill.foraging'));
   });
   it('fires on the first kill of a creature, not on hits', () => {
     const { s, me } = world();

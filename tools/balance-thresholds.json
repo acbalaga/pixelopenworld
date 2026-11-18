@@ -1,0 +1,33 @@
+{
+  "fightSim": {
+    "maxDeathPct": 5,
+    "maxDeviationsUnlisted": 0,
+    "preparedPackMaxDeathPct": 25,
+    "unpreparedPackMinDeathPct": 30,
+    "toleranceSec": 0.75
+  },
+  "simBot": {
+    "timeTo15": [20, 40],
+    "xpPerHour": {
+      "gather": [3000, 12000],
+      "fight": [3000, 12000],
+      "craft": [3500, 14000],
+      "request": [3000, 12000]
+    },
+    "coinPerHour": {
+      "gather": [100, 500],
+      "fight": [150, 900],
+      "craft": [100, 450],
+      "request": [50, 400]
+    },
+    "maxFlags": 0,
+    "maxDeaths": {
+      "gather": 0,
+      "fight": 10,
+      "craft": 0,
+      "request": 2
+    },
+    "timeTo15Slow": [35, 70]
+  },
+  "_note": "Past these, `npm run balance:ci` fails. The fight sim bands are design/04 (see tools/fight-sim/targets.ts); the sim bot bands are set around the tuned numbers in reports/sim-bot.md with room for a short run. Move a number only in a balance PR with before and after reports."
+}

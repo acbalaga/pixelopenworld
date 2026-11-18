@@ -232,12 +232,14 @@ describe('recorded sessions: honest play is never flagged', () => {
       // Carry some coin into the fight, so that dying leaves an echo behind.
       for (let i = 0; i < 6; i++) run.fight(MOSSLING, { eatBelow: 40 });
       run.sellAll('item.moss_tuft');
-      // A boar with no eating: dying is allowed, and then the echo is walked back to.
+      // A boar with no eating, met already hurt: dying is allowed, and then the echo is walked back to.
+      run.s.entities.comps.pools[run.me]!.hp = 25;
+      const falls = (): number =>
+        run.events.filter((e) => e.type === 'died' && e.team === 0).length;
+      const before = falls();
       run.fight(BOAR, { maxTicks: 600 });
-      if (run.dead) {
-        died++;
-        run.recover();
-      }
+      if (falls() > before) died++;
+      if (run.dead) run.recover();
       run.fight(SPITBLOOM, { eatBelow: 40 });
       if (run.dead) run.recover();
       if (!bossDown && loops === 3) {

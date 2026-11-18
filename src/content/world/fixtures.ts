@@ -164,6 +164,33 @@ const LIST: readonly FixtureDef[] = [
     loot: { items: [] },
     setsFlag: 'flag.satchel_taken',
   },
+  // Whisperwood finds (M3-12): placed by that region's map, not the first one.
+  {
+    kind: 'fixture.chest_cairn',
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: {
+      items: [
+        { item: 'item.worn_map', qty: 1 },
+        { item: 'item.chalk_stub', qty: 1 },
+        { item: 'item.crow_feather', qty: 2 },
+      ],
+    },
+  },
+  {
+    kind: 'fixture.chest_hollow',
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: {
+      items: [
+        { item: 'item.ring_silver', qty: 1 },
+        { item: 'item.charm_sun', qty: 1 },
+      ],
+      coin: 60,
+    },
+  },
   // Crafting stations in the square (M3-07). The camp pot is a prop with its own kind.
   { kind: 'fixture.anvil', type: 'station', sprite: 'prop.anvil', size: 12 },
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },

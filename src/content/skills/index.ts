@@ -107,7 +107,7 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         id: 'skill.foraging',
         name: 'Foraging',
         family: 'gathering',
-        sources: [{ on: 'gather', tag: 'foraging', base: 20, firstTime: 100 }],
+        sources: [{ on: 'gather', tag: 'foraging', base: 150, firstTime: 150 }],
       },
       {
         id: 'skill.fishing',
@@ -143,7 +143,7 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         id: 'skill.cooking',
         name: 'Cooking',
         family: 'crafting',
-        sources: [{ on: 'craft', tag: 'cooking', base: 25, firstTime: 100 }],
+        sources: [{ on: 'craft', tag: 'cooking', base: 170, firstTime: 150 }],
       },
       {
         id: 'skill.alchemy',

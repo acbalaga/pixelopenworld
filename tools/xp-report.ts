@@ -11,59 +11,31 @@
  * there after 30 minutes keeps running, up to {@link CAP_MIN}, so the time is measured, not guessed.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { MOSSLING, Run, TPS } from '../tests/support/bots';
+import { Run, TPS } from '../tests/support/bots';
+import { readFileSync } from 'node:fs';
+import { CRAFT, FIGHT, GATHER } from './sim-bot/policies';
 import { pendingTrial, xpToNext } from '../src/sim/skills';
 
 const REPORT_MIN = 30;
 const CAP_MIN = 1200;
-const HERB_NODES: [number, number][] = [
-  [25, 30],
-  [25, 32],
-  [25, 34],
-];
 
 interface Loop {
   name: string;
+  slow: boolean;
   skill: string;
   seed: number;
   /** One iteration of the loop. */
   step(run: Run, n: number): void;
 }
 
-const LOOPS: Loop[] = [
-  {
-    name: 'Fight Mosslings with the sword',
-    skill: 'skill.blades',
-    seed: 11,
-    step(run) {
-      run.fight(MOSSLING, { eatBelow: 40 });
-      if (run.dead) run.recover();
-      run.run(60);
-    },
-  },
-  {
-    name: 'Forage the herb patch',
-    skill: 'skill.foraging',
-    seed: 12,
-    step(run, n) {
-      const [x, y] = HERB_NODES[n % HERB_NODES.length]!;
-      run.gather(x, y, true);
-      run.run(200);
-    },
-  },
-  {
-    name: 'Cook herb tea (foraging the herbs between pots)',
-    skill: 'skill.cooking',
-    seed: 13,
-    step(run, n) {
-      const [x, y] = HERB_NODES[n % HERB_NODES.length]!;
-      run.gather(x, y, true);
-      while (run.count('item.sunwort') >= 1 && run.count('item.dewmint') >= 1)
-        run.cook(['item.sunwort', 'item.dewmint']);
-      run.run(200);
-    },
-  },
-];
+// The loops are the sim bot's (POW-M3-12), so this report and `npm run sim-bot` agree.
+const LOOPS: Loop[] = [FIGHT, GATHER, CRAFT].map((p) => ({
+  name: p.label,
+  slow: p.pace === 'slow',
+  skill: p.skill as string,
+  seed: p.seed,
+  step: p.step,
+}));
 
 const xpTo = (points: number): number => {
   let n = 0;
@@ -107,12 +79,16 @@ function runLoop(loop: Loop): Result {
   return { loop, xp30, perHour: Math.round(xp30 * 2), minutes: reached };
 }
 
+const bands = JSON.parse(readFileSync('tools/balance-thresholds.json', 'utf8')) as {
+  simBot: { timeTo15: [number, number]; timeTo15Slow: [number, number] };
+};
 const target = (4 * 60 * xpTo(15)) / xpTo(50);
 const results = LOOPS.map(runLoop);
 
 const rows = results.map((r) => {
   const t = r.minutes;
-  const ok = t !== null && t >= 20 && t <= 40;
+  const [lo, hi] = r.loop.slow ? bands.simBot.timeTo15Slow : bands.simBot.timeTo15;
+  const ok = t !== null && t >= lo && t <= hi;
   return `| ${r.loop.name} | ${r.loop.skill} | ${r.xp30} | ${r.perHour} | ${
     t === null ? `not in ${CAP_MIN}` : t.toFixed(1)
   } | ${ok ? 'yes' : 'deviation'} |`;
@@ -123,17 +99,17 @@ const md = `# XP rate report
 Made by \`npm run xp-report\` (POW-M3-02). Do not edit by hand. Each loop is a test bot driving the real sim for ${REPORT_MIN} minutes of sim time (the loop then runs on, if it has not yet got there, to find the time to rank 15).
 
 - XP to reach 15 points: ${xpTo(15)}. To reach 50: ${xpTo(50)}.
-- Target time to 15: \`4 h * xpTo(15) / xpTo(50)\` = **${target.toFixed(1)} minutes** (design/10). The acceptance band is 20 to 40 minutes.
+- Target time to 15: \`4 h * xpTo(15) / xpTo(50)\` = **${target.toFixed(1)} minutes** (design/10). The band is ${bands.simBot.timeTo15.join(' to ')} minutes for combat and ${bands.simBot.timeTo15Slow.join(' to ')} for Foraging and Cooking, which are slower on purpose (reports/sim-bot.md).
 - "Time to 15" is when the skill has 14 points and a full bar: the next point waits on a Trial (design/03).
 
-| Loop | Skill | XP in 30 min | XP per hour | Minutes to 15 | In 20 to 40 |
+| Loop | Skill | XP in 30 min | XP per hour | Minutes to 15 | In its band |
 | --- | --- | --- | --- | --- | --- |
 ${rows.join('\n')}
 
 Notes for M3-12 (balance harness):
 
-- XP per event falls as the skill rises past the par rank of a tier 1 target (design/03): a tier 1 target is at the 10% floor by rank 15. A loop on tier 1 targets alone therefore slows down hard in the teens, and the time to 15 is far longer than the first 30 minutes of rate suggest. Base XP and par ranks are tuned by M3-12, not by this report.
-- Cooking has no timer in the sim yet (the pot is instant), so its loop is paced by foraging the herbs. M3-07 adds the stir step.
+- XP per event falls as the skill rises past the par rank of a tier 1 target (design/03): a tier 1 target is at the 10% floor by rank 15, so the time to 15 is longer than the first 30 minutes of rate suggest.
+- Tuned by M3-12: the loops are the sim bot's (\`tools/sim-bot/policies.ts\`). Foraging and Cooking are paced by node supply (three herb patches and two berry bushes on the slice), so their XP per event is high; see reports/sim-bot.md and the M3-12 PR for before and after.
 - The bots take the sweet spot every time and never miss, so these are fast-player times.
 `;
 

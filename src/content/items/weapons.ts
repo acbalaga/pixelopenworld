@@ -38,7 +38,26 @@ const family = (
     equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
   });
 
+/** A tier 2 weapon of a family that had only tier 1 (M3-12): iron, longer, or leather. */
+const family2 = (
+  id: string,
+  value: number,
+  power: number,
+  weapon: 'maul' | 'bow' | 'wraps',
+): ItemDef =>
+  item(id, 'weapon', {
+    value,
+    tier: 2,
+    quality: true,
+    durability: 100,
+    affixSlots: 2,
+    equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
+  });
+
 export const WEAPON_ITEMS: readonly ItemDef[] = [
+  family2('item.maul_iron', 80, 15, 'maul'),
+  family2('item.bow_long', 85, 15, 'bow'),
+  family2('item.wraps_leather', 40, 12, 'wraps'),
   family('item.maul_oak', 35, 12, 'maul'),
   family('item.bow_short', 38, 10, 'bow'),
   family('item.wraps_cloth', 15, 7, 'wraps'),
@@ -47,7 +66,7 @@ export const WEAPON_ITEMS: readonly ItemDef[] = [
   blade('item.sword_bronze', 28, 1, 11, 'sword'),
   blade('item.sword_iron', 60, 2, 14, 'sword'),
   blade('item.sword_steel', 110, 2, 16, 'sword'),
-  blade('item.spear_ash', 40, 1, 11, 'spear'),
+  blade('item.spear_ash', 40, 1, 10, 'spear'),
   blade('item.spear_hunter', 55, 1, 12, 'spear'),
   blade('item.spear_iron', 90, 2, 15, 'spear'),
   blade('item.spear_steel', 130, 2, 17, 'spear'),

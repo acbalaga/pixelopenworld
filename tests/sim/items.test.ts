@@ -141,7 +141,7 @@ describe('equipment', () => {
   it('a spear changes the weapon family as well as the power', () => {
     const r = rig();
     r.tick({ type: 'equip', slot: stash(r, 'item.spear_ash') });
-    expect(cb(r)).toMatchObject({ weapon: 'spear', power: 11 });
+    expect(cb(r)).toMatchObject({ weapon: 'spear', power: 10 });
   });
   it('worn gear adds defense, and taking it off removes it', () => {
     const r = rig();

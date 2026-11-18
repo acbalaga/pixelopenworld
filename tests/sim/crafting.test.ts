@@ -330,9 +330,10 @@ describe('experimenting', () => {
     expect(learnRecipe(r.s, r.me, 'recipe.sword_iron')).toBe(true);
     expect(learnRecipe(r.s, r.me, 'recipe.sword_iron')).toBe(false);
   });
-  it('there are 42 recipes: 16 smithing, 12 woodworking, 14 cooking', () => {
+  // M3-12 added the gear and cloth recipes nothing made before: 7 smithing, 2 woodworking.
+  it('there are 51 recipes: 23 smithing, 14 woodworking, 14 cooking', () => {
     const by = (c: string): number => Object.values(RECIPES).filter((x) => x.craft === c).length;
-    expect([by('smithing'), by('woodworking'), by('cooking')]).toEqual([16, 12, 14]);
+    expect([by('smithing'), by('woodworking'), by('cooking')]).toEqual([23, 14, 14]);
     for (const x of Object.values(RECIPES))
       expect(expand(x.ingredients).length, x.id).toBeLessThanOrEqual(C.maxIngredients);
   });
