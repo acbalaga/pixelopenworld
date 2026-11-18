@@ -324,7 +324,7 @@ describe('experimenting', () => {
   it('the start recipes are known from the first day, and the others are not', () => {
     const r = rig('anvil');
     const start = Object.values(RECIPES).filter((x) => x.learn === 'start');
-    expect(start).toHaveLength(8);
+    expect(start).toHaveLength(19);
     for (const x of start) expect(bag(r).recipes).toContain(x.id);
     expect(bag(r).recipes).not.toContain('recipe.sword_iron');
     expect(learnRecipe(r.s, r.me, 'recipe.sword_iron')).toBe(true);

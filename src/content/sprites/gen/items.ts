@@ -825,6 +825,109 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   flask('potion_ward', STONE),
   flask('potion_clarity', VIOLET),
   flask('potion_vigor', FIRE),
+  // Crafting II (M3-14).
+  bottle('potion_stamina_m', LEAF),
+  bottle('potion_focus_m', WATER),
+  flask('antidote', LEAF),
+  flask('warming_draught', ROSE),
+  flask('fire_salve', FIRE),
+  flask('oil_keenness', GOLD),
+  icon('rags', (im) => {
+    im.rect(2, 4, 9, 8, STONE[1]);
+    im.rect(1, 6, 3, 9, STONE[2]);
+    im.rect(8, 3, 10, 5, STONE[2]);
+    im.set(5, 6, STONE[3]);
+  }),
+  icon('sludge', (im) => {
+    im.rect(2, 7, 9, 9, LEAF[0]);
+    im.rect(3, 5, 8, 7, LEAF[1]);
+    im.set(4, 4, LEAF[2]);
+    im.set(7, 3, LEAF[2]);
+  }),
+  icon('rune_dust', (im) => {
+    for (const [x, y] of [
+      [3, 4],
+      [6, 3],
+      [8, 6],
+      [4, 8],
+      [7, 9],
+      [5, 6],
+    ] as const)
+      im.set(x, y, VIOLET[3]);
+    im.rect(2, 9, 9, 9, VIOLET[1]);
+  }),
+  icon('scrap', (im) => {
+    im.rect(2, 5, 6, 9, METAL[1]);
+    im.rect(5, 3, 9, 6, METAL[2]);
+    im.set(7, 8, METAL[3]);
+    im.set(3, 6, METAL[3]);
+  }),
+  icon('spark_flint', (im) => {
+    im.rect(3, 6, 8, 9, STONE[1]);
+    im.rect(3, 6, 8, 6, STONE[3]);
+    im.rect(5, 2, 6, 5, FIRE[2]);
+    im.set(5, 1, FIRE[3]);
+    im.set(7, 3, FIRE[3]);
+  }),
+  icon('water_flask', (im) => {
+    im.rect(5, 1, 6, 3, WOOD[2]);
+    im.rect(3, 4, 8, 10, WATER[2]);
+    im.rect(3, 4, 4, 10, WATER[3]);
+    im.rect(7, 5, 8, 10, WATER[1]);
+    im.set(5, 7, WATER[3]);
+  }),
+  icon('smoke_pellet', (im) => {
+    disc(im, 6, 8, 2, STONE);
+    for (const [x, y] of [
+      [5, 5],
+      [6, 3],
+      [7, 1],
+      [4, 2],
+      [8, 4],
+    ] as const)
+      im.set(x, y, STONE[3]);
+  }),
+  icon('bell_charm', (im) => {
+    im.rect(5, 1, 6, 2, METAL[2]);
+    im.rect(3, 3, 8, 8, GOLD[2]);
+    im.rect(3, 3, 4, 8, GOLD[3]);
+    im.rect(2, 8, 9, 9, GOLD[1]);
+    im.rect(5, 10, 6, 10, METAL[1]);
+  }),
+  icon('repair_kit', (im) => {
+    im.rect(1, 5, 10, 9, LEATHER[2]);
+    im.rect(1, 5, 10, 6, LEATHER[3]);
+    im.rect(4, 3, 7, 4, METAL[2]);
+    im.rect(5, 6, 6, 8, METAL[3]);
+    im.rect(1, 9, 10, 9, LEATHER[0]);
+  }),
+  icon('snare', (im) => {
+    im.rect(2, 8, 9, 9, WOOD[1]);
+    for (const [x, y] of [
+      [3, 7],
+      [4, 6],
+      [5, 5],
+      [6, 5],
+      [7, 6],
+      [8, 7],
+    ] as const)
+      im.set(x, y, CREAM[2]);
+    im.rect(5, 9, 6, 10, METAL[2]);
+  }),
+  icon('grit_pouch', (im) => {
+    im.rect(4, 1, 7, 2, LEATHER[2]);
+    disc(im, 6, 7, 3, LEATHER);
+    im.rect(4, 3, 7, 3, CREAM[3]);
+    im.set(5, 7, STONE[3]);
+    im.set(7, 6, STONE[3]);
+  }),
+  icon('lantern', (im) => {
+    im.rect(5, 0, 6, 1, METAL[2]);
+    im.rect(3, 2, 8, 2, METAL[1]);
+    im.rect(3, 3, 8, 8, GOLD[1]);
+    im.rect(4, 4, 7, 7, FIRE[3]);
+    im.rect(3, 9, 8, 10, METAL[1]);
+  }),
   icon('flute_reed', (im) => {
     line(im, 1, 9, 10, 3, LEAF[2]);
     line(im, 1, 10, 10, 4, LEAF[1]);

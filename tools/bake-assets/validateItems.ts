@@ -2,6 +2,7 @@ import { ITEM_STRINGS } from '../../src/content/strings/items';
 import { CREATURES } from '../../src/content/creatures';
 import { ITEMS } from '../../src/content/items';
 import { CRAFTING } from '../../src/content/balance/crafting';
+import { AFFIXES } from '../../src/content/items/affixes';
 import { NODES, RECIPES, expand } from '../../src/content/items/recipes';
 import { STATIONS } from '../../src/content/items/stations';
 import { SKILLS } from '../../src/content/skills';
@@ -74,9 +75,16 @@ export function validateItems(
       if (!Number.isInteger(i.qty) || i.qty < 1)
         errors.push(`${l}: ingredient quantity must be 1 or more`);
     }
-    if (!known(r.result)) errors.push(`${l}: result ${r.result} does not exist`);
-    if (!Number.isInteger(r.qty) || r.qty < 1)
-      errors.push(`${l}: result quantity must be 1 or more`);
+    if (r.enchant) {
+      // An enchant makes no item: it names the affix it puts on a chosen piece.
+      if (!AFFIXES[r.enchant]) errors.push(`${l}: unknown affix ${r.enchant}`);
+      if (r.craft !== 'enchanting') errors.push(`${l}: only Enchanting recipes enchant`);
+      if (r.result !== '' || r.qty !== 0) errors.push(`${l}: an enchant has no result`);
+    } else {
+      if (!known(r.result)) errors.push(`${l}: result ${r.result} does not exist`);
+      if (!Number.isInteger(r.qty) || r.qty < 1)
+        errors.push(`${l}: result quantity must be 1 or more`);
+    }
     const station = STATIONS[r.station];
     if (!station) errors.push(`${l}: unknown station ${r.station}`);
     else if (station.craft !== r.craft) errors.push(`${l}: ${r.craft} is not made at ${r.station}`);

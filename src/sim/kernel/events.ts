@@ -44,6 +44,8 @@ export type SimEvent =
   | { type: 'sneak'; who: number; creature: number }
   /** Health restored by a technique. `src` is who cast it. */
   | { type: 'healed'; id: number; src: number; amount: number; tag: string }
+  | { type: 'gadgetUsed'; who: number; item: string; gadget: string }
+  | { type: 'snareSprung'; id: number; foe: number }
   | { type: 'loadoutSwapped'; who: number; active: number; locked: boolean }
   | { type: 'died'; id: number; team: 0 | 1 }
   | { type: 'respawned'; id: number }

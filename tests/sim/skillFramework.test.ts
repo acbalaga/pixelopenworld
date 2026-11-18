@@ -70,8 +70,8 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 10 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(10);
+  it('list 6 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(6);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
     for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
@@ -150,6 +150,54 @@ describe('every skill that is not pending earns XP', () => {
         feed(s);
       }
     },
+    'skill.tailoring': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'tailoring',
+        recipe: 'recipe.cap_wool',
+        tier: 1,
+        item: 'item.cap_wool',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
+    'skill.alchemy': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'alchemy',
+        recipe: 'recipe.potion_health_s',
+        tier: 1,
+        item: 'item.potion_health_s',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
+    'skill.enchanting': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'enchanting',
+        recipe: 'recipe.enchant_power_1',
+        tier: 1,
+        item: 'item.sword_rusty',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
+    'skill.tinkering': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'tinkering',
+        recipe: 'recipe.spark_flint',
+        tier: 1,
+        item: 'item.spark_flint',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
     'skill.tide': (s, me) => hit(s, me, 'tide'),
     'skill.gale': (s, me) => hit(s, me, 'gale'),
     'skill.stone': (s, me) => hit(s, me, 'stone'),
@@ -189,8 +237,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 26 skills with a system after M3-13', () => {
-    expect(active).toHaveLength(26);
+  it('has 30 skills with a system after M3-14', () => {
+    expect(active).toHaveLength(30);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

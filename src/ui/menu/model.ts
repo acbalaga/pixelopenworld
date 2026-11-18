@@ -17,7 +17,7 @@ import { TECHNIQUE_STRINGS } from '../../content/strings/techniques';
 import { knows } from '../../sim/combat/techniques';
 import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
 import { NPCS } from '../../content/dialogue';
-import { AFFIXES } from '../../content/items/affixes';
+import { AFFIXES, parseAffix } from '../../content/items/affixes';
 import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
@@ -395,7 +395,7 @@ const BAG_ORDER: readonly BagFilter[] = ['gear', 'tools', 'food', 'materials', '
 /** What can be done with an item from the Bag: eat food, wear gear, and drop anything. */
 export function itemActions(def: ItemDef): ItemAction[] {
   const out: ItemAction[] = [];
-  if (def.food || def.teaches) out.push('use');
+  if (def.food || def.teaches || (def.gadget && def.gadget !== 'lantern')) out.push('use');
   if (def.equip) out.push('equip');
   out.push('drop');
   return out;
@@ -422,7 +422,9 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
   if (s.affixes && s.affixes.length > 0)
     lines.push(
       fill(UI_STRINGS.detailAffixes, {
-        list: s.affixes.map((a) => ITEM_STRINGS[AFFIXES[a]?.nameKey ?? ''] ?? a).join(', '),
+        list: s.affixes
+          .map((a) => ITEM_STRINGS[AFFIXES[parseAffix(a).id]?.nameKey ?? ''] ?? a)
+          .join(', '),
       }),
     );
   if (s.mark)

@@ -28,7 +28,13 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     setComp(state.entities, id, 'body', { w: slab, h: slab, solid: true });
     return id;
   }
-  if (def.type === 'portal' || def.type === 'arrival' || def.type === 'plate') return id;
+  if (
+    def.type === 'portal' ||
+    def.type === 'arrival' ||
+    def.type === 'plate' ||
+    def.type === 'snare'
+  )
+    return id;
   const size = px(def.size ?? TILE);
   // A hidden niche is a doorway in the wall: it does not block, and it cannot be used until revealed.
   setComp(state.entities, id, 'body', { w: size, h: size, solid: def.hidden !== true });

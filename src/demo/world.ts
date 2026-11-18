@@ -41,7 +41,7 @@ import {
 } from '../platform/clock';
 import { worldTickAt } from '../sim/time';
 import { gatherSweep } from '../sim/gathering';
-import { drawCraftStep } from '../render/craftStep';
+import { drawCraftStep, stepRect } from '../render/craftStep';
 import { STATIONS } from '../content/items/stations';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
@@ -578,6 +578,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     return h;
   };
   /** When each door, gate or chest opened this session, for its opening frames. */
+  // The trace and hold steps read the pointer directly: where it is, in the step's 1000 by 1000 space.
+  const stepPtr = { down: false, x: 0, y: 0 };
+  let stepGeom: { x: number; y: number; w: number; h: number; k: number } | null = null;
+  let holdSent = false;
+  let kbCursor = { x: 500, y: 500 };
+  const setPtr = (e: PointerEvent, down: boolean): void => {
+    const css = canvas.getBoundingClientRect();
+    stepPtr.down = down;
+    stepPtr.x = e.clientX - css.left;
+    stepPtr.y = e.clientY - css.top;
+  };
+  canvas.addEventListener('pointerdown', (e) => setPtr(e, true));
+  canvas.addEventListener('pointermove', (e) => {
+    if (stepPtr.down) setPtr(e, true);
+  });
+  canvas.addEventListener('pointerup', (e) => setPtr(e, false));
+  canvas.addEventListener('pointercancel', (e) => setPtr(e, false));
   const openedAt = new Map<number, number>();
   const OPENING_STEP_MS = 90;
   const OPENING_FRAMES = { door: 4, gate: 3, chest: 1 } as const;
@@ -1016,6 +1033,42 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (rec.targetTap.y > h * 0.5) pendingCommands.push({ type: 'craftStep' });
           rec.targetTap = null;
         }
+        // The trace and hold steps own the pointer: no walking, no dodge flick, and the sim is
+        // told where the pointer is, or whether it is down.
+        const cs0 = state.entities.comps.craft[who];
+        const st0 = cs0 ? STATIONS[cs0.station] : undefined;
+        if (cs0 && st0 && (st0.step === 'trace' || st0.step === 'hold')) {
+          const kb = input.sampler.keyboard.move();
+          rec.move = { x: 0, y: 0 };
+          rec.moveDir = null;
+          rec.full = false;
+          rec.dodge = null;
+          rec.targetTap = null;
+          if (st0.step === 'trace' && stepGeom) {
+            kbCursor = {
+              x: Math.min(1000, Math.max(0, kbCursor.x + kb.x * 18)),
+              y: Math.min(1000, Math.max(0, kbCursor.y + kb.y * 18)),
+            };
+            const g = stepGeom;
+            if (stepPtr.down)
+              pendingCommands.push({
+                type: 'craftPoint',
+                x: ((stepPtr.x * g.k - g.x) / g.w) * 1000,
+                y: ((stepPtr.y * g.k - g.y) / g.h) * 1000,
+              });
+            else if (kb.x !== 0 || kb.y !== 0)
+              pendingCommands.push({ type: 'craftPoint', x: kbCursor.x, y: kbCursor.y });
+          } else if (st0.step === 'hold') {
+            const want = stepPtr.down || input.sampler.keyboard.held().includes('context');
+            if (want !== holdSent) {
+              holdSent = want;
+              pendingCommands.push({ type: 'craftHold', on: want });
+            }
+          }
+        } else {
+          holdSent = false;
+          kbCursor = { x: 500, y: 500 };
+        }
         mapper.syncGuard(state.entities.comps.fighter[who]?.guard === true);
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
@@ -1277,11 +1330,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const cs = state.entities.comps.craft[who];
       if (cs) {
         const st = STATIONS[cs.station];
+        if (st) {
+          const r = stepRect(v);
+          stepGeom = { ...r, k: v.dpr / v.scale };
+        }
         if (st)
           drawCraftStep(
             renderer,
             v,
-            { step: st.step, t: state.tick - cs.start, taps: cs.taps },
+            {
+              step: st.step,
+              t: state.tick - cs.start,
+              taps: cs.taps,
+              craft: st.craft,
+              samples: cs.samples ?? [],
+              held:
+                cs.holdFrom === undefined
+                  ? null
+                  : (cs.holdTo ?? state.tick - cs.start) - cs.holdFrom,
+            },
             { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46', good: '#8a7a3a' },
           );
       }

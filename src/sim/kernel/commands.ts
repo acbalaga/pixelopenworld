@@ -45,6 +45,10 @@ export type Command =
   | { type: 'cook'; items: string[] }
   /** A tap of the manual step. The sim records the tick itself. */
   | { type: 'craftStep' }
+  /** A trace step's pointer, in a 1000 by 1000 space. */
+  | { type: 'craftPoint'; x: number; y: number }
+  /** A hold step's pointer goes down or up. */
+  | { type: 'craftHold'; on: boolean }
   /** Repair the gear in bag slot `slot` at the anvil in front. */
   | { type: 'repair'; slot: number }
   /**
@@ -157,6 +161,20 @@ export function validateCommand(raw: unknown): Validated {
       return { ok: true, command: { type: r.type, items: [...(r.items as string[])] } };
     case 'craftStep':
       return { ok: true, command: { type: 'craftStep' } };
+    case 'craftPoint':
+      if (
+        !Number.isFinite(r.x) ||
+        !Number.isFinite(r.y) ||
+        (r.x as number) < -1000 ||
+        (r.x as number) > 2000 ||
+        (r.y as number) < -1000 ||
+        (r.y as number) > 2000
+      )
+        return { ok: false, reason: 'bad point' };
+      return { ok: true, command: { type: 'craftPoint', x: r.x as number, y: r.y as number } };
+    case 'craftHold':
+      if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad hold' };
+      return { ok: true, command: { type: 'craftHold', on: r.on } };
     case 'repair':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };

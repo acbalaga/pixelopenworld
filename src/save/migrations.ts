@@ -371,6 +371,21 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       ...(old.summary ? { summary: { ...old.summary, flags } } : {}),
     };
   },
+  /**
+   * 14 to 15 (M3-14): Crafting II adds start recipes (the first of Tailoring, Alchemy, Enchanting
+   * and Tinkering). An avatar keeps every recipe it knew and gains them too.
+   */
+  14: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { inventory: ({ recipes: string[] } | null)[] } };
+    };
+    const start = Object.values(RECIPES)
+      .filter((r) => r.learn === 'start')
+      .map((r) => r.id);
+    for (const inv of raw.entities.comps.inventory)
+      if (inv) for (const id of start) if (!inv.recipes.includes(id)) inv.recipes.push(id);
+    return { ...old, schema: 15, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

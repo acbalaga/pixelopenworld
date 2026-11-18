@@ -133,16 +133,36 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         family: 'crafting',
         sources: [{ on: 'craft', tag: 'woodworking', base: 25, firstTime: 100 }],
       },
-      { id: 'skill.tailoring', name: 'Tailoring', family: 'crafting', sources: [] },
+      {
+        id: 'skill.tailoring',
+        name: 'Tailoring',
+        family: 'crafting',
+        sources: [{ on: 'craft', tag: 'tailoring', base: 25, firstTime: 100 }],
+      },
       {
         id: 'skill.cooking',
         name: 'Cooking',
         family: 'crafting',
         sources: [{ on: 'craft', tag: 'cooking', base: 25, firstTime: 100 }],
       },
-      { id: 'skill.alchemy', name: 'Alchemy', family: 'crafting', sources: [] },
-      { id: 'skill.enchanting', name: 'Enchanting', family: 'crafting', sources: [] },
-      { id: 'skill.tinkering', name: 'Tinkering', family: 'crafting', sources: [] },
+      {
+        id: 'skill.alchemy',
+        name: 'Alchemy',
+        family: 'crafting',
+        sources: [{ on: 'craft', tag: 'alchemy', base: 25, firstTime: 100 }],
+      },
+      {
+        id: 'skill.enchanting',
+        name: 'Enchanting',
+        family: 'crafting',
+        sources: [{ on: 'craft', tag: 'enchanting', base: 25, firstTime: 100 }],
+      },
+      {
+        id: 'skill.tinkering',
+        name: 'Tinkering',
+        family: 'crafting',
+        sources: [{ on: 'craft', tag: 'tinkering', base: 25, firstTime: 100 }],
+      },
       // Social.
       {
         id: 'skill.bartering',
@@ -205,10 +225,6 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
  * XP to a skill listed here. A test checks that every skill not listed earns XP.
  */
 export const PENDING_SKILLS: string[] = [
-  'skill.tailoring',
-  'skill.alchemy',
-  'skill.enchanting',
-  'skill.tinkering',
   // Late skills, M4 to M6.
   'skill.farming',
   'skill.husbandry',

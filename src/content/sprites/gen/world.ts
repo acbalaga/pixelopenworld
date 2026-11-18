@@ -521,6 +521,77 @@ function earthWall(): SpriteDef {
   return toSprite('prop.earth_wall', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/** A loom: a frame with warp threads and a cloth bar. */
+function loom(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 2, 2, 14, WOOD[1]);
+  im.rect(13, 2, 14, 14, WOOD[1]);
+  im.rect(1, 2, 14, 3, WOOD[2]);
+  for (let x = 4; x < 13; x += 2) im.rect(x, 4, x, 11, STONE[3]);
+  im.rect(3, 8, 12, 9, FIRE[2]);
+  im.rect(3, 12, 12, 13, WOOD[2]);
+  return toSprite('prop.loom', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** An alchemy table with a bubbling flask over a small flame. */
+function alchemyTable(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 8, 14, 9, WOOD[3]);
+  im.rect(2, 10, 3, 14, WOOD[1]);
+  im.rect(12, 10, 13, 14, WOOD[1]);
+  im.rect(6, 7, 9, 7, FIRE[2]);
+  im.rect(5, 3, 10, 6, WATER[2]);
+  im.rect(6, 1, 9, 2, STONE[3]);
+  im.rect(6, 4, 7, 5, WATER[3]);
+  im.rect(4, 8, 5, 8, GOLD[2]);
+  return toSprite('prop.alchemy_table', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** A rune stone: a slab with a glowing glyph. */
+function runeStone(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(4, 2, 11, 14, STONE[2]);
+  im.rect(3, 4, 12, 13, STONE[2]);
+  im.rect(4, 2, 11, 3, STONE[3]);
+  im.rect(7, 5, 8, 11, VIOLET[3]);
+  im.rect(5, 7, 10, 7, VIOLET[3]);
+  im.rect(5, 11, 6, 11, VIOLET[2]);
+  im.rect(9, 11, 10, 11, VIOLET[2]);
+  return toSprite('prop.rune_stone', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** A tinker bench: a bench with a vice, gears and a spring. */
+function tinkerBench(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 8, 14, 10, WOOD[3]);
+  im.rect(1, 8, 14, 8, WOOD[2]);
+  im.rect(2, 11, 3, 14, WOOD[1]);
+  im.rect(12, 11, 13, 14, WOOD[1]);
+  im.rect(2, 4, 5, 7, METAL[2]);
+  im.rect(3, 3, 4, 3, METAL[3]);
+  im.rect(8, 5, 11, 7, METAL[1]);
+  im.rect(9, 4, 10, 4, METAL[3]);
+  im.rect(7, 7, 7, 7, GOLD[2]);
+  return toSprite('prop.tinker_bench', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** A snare: a loop of cord and a peg. */
+function snareProp(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 10, 13, 12, WOOD[1]);
+  for (const [x, y] of [
+    [4, 8],
+    [5, 7],
+    [6, 7],
+    [9, 7],
+    [10, 7],
+    [11, 8],
+  ] as const)
+    im.set(x, y, GOLD[2]);
+  im.rect(7, 6, 8, 9, METAL[2]);
+  return toSprite('prop.snare', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** A bedroll with a pillow. */
 function bedroll(): SpriteDef {
   const im = new Img(16, 16);
@@ -692,5 +763,10 @@ export function worldSprites(): SpriteDef[] {
     hiddenNiche(),
     bedroll(),
     earthWall(),
+    loom(),
+    alchemyTable(),
+    runeStone(),
+    tinkerBench(),
+    snareProp(),
   ];
 }

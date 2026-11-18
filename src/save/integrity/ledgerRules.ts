@@ -52,6 +52,14 @@ export function ledgerRules(v: View): Reason[] {
     if (n > (made[item] ?? 0))
       fail('ITEMS_EXCEED_MADE', `${item} held ${n}, made ${made[item] ?? 0}`);
 
+  // Every affix on a held piece came from an enchant: no more of them than Enchanting crafts made.
+  let affixes = 0;
+  for (const s of [...inv.slots, ...storage.slots, ...Object.values(inv.equipment)])
+    affixes += s?.affixes?.length ?? 0;
+  let enchants = 0;
+  for (const [rid, n] of Object.entries(ledger.crafts)) if (RECIPES[rid]?.enchant) enchants += n;
+  if (affixes > enchants) fail('AFFIX_WITHOUT_ENCHANT', `${affixes} affixes, ${enchants} enchants`);
+
   // The starter kit is exactly the starter kit.
   const kit: Record<string, number> = {};
   for (const s of ITEMS_BALANCE.starter.bag) kit[s.item] = (kit[s.item] ?? 0) + s.qty;
@@ -101,7 +109,7 @@ export function ledgerRules(v: View): Reason[] {
   const results: Record<string, number> = {};
   for (const [rid, n] of Object.entries(ledger.crafts)) {
     const r = RECIPES[rid];
-    if (r) results[r.result] = (results[r.result] ?? 0) + n * r.qty;
+    if (r?.result) results[r.result] = (results[r.result] ?? 0) + n * r.qty;
   }
   const fails = new Set<string>(Object.values(CRAFTING.failItem));
   for (const item of new Set([...Object.keys(results), ...Object.keys(crafted)])) {
