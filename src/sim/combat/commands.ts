@@ -7,6 +7,7 @@ import { dirStep, SUBPX, type Direction } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { centerPx, foes, nearestInArc, spend, startAttack } from './fighter';
 import { len } from './geometry';
+import { setGuard } from './guard';
 
 /** True when the fighter can begin something new. */
 function free(state: SimState, who: EntityId): boolean {
@@ -42,8 +43,12 @@ export function applyFighterCommand(state: SimState, who: EntityId, c: Command):
       f.queued = false;
       return;
 
+    case 'guard':
+      setGuard(state, who, c.on);
+      return;
+
     case 'attack': {
-      if (f.scheme !== 'classic') return;
+      if (f.scheme !== 'classic' || f.guard) return;
       const w = WEAPONS[cb.weapon];
       if (!w) return;
       if (f.state === 'attack') {

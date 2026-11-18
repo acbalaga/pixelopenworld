@@ -37,6 +37,9 @@ export function combatSystem(state: SimState): void {
     }
     if (f.invuln > 0) f.invuln--;
     f.t++;
+    if (f.guardT < 1000) f.guardT++;
+    const vel = getComp(state.entities, id, 'vel');
+    f.still = vel && (vel.x !== 0 || vel.y !== 0) ? 0 : Math.min(f.still + 1, 1000);
     tickLock(state, id);
 
     switch (f.state) {
@@ -96,7 +99,17 @@ function autoAttack(state: SimState, id: EntityId): void {
   const cb = getComp(state.entities, id, 'combatant');
   const a = getComp(state.entities, id, 'avatar');
   const w = cb ? WEAPONS[cb.weapon] : undefined;
-  if (!f || !w || !a || f.team !== 0 || f.scheme !== 'flow' || f.gap > 0 || f.aiming >= 0) return;
+  if (
+    !f ||
+    !w ||
+    !a ||
+    f.team !== 0 ||
+    f.scheme !== 'flow' ||
+    f.gap > 0 ||
+    f.aiming >= 0 ||
+    f.guard
+  )
+    return;
   const locked = f.lock !== null ? centerPx(state, f.lock) : null;
   const me = centerPx(state, id);
   let point = null as { x: number; y: number } | null;

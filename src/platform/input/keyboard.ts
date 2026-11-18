@@ -36,6 +36,11 @@ export class KeyboardState {
     return out;
   }
 
+  /** The guard key is down. */
+  guardHeld(): boolean {
+    return this.down.has('KeyK');
+  }
+
   /** Technique slots currently held. */
   held(): ButtonId[] {
     return (['Digit1', 'Digit2', 'Digit3', 'Digit4'] as const)
@@ -55,6 +60,7 @@ const KEY_BUTTONS: Record<string, ButtonId> = {
   Digit4: 'tech4',
   Space: 'dodge',
   KeyJ: 'attack',
+  KeyK: 'guard',
   KeyE: 'context',
   Escape: 'menu',
   KeyB: 'bag',

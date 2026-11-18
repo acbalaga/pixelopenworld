@@ -23,6 +23,8 @@ export interface Settings {
   haptics: boolean;
   /** Silences all audio (master bus). The volumes themselves are kept. */
   muted: boolean;
+  /** Touch guard: a tap raises it and the next tap lowers it. Off holds it while the finger is down. */
+  guardToggle: boolean;
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -54,6 +56,7 @@ export class SettingsStore {
       controlScheme: 'flow',
       haptics: true,
       muted: false,
+      guardToggle: true,
     };
   }
 
@@ -77,7 +80,8 @@ export class SettingsStore {
       next.reducedMotion === this.value.reducedMotion &&
       next.controlScheme === this.value.controlScheme &&
       next.haptics === this.value.haptics &&
-      next.muted === this.value.muted
+      next.muted === this.value.muted &&
+      next.guardToggle === this.value.guardToggle
     )
       return;
     this.value = next;

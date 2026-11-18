@@ -21,6 +21,12 @@ export type SimEvent =
   | { type: 'dodged'; src: number; dst: number }
   | { type: 'perfectDodge'; id: number; src: number }
   | { type: 'staggerBreak'; id: number }
+  /** A hit landed on a raised guard from the front. `who` blocked it, `src` swung. `amount` is what got through. */
+  | { type: 'blocked'; who: number; src: number; amount: number }
+  /** A guard raised just before the impact turned the hit aside. `who` parried `src`. */
+  | { type: 'parried'; who: number; src: number }
+  /** The guard dropped: out of Stamina, or the hit was a guard break. */
+  | { type: 'guardBroken'; who: number }
   | { type: 'denied'; id: number; reason: 'stamina' | 'focus' | 'cooldown' }
   | { type: 'died'; id: number; team: 0 | 1 }
   | { type: 'respawned'; id: number }

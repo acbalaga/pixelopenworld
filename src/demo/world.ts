@@ -120,6 +120,7 @@ import { madeItems } from '../sim/ledger';
 import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
+import { hasShield } from '../sim/combat/guard';
 import { px } from '../sim/kernel/fixed';
 import { createDemoState, deserializeState, hashState, type SimState } from '../sim/state';
 import { stepWorld } from '../sim/step';
@@ -158,6 +159,7 @@ const LABELS: Record<string, string> = {
   tech3: '3',
   tech4: '4',
   dodge: 'D',
+  guard: 'G',
   context: 'E',
   menu: 'M',
   bag: 'B',
@@ -408,9 +410,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   };
   const vp = watchViewport(probe, fit);
   fit(vp.current);
+  // Whether a shield is worn, so the Guard button exists. Kept current by the tick.
+  let shieldWorn = false;
   const input = attachInput(canvas, {
     leftHanded: () => settings.get().handedness === 'left',
     scheme: () => settings.get().controlScheme,
+    guard: () => shieldWorn,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
     keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen,
@@ -899,7 +904,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   let meter: DevOverlay | null = null;
   if (import.meta.env.DEV && !fly) {
-    void import('../dev/slice').then((mod) => mod.installSliceHooks({ state, who, settings }));
+    void import('../dev/slice').then((mod) =>
+      mod.installSliceHooks({ state, who, settings, command: (c) => pendingCommands.push(c) }),
+    );
   }
   if (import.meta.env.DEV) {
     void import('../dev/overlay').then((mod) => {
@@ -978,6 +985,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           avatar.facing = Math.abs(mx) > Math.abs(my) ? (mx > 0 ? 2 : 6) : my > 0 ? 4 : 0;
       } else {
         const rec = input.sampler.sample(performance.now());
+        shieldWorn = hasShield(state, who);
+        mapper.guardToggle = settings.get().guardToggle;
+        mapper.syncGuard(state.entities.comps.fighter[who]?.guard === true);
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
         stepWorld(state, who, {
@@ -1234,6 +1244,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const css = canvas.getBoundingClientRect();
         const layout = computeLayout(css.width, css.height, settings.get().handedness === 'left', {
           scheme: settings.get().controlScheme,
+          guard: shieldWorn,
           hudScale: settings.get().hudScale,
           buttonScale: settings.get().buttonScale,
           insets: readSafeInsets(probe),
@@ -1249,6 +1260,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const held = new Set<string>(input.sampler.keyboard.held());
         const slotOf: Record<string, number> = { tech1: 0, tech2: 1, tech3: 2, tech4: 3 };
         const hasTarget = contextTarget(state, who) !== null;
+        const guardUp = state.entities.comps.fighter[who]?.guard === true;
         for (const [id, r] of Object.entries(layout.buttons)) {
           // Slots with no technique and a context button with nothing to use are not shown.
           const slot = slotOf[id];
@@ -1271,7 +1283,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             kit,
             rect,
             LABELS[id] ?? '?',
-            held.has(id) || cooling,
+            held.has(id) || cooling || (id === 'guard' && guardUp),
             'small',
             icon,
           );

@@ -88,6 +88,12 @@ export interface Fighter {
   casting: string | null;
   /** Ticks since death. */
   deadT: number;
+  /** Guard raised. It blocks only while the fighter is otherwise idle. */
+  guard: boolean;
+  /** Ticks since the guard was raised, for the parry window. */
+  guardT: number;
+  /** Ticks since the fighter last moved. Archery charges on it. */
+  still: number;
 }
 
 /** What a fighter hits with and how hard it is to hurt. */

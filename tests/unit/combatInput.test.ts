@@ -110,3 +110,94 @@ describe('command validation for combat', () => {
     expect(validateCommand({ type: 'scheme', scheme: 'auto' }).ok).toBe(false);
   });
 });
+
+describe('Guard button', () => {
+  it('exists only with a shield, beside dodge, and overlaps no other button in Classic', () => {
+    for (const [w, h] of [
+      [360, 800],
+      [915, 412],
+    ] as const) {
+      expect(computeLayout(w, h, false, { scheme: 'flow' }).buttons.guard).toBeUndefined();
+      for (const scheme of ['flow', 'classic'] as const) {
+        const l = computeLayout(w, h, false, { scheme, guard: true });
+        const g = l.buttons.guard!;
+        expect(g.w).toBeGreaterThanOrEqual(44);
+        for (const [id, r] of Object.entries(l.buttons)) {
+          if (id === 'guard' || id === 'menu' || id === 'bag') continue;
+          const ox = Math.max(0, Math.min(g.x + g.w, r.x + r.w) - Math.max(g.x, r.x));
+          const oy = Math.max(0, Math.min(g.y + g.h, r.y + r.h) - Math.max(g.y, r.y));
+          // Flow's one neighbour, technique 3, is clipped by a few percent. Classic has none.
+          const share = (ox * oy) / (g.w * g.h);
+          expect(share, `${scheme} ${w}x${h} ${id}`).toBeLessThan(
+            scheme === 'classic' ? 0.001 : 0.1,
+          );
+        }
+        // Mirrored for the left hand.
+        const m = computeLayout(w, h, true, { scheme, guard: true }).buttons.guard!;
+        expect(m.x).toBeCloseTo(w - g.x - g.w);
+        expect(m.y).toBe(g.y);
+        expect(buttonAt(l, { x: g.x + 3, y: g.y + 3 })).toBe('guard');
+      }
+    }
+  });
+
+  it('touch reports a finger on Guard at once, with no hold delay', () => {
+    const l = computeLayout(360, 800, false, { guard: true });
+    const g = l.buttons.guard!;
+    const t = new TouchController(l);
+    t.down(1, g.x + 5, g.y + 5, 0);
+    expect(t.sample(1).buttonsDown.has('guard')).toBe(true);
+    t.up(1, g.x + 5, g.y + 5, 50);
+    expect(t.sample(60).buttonsDown.has('guard')).toBe(false);
+  });
+
+  it('hold mode keeps the guard up while the finger is down, and lowers it on release', () => {
+    const m = new CommandMapper();
+    m.guardToggle = false;
+    expect(m.map(rec({ guardTouch: true }))).toEqual([{ type: 'guard', on: true }]);
+    expect(m.map(rec({ guardTouch: true }))).toEqual([]);
+    expect(m.map(rec({ guardTouch: false }))).toEqual([{ type: 'guard', on: false }]);
+  });
+
+  it('toggle mode raises on one tap and lowers on the next, so a thumb is free to move', () => {
+    const m = new CommandMapper();
+    m.guardToggle = true;
+    expect(m.map(rec({ guardTouch: true }))).toEqual([{ type: 'guard', on: true }]);
+    // The finger lifts: the guard stays up, and the stick can be used.
+    expect(m.map(rec({ guardTouch: false, move: { x: 1, y: 0 }, moveDir: 2 }))).toEqual([
+      { type: 'move', dir: 2 },
+    ]);
+    expect(m.map(rec({ guardTouch: true, moveDir: 2 }))).toEqual([{ type: 'guard', on: false }]);
+  });
+
+  it('a toggled guard the sim dropped is down in the mapper too', () => {
+    const m = new CommandMapper();
+    m.guardToggle = true;
+    m.map(rec({ guardTouch: true }));
+    m.map(rec({}));
+    m.syncGuard(false);
+    // The next tap raises it again instead of lowering what is already down.
+    expect(m.map(rec({ guardTouch: true }))).toEqual([{ type: 'guard', on: true }]);
+  });
+
+  it('the guard key and the pad always hold, whatever the touch setting', () => {
+    const m = new CommandMapper();
+    m.guardToggle = true;
+    expect(m.map(rec({ guardHeld: true }))).toEqual([{ type: 'guard', on: true }]);
+    expect(m.map(rec({ guardHeld: false }))).toEqual([{ type: 'guard', on: false }]);
+  });
+
+  it('the sampler reads the guard key', () => {
+    const s = new InputSampler(new TouchController(computeLayout(360, 800, false)));
+    s.keyboard.keyDown('KeyK');
+    expect(s.sample(0).guardHeld).toBe(true);
+    s.keyboard.keyUp('KeyK');
+    expect(s.sample(1).guardHeld).toBe(false);
+  });
+
+  it('validates the guard command', () => {
+    expect(validateCommand({ type: 'guard', on: true }).ok).toBe(true);
+    expect(validateCommand({ type: 'guard', on: 1 }).ok).toBe(false);
+    expect(validateCommand({ type: 'guard' }).ok).toBe(false);
+  });
+});

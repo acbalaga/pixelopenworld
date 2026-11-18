@@ -56,6 +56,16 @@ export const DAMAGE_EVENTS_PER_SECOND = (TPS / SWING_TICKS_MIN) * MAX_TARGETS_PE
 /** Dodges per second: one dodge takes `dodge.ticks`, and Stamina would run out first. */
 export const DODGE_EVENTS_PER_SECOND = TPS / COMBAT.dodge.ticks;
 
+/** The fastest creature attack cycle, in ticks. Blocks and parries are paid by creature attacks. */
+export const CREATURE_SWING_TICKS_MIN = Math.min(
+  ...Object.values(ATTACKS)
+    .filter((a) => a.family === 'creature')
+    .map((a) => a.windup + a.active + a.recover),
+);
+
+/** Blocked or parried hits per second: six attackers (the engagement cap, design/04) at the fastest creature cycle. */
+export const BLOCK_EVENTS_PER_SECOND = (TPS / CREATURE_SWING_TICKS_MIN) * 6;
+
 /** Gathers per second: one sweep takes `sweepTicks`. */
 export const GATHER_EVENTS_PER_SECOND = TPS / ITEMS_BALANCE.gather.sweepTicks;
 
@@ -81,7 +91,7 @@ export const NIGHT_HOURS_PER_SECOND = TPS / TIME.hourTicks;
 
 /**
  * The fastest each XP event can fire, per second. Events whose system does not exist yet
- * (block, parry, heal, statusApplied, repair, haggle, sale, perform, sneak) get a judgement of
+ * (heal, statusApplied, repair, haggle, sale, perform, sneak) get a judgement of
  * two a second until their ticket measures it. Each such ticket replaces its entry.
  */
 const RATES: Record<XpSource['on'], number> = {
@@ -95,8 +105,8 @@ const RATES: Record<XpSource['on'], number> = {
   eatRaw: COOK_EVENTS_PER_SECOND,
   /** A tablet pays only the first-time lump, which is counted below. */
   tabletRead: 0,
-  block: 2,
-  parry: 2,
+  block: BLOCK_EVENTS_PER_SECOND,
+  parry: BLOCK_EVENTS_PER_SECOND,
   heal: 2,
   statusApplied: 2,
   repair: 2,

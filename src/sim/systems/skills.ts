@@ -127,6 +127,14 @@ export function skillsSystem(state: SimState): void {
           tier: attacker?.tier ?? 0,
           subject: null,
         });
+      } else if ((e.type === 'blocked' || e.type === 'parried') && e.who === who) {
+        const attacker = getComp(state.entities, e.src, 'combatant');
+        practice(state, who, {
+          on: e.type === 'blocked' ? 'block' : 'parry',
+          tag: undefined,
+          tier: attacker?.tier ?? 0,
+          subject: null,
+        });
       } else if (e.type === 'gathered' && e.id === who) {
         practice(state, who, { on: 'gather', tag: e.tag, tier: e.tier, subject: e.item });
       } else if (e.type === 'cooked' && e.id === who) {

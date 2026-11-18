@@ -37,6 +37,8 @@ export function computeLayout(
   opts: {
     /** Classic adds an attack button. Flow attacks on its own. */
     scheme?: 'flow' | 'classic';
+    /** A shield is worn, so there is a Guard button. */
+    guard?: boolean;
     hudScale?: number;
     /** Button size on its own, on top of `hudScale`. */
     buttonScale?: number;
@@ -77,6 +79,20 @@ export function computeLayout(
       ? { x: baseX - (size + gap), y: baseY, w: size, h: size }
       : { x: baseX, y: baseY, w: size, h: size },
   );
+  // Guard goes where it overlaps nothing. In Flow that is left of the context button. Classic has
+  // attack, context, dodge and the technique arc around the thumb, and the one free spot is on the
+  // rim of the arc between technique 2 and 3.
+  if (opts.guard)
+    buttons.guard = mirror(
+      classic
+        ? {
+            x: baseX - (size + gap) * 1.6,
+            y: baseY - (size + gap) * 1.6,
+            w: size,
+            h: size,
+          }
+        : { x: baseX - (size + gap), y: baseY, w: size, h: size },
+    );
   buttons.menu = mirror({
     x: width - margin - ins.right - min,
     y: margin + ins.top,

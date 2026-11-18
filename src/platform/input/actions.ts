@@ -8,7 +8,7 @@ export interface ScreenPoint {
 
 /** Buttons that live on screen. */
 export type ButtonId =
-  'tech1' | 'tech2' | 'tech3' | 'tech4' | 'context' | 'menu' | 'bag' | 'dodge' | 'attack';
+  'tech1' | 'tech2' | 'tech3' | 'tech4' | 'context' | 'menu' | 'bag' | 'dodge' | 'attack' | 'guard';
 
 /**
  * One tick of abstract input. Every source (touch, keyboard, gamepad) fills this same record.
@@ -32,6 +32,10 @@ export interface InputRecord {
   dodge: { dir: Direction | null } | null;
   /** Attack pressed this sample (Classic). */
   attack: boolean;
+  /** A finger is on the Guard button right now. Taps and holds both count, with no delay. */
+  guardTouch: boolean;
+  /** The guard key or pad button is down right now. */
+  guardHeld: boolean;
   context: boolean;
   menu: boolean;
   bag: boolean;
@@ -51,6 +55,8 @@ export function emptyRecord(): InputRecord {
     techniqueHeld: [false, false, false, false],
     dodge: null,
     attack: false,
+    guardTouch: false,
+    guardHeld: false,
     context: false,
     menu: false,
     bag: false,

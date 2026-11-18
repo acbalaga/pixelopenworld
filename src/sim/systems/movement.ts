@@ -4,6 +4,7 @@ import { Dir, dirStep, type Direction } from '../kernel/fixed';
 import { getComp, query } from '../kernel/entities';
 import type { SimState } from '../state';
 import { moveBoxSolid, type Box } from './collision';
+import { guardWalkPct } from '../combat/guard';
 
 /** Target velocity for a direction at a cardinal speed. Diagonals use 1/sqrt(2), so they are not faster. */
 export function targetVelocity(dir: Direction | null, speed: number): { x: number; y: number } {
@@ -103,7 +104,7 @@ export function movementSystem(state: SimState): void {
       v.y = f.dv.y;
     } else {
       const frozen = state_ === 'hurt' || state_ === 'stagger' || state_ === 'dead';
-      const swing = state_ === 'attack' ? COMBAT.attackMoveFactor : 100;
+      const swing = state_ === 'attack' ? COMBAT.attackMoveFactor : guardWalkPct(state, id);
       const base = a.sprinting ? Math.round((M.walkSpeed * M.sprintFactor256) / 256) : M.walkSpeed;
       const speed = Math.round((base * swing) / 100);
       const t = frozen ? { x: 0, y: 0 } : targetVelocity(a.intent, speed);

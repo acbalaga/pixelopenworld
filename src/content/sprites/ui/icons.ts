@@ -80,6 +80,19 @@ const dodge = icon('ui.icon_dodge', (im) => {
   }
 });
 
+/** Guard: a heater shield with a boss, the thing the button raises. */
+const guard = icon('ui.icon_guard', (im) => {
+  im.rect(2, 1, 9, 6, W);
+  im.rect(3, 7, 8, 8, W);
+  im.rect(4, 9, 7, 9, W);
+  im.rect(5, 10, 6, 10, W);
+  im.rect(3, 2, 8, 6, METAL);
+  im.rect(4, 7, 7, 8, METAL);
+  im.rect(5, 9, 6, 9, METAL_DARK);
+  im.rect(5, 3, 6, 5, FIRE);
+  im.rect(5, 3, 5, 4, FIRE_LIGHT);
+});
+
 /** Context: an exclamation mark, something here can be used. */
 const context = icon('ui.icon_context', (im) => {
   im.rect(5, 1, 6, 7, FIRE_LIGHT);
@@ -122,6 +135,7 @@ export const UI_ICONS: readonly SpriteDef[] = [
   lunge,
   ember,
   dodge,
+  guard,
   context,
   menu,
   bag,
@@ -132,6 +146,7 @@ export const UI_ICONS: readonly SpriteDef[] = [
 export const BUTTON_ICONS: Readonly<Record<string, string>> = {
   attack: 'ui.icon_attack',
   dodge: 'ui.icon_dodge',
+  guard: 'ui.icon_guard',
   context: 'ui.icon_context',
   menu: 'ui.icon_menu',
   bag: 'ui.icon_bag',

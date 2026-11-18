@@ -84,4 +84,49 @@ export const COMBAT = {
     /** Base crit chance, percent. */
     chancePct: 5,
   },
+  /** The built-in property of each weapon family (design/04, POW-M3-04). */
+  weapons: {
+    blades: {
+      /** Damage from behind, percent. Behind means the attacker is more than 120 degrees from where the target faces. */
+      behindPct: 130,
+      /** Cosine of 120 degrees times 256, the cut-off for "behind". */
+      behindCos256: -128,
+      /** Damage on a staggered target, percent, on top of the general stagger bonus. */
+      staggeredPct: 120,
+    },
+    heavy: {
+      /** Stagger points added by a heavy hit are multiplied by this, percent. */
+      staggerPct: 200,
+    },
+    polearms: {
+      /** A polearm hit leaves the target at least this far from the wielder, px. Outreaches a common melee swipe. */
+      keepOutPx: 30,
+    },
+    archery: {
+      /** Ticks of standing still before a shot reaches full charge. */
+      chargeTicks: 45,
+      /** Damage at no charge, and at full charge, percent. */
+      minPct: 70,
+      maxPct: 170,
+    },
+    unarmed: {
+      /** Stamina refunded by every hit that lands, in tenths. */
+      refund: 20,
+    },
+  },
+  /** Shieldcraft (design/04). */
+  guard: {
+    /** Walk speed while guarding, percent. */
+    walkPct: 50,
+    /** Cosine times 256 of the frontal arc's half angle: 60 degrees each side is 120 degrees. */
+    frontCos256: 128,
+    /** Damage taken through a block, percent. */
+    takenPct: 25,
+    /** Stamina per blocked hit, in tenths. A hit that finds less than this breaks the guard. */
+    cost: 80,
+    /** A block begun this many ticks or fewer before an impact is a parry. */
+    parryWindow: 6,
+    /** Stagger bar points a parry adds to the attacker. */
+    parryStagger: 40,
+  },
 } as const;

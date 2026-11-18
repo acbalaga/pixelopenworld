@@ -456,6 +456,114 @@ function spearLayer(b: BodyType, p: Pose): Img {
   return im;
 }
 
+/**
+ * A maul: a stout haft with a square iron head. Carried head-up over the shoulder, hauled back on
+ * the windup, brought down on the strike (toward the viewer going down, along the ground in profile).
+ */
+function maulLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const side = p.dir === 'right';
+  const cx = side ? hx + 1 : hx + 2;
+  const haft = (x0: number, y0: number, x1: number, y1: number): void => {
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) {
+      const x = Math.round(x0 + ((x1 - x0) * i) / Math.max(1, n));
+      const y = Math.round(y0 + ((y1 - y0) * i) / Math.max(1, n));
+      im.set(x, y, i % 3 === 1 ? WOOD.lit : WOOD.main);
+    }
+  };
+  /** The head: a 4 by 3 block of iron with a lit top edge. */
+  const head = (x: number, y: number): void => {
+    im.rect(x - 2, y - 1, x + 1, y + 1, METAL.blade);
+    im.rect(x - 2, y - 1, x + 1, y - 1, METAL.tip);
+    im.rect(x - 2, y + 1, x + 1, y + 1, METAL.edge);
+  };
+  if (side) {
+    if (p.stance === 'windup') {
+      haft(cx, hy, cx - 4, hy - 8);
+      head(cx - 4, hy - 10);
+    } else if (p.stance === 'strike') {
+      haft(cx - 2, hy, cx + 5, hy);
+      head(cx + 7, hy);
+    } else if (p.stance === 'recover') {
+      haft(cx, hy, cx + 3, hy + 4);
+      head(cx + 4, hy + 6);
+    } else {
+      haft(cx, hy + 3, cx + 1, hy - 7);
+      head(cx + 1, hy - 9);
+    }
+    return im;
+  }
+  if (p.stance === 'strike') {
+    haft(cx, hy - 6, cx, hy + 2);
+    head(cx, hy + 4);
+  } else if (p.stance === 'windup') {
+    haft(cx, hy + 2, cx, hy - 8);
+    head(cx, hy - 10);
+  } else {
+    haft(cx, hy + 3, cx, hy - 7);
+    head(cx, hy - 9);
+  }
+  return im;
+}
+
+/**
+ * A short bow: a wooden arc with a pale string. At rest it hangs at the side. On the windup the
+ * archer draws (string pulled to the cheek), on the strike it is held out, loosed.
+ */
+function bowLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const side = p.dir === 'right';
+  const cx = side ? hx + 1 : hx + 2;
+  const drawn = p.stance === 'windup';
+  const out = p.stance === 'strike';
+  if (side) {
+    const x = out ? cx + 5 : cx + 3;
+    im.rect(x, hy - 5, x, hy + 5, WOOD.main);
+    im.set(x - 1, hy - 5, WOOD.lit);
+    im.set(x - 1, hy + 5, WOOD.shade);
+    im.set(x + 1, hy - 4, WOOD.main);
+    im.set(x + 1, hy + 4, WOOD.main);
+    // String, pulled back toward the cheek when drawn.
+    const sx = drawn ? x - 5 : x - 1;
+    im.rect(sx, hy, sx, hy, 3);
+    for (let i = 1; i <= 4; i++) {
+      im.set(Math.round(x - (x - sx) * (1 - i / 5)), hy - 5 + Math.round(i * 1), 2);
+      im.set(Math.round(x - (x - sx) * (1 - i / 5)), hy + 5 - Math.round(i * 1), 2);
+    }
+    return im;
+  }
+  // Facing the viewer or away: the bow stands upright beside the hand.
+  const x = out ? cx + 1 : cx + 2;
+  im.rect(x, hy - 7, x, hy + 3, WOOD.main);
+  im.rect(x + 1, hy - 6, x + 1, hy - 5, WOOD.lit);
+  im.rect(x + 1, hy + 1, x + 1, hy + 2, WOOD.shade);
+  im.rect(x - 1, hy - 7, x - 1, hy + 3, 2);
+  return im;
+}
+
+/** Wraps: cloth bound round the knuckles, with the end of the strap trailing on a strike. */
+function wrapsLayer(b: BodyType, p: Pose): Img {
+  const im = new Img(24, 32);
+  const [hx, hy] = hands(b, p).main;
+  const side = p.dir === 'right';
+  const cx = side ? hx + 1 : hx + 2;
+  const reach = p.stance === 'strike' ? 3 : 0;
+  im.rect(cx - 1 + reach, hy - 1, cx + 1 + reach, hy + 1, 3);
+  im.rect(cx - 1 + reach, hy + 1, cx + 1 + reach, hy + 1, 2);
+  im.set(cx + reach, hy - 1, 31);
+  if (p.stance === 'strike') im.rect(cx - 3, hy + 1, cx - 2, hy + 2, 2);
+  if (!side) {
+    // The other hand, on the off arm, so both fists read as wrapped.
+    const [ox, oy] = hands(b, p).off;
+    im.rect(ox - 2, oy - 1, ox, oy + 1, 3);
+    im.rect(ox - 2, oy + 1, ox, oy + 1, 2);
+  }
+  return im;
+}
+
 function shieldLayer(b: BodyType, p: Pose): Img {
   const im = new Img(24, 32);
   const [hx, hy] = hands(b, p).off;
@@ -529,6 +637,9 @@ export function dollLayers(): SpriteDef[] {
     out.push(layer(`doll.main_sword_${b}`, (p) => swordLayer(b, p), true));
     out.push(layer(`doll.main_staff_${b}`, (p) => staffLayer(b, p), true));
     out.push(layer(`doll.main_spear_${b}`, (p) => spearLayer(b, p), true));
+    out.push(layer(`doll.main_maul_${b}`, (p) => maulLayer(b, p), true));
+    out.push(layer(`doll.main_bow_${b}`, (p) => bowLayer(b, p), true));
+    out.push(layer(`doll.main_wraps_${b}`, (p) => wrapsLayer(b, p), true));
     out.push(layer(`doll.off_shield_${b}`, (p) => shieldLayer(b, p), true));
   }
   for (const k of ['short', 'long', 'ponytail', 'curly', 'bun'] as const)

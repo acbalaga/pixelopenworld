@@ -121,7 +121,7 @@ export function tamper(
 /**
  * A state with what later schemas added taken off, so an old fixture's recorded hash can be
  * checked against it: nothing else changed. Covers skills.nightAcc (6), and storage, wear, worn
- * stacks and bag durability (7).
+ * stacks and bag durability (7), and the fighter's guard fields (9).
  */
 export function asSchema5(s: SimState): SimState {
   for (const sk of s.entities.comps.skills) {
@@ -129,6 +129,12 @@ export function asSchema5(s: SimState): SimState {
     delete (sk as { nightAcc?: number }).nightAcc;
     delete (sk as { trial?: unknown }).trial;
     delete (sk as { fight?: unknown }).fight;
+  }
+  for (const f of s.entities.comps.fighter) {
+    if (!f) continue;
+    delete (f as { guard?: unknown }).guard;
+    delete (f as { guardT?: unknown }).guardT;
+    delete (f as { still?: unknown }).still;
   }
   delete (s.entities.comps as { storage?: unknown }).storage;
   for (const inv of s.entities.comps.inventory) {

@@ -8,6 +8,8 @@ export interface InputOptions {
   leftHanded: () => boolean;
   /** Control scheme; Classic adds an attack button. */
   scheme?: () => 'flow' | 'classic';
+  /** Whether a shield is worn, so the Guard button exists. */
+  guard?: () => boolean;
   /** HUD scale setting; scales the buttons. */
   hudScale?: () => number;
   /** Button size setting, on top of the HUD scale. */
@@ -31,6 +33,7 @@ export function attachInput(
     const r = rect();
     return computeLayout(r.width, r.height, opts.leftHanded(), {
       scheme: opts.scheme?.() ?? 'flow',
+      guard: opts.guard?.() ?? false,
       hudScale: opts.hudScale?.() ?? 1,
       buttonScale: opts.buttonScale?.() ?? 1,
       insets: opts.insets?.() ?? { top: 0, right: 0, bottom: 0, left: 0 },

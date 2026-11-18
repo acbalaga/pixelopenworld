@@ -1,6 +1,7 @@
 import type { AttackDef } from '../../content/combat/attacks';
 import { dealDamage, centerPx, foes } from '../combat/fighter';
 import { len } from '../combat/geometry';
+import { chargePct } from '../combat/properties';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
@@ -31,7 +32,7 @@ export function launchProjectile(
     vy: Math.round((f.aim.y / l) * proj.speed * SUBPX),
     ttl: proj.ttl,
     power: cb.power,
-    mult: def.mult,
+    mult: def.family === 'archery' ? Math.floor((def.mult * chargePct(f.still)) / 100) : def.mult,
     stagger: def.stagger,
     knock: def.knock,
     element: proj.element,

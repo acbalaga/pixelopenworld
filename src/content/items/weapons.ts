@@ -22,7 +22,26 @@ const blade = (
     equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
   });
 
+/** A tier 1 weapon of a family with its own rules (M3-04). */
+const family = (
+  id: string,
+  value: number,
+  power: number,
+  weapon: 'maul' | 'bow' | 'wraps',
+): ItemDef =>
+  item(id, 'weapon', {
+    value,
+    tier: 1,
+    quality: true,
+    durability: 60,
+    affixSlots: 2,
+    equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
+  });
+
 export const WEAPON_ITEMS: readonly ItemDef[] = [
+  family('item.maul_oak', 35, 12, 'maul'),
+  family('item.bow_short', 38, 10, 'bow'),
+  family('item.wraps_cloth', 15, 7, 'wraps'),
   // The rusty sword matches the base sword, so a new avatar fights as before.
   blade('item.sword_rusty', 6, 1, 10, 'sword'),
   blade('item.sword_bronze', 28, 1, 11, 'sword'),
