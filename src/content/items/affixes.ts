@@ -87,4 +87,40 @@ export const AFFIXES: Readonly<Record<string, AffixDef>> = {
     tier: 1,
     mods: [{ stat: 'gatherYield', add: 1 }],
   },
+  // Tier 2: stronger versions of the two staples (M3-14).
+  'affix.power_2': {
+    id: 'affix.power_2',
+    nameKey: 'affix.power_2.name',
+    slots: ['main'],
+    tier: 2,
+    mods: [{ stat: 'power', add: 4 }],
+  },
+  'affix.defense_2': {
+    id: 'affix.defense_2',
+    nameKey: 'affix.defense_2.name',
+    slots: ARMOR,
+    tier: 2,
+    mods: [{ stat: 'defense', add: 2 }],
+  },
 };
+
+/**
+ * An affix on a stack is stored as its id, or `id~q` when its enchant came out Fine (1), Superior
+ * (2) or Masterwork (3): the strength follows the quality rule (`CRAFTING.affixStrengthPct`).
+ */
+export function parseAffix(key: string): { id: string; q: number } {
+  const i = key.indexOf('~');
+  if (i < 0) return { id: key, q: 0 };
+  return { id: key.slice(0, i), q: Number(key.slice(i + 1)) };
+}
+
+/** The stored form of an affix at a quality. Common is the bare id. */
+export function affixKey(id: string, q: number): string {
+  return q > 0 ? `${id}~${q}` : id;
+}
+
+/** True if the stored key names a real affix at a real quality. */
+export function validAffix(key: string): boolean {
+  const { id, q } = parseAffix(key);
+  return AFFIXES[id] !== undefined && Number.isInteger(q) && q >= 0 && q <= 3;
+}

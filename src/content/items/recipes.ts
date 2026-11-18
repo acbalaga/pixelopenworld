@@ -5,6 +5,10 @@ type Ing = readonly [item: string, qty?: number];
 const POT = 'camp_pot';
 const ANVIL = 'fixture.anvil';
 const BENCH = 'fixture.workbench';
+const LOOM = 'fixture.loom';
+const ALCH = 'fixture.alchemy_table';
+const RUNE = 'fixture.rune_stone';
+const TINK = 'fixture.tinker_bench';
 
 /** Builds a recipe. The id is `recipe.<result without item.>`. */
 function make(
@@ -25,6 +29,26 @@ function make(
     result,
     qty,
     learn,
+  };
+}
+
+/** An enchant: these materials, plus a chosen piece, put `affix` on it. The recipe makes no item. */
+function enchant(
+  affix: string,
+  tier: number,
+  ing: readonly Ing[],
+  learn: RecipeDef['learn'] = 'experiment',
+): RecipeDef {
+  return {
+    id: `recipe.enchant_${affix.replace(/^affix\./, '')}`,
+    craft: 'enchanting',
+    tier,
+    station: RUNE,
+    ingredients: ing.map(([item, n]) => ({ item, qty: n ?? 1 })),
+    result: '',
+    qty: 0,
+    learn,
+    enchant: affix,
   };
 }
 
@@ -139,6 +163,105 @@ const LIST: readonly RecipeDef[] = [
     ['item.fish_silver'],
     ['item.salt'],
     ['item.dewmint'],
+  ]),
+  // ---- Crafting II (M3-14) ----
+  // Tailoring, 12, at the loom: cloth and leather for head, body and legs at two tiers.
+  make('tailoring', LOOM, 1, 'item.cap_wool', [['item.wool_cloth']], 'start'),
+  make('tailoring', LOOM, 1, 'item.trousers_wool', [['item.wool_cloth', 2]], 'start'),
+  make('tailoring', LOOM, 1, 'item.outfit_wayfarer', [
+    ['item.linen_cloth', 2],
+    ['item.thread_spool'],
+  ]),
+  make('tailoring', LOOM, 1, 'item.cap_leather', [['item.leather_strip', 2]], 'start'),
+  make('tailoring', LOOM, 1, 'item.chaps_leather', [['item.leather_strip', 3]]),
+  make('tailoring', LOOM, 1, 'item.jerkin_leather', [
+    ['item.leather_strip', 3],
+    ['item.thread_spool'],
+  ]),
+  make('tailoring', LOOM, 2, 'item.hood_silk', [['item.silk_cloth'], ['item.thread_spool']]),
+  make('tailoring', LOOM, 2, 'item.skirt_silk', [['item.silk_cloth', 2]]),
+  make('tailoring', LOOM, 2, 'item.robe_silk', [['item.silk_cloth', 3], ['item.thread_spool']]),
+  make('tailoring', LOOM, 2, 'item.hood_hide', [['item.leather'], ['item.leather_strip']]),
+  make('tailoring', LOOM, 2, 'item.chaps_hide', [['item.leather', 2]]),
+  make('tailoring', LOOM, 2, 'item.outfit_leather', [['item.leather', 3], ['item.thread_spool']]),
+  // Alchemy, 10, at the table: tonics at two tiers and four remedies.
+  make('alchemy', ALCH, 1, 'item.potion_health_s', [['item.sunwort'], ['item.dew_vial']], 'start'),
+  make('alchemy', ALCH, 1, 'item.potion_stamina', [['item.dewmint'], ['item.dew_vial']], 'start'),
+  make('alchemy', ALCH, 1, 'item.potion_focus', [['item.berry_blue'], ['item.dew_vial']], 'start'),
+  make('alchemy', ALCH, 2, 'item.potion_health_m', [
+    ['item.sunwort'],
+    ['item.nightshade'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.potion_stamina_m', [
+    ['item.dewmint'],
+    ['item.glowcap'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.potion_focus_m', [
+    ['item.berry_blue'],
+    ['item.glowcap'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 1, 'item.antidote', [['item.sunwort'], ['item.salt'], ['item.dew_vial']]),
+  make('alchemy', ALCH, 1, 'item.warming_draught', [
+    ['item.spark_dust'],
+    ['item.dewmint'],
+    ['item.dew_vial'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.fire_salve', [
+    ['item.essence_tide'],
+    ['item.clay'],
+    ['item.salt'],
+  ]),
+  make('alchemy', ALCH, 2, 'item.oil_keenness', [
+    ['item.essence_ember'],
+    ['item.lantern_oil'],
+    ['item.salt'],
+  ]),
+  // Enchanting, 8, at the rune stone: one for each affix of M3-05, and two stronger ones.
+  enchant('affix.power_1', 1, [['item.essence_ember'], ['item.spark_dust']], 'start'),
+  enchant('affix.defense_1', 1, [['item.essence_tide'], ['item.clay']], 'start'),
+  enchant('affix.stamina_1', 1, [['item.dew_vial'], ['item.salt']]),
+  enchant('affix.focus_1', 1, [['item.dew_vial'], ['item.quartz']]),
+  enchant('affix.crit_1', 1, [['item.spark_dust'], ['item.quartz']]),
+  enchant('affix.gather_1', 1, [['item.clay'], ['item.salt']]),
+  enchant('affix.power_2', 2, [['item.essence_ember', 2], ['item.quartz']]),
+  enchant('affix.defense_2', 2, [['item.essence_tide', 2], ['item.quartz']]),
+  // Tinkering, 8 gadgets, at the tinker bench.
+  make(
+    'tinkering',
+    TINK,
+    1,
+    'item.spark_flint',
+    [['item.copper_ingot'], ['item.spark_dust']],
+    'start',
+  ),
+  make('tinkering', TINK, 1, 'item.water_flask', [['item.clay'], ['item.dew_vial']], 'start'),
+  make('tinkering', TINK, 1, 'item.smoke_pellet', [['item.coal'], ['item.clay'], ['item.salt']]),
+  make(
+    'tinkering',
+    TINK,
+    1,
+    'item.bell_charm',
+    [['item.copper_ingot'], ['item.thread_spool']],
+    'start',
+  ),
+  make('tinkering', TINK, 2, 'item.lantern', [
+    ['item.copper_ingot'],
+    ['item.lantern_oil'],
+    ['item.quartz'],
+  ]),
+  make('tinkering', TINK, 1, 'item.repair_kit', [
+    ['item.leather_strip'],
+    ['item.thread_spool'],
+    ['item.whetstone'],
+  ]),
+  make('tinkering', TINK, 1, 'item.snare', [['item.thread_spool', 2], ['item.oak_plank']]),
+  make('tinkering', TINK, 1, 'item.grit_pouch', [
+    ['item.leather_strip'],
+    ['item.salt'],
+    ['item.spark_dust'],
   ]),
 ];
 

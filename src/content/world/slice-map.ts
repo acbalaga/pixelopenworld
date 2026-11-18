@@ -234,6 +234,11 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 42, 40, 'prop.camp_pot', objects);
   object(g, 36, 37, 'fixture.anvil', objects);
   object(g, 39, 38, 'fixture.workbench', objects);
+  // Crafting II (M3-14): loom, tinker bench, alchemy table and rune stone in the square.
+  object(g, 36, 40, 'fixture.loom', objects);
+  object(g, 39, 41, 'fixture.tinker_bench', objects);
+  object(g, 46, 41, 'fixture.alchemy_table', objects);
+  object(g, 49, 40, 'fixture.rune_stone', objects);
   // A bedroll by the Waystone (M3-09). Sleeping on it makes you Rested.
   object(g, 45, 37, 'fixture.bed', objects);
   // Element set pieces in the east meadow, one for each school (M3-09). No route needs them.

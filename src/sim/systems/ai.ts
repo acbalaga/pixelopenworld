@@ -284,6 +284,14 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
   }
 }
 
+/** A creature bolts from `from` for the flee spell: a bell, a fright. */
+export function scare(state: SimState, id: EntityId, from: EntityId): void {
+  const ai = getComp(state.entities, id, 'ai');
+  if (!ai || ai.state === 'flee') return;
+  ai.target = from;
+  enter(ai, 'flee');
+}
+
 function enter(ai: Ai, next: Ai['state']): void {
   ai.state = next;
   ai.t = 0;

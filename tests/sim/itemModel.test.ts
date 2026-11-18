@@ -237,7 +237,7 @@ describe('modifiers', () => {
       expect(a.mods.length, a.id).toBeGreaterThan(0);
       expect(a.slots.length, a.id).toBeGreaterThan(0);
     }
-    expect(Object.keys(AFFIXES)).toHaveLength(6);
+    expect(Object.keys(AFFIXES)).toHaveLength(8);
   });
 });
 
@@ -294,11 +294,11 @@ describe('item set', () => {
   it('has about 120 items split into the target kinds', () => {
     const all = Object.values(ITEMS);
     expect(all.length).toBeGreaterThanOrEqual(110);
-    expect(all.length).toBeLessThanOrEqual(130);
+    expect(all.length).toBeLessThanOrEqual(150);
     const n = (f: (i: (typeof all)[number]) => boolean) => all.filter(f).length;
     expect(n((i) => i.tool !== undefined)).toBe(10);
-    expect(n((i) => i.category === 'material')).toBe(40);
-    expect(n((i) => i.category === 'consumable')).toBe(23);
+    expect(n((i) => i.category === 'material')).toBe(44);
+    expect(n((i) => i.category === 'consumable')).toBe(29);
     expect(n((i) => i.equip?.slot === 'accessory')).toBe(6);
     expect(n((i) => i.equip?.slot === 'off' && !!i.equip.doll?.offHand)).toBe(4);
     expect(ITEMS['item.flute_reed']?.equip?.slot).toBe('off');

@@ -1,4 +1,5 @@
-import { AFFIXES, type Mod, type ModStat } from '../content/items/affixes';
+import { AFFIXES, parseAffix, type Mod, type ModStat } from '../content/items/affixes';
+import { CRAFTING as C } from '../content/balance/crafting';
 import { EQUIP_SLOTS } from '../content/items/types';
 import { ITEMS } from '../content/items';
 import { STATUSES, type StatusId } from '../content/combat/statuses';
@@ -14,7 +15,16 @@ import type { ItemStack, SimState, StatusEntry } from './state';
 /** The mods one item stack carries: its affixes, in order. An unknown affix id adds nothing. */
 export function stackMods(stack: ItemStack | null | undefined): Mod[] {
   const out: Mod[] = [];
-  for (const id of stack?.affixes ?? []) out.push(...(AFFIXES[id]?.mods ?? []));
+  for (const key of stack?.affixes ?? []) {
+    const { id, q } = parseAffix(key);
+    const pct = C.affixStrengthPct[q] ?? 100;
+    for (const m of AFFIXES[id]?.mods ?? [])
+      out.push({
+        stat: m.stat,
+        ...(m.add !== undefined ? { add: Math.max(1, Math.floor((m.add * pct) / 100)) } : {}),
+        ...(m.pct !== undefined ? { pct: Math.max(1, Math.floor((m.pct * pct) / 100)) } : {}),
+      });
+  }
   return out;
 }
 

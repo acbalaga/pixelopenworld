@@ -25,7 +25,8 @@ export type FixtureType =
   | 'station'
   | 'bed'
   | 'element'
-  | 'wall';
+  | 'wall'
+  | 'snare';
 
 export interface FixtureDef {
   kind: string;
@@ -150,6 +151,13 @@ const LIST: readonly FixtureDef[] = [
   // Crafting stations in the square (M3-07). The camp pot is a prop with its own kind.
   { kind: 'fixture.anvil', type: 'station', sprite: 'prop.anvil', size: 12 },
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },
+  // Crafting II stations in the square (M3-14).
+  { kind: 'fixture.loom', type: 'station', sprite: 'prop.loom', size: 14 },
+  { kind: 'fixture.alchemy_table', type: 'station', sprite: 'prop.alchemy_table', size: 14 },
+  { kind: 'fixture.rune_stone', type: 'station', sprite: 'prop.rune_stone', size: 12 },
+  { kind: 'fixture.tinker_bench', type: 'station', sprite: 'prop.tinker_bench', size: 14 },
+  // A snare set by the Snare gadget: it roots the first creature to step on it, then is gone.
+  { kind: 'fixture.snare', type: 'snare', sprite: 'prop.snare', size: 8 },
   // A bedroll by the square Waystone. Sleeping on it applies Rested (M3-09).
   { kind: 'fixture.bed', type: 'bed', sprite: 'prop.bedroll', size: 14 },
   // Raised by the Earth Wall technique (M3-13). It blocks bodies and bolts and does not last.

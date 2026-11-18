@@ -183,6 +183,13 @@ export interface CraftSession {
   matSum: number;
   matN: number;
   source: 'manual' | 'routine';
+  /** Trace: pointer samples as flat x, y pairs in the 1000 by 1000 space, one pair per tick. */
+  samples?: number[];
+  /** Hold: the tick (since `start`) the hold began and ended, or -1. */
+  holdFrom?: number;
+  holdTo?: number;
+  /** Enchanting: the bag slot of the item being enchanted, or -1. */
+  target?: number;
 }
 
 /**

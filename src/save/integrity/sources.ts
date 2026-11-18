@@ -26,6 +26,7 @@ function build(): Map<string, Set<ItemSource>> {
   for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
   // Crafting pays under `craft`. Old saves recorded cooking under `cook`, so cooking keeps it.
   for (const r of Object.values(RECIPES)) {
+    if (!r.result) continue;
     add(r.result, 'craft');
     if (r.craft === 'cooking') add(r.result, 'cook');
   }

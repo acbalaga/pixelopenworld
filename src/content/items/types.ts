@@ -78,6 +78,10 @@ export interface ItemDef {
   /** Affixes it can hold. Enchanting fills them (M3-14). Absent means 0. */
   affixSlots?: 0 | 1 | 2;
   tool?: { kind: ToolKind; tier: number };
+  /** A gadget: the Use button does this (M3-14). `lantern` is worn in the off hand instead. */
+  gadget?: 'spark' | 'flask' | 'smoke' | 'bell' | 'repair' | 'snare' | 'grit' | 'lantern';
+  /** Using it (eating or drinking) clears these statuses and may apply one. */
+  status?: { clear?: readonly string[]; apply?: { status: string; ticks: number } };
   /** Reading it (the Use button) teaches this recipe and uses it up. */
   teaches?: string;
   /** Which Bag filter lists it. */
@@ -98,6 +102,8 @@ export interface RecipeDef {
   result: string;
   qty: number;
   learn: RecipeLearn;
+  /** Enchanting: the affix this recipe puts on a chosen piece. The result is empty. */
+  enchant?: string;
 }
 
 /** One thing a node can give, and when. A missing condition means always. */

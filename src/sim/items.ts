@@ -1,6 +1,7 @@
 import { ITEMS_BALANCE as B } from '../content/balance/items';
 import { WEAPONS } from '../content/combat/attacks';
 import { ITEMS } from '../content/items';
+import type { StatusId } from '../content/combat/statuses';
 import { NODES, RECIPES } from '../content/items/recipes';
 import { EQUIP_SLOTS, type EquipSlot, type ItemDef, type Quality } from '../content/items/types';
 import type { DropDef } from '../content/creatures/types';
@@ -11,12 +12,13 @@ import { SUBPX } from './kernel/fixed';
 import { hasShield } from './combat/guard';
 import { int, next, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
-import { applyStatus, statusesOf } from './statuses';
+import { applyStatus, clearStatus, statusesOf } from './statuses';
+import { useGadget } from './gadgets';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { applyMods, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
 import { pressGather, startGather } from './gathering';
-import { crafting, repair, startCraft, tapStep } from './crafting';
+import { crafting, holdStep, repair, startCraft, tapStep, tracePoint } from './crafting';
 import { STATIONS } from '../content/items/stations';
 import { FIXTURES } from '../content/world/fixtures';
 import { earnCoin, madeItems, type ItemSource } from './ledger';
@@ -365,6 +367,11 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   pools.sta = Math.min(pools.staMax, pools.sta + food.sta);
   pools.foc = Math.min(pools.focMax, pools.foc + food.foc);
   emit(state.events, { type: 'eaten', id: who, item });
+  // Remedies clear statuses and some leave one.
+  const cure = ITEMS[item]?.status;
+  for (const id of cure?.clear ?? []) clearStatus(state, who, id as StatusId);
+  if (cure?.apply)
+    applyStatus(state, who, cure.apply.status as StatusId, -1, { ticks: cure.apply.ticks });
   if (food.fed) {
     // One Fed at a time: a new meal replaces the old one, and the pool bonuses come from its mods.
     const old = statusesOf(state, who).find((s) => s.id === 'fed');
@@ -432,7 +439,8 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       unequip(state, who, c.slot as EquipSlot);
       return;
     case 'use':
-      if (!eat(state, who, c.slot)) readScroll(state, who, c.slot);
+      if (!eat(state, who, c.slot) && !readScroll(state, who, c.slot))
+        useGadget(state, who, c.slot);
       return;
     case 'drop':
       dropFromBag(state, who, c.slot);
@@ -448,6 +456,12 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'craftStep':
       tapStep(state, who);
+      return;
+    case 'craftPoint':
+      tracePoint(state, who, c.x, c.y);
+      return;
+    case 'craftHold':
+      holdStep(state, who, c.on);
       return;
     case 'repair':
       repair(state, who, c.slot);

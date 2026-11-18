@@ -32,6 +32,10 @@ export const MATERIAL_ITEMS: readonly ItemDef[] = [
   // What a failed craft leaves.
   mat('item.slag', 0, 1, false),
   mat('item.wood_scraps', 0, 1, false),
+  mat('item.rags', 0, 1, false),
+  mat('item.sludge', 0, 1, false),
+  mat('item.rune_dust', 0, 1, false),
+  mat('item.scrap', 0, 1, false),
   // From the water (fishing).
   mat('item.fish_river', 6),
   mat('item.fish_silver', 14, 2),

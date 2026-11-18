@@ -28,6 +28,30 @@ export const MISC_ITEMS: readonly ItemDef[] = [
     icon: 'icon.scroll_recipe',
   }),
   item('item.whetstone', 'misc', { value: 8 }),
+  // Gadgets (M3-14): the Use button does their one thing. Tinkering makes them.
+  ...(
+    [
+      ['item.spark_flint', 'spark', 18],
+      ['item.water_flask', 'flask', 14],
+      ['item.smoke_pellet', 'smoke', 22],
+      ['item.bell_charm', 'bell', 26],
+      ['item.repair_kit', 'repair', 40],
+      ['item.snare', 'snare', 24],
+      ['item.grit_pouch', 'grit', 12],
+    ] as const
+  ).map(([id, gadget, value]) =>
+    item(id, 'misc', { value, stack: 10, gadget, bag: 'tools', tier: 1 }),
+  ),
+  // The lantern is worn in the off hand and lights dark rooms.
+  item('item.lantern', 'misc', {
+    value: 45,
+    quality: true,
+    durability: 60,
+    stack: 1,
+    bag: 'gear',
+    gadget: 'lantern',
+    equip: { slot: 'off' },
+  }),
   item('item.thread_spool', 'misc', { value: 5 }),
   item('item.chalk_stub', 'misc', { value: 2 }),
 ];

@@ -6,7 +6,7 @@ import { knows } from '../../sim/combat/techniques';
 import { HINTS } from '../../content/hints';
 import { REQUESTS } from '../../content/dialogue';
 import { CREATURES } from '../../content/creatures';
-import { AFFIXES } from '../../content/items/affixes';
+import { validAffix } from '../../content/items/affixes';
 import { ITEMS } from '../../content/items';
 import type { ItemStack } from '../../sim/state';
 import { EQUIP_SLOTS } from '../../content/items/types';
@@ -85,7 +85,7 @@ export function consistency(v: View): Reason[] {
     if (st.q !== undefined && (!def.quality || ![1, 2, 3].includes(st.q)))
       fail('QUALITY_ON_PLAIN', `${st.item} q ${st.q}`);
     const affixes = st.affixes ?? [];
-    if (affixes.length > (def.affixSlots ?? 0) || affixes.some((a) => !AFFIXES[a]))
+    if (affixes.length > (def.affixSlots ?? 0) || affixes.some((a) => !validAffix(a)))
       fail('AFFIX_OVERFLOW', `${st.item} ${affixes.join(',')}`);
     if (st.mark) markedHeld[st.item] = (markedHeld[st.item] ?? 0) + st.qty;
     if (st.q === 3) masterHeld[st.item] = (masterHeld[st.item] ?? 0) + st.qty;

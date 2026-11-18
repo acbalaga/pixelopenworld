@@ -2,6 +2,7 @@ import { DIALOGUES, NPCS, SHOPS } from '../../content/dialogue';
 import type { DialogueNode } from '../../content/dialogue/types';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS } from '../../content/items';
+import { AFFIXES } from '../../content/items/affixes';
 import { RECIPES, expand } from '../../content/items/recipes';
 import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
@@ -44,6 +45,12 @@ function put<T extends HTMLElement>(parent: T, ...kids: HTMLElement[]): T {
 }
 
 const nameOf = (id: string): string => ITEM_STRINGS[ITEMS[id]?.nameKey ?? ''] ?? id;
+
+/** What a recipe is called: the item it makes, or for an enchant the affix it applies. */
+const recipeName = (r: { result: string; enchant?: string }): string =>
+  r.enchant
+    ? fill(S.craft.enchant, { name: ITEM_STRINGS[AFFIXES[r.enchant]?.nameKey ?? ''] ?? r.enchant })
+    : nameOf(r.result);
 
 /**
  * The dialogue sheet and the shop sheet (design/09): clear text in a bottom sheet with the
@@ -531,13 +538,13 @@ export class TalkSheet {
       const units = expand(r.ingredients);
       const can = units.every((u) => held(u) >= units.filter((x) => x === u).length);
       const li = el('li', 'pow-shop-row');
-      const b = el('button', 'pow-button', nameOf(r.result));
+      const b = el('button', 'pow-button', recipeName(r));
       b.type = 'button';
       b.disabled = !can;
       b.dataset.key = `recipe-${r.id}`;
       b.setAttribute(
         'aria-label',
-        `${nameOf(r.result)}: ${r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')}`,
+        `${recipeName(r)}: ${r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')}`,
       );
       b.addEventListener('click', () => {
         this.picked = units;
@@ -619,7 +626,11 @@ export class TalkSheet {
       stacks.appendChild(li);
     });
     bag.appendChild(stacks);
-    put(s, head, msg, known, chosen, bag);
+    const how = el('p', 'pow-hint', S.craft.steps[def.step] ?? '');
+    const note = def.craft === 'enchanting' ? el('p', 'pow-hint', S.craft.enchantNote) : null;
+    put(s, head, msg, how);
+    if (note) s.appendChild(note);
+    put(s, known, chosen, bag);
 
     // Repair at the anvil.
     if (def.craft === 'smithing') {

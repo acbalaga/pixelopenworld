@@ -13,6 +13,27 @@ export const POTION_ITEMS: readonly ItemDef[] = [
   potion('item.potion_health_m', 45, 2, { hp: 70, sta: 0, foc: 0 }),
   potion('item.potion_stamina', 22, 1, { hp: 0, sta: 400, foc: 0 }),
   potion('item.potion_focus', 22, 1, { hp: 0, sta: 0, foc: 400 }),
+  potion('item.potion_stamina_m', 55, 2, { hp: 0, sta: 700, foc: 0 }),
+  potion('item.potion_focus_m', 55, 2, { hp: 0, sta: 0, foc: 700 }),
+  // Remedies (M3-14): each clears or applies a status when drunk.
+  {
+    ...potion('item.antidote', 20, 1, { hp: 5, sta: 0, foc: 0 }),
+    status: { clear: ['poisoned'] },
+  },
+  {
+    ...potion('item.warming_draught', 24, 1, { hp: 5, sta: 0, foc: 0 }),
+    status: { clear: ['chilled', 'wet'] },
+  },
+  {
+    ...potion('item.fire_salve', 30, 2, { hp: 5, sta: 0, foc: 0 }),
+    status: { clear: ['burning'], apply: { status: 'warded', ticks: 300 } },
+  },
+  potion('item.oil_keenness', 50, 2, {
+    hp: 0,
+    sta: 0,
+    foc: 100,
+    fed: { ticks: 3 * T, hpMax: 0, staMax: 0, focMax: 150 },
+  }),
   potion('item.potion_swift', 40, 2, {
     hp: 0,
     sta: 200,
