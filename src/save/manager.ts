@@ -99,6 +99,24 @@ export class SaveManager {
     this.saveId = null;
   }
 
+  /**
+   * Retires the character on this device so a new one can start (the player asked, and confirmed).
+   * Nothing is destroyed: the newest snapshot moves to `replaced`, where it stays recoverable until
+   * the next retire or import. The working slots are cleared so the title shows no character, and
+   * the next character begins a new chain. Returns whether a snapshot was kept.
+   */
+  async retire(): Promise<boolean> {
+    const had = await this.deps.storage.readAll();
+    const keep = had.latest ?? had.previous ?? had.old ?? had.emergency;
+    const next = emptySlots();
+    next.replaced = keep ?? had.replaced;
+    next.quarantine = had.quarantine;
+    await this.deps.storage.replaceAll(next);
+    this.startFresh();
+    this.lastHash = '';
+    return keep !== null;
+  }
+
   /** The id of the save in play, or null before the first commit or load. */
   currentSaveId(): string | null {
     return this.saveId;

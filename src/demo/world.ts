@@ -56,7 +56,6 @@ import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
 import { FIXTURES } from '../content/world/fixtures';
 import { roomAt, OUTDOORS } from '../content/world/rooms';
-import { spawnFixture } from '../sim/systems/fixtures';
 import { UI_STRINGS } from '../content/strings/ui';
 import { PATHS } from '../content/paths';
 import { PATH_STRINGS } from '../content/strings/paths';
@@ -64,10 +63,11 @@ import { chooseTextRenderer } from '../ui/text/rule';
 import { DIALOGUE_STRINGS } from '../content/strings/dialogue';
 import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
-import { spawnNpc } from '../sim/systems/npcs';
 import { newJournal, pinnedRequest } from '../sim/journal';
 import { TalkSheet } from '../ui/dom/talk';
 import { ChatTicker, HintLine } from '../ui/dom/ambient';
+import { confirmRetire } from '../ui/dom/retire';
+import { populateMap } from '../sim/world/populate';
 import { runFrontEnd, type FrontEndResult } from '../ui/dom/frontEnd';
 import {
   AutoSaver,
@@ -109,8 +109,7 @@ import {
 import { attachSwipe } from '../platform/input/swipe';
 import { SkillFeed } from '../ui/hud/skillFeed';
 import { PixelFont } from '../ui/text/pixelFont';
-import { CREATURES, SPAWNERS } from '../content/creatures';
-import { createSpawner } from '../sim/systems/spawner';
+import { CREATURES } from '../content/creatures';
 import { drawTelegraphs, telegraphOf } from '../render/telegraph';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
 import { DollFactory } from '../render/dollSprite';
@@ -123,7 +122,7 @@ import { ITEMS } from '../content/items';
 import { NODES } from '../content/items/recipes';
 import { dollWithGear } from '../render/gearDoll';
 import { madeItems } from '../sim/ledger';
-import { addItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
+import { addItem, newInventory } from '../sim/items';
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
 import { hasShield } from '../sim/combat/guard';
@@ -307,6 +306,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (restored && findAvatar(restored) === null) restored = null;
         },
       },
+      exportSaved: async () => {
+        if (!loaded) throw new Error('nothing to export');
+        return {
+          bytes: await exportBytes(loaded.plain),
+          fileName: exportFileName(savedAvatar?.handle ?? 'save', dateAt(clock.trustedNow())),
+        };
+      },
+      retire: async () => {
+        if (!saves) throw new Error('saving is off');
+        await saves.retire();
+        loaded = null;
+        restored = null;
+      },
       save:
         restored && savedAvatar && loaded
           ? {
@@ -457,18 +469,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       p.y = px(feet.y);
     }
   }
-  // A loaded save already holds every entity, so the map is only populated for a new game.
-  // Map objects: fixtures, gathering nodes and the camp pot. `?foes=0` turns spawners off below.
-  for (const c of restored ? [] : chunks)
-    for (const o of c.objects) {
-      const tx = c.cx * 32 + o.x;
-      const ty = c.cy * 32 + o.y;
-      if (o.kind.startsWith('fixture.') && FIXTURES[o.kind]) spawnFixture(state, o.kind, tx, ty);
-      else if (o.kind.startsWith('node.') && NODES[o.kind])
-        spawnNode(state, o.kind, tx * TILE_PX + 8, ty * TILE_PX + 14);
-      else if (o.kind.startsWith('npc.') && NPCS[o.kind]) spawnNpc(state, o.kind, tx, ty);
-      else if (o.kind === 'prop.camp_pot') spawnCampPot(state, tx * TILE_PX + 8, ty * TILE_PX + 14);
-    }
+  // A new game gets every map object. A loaded save already holds the ones it was started with, so
+  // it only gains what a newer build added (a person, a chest, a node), and nothing is moved or
+  // removed. `?foes=0` turns spawners off.
+  const mapObjects = chunks.flatMap((c) =>
+    c.objects.map((o) => ({ kind: o.kind, tx: c.cx * 32 + o.x, ty: c.cy * 32 + o.y })),
+  );
+  populateMap(state, mapObjects, {
+    spawners: !fly && params.get('foes') !== '0',
+    onlyMissing: restored !== null,
+  });
   const bag = restored ? null : state.entities.comps.inventory[who];
   if (bag) {
     for (const [item, qty] of [
@@ -500,18 +510,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     }
   });
 
-  // Spawners come from the map's objects (`spawner.*`). `?foes=0` turns them off.
-  if (!fly && !restored && params.get('foes') !== '0') {
-    for (const c of chunks)
-      for (const o of c.objects)
-        if (o.kind.startsWith('spawner.') && SPAWNERS[o.kind])
-          createSpawner(
-            state,
-            o.kind,
-            (c.cx * 32 + o.x) * TILE_PX + 8,
-            (c.cy * 32 + o.y) * TILE_PX + 14,
-          );
-  }
   const lastDrawn = new Map<number, { x: number; y: number }>();
 
   // Item icons, looked up once.
@@ -753,6 +751,27 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       onImported: () => location.reload(),
       onExported: () => markExported(),
     },
+    onDeleteCharacter: () => {
+      if (!saves) return;
+      void confirmRetire(root, {
+        handle: state0Avatar(state)?.handle ?? 'save',
+        playSeconds: state.tick / 30,
+        exportCurrent: () => exportFile(),
+        onExported: () => markExported(),
+      }).then(async (yes) => {
+        if (!yes) return;
+        try {
+          // Let a save in flight finish, then stop all saving so the old game is not written back.
+          await saver.idle();
+          retired = true;
+          await saves.retire();
+          location.reload();
+        } catch {
+          retired = false;
+          notices.toast(UI_STRINGS.retire.failed);
+        }
+      });
+    },
     onLogOut: () => {
       void (async () => {
         if (saves) {
@@ -826,9 +845,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let lastSaveTick = state.tick;
   let saveGlyphAt = -1e9;
   const GLYPH_MS = 1600;
+  // Set while a deleted character is being removed: nothing may write the old game back.
+  let retired = false;
   const saver = new AutoSaver(
     async () => {
-      if (!saves) return;
+      if (!saves || retired) return;
       const h = hashState(state);
       const seq = await saves.commit({
         sim: state,
@@ -917,7 +938,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     // The crash handler writes the emergency slot, once, and touches nothing else.
     let crashed = false;
     const onCrash = (): void => {
-      if (crashed) return;
+      if (crashed || retired) return;
       crashed = true;
       void saves
         .commitEmergency({

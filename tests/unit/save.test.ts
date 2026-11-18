@@ -342,3 +342,37 @@ describe('AutoSaver', () => {
     expect(saver.lastReason).toBe('timer');
   });
 });
+
+describe('retiring a character', () => {
+  it('clears the working slots, keeps the last snapshot in replaced, and a new character starts clean', async () => {
+    const { s } = game();
+    const { m, storage, clock } = mk();
+    await m.commit(input(s));
+    await m.commit(input(s));
+    const kept = (await storage.readAll()).latest;
+
+    expect(await m.retire()).toBe(true);
+    const after = await storage.readAll();
+    expect(after.latest).toBeNull();
+    expect(after.previous).toBeNull();
+    expect(after.old).toBeNull();
+    expect(after.replaced?.checksum).toBe(kept?.checksum);
+    // The title would find no save.
+    expect(await reload(storage, clock).load()).toBeNull();
+
+    // The next character commits as a fresh chain and loads back.
+    const { s: s2 } = game();
+    clock.t += 1000;
+    await m.commit(input(s2));
+    const got = await reload(storage, clock).load();
+    expect(got?.plain.saveId).not.toBe('id0');
+    // The retired character is still there, untouched.
+    expect((await storage.readAll()).replaced?.checksum).toBe(kept?.checksum);
+  });
+
+  it('with nothing saved it keeps an earlier replaced snapshot and reports nothing kept', async () => {
+    const { m, storage } = mk();
+    expect(await m.retire()).toBe(false);
+    expect((await storage.readAll()).replaced).toBeNull();
+  });
+});

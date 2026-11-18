@@ -142,3 +142,59 @@ test('settings outlive Log Out: muted audio stays muted on the next login', asyn
     'true',
   );
 });
+
+test('Delete character in System: confirm, then the title offers a new character', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Handle').fill('Doomed_1');
+  await page.getByRole('button', { name: 'Enter the world' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await page.locator('[data-key="delete-character"]').click();
+  // Cancel changes nothing.
+  await expect(page.getByRole('alertdialog')).toContainText('Delete this character?');
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  // Confirm: the page restarts at the title with no character, and nothing writes the old one back.
+  await page.locator('[data-key="delete-character"]').click();
+  await page.getByRole('button', { name: 'Delete character' }).last().click();
+  await expect(page.getByText('No character on this device yet.')).toBeVisible();
+  await page.waitForTimeout(1500);
+  await page.reload();
+  await expect(page.getByText('No character on this device yet.')).toBeVisible();
+  // A new character can be made.
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Handle').fill('Fresh_2');
+  await page.getByRole('button', { name: 'Enter the world' }).click();
+  await inWorld(page);
+  expect(problems.pageErrors).toEqual([]);
+});
+
+test('Delete character on the title: confirm removes the character, cancel keeps it', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.getByLabel('Handle').fill('Keeper_3');
+  await page.getByRole('button', { name: 'Enter the world' }).click();
+  await inWorld(page);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="system"]').click();
+  await page.getByRole('button', { name: 'Log Out' }).click();
+  await expect(page.getByText('Signed in as Keeper_3.')).toBeVisible();
+
+  await page.locator('.pow-front-delete').click();
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByText('Signed in as Keeper_3.')).toBeVisible();
+
+  await page.locator('.pow-front-delete').click();
+  await page.getByRole('button', { name: 'Delete character' }).last().click();
+  await expect(page.getByText('No character on this device yet.')).toBeVisible();
+  await expect(page.locator('.pow-front-delete')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await expect(page.getByRole('heading', { name: 'Create your character' })).toBeVisible();
+});

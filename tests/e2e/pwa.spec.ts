@@ -237,3 +237,33 @@ test('Update now: System offers it when a version is waiting, saves, restarts on
     site.close();
   }
 });
+
+test('the title offers a waiting update, and taking it restarts on the new version before login', async ({
+  context,
+}) => {
+  const site = await deployServer();
+  try {
+    const page = await context.newPage();
+    await page.goto(`${site.url}/`);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Pixel');
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.reload();
+    await expect(page.getByText('You have the latest version.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Update now' })).toBeHidden();
+
+    // A deploy lands. The title finds it when asked, and offers the update.
+    site.setVersion('next');
+    await page.getByRole('button', { name: 'Check for updates' }).click();
+    await expect(page.getByText('A new version is ready.')).toBeVisible();
+    await page.getByRole('button', { name: 'Update now' }).click();
+    await page.waitForLoadState('load');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Pixel');
+    await expect
+      .poll(() => cacheKeys(page).catch(() => []), { timeout: 20_000 })
+      .toEqual(['pow-next']);
+  } finally {
+    site.close();
+  }
+});
