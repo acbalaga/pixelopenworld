@@ -1,7 +1,7 @@
 import { ITEMS_BALANCE as B } from '../content/balance/items';
 import { WEAPONS } from '../content/combat/attacks';
 import { ITEMS } from '../content/items';
-import { NODES, RECIPES, recipeFor } from '../content/items/recipes';
+import { NODES, RECIPES } from '../content/items/recipes';
 import { EQUIP_SLOTS, type EquipSlot, type ItemDef, type Quality } from '../content/items/types';
 import type { DropDef } from '../content/creatures/types';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from './kernel/entities';
@@ -15,8 +15,10 @@ import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { applyMods, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
 import { pressGather, startGather } from './gathering';
+import { crafting, repair, startCraft, tapStep } from './crafting';
+import { STATIONS } from '../content/items/stations';
 import { FIXTURES } from '../content/world/fixtures';
-import { earnCoin, madeItems, recordCraft, type ItemSource } from './ledger';
+import { earnCoin, madeItems, type ItemSource } from './ledger';
 
 /** What a stack can carry besides its item and count. */
 export interface StackExtra {
@@ -64,7 +66,10 @@ export function newInventory(): Inventory {
   const inv: Inventory = {
     slots: Array.from({ length: B.inventory.slots }, () => null),
     equipment: { main: null, off: null, head: null, body: null, legs: null, accessory: null },
-    recipes: [],
+    // The recipes a new avatar already knows (learn: 'start').
+    recipes: Object.values(RECIPES)
+      .filter((r) => r.learn === 'start')
+      .map((r) => r.id),
     wear: { hits: 0, taken: 0, uses: 0 },
   };
   for (const [slot, item] of Object.entries(B.starter.equipment))
@@ -374,42 +379,6 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   return true;
 }
 
-/**
- * Cooks at the camp pot in front. Takes the ingredients, then makes the matching recipe or a
- * burnt mess. The first cook of a recipe the avatar does not know is a discovery: it is then
- * known for good. Returns false, taking nothing, if there is no pot or the bag is short.
- */
-export function cook(state: SimState, who: EntityId, items: readonly string[]): boolean {
-  const inv = getComp(state.entities, who, 'inventory');
-  const target = contextTarget(state, who);
-  const pot = target === null ? null : getComp(state.entities, target, 'interactable');
-  if (!inv || pot?.kind !== 'camp_pot' || !idle(state, who)) return false;
-  const need = new Map<string, number>();
-  for (const i of items) need.set(i, (need.get(i) ?? 0) + 1);
-  for (const [i, n] of need) if (countItem(inv, i) < n) return false;
-  for (const [i, n] of need) removeItem(inv, i, n);
-  const recipe = recipeFor(items);
-  if (!recipe) {
-    give(state, who, 'item.burnt_mess', 1, 'cook');
-    emit(state.events, { type: 'cookFailed', id: who });
-    return true;
-  }
-  if (!inv.recipes.includes(recipe.id)) {
-    inv.recipes.push(recipe.id);
-    emit(state.events, { type: 'recipeDiscovered', id: who, recipe: recipe.id });
-  }
-  give(state, who, recipe.result, 1, 'cook');
-  recordCraft(state, recipe.id);
-  emit(state.events, {
-    type: 'cooked',
-    id: who,
-    tag: 'cooking',
-    recipe: recipe.id,
-    tier: recipe.tier,
-  });
-  return true;
-}
-
 /** Teaches a recipe, for example from an NPC. Returns false if already known or unknown. */
 export function learnRecipe(state: SimState, who: EntityId, recipeId: string): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -421,6 +390,11 @@ export function learnRecipe(state: SimState, who: EntityId, recipeId: string): b
 /** The context button: starts a gather on a ready node, or lands the timing press. */
 function interact(state: SimState, who: EntityId): void {
   const g = getComp(state.entities, who, 'gather');
+  // While a craft's manual step runs, the context button is the tap.
+  if (crafting(state, who)) {
+    tapStep(state, who);
+    return;
+  }
   if (g) {
     pressGather(state, who);
     return;
@@ -428,6 +402,11 @@ function interact(state: SimState, who: EntityId): void {
   if (!idle(state, who)) return;
   const target = contextTarget(state, who);
   if (target === null) return;
+  const kind = getComp(state.entities, target, 'interactable')?.kind;
+  if (kind && STATIONS[kind]) {
+    emit(state.events, { type: 'stationOpened', id: target, who, station: kind });
+    return;
+  }
   startGather(state, who, target);
 }
 
@@ -451,8 +430,17 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
     case 'store':
       moveStorage(state, who, c.dir, c.slot);
       return;
+    case 'craft':
+      startCraft(state, who, c.items);
+      return;
     case 'cook':
-      cook(state, who, c.items);
+      startCraft(state, who, c.items, { skipStep: true });
+      return;
+    case 'craftStep':
+      tapStep(state, who);
+      return;
+    case 'repair':
+      repair(state, who, c.slot);
       return;
     default:
   }

@@ -137,9 +137,11 @@ export function skillsSystem(state: SimState): void {
         });
       } else if (e.type === 'gathered' && e.id === who) {
         practice(state, who, { on: 'gather', tag: e.tag, tier: e.tier, subject: e.item });
-      } else if (e.type === 'cooked' && e.id === who) {
-        // Cooking is the craft event with tag `cooking`.
+      } else if (e.type === 'crafted' && e.id === who) {
+        // Every craft sends the craft event with its own tag (cooking, smithing, ...).
         practice(state, who, { on: 'craft', tag: e.tag, tier: e.tier, subject: e.recipe });
+      } else if (e.type === 'repaired' && e.id === who) {
+        practice(state, who, { on: 'repair', tag: undefined, tier: e.tier, subject: null });
       } else if (e.type === 'eaten' && e.id === who && ITEMS[e.item]?.food?.raw) {
         practice(state, who, { on: 'eatRaw', tag: undefined, tier: 0, subject: null });
       } else if (e.type === 'tabletRead' && e.who === who) {

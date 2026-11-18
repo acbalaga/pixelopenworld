@@ -272,9 +272,29 @@ describe('objective kinds', () => {
     run(
       add({ objective: { kind: 'craft', recipe: 'recipe.herb_tea', minQuality: 0 } }),
       (s, me) => {
-        feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.stew', tier: 1 });
+        feed(s, {
+          type: 'crafted',
+          id: me,
+          tag: 'cooking',
+          recipe: 'recipe.stew',
+          tier: 1,
+          item: 'item.hearty_stew',
+          qty: 1,
+          quality: 0,
+          source: 'manual',
+        });
         expect(passed(s, me)).toBe(false);
-        feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.herb_tea', tier: 1 });
+        feed(s, {
+          type: 'crafted',
+          id: me,
+          tag: 'cooking',
+          recipe: 'recipe.herb_tea',
+          tier: 1,
+          item: 'item.herb_tea',
+          qty: 1,
+          quality: 0,
+          source: 'manual',
+        });
         expect(passed(s, me)).toBe(true);
       },
     );
@@ -384,6 +404,30 @@ describe('every authored Trial has a scripted run', () => {
       s.tick += 30 * 30;
       feed(s, { type: 'roomChanged', who: me, from: 'room.outdoors', to: 'room.a' });
     },
+    'trial.smithing.15': (s, me) => {
+      const sword = (quality: number): SimEvent => ({
+        type: 'crafted',
+        id: me,
+        tag: 'smithing',
+        recipe: 'recipe.sword_iron',
+        tier: 2,
+        item: 'item.sword_iron',
+        qty: 1,
+        quality,
+        source: 'manual',
+      });
+      // A common sword is not enough.
+      feed(s, sword(0));
+      expect(trialPassed(sk(s, me), 'skill.smithing', 15)).toBe(false);
+      feed(s, sword(1));
+    },
+    'trial.cooking.15': (s, me) => {
+      addItem(s.entities.comps.inventory[me]!, 'item.hearty_stew', 1);
+      deliverTrials(s, me, 'npc.cook');
+      expect(trialPassed(sk(s, me), 'skill.cooking', 15)).toBe(false);
+      addItem(s.entities.comps.inventory[me]!, 'item.hearty_stew', 1, { q: 1 });
+      deliverTrials(s, me, 'npc.cook');
+    },
     'trial.foraging.15': (s, me) => {
       s.worldTick = DAWN;
       s.tick++;
@@ -407,8 +451,8 @@ describe('every authored Trial has a scripted run', () => {
     const t = TRIALS[id]!;
     expect(trialPassed(sk(s, me), t.skill, t.threshold)).toBe(true);
   });
-  it('the six rank 15 Trials are authored with strings and a giver', () => {
-    expect(Object.keys(TRIALS)).toHaveLength(6);
+  it('the eight rank 15 Trials are authored with strings and a giver', () => {
+    expect(Object.keys(TRIALS)).toHaveLength(8);
     for (const t of Object.values(TRIALS)) {
       expect(t.threshold).toBe(15);
       expect(trialCount(t.objective)).toBeGreaterThan(0);

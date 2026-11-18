@@ -4,6 +4,7 @@
  * dialogue gifts. The ledger records the source of every item the sim creates; a rule compares.
  */
 import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
+import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { CREATURES } from '../../content/creatures';
 import { NODES, RECIPES } from '../../content/items/recipes';
@@ -22,8 +23,13 @@ function build(): Map<string, Set<ItemSource>> {
   };
   for (const c of Object.values(CREATURES)) for (const d of c.drops) add(d.item, 'loot');
   for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
-  for (const r of Object.values(RECIPES)) add(r.result, 'cook');
+  // Crafting pays under `craft`. Old saves recorded cooking under `cook`, so cooking keeps it.
+  for (const r of Object.values(RECIPES)) {
+    add(r.result, 'craft');
+    if (r.craft === 'cooking') add(r.result, 'cook');
+  }
   add(BURNT, 'cook');
+  for (const fail of Object.values(CRAFTING.failItem)) add(fail, 'craft');
   for (const r of Object.values(REQUESTS)) for (const i of r.reward.items) add(i.item, 'request');
   for (const f of Object.values(FIXTURES))
     for (const i of f.loot?.items ?? []) add(i.item, 'chest');

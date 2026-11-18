@@ -41,6 +41,8 @@ import {
 } from '../platform/clock';
 import { worldTickAt } from '../sim/time';
 import { gatherSweep } from '../sim/gathering';
+import { drawCraftStep } from '../render/craftStep';
+import { STATIONS } from '../content/items/stations';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
 import { browserSettingsEnv, SettingsStore } from '../platform/settings';
@@ -115,10 +117,10 @@ import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
-import { NODES, RECIPES } from '../content/items/recipes';
+import { NODES } from '../content/items/recipes';
 import { dollWithGear } from '../render/gearDoll';
 import { madeItems } from '../sim/ledger';
-import { addItem, countItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
+import { addItem, newInventory, spawnCampPot, spawnNode } from '../sim/items';
 import type { Command } from '../sim/kernel/commands';
 import { cardinalOf } from '../sim/combat/fighter';
 import { hasShield } from '../sim/combat/guard';
@@ -491,13 +493,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     } else if (e.code === 'KeyF') {
       const slot = inv.slots.findIndex((x) => x && ITEMS[x.item]?.food);
       if (slot >= 0) pendingCommands.push({ type: 'use', slot });
-    } else if (e.code === 'KeyC') {
-      const ok = Object.values(RECIPES).find((r) =>
-        r.ingredients.every(
-          (i) => countItem(inv, i) >= r.ingredients.filter((x) => x === i).length,
-        ),
-      );
-      if (ok) pendingCommands.push({ type: 'cook', items: [...ok.ingredients] });
     }
   });
 
@@ -988,6 +983,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const rec = input.sampler.sample(performance.now());
         shieldWorn = hasShield(state, who);
         mapper.guardToggle = settings.get().guardToggle;
+        // During a craft's step one tap anywhere in the lower zone is a hit (the context key
+        // and button are too, in the sim).
+        if (state.entities.comps.craft[who] && rec.targetTap) {
+          const h = canvas.getBoundingClientRect().height;
+          if (rec.targetTap.y > h * 0.5) pendingCommands.push({ type: 'craftStep' });
+          rec.targetTap = null;
+        }
         mapper.syncGuard(state.entities.comps.fighter[who]?.guard === true);
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
@@ -1243,6 +1245,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         // A tree takes several swings: one pip each, lit once done.
         for (let i = 0; i < gs.sweep.swings && gs.sweep.swings > 1; i++)
           renderer.drawRect(Layer.Hud, gx + i * 6, gy + 7, 4, 2, i < gat.swing ? GOLD : INK);
+      }
+      // The manual step of a craft.
+      const cs = state.entities.comps.craft[who];
+      if (cs) {
+        const st = STATIONS[cs.station];
+        if (st)
+          drawCraftStep(
+            renderer,
+            v,
+            { step: st.step, t: state.tick - cs.start, taps: cs.taps },
+            { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46', good: '#8a7a3a' },
+          );
       }
       // Build id and time, bottom left, so a refreshed page can be told from a stale one.
       fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {

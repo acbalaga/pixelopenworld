@@ -30,6 +30,7 @@ const ITEM_SOURCES = [
   'loot',
   'gather',
   'cook',
+  'craft',
   'chest',
   'request',
   'dialogue',
@@ -62,6 +63,7 @@ export function consistency(v: View): Reason[] {
   if (inv.slots.length > MAX_BAG_SLOTS || inv.slots.length < 1)
     fail('BAG_SIZE', `${inv.slots.length}`);
   const markedHeld: Record<string, number> = {};
+  const masterHeld: Record<string, number> = {};
   /** One stack, wherever it sits: known item, count, durability, quality, affixes, gear never stacks. */
   const checkStack = (st: ItemStack, worn: boolean): void => {
     const def = ITEMS[st.item];
@@ -81,6 +83,7 @@ export function consistency(v: View): Reason[] {
     if (affixes.length > (def.affixSlots ?? 0) || affixes.some((a) => !AFFIXES[a]))
       fail('AFFIX_OVERFLOW', `${st.item} ${affixes.join(',')}`);
     if (st.mark) markedHeld[st.item] = (markedHeld[st.item] ?? 0) + st.qty;
+    if (st.q === 3) masterHeld[st.item] = (masterHeld[st.item] ?? 0) + st.qty;
   };
   for (const st of inv.slots) if (st) checkStack(st, false);
   if (storage.slots.length > MAX_STORAGE_SLOTS) fail('BAG_SIZE', `storage ${storage.slots.length}`);
@@ -96,6 +99,9 @@ export function consistency(v: View): Reason[] {
   }
   for (const [item, n] of Object.entries(markedHeld))
     if (n > (ledger.marked[item] ?? 0)) fail('MARK_WITHOUT_CRAFT', `${item} marked ${n}`);
+  // A Masterwork is only ever made by a manual craft, which tallies it.
+  for (const [item, n] of Object.entries(masterHeld))
+    if (n > (ledger.masterworks[item] ?? 0)) fail('MASTERWORK_WITHOUT_CRAFT', `${item} x${n}`);
   for (const r of inv.recipes) if (!RECIPES[r]) fail('UNKNOWN_ID', r);
 
   // Skills: ids, counts, rank follows XP, banked XP only while a Trial is pending.

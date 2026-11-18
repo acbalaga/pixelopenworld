@@ -1,42 +1,166 @@
 import type { NodeDef, RecipeDef } from './types';
 
-/** The four slice recipes, cooked at a camp pot. Ingredient order never matters. */
-export const RECIPES: Record<string, RecipeDef> = {
-  'recipe.herb_tea': {
-    id: 'recipe.herb_tea',
-    ingredients: ['item.sunwort', 'item.dewmint'],
-    result: 'item.herb_tea',
-    tier: 1,
-  },
-  'recipe.berry_compote': {
-    id: 'recipe.berry_compote',
-    ingredients: ['item.berry_red', 'item.berry_blue'],
-    result: 'item.berry_compote',
-    tier: 1,
-  },
-  'recipe.herbed_skewer': {
-    id: 'recipe.herbed_skewer',
-    ingredients: ['item.raw_meat', 'item.dewmint'],
-    result: 'item.herbed_skewer',
-    tier: 1,
-  },
-  'recipe.hearty_stew': {
-    id: 'recipe.hearty_stew',
-    ingredients: ['item.raw_meat', 'item.sunwort', 'item.berry_red'],
-    result: 'item.hearty_stew',
-    tier: 2,
-  },
-};
+type Ing = readonly [item: string, qty?: number];
 
-/** Key of an ingredient set: sorted ids joined. */
-export function ingredientKey(ids: readonly string[]): string {
-  return [...ids].sort().join(',');
+const POT = 'camp_pot';
+const ANVIL = 'fixture.anvil';
+const BENCH = 'fixture.workbench';
+
+/** Builds a recipe. The id is `recipe.<result without item.>`. */
+function make(
+  craft: RecipeDef['craft'],
+  station: string,
+  tier: number,
+  result: string,
+  ing: readonly Ing[],
+  learn: RecipeDef['learn'] = 'experiment',
+  qty = 1,
+): RecipeDef {
+  return {
+    id: `recipe.${result.replace(/^item\./, '')}`,
+    craft,
+    tier,
+    station,
+    ingredients: ing.map(([item, n]) => ({ item, qty: n ?? 1 })),
+    result,
+    qty,
+    learn,
+  };
 }
 
-/** The recipe made by exactly these ingredients, if there is one. */
-export function recipeFor(ids: readonly string[]): RecipeDef | undefined {
-  const k = ingredientKey(ids);
-  return Object.values(RECIPES).find((r) => ingredientKey(r.ingredients) === k);
+const LIST: readonly RecipeDef[] = [
+  // Smithing, 16, at the anvil.
+  make('smithing', ANVIL, 1, 'item.copper_ingot', [['item.copper_ore', 2], ['item.coal']], 'start'),
+  make('smithing', ANVIL, 2, 'item.iron_ingot', [['item.iron_ore', 2], ['item.coal']], 'start'),
+  make(
+    'smithing',
+    ANVIL,
+    1,
+    'item.pick_copper',
+    [['item.copper_ingot', 2], ['item.oak_plank']],
+    'start',
+  ),
+  make(
+    'smithing',
+    ANVIL,
+    1,
+    'item.axe_copper',
+    [['item.copper_ingot', 2], ['item.oak_log']],
+    'start',
+  ),
+  make('smithing', ANVIL, 2, 'item.pick_iron', [['item.iron_ingot', 2], ['item.ash_plank']]),
+  make('smithing', ANVIL, 2, 'item.axe_iron', [['item.iron_ingot', 2], ['item.ash_log']]),
+  make('smithing', ANVIL, 1, 'item.hammer_copper', [['item.copper_ingot', 3], ['item.oak_plank']]),
+  make('smithing', ANVIL, 1, 'item.sword_bronze', [
+    ['item.copper_ingot', 2],
+    ['item.oak_plank'],
+    ['item.leather_strip'],
+  ]),
+  make(
+    'smithing',
+    ANVIL,
+    2,
+    'item.sword_iron',
+    [['item.iron_ingot', 2], ['item.oak_plank']],
+    'teach',
+  ),
+  make('smithing', ANVIL, 2, 'item.sword_steel', [['item.iron_ingot', 3], ['item.ash_plank']]),
+  make('smithing', ANVIL, 1, 'item.spear_hunter', [
+    ['item.copper_ingot'],
+    ['item.ash_plank'],
+    ['item.leather_strip'],
+  ]),
+  make('smithing', ANVIL, 2, 'item.spear_iron', [
+    ['item.iron_ingot'],
+    ['item.ash_plank'],
+    ['item.leather_strip'],
+  ]),
+  make('smithing', ANVIL, 1, 'item.hauberk_mail', [['item.copper_ingot', 3]]),
+  make('smithing', ANVIL, 1, 'item.coif_mail', [['item.copper_ingot', 2]]),
+  make('smithing', ANVIL, 2, 'item.helm_iron', [['item.iron_ingot', 2], ['item.leather_strip']]),
+  make('smithing', ANVIL, 2, 'item.shield_iron', [['item.iron_ingot', 3], ['item.leather_strip']]),
+  // Woodworking, 12, at the workbench.
+  make('woodworking', BENCH, 1, 'item.oak_plank', [['item.oak_log', 2]], 'start', 2),
+  make('woodworking', BENCH, 2, 'item.ash_plank', [['item.ash_log', 2]], 'start', 2),
+  make(
+    'woodworking',
+    BENCH,
+    1,
+    'item.bow_short',
+    [['item.oak_plank', 2], ['item.flax_fiber']],
+    'start',
+  ),
+  make('woodworking', BENCH, 1, 'item.shield_wood', [['item.oak_plank', 3]], 'start'),
+  make('woodworking', BENCH, 1, 'item.maul_oak', [['item.oak_plank', 3], ['item.copper_ingot']]),
+  make('woodworking', BENCH, 1, 'item.spear_ash', [['item.ash_log', 2], ['item.copper_ingot']]),
+  make('woodworking', BENCH, 1, 'item.shield_buckler', [
+    ['item.oak_plank', 2],
+    ['item.copper_ingot'],
+  ]),
+  make('woodworking', BENCH, 1, 'item.rod_ash', [['item.ash_plank'], ['item.thread_spool']]),
+  make('woodworking', BENCH, 1, 'item.sickle_copper', [['item.copper_ingot'], ['item.oak_plank']]),
+  make('woodworking', BENCH, 2, 'item.sickle_iron', [['item.iron_ingot'], ['item.ash_plank']]),
+  make('woodworking', BENCH, 2, 'item.shield_tower', [
+    ['item.ash_plank', 2],
+    ['item.iron_ingot', 2],
+  ]),
+  make('woodworking', BENCH, 1, 'item.flute_reed', [['item.oak_plank'], ['item.flax_fiber']]),
+  // Cooking, 14, at the camp pot. The first four are the slice recipes.
+  make('cooking', POT, 1, 'item.herb_tea', [['item.sunwort'], ['item.dewmint']]),
+  make('cooking', POT, 1, 'item.berry_compote', [['item.berry_red'], ['item.berry_blue']]),
+  make('cooking', POT, 1, 'item.herbed_skewer', [['item.raw_meat'], ['item.dewmint']]),
+  make('cooking', POT, 2, 'item.hearty_stew', [
+    ['item.raw_meat'],
+    ['item.sunwort'],
+    ['item.berry_red'],
+  ]),
+  make('cooking', POT, 1, 'item.roast_meat', [['item.raw_meat'], ['item.salt']]),
+  make('cooking', POT, 2, 'item.mushroom_soup', [
+    ['item.glowcap'],
+    ['item.dewmint'],
+    ['item.salt'],
+  ]),
+  make('cooking', POT, 1, 'item.sunwort_porridge', [['item.sunwort'], ['item.berry_blue']]),
+  make('cooking', POT, 1, 'item.trail_biscuit', [['item.flax_fiber'], ['item.salt']]),
+  make('cooking', POT, 2, 'item.fish_baked', [['item.fish_river'], ['item.salt']]),
+  make('cooking', POT, 1, 'item.spiced_cider', [['item.berry_red', 2], ['item.salt']]),
+  make('cooking', POT, 1, 'item.apple_tart', [
+    ['item.berry_red'],
+    ['item.berry_blue'],
+    ['item.flax_fiber'],
+  ]),
+  make('cooking', POT, 1, 'item.honey_cake', [
+    ['item.flax_fiber'],
+    ['item.sunwort'],
+    ['item.dew_vial'],
+  ]),
+  make('cooking', POT, 1, 'item.dish_bread', [['item.flax_fiber', 2], ['item.salt']]),
+  make('cooking', POT, 2, 'item.silver_chowder', [
+    ['item.fish_silver'],
+    ['item.salt'],
+    ['item.dewmint'],
+  ]),
+];
+
+/** Every recipe by id. Ingredient order never matters. */
+export const RECIPES: Record<string, RecipeDef> = Object.fromEntries(LIST.map((r) => [r.id, r]));
+
+/** Every unit of a recipe's ingredients, one entry each. */
+export function expand(ing: readonly { item: string; qty: number }[]): string[] {
+  return ing.flatMap((i) => Array.from({ length: i.qty }, () => i.item));
+}
+
+/** Key of an ingredient set: every unit, sorted and joined. */
+export function ingredientKey(units: readonly string[]): string {
+  return [...units].sort().join(',');
+}
+
+/** The recipe made at `station` by exactly these ingredient units, if there is one. */
+export function recipeFor(station: string, units: readonly string[]): RecipeDef | undefined {
+  const k = ingredientKey(units);
+  return Object.values(RECIPES).find(
+    (r) => r.station === station && ingredientKey(expand(r.ingredients)) === k,
+  );
 }
 
 const MIN = 30 * 60;

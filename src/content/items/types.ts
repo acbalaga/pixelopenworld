@@ -1,3 +1,4 @@
+import type { Craft } from './stations';
 import type { DayPhase, Season, Weather } from '../balance/time';
 import type { BottomStyle, ClothColor, MainHand, OffHand, TopStyle } from '../dolls/parts';
 
@@ -81,12 +82,20 @@ export interface ItemDef {
   bag: BagFilter;
 }
 
-/** A recipe: these ingredients, together, make this. Order does not matter. */
+/** How a recipe comes to be known. `start` is known from the first day. */
+export type RecipeLearn = 'start' | 'teach' | 'buy' | 'find' | 'experiment';
+
+/** A recipe: these ingredients, together, at this station, make this. Order never matters. */
 export interface RecipeDef {
   id: string;
-  ingredients: readonly string[];
-  result: string;
+  craft: Craft;
   tier: number;
+  /** The station kind it is made at. */
+  station: string;
+  ingredients: readonly { item: string; qty: number }[];
+  result: string;
+  qty: number;
+  learn: RecipeLearn;
 }
 
 /** One thing a node can give, and when. A missing condition means always. */

@@ -130,7 +130,17 @@ describe('XP mapping from sim events', () => {
     });
     feed(s, { type: 'dodged', src: foe, dst: me });
     feed(s, gather(me));
-    feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.stew', tier: 1 });
+    feed(s, {
+      type: 'crafted',
+      id: me,
+      tag: 'cooking',
+      recipe: 'recipe.stew',
+      tier: 1,
+      item: 'item.hearty_stew',
+      qty: 1,
+      quality: 0,
+      source: 'manual',
+    });
     expect(earned(s, me, 'skill.ember')).toBe(10);
     expect(earned(s, me, 'skill.evasion')).toBe(12);
     expect(earned(s, me, 'skill.foraging')).toBe(20 + 100);

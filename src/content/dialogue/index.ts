@@ -242,14 +242,31 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         do: [{ setFlag: 'met_brin' }],
         choices: [
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
+          {
+            text: 'dlg.brin.c_test',
+            next: 'offer_smithing',
+            if: [{ trial: 'trial.smithing.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.smithing.15' }, { learnRecipe: 'recipe.sword_iron' }],
+          },
           { text: 'dlg.c_bye', next: null },
         ],
+      },
+      offer_smithing: {
+        id: 'offer_smithing',
+        text: 'trial.smithing.15.intro',
+        next: null,
       },
       again: {
         id: 'again',
         text: 'dlg.brin.again',
         choices: [
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
+          {
+            text: 'dlg.brin.c_test',
+            next: 'offer_smithing',
+            if: [{ trial: 'trial.smithing.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.smithing.15' }, { learnRecipe: 'recipe.sword_iron' }],
+          },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -353,9 +370,16 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.hesper.again',
         choices: [
           { text: 'dlg.hesper.c_test', next: 'trial_again' },
+          {
+            text: 'dlg.hesper.c_cook',
+            next: 'offer_cooking',
+            if: [{ trial: 'trial.cooking.15', is: 'passed', not: true }],
+            do: [{ offerTrial: 'trial.cooking.15' }, { learnRecipe: 'recipe.hearty_stew' }],
+          },
           { text: 'dlg.c_bye', next: null },
         ],
       },
+      offer_cooking: { id: 'offer_cooking', text: 'trial.cooking.15.intro', next: null },
       trial_again: { id: 'trial_again', text: 'trial.foraging.15.intro', next: null },
     },
   },

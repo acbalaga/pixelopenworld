@@ -232,6 +232,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 47, 37, 'fixture.waystone', objects);
   object(g, 49, 37, 'fixture.storage', objects);
   object(g, 42, 40, 'prop.camp_pot', objects);
+  object(g, 36, 37, 'fixture.anvil', objects);
+  object(g, 39, 38, 'fixture.workbench', objects);
   object(g, 40, 30, 'npc.shopkeeper', objects);
   object(g, 37, 34, 'npc.smith', objects);
   object(g, 41, 34, 'npc.outfitter', objects);

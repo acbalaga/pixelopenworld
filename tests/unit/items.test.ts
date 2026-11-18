@@ -17,9 +17,9 @@ describe('item content', () => {
   it('the real content is valid', () => {
     expect(validateRealItems(sprites)).toEqual([]);
   });
-  it('the set has about 120 items, four recipes and seven node kinds', () => {
+  it('the set has about 120 items, 42 recipes and seven node kinds', () => {
     expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
-    expect(Object.keys(RECIPES)).toHaveLength(4);
+    expect(Object.keys(RECIPES)).toHaveLength(42);
     expect(Object.keys(NODES)).toHaveLength(7);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(
@@ -56,10 +56,9 @@ describe('item content', () => {
       check(ITEMS, {
         ...RECIPES,
         'recipe.bad': {
+          ...RECIPES['recipe.herb_tea']!,
           id: 'recipe.bad',
-          ingredients: ['item.ghost'],
-          result: 'item.herb_tea',
-          tier: 1,
+          ingredients: [{ item: 'item.ghost', qty: 1 }],
         },
       }).some((e) => e.includes('item.ghost')),
     ).toBe(true);
@@ -70,7 +69,10 @@ describe('item content', () => {
       'recipe.dup': {
         ...RECIPES['recipe.herb_tea']!,
         id: 'recipe.dup',
-        ingredients: ['item.dewmint', 'item.sunwort'],
+        ingredients: [
+          { item: 'item.dewmint', qty: 1 },
+          { item: 'item.sunwort', qty: 1 },
+        ],
       },
     };
     expect(check(ITEMS, dup).some((e) => e.includes('same ingredients'))).toBe(true);
