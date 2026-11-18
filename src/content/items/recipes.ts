@@ -62,7 +62,7 @@ const LIST: readonly RecipeDef[] = [
     2,
     'item.sword_iron',
     [['item.iron_ingot', 2], ['item.oak_plank']],
-    'teach',
+    'buy',
   ),
   make('smithing', ANVIL, 2, 'item.sword_steel', [['item.iron_ingot', 3], ['item.ash_plank']]),
   make('smithing', ANVIL, 1, 'item.spear_hunter', [

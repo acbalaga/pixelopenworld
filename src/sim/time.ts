@@ -22,6 +22,12 @@ export function dayPhase(tick: number): DayPhase {
   return TIME.phases[0].phase;
 }
 
+/** The in-game day a tick falls in. A new day begins at dawn. Shops restock on it. */
+export function dayIndex(tick: number): number {
+  const cycleTicks = CYCLE_MIN * TIME.ticksPerMinute;
+  return Math.floor((tick + TIME.startMinute * TIME.ticksPerMinute) / cycleTicks);
+}
+
 /** The season a tick falls in: seven in-game days each, four seasons a year. */
 export function seasonOf(tick: number): Season {
   const cycleTicks = CYCLE_MIN * TIME.ticksPerMinute;

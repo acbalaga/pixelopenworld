@@ -20,6 +20,7 @@ import { skillsSystem } from './systems/skills';
 import { trialsSystem } from './systems/trials';
 import { craftSystem } from './crafting';
 import { elementsSystem } from './elements';
+import { tradeSystem } from './trade';
 import { statusSystem } from './statuses';
 import type { EntityId } from './kernel/entities';
 
@@ -54,6 +55,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   itemsSystem,
   craftSystem,
   requestsSystem,
+  tradeSystem,
   hintsSystem,
   // Last, so they see every event the other systems sent this tick. Trials run before skills,
   // so a pass releases banked XP in the same tick.

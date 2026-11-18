@@ -49,7 +49,9 @@ export function plausibility(v: View): Reason[] {
     fail('GATHER_RATE', `${gathered} items gathered in ${seconds} s`);
 
   // Coin, source by source.
-  const spent = ledger.coinSpent.purchase ?? 0;
+  // Coin the player paid shopkeepers refills their purses, so it raises what they can pay out.
+  const c = ledger.coinSpent;
+  const spent = (c.purchase ?? 0) + (c.recipe ?? 0) + (c.buyback ?? 0) + (c.repair ?? 0);
   let loot = 0;
   for (const [c, n] of Object.entries(ledger.kills)) loot += n * maxCoinPerKill(c);
   const e = ledger.coinEarned;
@@ -57,8 +59,12 @@ export function plausibility(v: View): Reason[] {
     fail('COIN_IMPLAUSIBLE', `loot ${e.loot} from kills worth at most ${loot}`);
   if ((e.chest ?? 0) > CHEST_COIN_TOTAL)
     fail('COIN_IMPLAUSIBLE', `chests ${e.chest}, all chests hold ${CHEST_COIN_TOTAL}`);
+  // SALE_RATE. Every shopkeeper holds a purse, so lifetime sale coin cannot pass what the purses
+  // can pay: the coin they start with, the top up they earn on a timer (twice as fast for a Fair
+  // Dealer once M3-08 lands), and every coin the player has paid them. Prices and
+  // haggling change how much one sale pays, never how much the purses hold.
   if ((e.sale ?? 0) > saleCeiling(seconds, spent))
-    fail('COIN_IMPLAUSIBLE', `sales ${e.sale}, shops can pay ${saleCeiling(seconds, spent)}`);
+    fail('SALE_RATE', `sales ${e.sale}, shops can pay ${saleCeiling(seconds, spent)}`);
   if ((e.seed ?? 0) > coinCeiling(seconds, kills, spent))
     fail('COIN_IMPLAUSIBLE', `seeded coin ${e.seed} in ${seconds} s`);
   return out;

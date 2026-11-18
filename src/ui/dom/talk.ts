@@ -11,9 +11,11 @@ import { UI_STRINGS as S } from '../../content/strings/ui';
 import { holds, startNode } from '../../sim/journal';
 import type { Command } from '../../sim/kernel/commands';
 import type { SimEvent } from '../../sim/kernel/events';
-import type { SimState } from '../../sim/state';
+import type { Haggle, SimState } from '../../sim/state';
+import { acceptChance } from '../../sim/economy';
 import { countItem } from '../../sim/items';
-import { buyPrice, sellPrice, shopPurse } from '../../sim/systems/npcs';
+import { EQUIP_SLOTS } from '../../content/items/types';
+import { haggleOf, mendCost, openBuy, openSell, shopPurse, shopTakes } from '../../sim/trade';
 
 export interface TalkDeps {
   read: () => { state: SimState; who: number };
@@ -56,7 +58,8 @@ export class TalkSheet {
   private actions: HTMLElement | null = null;
   private shopId: string | null = null;
   private shopMsg = '';
-  private shopTab: 'buy' | 'sell' = 'buy';
+  private shopTab: 'buy' | 'sell' | 'buyback' | 'repair' = 'buy';
+  private haggleNote = '';
   private ready = false;
   private storageOpen = false;
   private stationKind: string | null = null;
@@ -196,6 +199,23 @@ export class TalkSheet {
     } else if (this.shopId && e.type === 'sold') {
       this.shopMsg = fill(S.shop.sold, { item: nameOf(e.item), n: String(e.coin) });
       this.renderShop();
+    } else if (this.shopId && e.type === 'boughtBack') {
+      this.shopMsg = fill(S.shop.boughtBack, { item: nameOf(e.item), n: String(e.coin) });
+      this.renderShop();
+    } else if (this.shopId && e.type === 'mended') {
+      this.shopMsg = fill(S.shop.mended, { item: nameOf(e.item), n: String(e.coin) });
+      this.renderShop();
+    } else if (this.shopId && e.type === 'haggleStep') {
+      if (e.result === 'open') this.shopMsg = '';
+      this.haggleNote = fill(S.shop.haggle.says[e.result], { n: String(e.price) });
+      this.renderShop();
+    } else if (this.shopId && e.type === 'haggleEnded') {
+      this.haggleNote = '';
+      // A walk away or a purchase that failed has its own message, or none.
+      if (e.won)
+        this.shopMsg = fill(S.shop.haggle.won, { item: nameOf(e.item), n: String(e.price) });
+      else if (e.refused) this.shopMsg = S.shop.haggle.lost;
+      this.renderShop();
     } else if (this.shopId && e.type === 'shopDenied') {
       this.shopMsg = fill(S.shop.denied[e.reason], {
         name: NPCS[SHOPS[this.shopId]?.npc ?? '']?.name ?? '',
@@ -209,6 +229,7 @@ export class TalkSheet {
     this.mount('pow-shop', S.shop.title);
     this.shopId = shopId;
     this.shopMsg = '';
+    this.haggleNote = '';
     this.shopTab = 'buy';
     this.renderShop();
   }
@@ -235,7 +256,10 @@ export class TalkSheet {
 
     const tabs = el('div', 'pow-shop-tabs');
     tabs.setAttribute('role', 'tablist');
-    for (const t of ['buy', 'sell'] as const) {
+    const tabNames = shop.repairs
+      ? (['buy', 'sell', 'buyback', 'repair'] as const)
+      : (['buy', 'sell', 'buyback'] as const);
+    for (const t of tabNames) {
       const b = el('button', 'pow-tab', S.shop[t]);
       b.type = 'button';
       b.setAttribute('role', 'tab');
@@ -263,7 +287,8 @@ export class TalkSheet {
       price: number,
       label: string,
       qtyText: string,
-      run: () => void,
+      run: (() => void) | null,
+      extra: HTMLElement | null = null,
     ): void => {
       const li = el('li', 'pow-shop-row');
       const icon = el('canvas', 'pow-icon');
@@ -279,31 +304,149 @@ export class TalkSheet {
         'aria-label',
         `${label} ${nameOf(item)}, ${fill(S.shop.price, { n: String(price) })}`,
       );
-      b.addEventListener('click', run);
-      put(li, icon, name, cost, b);
+      if (run) b.addEventListener('click', run);
+      else b.disabled = true;
+      const actions = el('span', 'pow-shop-actions');
+      put(actions, b);
+      if (extra) actions.appendChild(extra);
+      put(li, icon, name, cost, actions);
       list.appendChild(li);
     };
+    const haggleButton = (
+      start: Extract<Command, { type: 'haggle' }>,
+      item: string,
+    ): HTMLElement => {
+      const b = el('button', 'pow-button', S.shop.haggle.button);
+      b.type = 'button';
+      b.setAttribute('aria-label', `${S.shop.haggle.button} ${nameOf(item)}`);
+      b.addEventListener('click', () => this.deps.send(start));
+      return b;
+    };
+    const k = state.entities.comps.npc.find((n) => n?.id === shop.npc) ?? null;
+    const open = haggleOf(state, who);
+    if (open && open.shop === shop.id) {
+      put(s, head, msg, this.renderHaggle(open, shop.firmness));
+      this.ready = true;
+      return;
+    }
     if (this.shopTab === 'buy') {
-      for (const item of shop.stock)
-        row(item, buyPrice(item), S.shop.buyOne, '', () =>
-          this.deps.send({ type: 'buy', shop: shop.id, item, qty: 1 }),
+      for (const { item } of shop.stock) {
+        const left = k?.stock[item] ?? 0;
+        const locked = k?.locked.includes(item) ?? false;
+        row(
+          item,
+          openBuy(shop.id, item),
+          left > 0 ? S.shop.buyOne : S.shop.soldOut,
+          ` ${fill(S.shop.left, { n: String(left) })}`,
+          left > 0 ? () => this.deps.send({ type: 'buy', shop: shop.id, item, qty: 1 }) : null,
+          left > 0 && !locked
+            ? haggleButton({ type: 'haggle', shop: shop.id, step: 'start', item, dir: 'buy' }, item)
+            : null,
         );
-    } else {
+      }
+    } else if (this.shopTab === 'sell') {
       let any = false;
       inv?.slots.forEach((stack, slot) => {
-        if (!stack || stack.item === 'item.coin') return;
-        const each = sellPrice(stack.item);
+        if (!stack || !shopTakes(shop.id, stack.item)) return;
+        const each = openSell(shop.id, stack.item, stack.q ?? 0);
         if (each <= 0) return;
         any = true;
-        row(stack.item, each, S.shop.sellOne, ` x${stack.qty}`, () =>
-          this.deps.send({ type: 'sell', shop: shop.id, slot, qty: 1 }),
+        const locked = k?.locked.includes(stack.item) ?? false;
+        row(
+          stack.item,
+          each,
+          S.shop.sellOne,
+          ` x${stack.qty}`,
+          () => this.deps.send({ type: 'sell', shop: shop.id, slot, qty: 1 }),
+          locked
+            ? null
+            : haggleButton(
+                { type: 'haggle', shop: shop.id, step: 'start', dir: 'sell', slot },
+                stack.item,
+              ),
         );
       });
       if (!any) list.appendChild(el('li', 'pow-hint', S.shop.nothingToSell));
+    } else if (this.shopTab === 'buyback') {
+      (k?.buyback ?? []).forEach((b, index) =>
+        row(
+          b.stack.item,
+          b.price * b.stack.qty,
+          S.shop.buyBackOne,
+          b.stack.qty > 1 ? ` x${b.stack.qty}` : '',
+          () => this.deps.send({ type: 'buyback', shop: shop.id, index }),
+        ),
+      );
+      if (!k || k.buyback.length === 0) list.appendChild(el('li', 'pow-hint', S.shop.nothingBack));
+    } else {
+      let any = false;
+      const add = (from: 'bag' | 'worn', slot: number, item: string): void => {
+        const cost = mendCost(state, who, from, slot);
+        if (cost <= 0) return;
+        any = true;
+        const tag = from === 'worn' ? ` (${S.shop.worn})` : '';
+        row(item, cost, S.shop.mendOne, tag, () =>
+          this.deps.send({ type: 'mend', shop: shop.id, from, slot }),
+        );
+      };
+      EQUIP_SLOTS.forEach((slot, i) => {
+        const w = inv?.equipment[slot];
+        if (w) add('worn', i, w.item);
+      });
+      inv?.slots.forEach((stack, slot) => {
+        if (stack) add('bag', slot, stack.item);
+      });
+      if (!any) list.appendChild(el('li', 'pow-hint', S.shop.nothingWorn));
     }
     put(s, head, tabs, purse, msg, list);
     (s.querySelector('.pow-shop-list button') as HTMLElement | null)?.focus();
     this.ready = true;
+  }
+
+  /** The haggle panel: the price standing, the exchanges left, and the four choices. */
+  private renderHaggle(h: Haggle, firmness: number): HTMLElement {
+    const box = el('section', 'pow-haggle');
+    const name = SHOPS[h.shop] ? (NPCS[SHOPS[h.shop]?.npc ?? '']?.name ?? '') : '';
+    put(
+      box,
+      el(
+        'h3',
+        'pow-haggle-title',
+        fill(h.dir === 'buy' ? S.shop.haggle.titleBuy : S.shop.haggle.titleSell, {
+          item: nameOf(h.item),
+        }),
+      ),
+      el('p', 'pow-haggle-price', fill(S.shop.haggle.standing, { n: String(h.cur) })),
+      el(
+        'p',
+        'pow-hint',
+        fill(S.shop.haggle.rounds, { n: String(h.rounds - h.round), max: String(h.rounds) }),
+      ),
+      el('p', 'pow-haggle-says', this.haggleNote ? `${name}: ${this.haggleNote}` : ''),
+    );
+    const { state, who } = this.deps.read();
+    const pts = state.entities.comps.skills[who]?.points['skill.bartering'] ?? 0;
+    const btn = (label: string, step: 'low' | 'fair' | 'accept' | 'cancel', hint = ''): void => {
+      const b = el('button', 'pow-button pow-choice', hint ? `${label} (${hint})` : label);
+      b.type = 'button';
+      b.addEventListener('click', () => this.deps.send({ type: 'haggle', shop: h.shop, step }));
+      box.appendChild(b);
+    };
+    if (h.round < h.rounds) {
+      btn(
+        S.shop.haggle.low,
+        'low',
+        fill(S.shop.haggle.chance, { n: String(acceptChance('low', pts, firmness)) }),
+      );
+      btn(
+        S.shop.haggle.fair,
+        'fair',
+        fill(S.shop.haggle.chance, { n: String(acceptChance('fair', pts, firmness)) }),
+      );
+    }
+    btn(fill(S.shop.haggle.accept, { n: String(h.cur) }), 'accept');
+    btn(S.shop.haggle.walk, 'cancel');
+    return box;
   }
 
   /** The result of a craft: the panel comes back with what was made. */

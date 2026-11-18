@@ -1,18 +1,21 @@
-import { SHOP_BALANCE as B } from '../../content/balance/shop';
 import { TECHNIQUES } from '../../content/combat/attacks';
 import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
 import type { Effect } from '../../content/dialogue/types';
-import { ITEMS } from '../../content/items';
-import { addItem, canHold, give, learnRecipe, removeItem } from '../items';
+import { give, learnRecipe } from '../items';
 import { holds, requestState } from '../journal';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
-import { px, SUBPX } from '../kernel/fixed';
+import { px } from '../kernel/fixed';
 import { offerTrial } from '../skills';
 import { deliverTrials } from './trials';
-import type { Npc, SimState } from '../state';
+import type { SimState } from '../state';
 import { contextTarget } from './interact';
-import { earnCoin, madeItems, spendCoin } from '../ledger';
+import { dayIndex } from '../time';
+import { near, newNpc } from '../trade';
+
+export { buy, buyback, haggle, mend, sell, shopPurse, tradeSystem } from '../trade';
+export { buyPrice, sellPrice } from '../economy';
+import { earnCoin } from '../ledger';
 
 const TILE = 16;
 
@@ -20,50 +23,10 @@ const TILE = 16;
 export function spawnNpc(state: SimState, id: string, tx: number, ty: number): EntityId {
   const e = spawn(state.entities);
   setComp(state.entities, e, 'pos', { x: px(tx * TILE + 8), y: px(ty * TILE + 14) });
-  const shop = Object.values(SHOPS).find((x) => x.npc === id);
-  setComp(state.entities, e, 'npc', { id, purse: shop?.purse.start ?? 0 });
+  setComp(state.entities, e, 'npc', newNpc(id, dayIndex(state.worldTick)));
   setComp(state.entities, e, 'body', { w: px(12), h: px(8), solid: true });
   setComp(state.entities, e, 'interactable', { kind: id });
   return e;
-}
-
-/** The npc component of the shopkeeper for a shop, if they are in the world. */
-function keeper(state: SimState, shopId: string): { npc: Npc; max: number } | null {
-  const shop = SHOPS[shopId];
-  if (!shop) return null;
-  for (const id of query(state.entities, 'npc')) {
-    const n = getComp(state.entities, id, 'npc');
-    if (n?.id === shop.npc) return { npc: n, max: shop.purse.max };
-  }
-  return null;
-}
-
-/** Coin the shopkeeper holds, or 0 if they are not here. */
-export function shopPurse(state: SimState, shopId: string): number {
-  return keeper(state, shopId)?.npc.purse ?? 0;
-}
-
-/** Price to buy one of an item. */
-export function buyPrice(item: string): number {
-  return Math.max(1, Math.round(((ITEMS[item]?.value ?? 0) * B.buyPct) / 100));
-}
-
-/** What the shop pays for one of an item. */
-export function sellPrice(item: string): number {
-  return Math.floor(((ITEMS[item]?.value ?? 0) * B.sellPct) / 100);
-}
-
-/** True if an NPC with this id stands within talking range of `who`. */
-function near(state: SimState, who: EntityId, npcId: string): boolean {
-  const p = getComp(state.entities, who, 'pos');
-  if (!p) return false;
-  for (const id of query(state.entities, 'npc', 'pos')) {
-    if (getComp(state.entities, id, 'npc')?.id !== npcId) continue;
-    const q = getComp(state.entities, id, 'pos');
-    if (!q) continue;
-    if (Math.hypot(q.x - p.x, q.y - p.y) / SUBPX <= B.talkRangePx) return true;
-  }
-  return false;
 }
 
 /** The context button on a person: starts the talk. The UI reads `talkStarted`. */
@@ -137,72 +100,8 @@ export function talk(
   for (const e of choice.do ?? []) applyEffect(state, who, e);
 }
 
-/** Buying: needs the coin and room in the bag. */
-export function buy(
-  state: SimState,
-  who: EntityId,
-  c: { shop: string; item: string; qty: number },
-): void {
-  const shop = SHOPS[c.shop];
-  const a = getComp(state.entities, who, 'avatar');
-  const inv = getComp(state.entities, who, 'inventory');
-  if (!shop || !a || !inv) return;
-  if (!near(state, who, shop.npc))
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'range' });
-  if (!shop.stock.includes(c.item))
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'stock' });
-  const cost = buyPrice(c.item) * c.qty;
-  if (a.coin < cost) return void emit(state.events, { type: 'shopDenied', who, reason: 'coin' });
-  if (!canHold(inv, c.item, c.qty))
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'bag' });
-  spendCoin(state, who, cost, 'purchase');
-  const k = keeper(state, c.shop);
-  if (k) k.npc.purse = Math.min(k.max, k.npc.purse + cost);
-  addItem(inv, c.item, c.qty);
-  madeItems(state, 'shop', c.item, c.qty);
-  emit(state.events, { type: 'bought', who, item: c.item, qty: c.qty, coin: cost });
-}
-
-/** Selling: anything with a value, from a bag slot, for the shop's sell rate. */
-export function sell(
-  state: SimState,
-  who: EntityId,
-  c: { shop: string; slot: number; qty: number },
-): void {
-  const shop = SHOPS[c.shop];
-  const a = getComp(state.entities, who, 'avatar');
-  const inv = getComp(state.entities, who, 'inventory');
-  const stack = inv?.slots[c.slot];
-  if (!shop || !a || !inv || !stack) return;
-  if (!near(state, who, shop.npc))
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'range' });
-  const qty = Math.min(c.qty, stack.qty);
-  const each = sellPrice(stack.item);
-  if (each <= 0 || stack.item === 'item.coin')
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'worthless' });
-  const k = keeper(state, c.shop);
-  if (!k || k.npc.purse < each * qty)
-    return void emit(state.events, { type: 'shopDenied', who, reason: 'purse' });
-  const item = stack.item;
-  if (!removeItem(inv, item, qty)) return;
-  k.npc.purse -= each * qty;
-  earnCoin(state, who, each * qty, 'sale');
-  emit(state.events, { type: 'sold', who, item, qty, coin: each * qty });
-}
-
-/** Shopkeepers who hold less than they started with earn a little back over time. */
-function restock(state: SimState): void {
-  if (state.tick === 0 || state.tick % B.purseRegenEvery !== 0) return;
-  for (const shop of Object.values(SHOPS)) {
-    const k = keeper(state, shop.id);
-    if (k && k.npc.purse < shop.purse.start)
-      k.npc.purse = Math.min(shop.purse.start, k.npc.purse + B.purseRegen);
-  }
-}
-
 /** Counts kills toward active requests and marks them ready. Runs after combat. */
 export function requestsSystem(state: SimState): void {
-  restock(state);
   for (const who of query(state.entities, 'avatar', 'journal')) {
     const j = getComp(state.entities, who, 'journal');
     if (!j) continue;

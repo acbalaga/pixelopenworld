@@ -130,8 +130,32 @@ export type SimEvent =
   | {
       type: 'shopDenied';
       who: number;
-      reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' | 'purse';
+      reason: 'coin' | 'bag' | 'stock' | 'worthless' | 'range' | 'purse' | 'locked' | 'nothing';
     }
+  | { type: 'boughtBack'; who: number; item: string; qty: number; coin: number }
+  | { type: 'mended'; who: number; item: string; coin: number }
+  /** One exchange of a haggle. `result` is the shopkeeper's answer; `price` is what stands. */
+  | {
+      type: 'haggleStep';
+      who: number;
+      shop: string;
+      item: string;
+      price: number;
+      round: number;
+      result: 'open' | 'accept' | 'counter' | 'refuse';
+    }
+  | {
+      type: 'haggleEnded';
+      who: number;
+      shop: string;
+      item: string;
+      price: number;
+      won: boolean;
+      /** The shopkeeper ended it: the price stands and the item is closed until dawn. */
+      refused: boolean;
+    }
+  /** A haggle closed at a better price than the opening one. Pays Bartering XP. */
+  | { type: 'haggleWon'; who: number; shop: string; item: string; price: number }
   | { type: 'hintShown'; who: number; hint: string }
   | { type: 'hintEnded'; who: number; hint: string; how: 'done' | 'expired' }
   | { type: 'roomChanged'; who: number; from: string; to: string };

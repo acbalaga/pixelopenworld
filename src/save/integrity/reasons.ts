@@ -34,6 +34,7 @@ export const REASON_CODES = [
   'REQUEST_PAYOUT_MISMATCH',
   'CRAFT_MISMATCH',
   'PURCHASE_MISMATCH',
+  'BUYBACK_EXCEEDS_SOLD',
   'ECHO_EXCEEDS_DROPPED',
   'START_KIT_MISMATCH',
   // Plausibility: the totals are not possible in the recorded time.
@@ -42,6 +43,7 @@ export const REASON_CODES = [
   'KILLS_IMPLAUSIBLE',
   'CRAFTS_IMPLAUSIBLE',
   'GATHER_RATE',
+  'SALE_RATE',
   'PLAYTIME_EXCEEDS_ELAPSED',
   // Snapshots.
   'CHAIN_BROKEN',

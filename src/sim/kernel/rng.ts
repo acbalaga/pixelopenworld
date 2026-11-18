@@ -1,7 +1,15 @@
 /** Seeded PRNG (sfc32) with named, independent, serializable streams. */
 
 /** The streams. Adding a roll to one never shifts another. Add new names at the end. */
-export const STREAM_NAMES = ['combat', 'loot', 'world', 'travelers', 'misc', 'craft'] as const;
+export const STREAM_NAMES = [
+  'combat',
+  'loot',
+  'world',
+  'travelers',
+  'misc',
+  'craft',
+  'trade',
+] as const;
 /** A stream name. */
 export type StreamName = (typeof STREAM_NAMES)[number];
 

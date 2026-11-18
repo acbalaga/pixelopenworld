@@ -375,6 +375,20 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   return true;
 }
 
+/** Reads a recipe scroll from a bag slot: learns its recipe and uses the scroll up. */
+export function readScroll(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  const teaches = stack ? ITEMS[stack.item]?.teaches : undefined;
+  if (!inv || !stack || !teaches) return false;
+  if (getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
+  if (!learnRecipe(state, who, teaches)) return false;
+  stack.qty--;
+  if (stack.qty === 0) inv.slots[slot] = null;
+  emit(state.events, { type: 'recipeDiscovered', id: who, recipe: teaches });
+  return true;
+}
+
 /** Teaches a recipe, for example from an NPC. Returns false if already known or unknown. */
 export function learnRecipe(state: SimState, who: EntityId, recipeId: string): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -418,7 +432,7 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       unequip(state, who, c.slot as EquipSlot);
       return;
     case 'use':
-      eat(state, who, c.slot);
+      if (!eat(state, who, c.slot)) readScroll(state, who, c.slot);
       return;
     case 'drop':
       dropFromBag(state, who, c.slot);

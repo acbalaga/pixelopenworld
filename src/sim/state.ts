@@ -332,6 +332,30 @@ export interface Npc {
   id: string;
   /** Coin the person holds for trading. Shopkeepers only. */
   purse: number;
+  /** Shelf count by item. Refilled to the shop's maxima at each dawn. Shopkeepers only. */
+  stock: Record<string, number>;
+  /** The in-game day of the last restock, from the world clock. */
+  day: number;
+  /** Items this shopkeeper will not haggle on again until the next dawn (a lost haggle). */
+  locked: string[];
+  /** The last stacks sold here and what was paid per item, newest last. Cleared at dawn. */
+  buyback: { stack: ItemStack; price: number }[];
+}
+
+/**
+ * A haggle in progress (M3-10) with a shopkeeper: one item, in one direction. `open` is the
+ * opening price, `cur` the price standing now, `round` the exchanges used.
+ */
+export interface Haggle {
+  shop: string;
+  item: string;
+  dir: 'buy' | 'sell';
+  /** Bag slot of the item being sold. -1 when buying. */
+  slot: number;
+  open: number;
+  cur: number;
+  round: number;
+  rounds: number;
 }
 
 /** Components. `pos` is the feet position of a body, in sub-pixel units. */
@@ -357,6 +381,7 @@ export interface Components {
   node: GatherNode;
   gather: Gather;
   craft: CraftSession;
+  haggle: Haggle;
   statuses: StatusEntry[];
   cloud: Cloud;
   fixture: Fixture;
@@ -404,6 +429,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'node',
   'gather',
   'craft',
+  'haggle',
   'statuses',
   'cloud',
   'fixture',

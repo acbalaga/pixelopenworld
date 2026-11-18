@@ -146,7 +146,7 @@ describe('every rule has a bound: just inside passes, just outside flags', () =>
   );
   edge(
     'coin from sales against what the shops can pay',
-    'COIN_IMPLAUSIBLE',
+    'SALE_RATE',
     (v, s, me) => {
       const old = s.ledger.coinEarned.sale ?? 0;
       s.ledger.coinEarned.sale = v;
