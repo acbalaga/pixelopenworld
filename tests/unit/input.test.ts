@@ -211,7 +211,7 @@ describe('sources share one action layer', () => {
     const g = sampler();
     const t = mk();
     t.down(1, 100, 600, 0);
-    t.move(1, 180, 600);
+    t.move(1, 200, 600);
     const ts = new InputSampler(t);
     pad.current = null;
     const kr = k.sample(0);
@@ -236,6 +236,18 @@ describe('sources share one action layer', () => {
     t.down(1, 100, 600, 0);
     t.move(1, 200, 600);
     expect(new InputSampler(t).sample(10).full).toBe(true);
+  });
+
+  it('a walking drag on touch is not a sprint, even at full stick output', () => {
+    const t = mk();
+    t.down(1, 100, 600, 0);
+    // 70 px: past the 56 px where the stick output is already 1, short of the sprint radius.
+    t.move(1, 170, 600);
+    const r = new InputSampler(t).sample(10);
+    expect(Math.hypot(r.move.x, r.move.y)).toBeCloseTo(1);
+    expect(r.moveDir).toBe(Dir.E);
+    expect(r.full).toBe(false);
+    expect(toCommands(r, null)).toEqual([{ type: 'move', dir: Dir.E }]);
   });
 });
 

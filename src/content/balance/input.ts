@@ -4,6 +4,12 @@ export const INPUT_TUNABLES = {
   stickDeadZonePx: 8,
   /** Stick output reaches 1.0 at this radius. */
   stickMaxRadiusPx: 56,
+  /**
+   * Sprint needs the thumb this far from where the stick began, well past the radius where the
+   * stick is already at full output. A comfortable walking drag is not a sprint, so a normal walk
+   * never costs stamina.
+   */
+  stickSprintRadiusPx: 88,
   /** A pointer that ends within this distance and time is a tap. */
   tapMaxDistPx: 10,
   tapMaxMs: 250,

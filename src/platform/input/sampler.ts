@@ -33,7 +33,10 @@ export class InputSampler {
       Math.hypot(s.x, s.y) > Math.hypot(best.x, best.y) ? s : best,
     );
     r.moveDir = quantizeDir(r.move.x, r.move.y, INPUT_TUNABLES.directionThreshold);
-    r.full = r.moveDir !== null && r.move !== k && Math.hypot(r.move.x, r.move.y) >= FULL_EXTENT;
+    // Touch sprints only on a deliberate push past the walking range (`t.far`). A gamepad stick
+    // has a physical limit, so full deflection is deliberate there. Keyboard never sprints.
+    const full = r.move === t.move ? t.far : Math.hypot(r.move.x, r.move.y) >= FULL_EXTENT;
+    r.full = r.moveDir !== null && r.move !== k && full;
 
     const pressed = new Set<ButtonId>([
       ...t.buttonsPressed,

@@ -146,6 +146,16 @@ describe('collision', () => {
   });
 });
 
+describe('walking', () => {
+  it('a plain walk never costs stamina, however long it goes on', () => {
+    const { s, id } = world(OPEN);
+    const full = s.entities.comps.pools[id]!.sta;
+    press(s, id, Dir.E, false, 600);
+    expect(avatar(s, id).sprinting).toBe(false);
+    expect(s.entities.comps.pools[id]!.sta).toBe(full);
+  });
+});
+
 describe('sprint', () => {
   it('starts after the stick is held at full extent for sprintHoldTicks and drains stamina', () => {
     const { s, id } = world(OPEN);
