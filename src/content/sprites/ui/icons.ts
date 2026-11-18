@@ -241,16 +241,17 @@ const rested = icon('ui.status_rested', (im) => {
   im.set(10, 10, GOLD[3]);
 });
 
-/** Buy: a satchel with a coin on it. */
+/** Buy: a coin purse, a round pouch cinched at the neck with a gold string and a coin on it. */
 const buy = icon('ui.icon_buy', (im) => {
-  im.rect(4, 0, 4, 2, W);
-  im.rect(7, 0, 7, 2, W);
-  im.rect(4, 0, 7, 0, W);
-  im.rect(1, 3, 10, 10, WOOD);
-  im.rect(1, 3, 10, 4, GUARD);
-  im.rect(1, 10, 10, 10, METAL_DARK);
-  disc(im, 5, 7, 2, GOLD[2]);
-  im.rect(5, 6, 6, 7, GOLD[3]);
+  im.rect(2, 0, 8, 1, WOOD);
+  im.rect(3, 2, 7, 3, WOOD);
+  im.rect(5, 0, 5, 0, METAL_DARK);
+  im.rect(2, 3, 8, 3, GOLD[3]);
+  disc(im, 5, 7, 4, WOOD);
+  im.rect(2, 5, 3, 6, GUARD);
+  im.rect(2, 10, 8, 10, METAL_DARK);
+  disc(im, 5, 7, 1, GOLD[2]);
+  im.set(5, 6, GOLD[3]);
 });
 
 /** Haggle: two arrows passing each other, an offer and a counter. */
