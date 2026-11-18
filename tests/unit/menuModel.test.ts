@@ -44,9 +44,9 @@ describe('character view', () => {
     const g = characterView(s, me).gear;
     expect(g.map((x) => x.slot)).toEqual(['main', 'off', 'head', 'body', 'legs', 'accessory']);
     expect(g[0]).toMatchObject({
-      item: 'item.sword_rusty',
-      itemName: 'Rusty Sword',
-      icon: 'icon.sword_rusty',
+      item: 'item.dagger_wood',
+      itemName: 'Wooden Dagger',
+      icon: 'icon.dagger_wood',
     });
     expect(g[1]).toMatchObject({ item: null, itemName: null, icon: null });
   });
@@ -114,7 +114,7 @@ describe('bag view and item actions', () => {
     const v = bagView(s, me);
     expect(v.total).toBe(v.slots.length);
     expect(v.used).toBe(1);
-    expect(v.slots[0]).toMatchObject({ item: 'item.dish_bread', qty: 2, label: 'Bread, 2' });
+    expect(v.slots[0]).toMatchObject({ item: 'item.dish_bread', qty: 1, label: 'Bread, 1' });
     expect(v.slots[1]).toMatchObject({ item: null, label: UI_STRINGS.bagSlotEmptyLabel });
   });
   it('offers Eat for food, Wear for gear, and Drop for everything', () => {
@@ -130,7 +130,7 @@ describe('bag view and item actions', () => {
     const d = itemDetail(s, me, 0)!;
     expect(d).toMatchObject({ name: 'Bread', category: 'Food', actions: ['use', 'drop'] });
     expect(d.description.length).toBeGreaterThan(5);
-    expect(d.qty).toBe('Carrying 2');
+    expect(d.qty).toBe('Carrying 1');
     expect(itemDetail(s, me, 5)).toBeNull();
   });
   it('names every item', () => {

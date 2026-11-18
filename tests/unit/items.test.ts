@@ -18,16 +18,16 @@ describe('item content', () => {
     expect(validateRealItems(sprites)).toEqual([]);
   });
   // M3-12 added 19 recipes and 6 Whisperwood node kinds, so every item can be obtained.
-  it('the set has about 140 items, 99 recipes and thirteen node kinds', () => {
+  it('the set has about 140 items, 100 recipes and thirteen node kinds', () => {
     expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
-    expect(Object.keys(RECIPES)).toHaveLength(99);
+    expect(Object.keys(RECIPES)).toHaveLength(100);
     expect(Object.keys(NODES)).toHaveLength(13);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(
       Object.values(ITEMS).filter((i) => i.equip?.slot === 'main' && i.equip.weapon === 'sword'),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
     expect(Object.values(ITEMS).filter((i) => i.equip?.weapon === 'spear')).toHaveLength(4);
-    expect(Object.values(ITEMS).filter((i) => i.equip?.slot === 'body')).toHaveLength(7);
+    expect(Object.values(ITEMS).filter((i) => i.equip?.slot === 'body')).toHaveLength(8);
     expect(count('consumable')).toBeGreaterThanOrEqual(6);
   });
   it('has a name and a description for every item, and an icon in the atlas', () => {

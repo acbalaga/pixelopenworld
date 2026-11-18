@@ -48,7 +48,16 @@ export const BOTTOM_STYLES = ['trousers', 'skirt'] as const;
 export type BottomStyle = (typeof BOTTOM_STYLES)[number];
 
 /** Held items. They have fixed colors (metal, wood), so they are not recolored. */
-export const MAIN_HANDS = ['none', 'sword', 'staff', 'spear', 'maul', 'bow', 'wraps'] as const;
+export const MAIN_HANDS = [
+  'none',
+  'sword',
+  'dagger',
+  'staff',
+  'spear',
+  'maul',
+  'bow',
+  'wraps',
+] as const;
 export type MainHand = (typeof MAIN_HANDS)[number];
 /** What a new look may start with. */
 const START_HANDS: readonly MainHand[] = ['none', 'sword', 'staff'];

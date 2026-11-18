@@ -63,10 +63,11 @@ export function ledgerRules(v: View): Reason[] {
   if (affixes > enchants) fail('AFFIX_WITHOUT_ENCHANT', `${affixes} affixes, ${enchants} enchants`);
 
   // The starter kit is exactly the starter kit.
+  // A save names the kit it began with. A missing field counts as the current kit, never the old.
+  const start = ledger.startKit === 1 ? ITEMS_BALANCE.starterV1 : ITEMS_BALANCE.starter;
   const kit: Record<string, number> = {};
-  for (const s of ITEMS_BALANCE.starter.bag) kit[s.item] = (kit[s.item] ?? 0) + s.qty;
-  for (const item of Object.values(ITEMS_BALANCE.starter.equipment))
-    kit[item] = (kit[item] ?? 0) + 1;
+  for (const s of start.bag) kit[s.item] = (kit[s.item] ?? 0) + s.qty;
+  for (const item of Object.values(start.equipment)) kit[item] = (kit[item] ?? 0) + 1;
   for (const [item, n] of Object.entries(ledger.itemsMade.start ?? {}))
     if (n > (kit[item] ?? 0)) fail('START_KIT_MISMATCH', `${item} x${n}`);
 

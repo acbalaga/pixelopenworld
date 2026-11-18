@@ -45,8 +45,11 @@ function build(): Map<string, Set<ItemSource>> {
       for (const e of effects) if ('give' in e) add(e.give, 'dialogue');
     }
   }
-  for (const s of ITEMS_BALANCE.starter.bag) add(s.item, 'start');
-  for (const item of Object.values(ITEMS_BALANCE.starter.equipment)) add(item, 'start');
+  // Both kits can come from `start`. The exact kit is checked against the one the save began with.
+  for (const kit of [ITEMS_BALANCE.starter, ITEMS_BALANCE.starterV1]) {
+    for (const s of kit.bag) add(s.item, 'start');
+    for (const item of Object.values(kit.equipment)) add(item, 'start');
+  }
   return out;
 }
 

@@ -114,6 +114,7 @@ const LIST: readonly RecipeDef[] = [
     [['item.oak_plank', 2], ['item.flax_fiber']],
     'start',
   ),
+  make('woodworking', BENCH, 1, 'item.dagger_wood', [['item.oak_plank', 2]], 'start'),
   make('woodworking', BENCH, 1, 'item.shield_wood', [['item.oak_plank', 3]], 'start'),
   make('woodworking', BENCH, 1, 'item.maul_oak', [['item.oak_plank', 3], ['item.copper_ingot']]),
   make('woodworking', BENCH, 1, 'item.spear_ash', [['item.ash_log', 2], ['item.copper_ingot']]),

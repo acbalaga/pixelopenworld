@@ -455,6 +455,12 @@ function fish(name: string, c: Ramp): SpriteDef {
 }
 
 export const ITEM_ICONS: readonly SpriteDef[] = [
+  icon('dagger_wood', (im) => {
+    line(im, 8, 3, 5, 7, WOOD[2]);
+    line(im, 9, 4, 6, 8, WOOD[1]);
+    line(im, 7, 3, 4, 6, WOOD[3]);
+    line(im, 3, 7, 5, 9, WOOD[0]);
+  }),
   sword('sword_rusty', RUST),
   sword('sword_iron', METAL),
   icon('spear_ash', (im) => {
@@ -474,6 +480,7 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   }),
   tunic('outfit_wayfarer', WATER),
   tunic('outfit_leather', WOOD),
+  tunic('outfit_ragged', STONE),
   icon('outfit_scholar', (im) => {
     im.rect(3, 2, 8, 10, VIOLET[2]);
     im.rect(3, 2, 4, 10, VIOLET[3]);

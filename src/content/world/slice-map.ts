@@ -1,3 +1,4 @@
+import { WAKE_IDS, WAKE_POINTS } from './wake';
 import { rng } from '../sprites/gen/img';
 import type { Stamp, StampCell } from '../../sim/world/stamp';
 import { CAVE_ROOMS, OUTDOORS } from './rooms';
@@ -229,6 +230,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
   // Objects.
   // A new character appears just south of the Waystone.
   object(g, 47, 39, 'spawn.player', objects);
+  // Where a new character wakes (M4-14). The sim picks one with the `start` stream.
+  for (const id of WAKE_IDS) object(g, WAKE_POINTS[id].x, WAKE_POINTS[id].y, `wake.${id}`, objects);
   object(g, 47, 37, 'fixture.waystone', objects);
   object(g, 49, 37, 'fixture.storage', objects);
   // The request board, between the stalls and the Waystone.

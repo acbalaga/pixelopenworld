@@ -159,6 +159,9 @@ export function asSchema5(s: SimState): SimState {
   // Schema 17: requests v2. The old request record is a state and a count, Renown and the pin
   // are new, and so are the board component, its stream and the standing-reward tally.
   delete (s.rng as { requests?: unknown }).requests;
+  // Schema 18: the `start` stream and the ledger's start kit.
+  delete (s.rng as { start?: unknown }).start;
+  if (s.ledger) delete (s.ledger as { startKit?: unknown }).startKit;
   delete (s.entities.comps as { board?: unknown }).board;
   if (s.ledger) delete (s.ledger as { requestRewards?: unknown }).requestRewards;
   for (const j of s.entities.comps.journal) {

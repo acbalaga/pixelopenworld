@@ -128,7 +128,7 @@ describe('the tool rule', () => {
     const t = bestTool(bag(r), 'pick')!;
     expect(bag(r).slots[t.slot]!.item).toBe('item.pick_iron');
     expect(t.tier).toBe(2);
-    expect(bag(r).equipment.main?.item).toBe('item.sword_rusty');
+    expect(bag(r).equipment.main?.item).toBe('item.dagger_wood');
     expect(bestTool(bag(r), 'rod')).toBeNull();
   });
 

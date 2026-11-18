@@ -45,7 +45,8 @@ describe('recorded sessions: honest play is never flagged', () => {
     // The run did real things, so zero flags is not an empty result.
     const l = run.s.ledger;
     expect(run.snapshots.length).toBeGreaterThan(25);
-    expect(l.kills[MOSSLING]).toBeGreaterThan(100);
+    // A new character fights with the wooden dagger now, so it kills fewer in 30 minutes.
+    expect(l.kills[MOSSLING]).toBeGreaterThan(60);
     expect(l.coinEarned.loot).toBeGreaterThan(0);
     expect(l.coinEarned.sale).toBeGreaterThan(0);
     expect(l.coinSpent.purchase).toBeGreaterThan(0);
