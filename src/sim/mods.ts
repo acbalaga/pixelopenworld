@@ -4,6 +4,7 @@ import { EQUIP_SLOTS } from '../content/items/types';
 import { ITEMS } from '../content/items';
 import { STATUSES, type StatusId } from '../content/combat/statuses';
 import { TECHNIQUE_LIST } from '../content/combat/techniques';
+import { PATHS } from '../content/paths';
 import { getComp, type EntityId } from './kernel/entities';
 import type { ItemStack, SimState, StatusEntry } from './state';
 
@@ -50,6 +51,11 @@ export function statusMods(state: SimState, who: EntityId): Mod[] {
     const def = STATUSES[st.id as StatusId];
     if (!def) continue;
     if (def.mods) out.push(...def.mods);
+    // Shadow: hiding slows you less.
+    if (st.id === 'hidden') {
+      const more = modAdd(pathMods(state, who), 'hideSpeedPct');
+      if (more) out.push({ stat: 'moveSpeed', pct: more });
+    }
     const fed = st.id === 'fed' && st.item ? ITEMS[st.item]?.food?.fed : undefined;
     if (fed) {
       out.push(
@@ -73,6 +79,15 @@ export function passiveMods(state: SimState, who: EntityId): Mod[] {
   return out;
 }
 
+/** The gifts of the Paths the entity wears. Only worn Paths give anything. */
+export function pathMods(state: SimState, who: EntityId): Mod[] {
+  const worn = getComp(state.entities, who, 'paths')?.worn;
+  if (!worn) return [];
+  const out: Mod[] = [];
+  for (const id of worn) out.push(...(PATHS[id]?.gift ?? []));
+  return out;
+}
+
 /** Every active mod for an entity: what is worn now, and what its statuses do. */
 export function activeMods(state: SimState, who: EntityId): Mod[] {
   const out: Mod[] = [];
@@ -80,24 +95,27 @@ export function activeMods(state: SimState, who: EntityId): Mod[] {
   if (inv) for (const slot of EQUIP_SLOTS) out.push(...stackMods(inv.equipment[slot]));
   out.push(...statusMods(state, who));
   out.push(...passiveMods(state, who));
+  out.push(...pathMods(state, who));
   return out;
 }
 
-/** The flat total for a stat. */
-export function modAdd(mods: readonly Mod[], stat: ModStat): number {
+/** The flat total for a stat. A mod with an `arg` counts only when asked for that `arg`. */
+export function modAdd(mods: readonly Mod[], stat: ModStat, arg?: string): number {
   let n = 0;
-  for (const m of mods) if (m.stat === stat) n += m.add ?? 0;
+  for (const m of mods)
+    if (m.stat === stat && (m.arg === undefined || m.arg === arg)) n += m.add ?? 0;
   return n;
 }
 
-/** The percent total for a stat. */
-export function modPct(mods: readonly Mod[], stat: ModStat): number {
+/** The percent total for a stat. A mod with an `arg` counts only when asked for that `arg`. */
+export function modPct(mods: readonly Mod[], stat: ModStat, arg?: string): number {
   let n = 0;
-  for (const m of mods) if (m.stat === stat) n += m.pct ?? 0;
+  for (const m of mods)
+    if (m.stat === stat && (m.arg === undefined || m.arg === arg)) n += m.pct ?? 0;
   return n;
 }
 
 /** `base` changed by every mod for `stat`: `(base + adds) * (100 + pcts) / 100`, rounded down. */
-export function applyMods(base: number, stat: ModStat, mods: readonly Mod[]): number {
-  return Math.floor(((base + modAdd(mods, stat)) * (100 + modPct(mods, stat))) / 100);
+export function applyMods(base: number, stat: ModStat, mods: readonly Mod[], arg?: string): number {
+  return Math.floor(((base + modAdd(mods, stat, arg)) * (100 + modPct(mods, stat, arg))) / 100);
 }

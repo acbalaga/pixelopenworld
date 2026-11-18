@@ -11,7 +11,7 @@ import type { Ai, SimState } from '../state';
 import { nudge } from './movement';
 import { sightBlocked } from '../elements';
 import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
-import { applyMods, hasStatus, statusMods } from '../mods';
+import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -39,6 +39,9 @@ function acquire(state: SimState, me: Vec, range: number, by: EntityId): EntityI
     const c = centerPx(state, id);
     if (!c) continue;
     const d = len({ x: c.x - me.x, y: c.y - me.y });
+    // Mossfriend: creatures of a kind the unit wears peace with never notice it first.
+    const kind = getComp(state.entities, by, 'combatant')?.kind;
+    if (kind && modAdd(activeMods(state, id), 'noAggroCreature', kind) > 0) continue;
     // A hidden unit is noticed from a fraction of the range. A creature that would have noticed
     // it at the full range and did not has been passed by: that counts once per creature per hide.
     const hidden = (getComp(state.entities, id, 'statuses') ?? []).find((s) => s.id === 'hidden');

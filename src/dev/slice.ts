@@ -57,6 +57,8 @@ export interface PowDevApi {
   /** Sets skill points and teaches taught techniques, as if earned. For screenshots of loadouts. */
   rank(skill: string, points: number): void;
   learn(technique: string): void;
+  /** Credits a deed `n` times, as if done. For screenshots of Paths. */
+  deed(id: string, n: number): void;
   /** Pays coin into the purse, as a seed (dev only). For screenshots of shops. */
   giveCoin(n: number): void;
   /** Puts statuses on the avatar, as if applied by a spell. For screenshots of the status row. */
@@ -135,6 +137,10 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     },
     learn(technique) {
       learnTechnique(state, who, technique);
+    },
+    deed(id, n) {
+      const d = getComp(state.entities, who, 'deeds');
+      if (d) d.counts[id] = (d.counts[id] ?? 0) + n;
     },
     giveCoin(n) {
       earnCoin(state, who, n, 'seed');

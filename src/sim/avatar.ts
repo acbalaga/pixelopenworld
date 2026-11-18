@@ -13,6 +13,8 @@ import { hintSeen } from './systems/hints';
 import { interactNpc, talk } from './systems/npcs';
 import { buy, buyback, haggle, mend, sell } from './trade';
 import { assign, swapLoadout } from './combat/techniques';
+import { newDeeds, showPath, wearPath } from './systems/deeds';
+import { bedNear, sleep } from './systems/fixtures';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, newStorage, recomputeGear } from './items';
 import { madeItems } from './ledger';
@@ -41,6 +43,8 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
   setComp(state.entities, id, 'pools', newPools(state.tick));
   const fighter = newFighter(0, [null, ...B.starter.techniques]);
   setComp(state.entities, id, 'fighter', fighter);
+  setComp(state.entities, id, 'deeds', newDeeds());
+  setComp(state.entities, id, 'paths', { earned: [], worn: [], shown: null });
   setComp(state.entities, id, 'loadouts', {
     active: 0,
     sets: [
@@ -89,7 +93,12 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   else if (c.type === 'mend') mend(state, who, c);
   else if (c.type === 'haggle') haggle(state, who, c);
   else if (c.type === 'loadout') swapLoadout(state, who);
-  else if (c.type === 'assign') assign(state, who, c.slot, c.technique);
+  else if (c.type === 'sleep') sleep(state, who);
+  else if (c.type === 'wearPath') {
+    if (bedNear(state, who) !== null) wearPath(state, who, c.path, c.on);
+  } else if (c.type === 'showPath') {
+    if (bedNear(state, who) !== null) showPath(state, who, c.path);
+  } else if (c.type === 'assign') assign(state, who, c.slot, c.technique);
   applyFighterCommand(state, who, c);
 }
 

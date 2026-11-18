@@ -9,6 +9,7 @@ import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
 import { NO_FIGHT } from '../sim/fight';
 import { dayIndex } from '../sim/time';
+import { newDeeds } from '../sim/systems/deeds';
 import { newNpc } from '../sim/trade';
 import { deserializeState, serializeState } from '../sim/state';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
@@ -385,6 +386,21 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     for (const inv of raw.entities.comps.inventory)
       if (inv) for (const id of start) if (!inv.recipes.includes(id)) inv.recipes.push(id);
     return { ...old, schema: 15, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 15 to 16 (M3-08): deeds and paths. Every avatar gets an empty record of deeds and no Paths,
+   * as if it had just begun: nothing already done is counted, since nothing was recorded.
+   */
+  15: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: { pos: unknown[]; avatar: unknown[]; deeds?: unknown[]; paths?: unknown[] };
+      };
+    };
+    const c = raw.entities.comps;
+    c.deeds = c.pos.map((_, i) => (c.avatar[i] ? newDeeds() : null));
+    c.paths = c.pos.map((_, i) => (c.avatar[i] ? { earned: [], worn: [], shown: null } : null));
+    return { ...old, schema: 16, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
 };
 

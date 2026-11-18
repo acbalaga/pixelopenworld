@@ -492,7 +492,11 @@ describe('Fed, Rested and Hexing XP', () => {
     const before = r.s.ledger.xpEarned['skill.blades'] ?? 0;
     addXp(r.s, r.me, 'skill.blades', 100);
     expect((r.s.ledger.xpEarned['skill.blades'] ?? 0) - before).toBe(100);
+    // The bedroll opens the Rest panel; sleeping is its own command.
     r.run(1, { type: 'interact' });
+    expect(ofType(r.events, 'bedOpened')).toHaveLength(1);
+    expect(hasStatus(r.s, r.me, 'rested')).toBe(false);
+    r.run(1, { type: 'sleep' });
     expect(ofType(r.events, 'slept')).toHaveLength(1);
     expect(hasStatus(r.s, r.me, 'rested')).toBe(true);
     const mid = r.s.ledger.xpEarned['skill.blades'] ?? 0;

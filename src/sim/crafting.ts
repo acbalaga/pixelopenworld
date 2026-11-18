@@ -11,6 +11,7 @@ import { int, type Rng } from './kernel/rng';
 import { countItem, give, removeItem } from './items';
 import { recordCraft } from './ledger';
 import { pointsOf } from './skills';
+import { activeMods, modAdd } from './mods';
 import type { CraftSession, Inventory, SimState } from './state';
 import { contextTarget } from './systems/interact';
 
@@ -430,8 +431,10 @@ export function repair(state: SimState, who: EntityId, slot: number): boolean {
     return false;
   const max = def.durability;
   if ((stack.dur ?? max) >= max) return false;
+  // Anvil Hand: the anvil takes no material.
+  const free = modAdd(activeMods(state, who), 'repairMaterialFree') > 0;
   const material = C.repairMaterial[def.tier];
-  if (!material || !removeItem(inv, material, 1)) return false;
+  if (!free && (!material || !removeItem(inv, material, 1))) return false;
   stack.dur = Math.min(max, (stack.dur ?? max) + Math.ceil((max * C.repairPct) / 100));
   emit(state.events, { type: 'repaired', id: who, item: stack.item, tier: def.tier });
   return true;

@@ -121,12 +121,30 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   emit(state.events, { type: 'chestOpened', id, who });
 }
 
-/** Sleeping on the bedroll: Rested for a night's length. */
+/** The bedroll opens the Rest panel: sleep, and wear or take off Paths. */
 function useBed(state: SimState, who: EntityId, id: EntityId): void {
-  if (!applyStatus(state, who, 'rested', -1))
-    // Already rested: the timer is refreshed, so this only fails for a unit that cannot be rested.
-    return;
+  emit(state.events, { type: 'bedOpened', id, who });
+}
+
+/** The bed within reach of `who`, if any: wearing Paths and sleeping need one close by. */
+export function bedNear(state: SimState, who: EntityId): EntityId | null {
+  const p = getComp(state.entities, who, 'pos');
+  if (!p) return null;
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    if (FIXTURES[getComp(state.entities, id, 'fixture')?.kind ?? '']?.type !== 'bed') continue;
+    const q = getComp(state.entities, id, 'pos');
+    if (q && Math.hypot(q.x - p.x, q.y - p.y) / SUBPX <= W.bedReachPx) return id;
+  }
+  return null;
+}
+
+/** Sleeping on the bedroll: Rested for a night's length. */
+export function sleep(state: SimState, who: EntityId): boolean {
+  const id = bedNear(state, who);
+  if (id === null || getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
+  if (!applyStatus(state, who, 'rested', -1)) return false;
   emit(state.events, { type: 'slept', id, who });
+  return true;
 }
 
 function useWaystone(state: SimState, who: EntityId, id: EntityId): void {

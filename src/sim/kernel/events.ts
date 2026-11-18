@@ -44,6 +44,14 @@ export type SimEvent =
   | { type: 'sneak'; who: number; creature: number }
   /** Health restored by a technique. `src` is who cast it. */
   | { type: 'healed'; id: number; src: number; amount: number; tag: string }
+  /** A creature died to `src`'s blow. `tag` is the weapon family or element, `kind` the creature. */
+  | { type: 'killed'; src: number; dst: number; kind: string; tag: string }
+  /** A creature of this kind came close to `who`, once per approach. Counts toward Mossfriend. */
+  | { type: 'met'; who: number; id: number; kind: string }
+  /** A fight ended that was won with nothing taken. Sent by the deed system. */
+  | { type: 'untouchedFight'; who: number }
+  | { type: 'pathEarned'; who: number; path: string }
+  | { type: 'pathWorn'; who: number; path: string; on: boolean }
   | { type: 'gadgetUsed'; who: number; item: string; gadget: string }
   | { type: 'snareSprung'; id: number; foe: number }
   | { type: 'loadoutSwapped'; who: number; active: number; locked: boolean }
@@ -92,10 +100,12 @@ export type SimEvent =
   | { type: 'bagFull'; id: number; item: string }
   | { type: 'equipped'; id: number; slot: string; item: string }
   | { type: 'unequipped'; id: number; slot: string; item: string }
-  | { type: 'eaten'; id: number; item: string }
+  | { type: 'eaten'; id: number; item: string; raw?: boolean }
   /** A status was applied (or refreshed) on `id`. `src` is -1 for none. */
   /** The avatar slept on a bedroll. */
   | { type: 'slept'; id: number; who: number }
+  /** The bedroll was used: the client opens the Rest panel. */
+  | { type: 'bedOpened'; id: number; who: number }
   | { type: 'statusApplied'; id: number; status: string; src: number; refreshed: boolean }
   | { type: 'statusEnded'; id: number; status: string; how: 'expired' | 'cleared' }
   /** An element met a status: the reaction fired at `id`. */
@@ -142,7 +152,7 @@ export type SimEvent =
   | { type: 'requestCompleted'; who: number; request: string }
   | { type: 'shopOpened'; who: number; shop: string }
   | { type: 'bought'; who: number; item: string; qty: number; coin: number }
-  | { type: 'sold'; who: number; item: string; qty: number; coin: number }
+  | { type: 'sold'; who: number; item: string; qty: number; coin: number; haggled: boolean }
   | {
       type: 'shopDenied';
       who: number;

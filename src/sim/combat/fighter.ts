@@ -1,4 +1,4 @@
-import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
+import { activeMods, applyMods, hasStatus, modAdd, modPct, statusMods } from '../mods';
 import { COMBAT as C } from '../../content/balance/combat';
 import { STATUS_BALANCE as SB } from '../../content/balance/status';
 import { ATTACKS, type AttackDef, WEAPONS } from '../../content/combat/attacks';
@@ -114,6 +114,11 @@ export function nearestInArc(
     }
   }
   return best;
+}
+
+/** Stamina one blocked hit costs: the guard's cost, less for the Bulwark Path. */
+export function blockCost(state: SimState, who: EntityId): number {
+  return applyMods(C.guard.cost, 'blockStaPct', activeMods(state, who));
 }
 
 /** Spends from a pool if there is enough. Returns false (and emits a denial) if not. */
@@ -244,8 +249,8 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     if (breaksGuard(h.tag)) {
       f.guard = false;
       emit(state.events, { type: 'guardBroken', who: dst });
-    } else if (pools.sta >= C.guard.cost) {
-      pools.sta -= C.guard.cost;
+    } else if (pools.sta >= blockCost(state, dst)) {
+      pools.sta -= blockCost(state, dst);
       pools.lastSpend = state.tick;
       blocked = true;
       through = C.guard.takenPct;
@@ -259,7 +264,11 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     nextU32(state.rng.combat) % 100 <
     C.crit.chancePct + modAdd(activeMods(state, h.src), 'critPct');
   const crit = roll || h.crit === true;
-  const prop = propertyPct(state, dst, h.tag, mid, h.from, wasStaggered);
+  // Pestward: more damage to creatures of a tier. The mod's `arg` is the tier.
+  const tierPct = 100 + modPct(activeMods(state, h.src), 'tierDamagePct', String(cb?.tier ?? 0));
+  const prop = Math.floor(
+    (propertyPct(state, dst, h.tag, mid, h.from, wasStaggered) * tierPct) / 100,
+  );
   const defense = Math.max(
     SB.defenseFloor,
     applyMods(cb?.defense ?? 0, 'defense', statusMods(state, dst)),
@@ -340,6 +349,9 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
 
   if (pools.hp === 0) {
     kill(state, dst);
+    const kind = getComp(e, dst, 'combatant')?.kind;
+    if (kind && f.team === 1)
+      emit(state.events, { type: 'killed', src: h.src, dst, kind, tag: h.tag });
     return;
   }
   if (blocked) return;

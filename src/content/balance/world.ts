@@ -8,6 +8,8 @@ export const WORLD_TUNABLES = {
   blockStep: 16,
   /** A block may not be pushed this close to a portal or arrival, so it cannot seal an exit. */
   blockPortalClear: 20,
+  /** The avatar must be this close to a bed (px) to sleep or change Paths. */
+  bedReachPx: 40,
   /** Interact needs the avatar idle. Waystones restore all pools. */
   waystoneHeals: true,
 } as const;

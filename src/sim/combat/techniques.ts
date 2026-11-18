@@ -14,7 +14,7 @@ import { inFight } from '../fight';
 import { getComp, query, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { dirStep, SUBPX, type Direction, type Vec } from '../kernel/fixed';
-import { hasStatus } from '../mods';
+import { activeMods, applyMods, hasStatus } from '../mods';
 import type { SimState } from '../state';
 import { applyStatus, clearStatus } from '../statuses';
 import { spawnFixture } from '../systems/fixtures';
@@ -244,19 +244,28 @@ export function fireTechnique(
     const near = nearestInArc(state, who, dirStep(a.facing), 160, 0);
     point = near === null ? null : centerPx(state, near);
   }
-  if (tech.cost && !spend(state, who, tech.cost.pool, tech.cost.amount)) return;
+  // Emberhand makes Ember techniques cheaper in Focus.
+  const gift = activeMods(state, who);
+  const cost = tech.cost
+    ? tech.skill === 'skill.ember' && tech.cost.pool === 'foc'
+      ? applyMods(tech.cost.amount, 'emberFocPct', gift)
+      : tech.cost.amount
+    : 0;
+  if (tech.cost && !spend(state, who, tech.cost.pool, cost)) return;
   f.cooldowns[slot] = tech.cooldown ?? 0;
   emit(state.events, { type: 'techniqueUsed', who, technique: tech.id });
   if (tech.attack && ATTACKS[tech.attack]) startAttack(state, who, tech.attack, point, tech.id);
   if (tech.channel) {
+    // Busker: songs last longer.
+    const channel = applyMods(tech.channel, 'songTicksPct', gift);
     state.entities.comps.channel[who] = {
       slot,
       technique: tech.id,
-      until: state.tick + tech.channel,
+      until: state.tick + channel,
     };
     // A song's own effect (courage) starts with it, and ends if it is cut short.
     for (const e of tech.effects ?? []) if (e.kind === 'selfStatus') applyEffect(state, who, e);
-    emit(state.events, { type: 'channelStarted', who, technique: tech.id, ticks: tech.channel });
+    emit(state.events, { type: 'channelStarted', who, technique: tech.id, ticks: channel });
     return;
   }
   for (const e of tech.effects ?? []) applyEffect(state, who, e);
