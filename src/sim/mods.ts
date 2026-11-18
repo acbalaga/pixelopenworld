@@ -2,6 +2,7 @@ import { AFFIXES, type Mod, type ModStat } from '../content/items/affixes';
 import { EQUIP_SLOTS } from '../content/items/types';
 import { ITEMS } from '../content/items';
 import { STATUSES, type StatusId } from '../content/combat/statuses';
+import { TECHNIQUE_LIST } from '../content/combat/techniques';
 import { getComp, type EntityId } from './kernel/entities';
 import type { ItemStack, SimState, StatusEntry } from './state';
 
@@ -51,12 +52,24 @@ export function statusMods(state: SimState, who: EntityId): Mod[] {
   return out;
 }
 
+/** The mods of passive techniques the entity's skill points have reached. */
+export function passiveMods(state: SimState, who: EntityId): Mod[] {
+  const s = getComp(state.entities, who, 'skills');
+  if (!s) return [];
+  const out: Mod[] = [];
+  for (const t of TECHNIQUE_LIST)
+    if (t.kind === 'passive' && t.passive && (s.points[t.skill] ?? 0) >= t.band)
+      out.push(...t.passive);
+  return out;
+}
+
 /** Every active mod for an entity: what is worn now, and what its statuses do. */
 export function activeMods(state: SimState, who: EntityId): Mod[] {
   const out: Mod[] = [];
   const inv = getComp(state.entities, who, 'inventory');
   if (inv) for (const slot of EQUIP_SLOTS) out.push(...stackMods(inv.equipment[slot]));
   out.push(...statusMods(state, who));
+  out.push(...passiveMods(state, who));
   return out;
 }
 

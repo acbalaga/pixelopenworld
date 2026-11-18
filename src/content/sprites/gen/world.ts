@@ -508,6 +508,19 @@ function hiddenNiche(): SpriteDef {
   });
 }
 
+/** A wall of raised earth and rock. */
+function earthWall(): SpriteDef {
+  const r = rng(79);
+  const im = new Img(16, 16);
+  im.rect(1, 3, 14, 14, WOOD[1]);
+  im.rect(2, 2, 13, 4, STONE[2]);
+  im.rect(0, 5, 15, 14, STONE[1]);
+  speckle(im, r, STONE[3], 0.2);
+  speckle(im, r, WOOD[2], 0.15);
+  im.rect(0, 13, 15, 14, STONE[0]);
+  return toSprite('prop.earth_wall', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** A bedroll with a pillow. */
 function bedroll(): SpriteDef {
   const im = new Img(16, 16);
@@ -678,5 +691,6 @@ export function worldSprites(): SpriteDef[] {
     witheredVine(),
     hiddenNiche(),
     bedroll(),
+    earthWall(),
   ];
 }

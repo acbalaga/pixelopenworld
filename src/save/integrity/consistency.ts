@@ -1,6 +1,8 @@
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { STATUS_BALANCE as SBAL } from '../../content/balance/status';
 import { STATUSES, type StatusId } from '../../content/combat/statuses';
+import { TECHNIQUES } from '../../content/combat/techniques';
+import { knows } from '../../sim/combat/techniques';
 import { HINTS } from '../../content/hints';
 import { REQUESTS } from '../../content/dialogue';
 import { CREATURES } from '../../content/creatures';
@@ -181,6 +183,18 @@ export function consistency(v: View): Reason[] {
       seen.add(st.id);
     }
   });
+
+  // Every slotted technique is one the avatar knows: its skill reaches the band, and it was taught if it needs that.
+  {
+    const f = sim.entities.comps.fighter[v.who];
+    const ld = sim.entities.comps.loadouts[v.who];
+    const slotted = [...(f?.slots ?? []), ...(ld?.sets ?? []).flatMap((s) => s.slots)];
+    for (const id of slotted) {
+      if (id === null) continue;
+      const t = TECHNIQUES[id];
+      if (!t || !knows(sim, v.who, t)) fail('TECHNIQUE_UNKNOWN', id);
+    }
+  }
 
   // Pools follow ranks and gear, and a pool never sits above its maximum.
   const copy = deserializeState(plain.sim);

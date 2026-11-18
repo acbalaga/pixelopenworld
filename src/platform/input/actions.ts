@@ -8,7 +8,17 @@ export interface ScreenPoint {
 
 /** Buttons that live on screen. */
 export type ButtonId =
-  'tech1' | 'tech2' | 'tech3' | 'tech4' | 'context' | 'menu' | 'bag' | 'dodge' | 'attack' | 'guard';
+  | 'tech1'
+  | 'tech2'
+  | 'tech3'
+  | 'tech4'
+  | 'context'
+  | 'menu'
+  | 'bag'
+  | 'swap'
+  | 'dodge'
+  | 'attack'
+  | 'guard';
 
 /**
  * One tick of abstract input. Every source (touch, keyboard, gamepad) fills this same record.
@@ -39,6 +49,8 @@ export interface InputRecord {
   context: boolean;
   menu: boolean;
   bag: boolean;
+  /** Swap loadout pressed this sample. */
+  swap: boolean;
   /** Tap on the game surface outside any button. Caller converts to world position. */
   targetTap: ScreenPoint | null;
   /** Long press on a point, for detail popups where desktop would hover. */
@@ -60,6 +72,7 @@ export function emptyRecord(): InputRecord {
     context: false,
     menu: false,
     bag: false,
+    swap: false,
     targetTap: null,
     longPress: null,
   };

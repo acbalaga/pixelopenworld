@@ -491,6 +491,7 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         id: 'after',
         text: 'dlg.wren.after',
         choices: [
+          { text: 'dlg.wren.c_teach', next: 'teach' },
           { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.c_bye', next: null },
         ],
@@ -509,6 +510,44 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         ],
       },
       offer_ember: { id: 'offer_ember', text: 'trial.ember.15.intro', next: null },
+      teach: {
+        id: 'teach',
+        text: 'dlg.wren.teach',
+        choices: [
+          {
+            text: 'dlg.wren.c_tide',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.tide_splash', not: true }],
+            do: [{ learnTechnique: 'technique.tide_splash' }],
+          },
+          {
+            text: 'dlg.wren.c_gale',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.gale_gust', not: true }],
+            do: [{ learnTechnique: 'technique.gale_gust' }],
+          },
+          {
+            text: 'dlg.wren.c_stone',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.stone_stone_fist', not: true }],
+            do: [{ learnTechnique: 'technique.stone_stone_fist' }],
+          },
+          {
+            text: 'dlg.wren.c_mending',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.mending_mend', not: true }],
+            do: [{ learnTechnique: 'technique.mending_mend' }],
+          },
+          {
+            text: 'dlg.wren.c_hexing',
+            next: 'taught',
+            if: [{ flag: 'learned.technique.hexing_hex', not: true }],
+            do: [{ learnTechnique: 'technique.hexing_hex' }],
+          },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      taught: { id: 'taught', text: 'dlg.wren.taught', next: null },
     },
   },
   // A stand-in for the Travelers of M5: a static figure whose two lines read as chat messages.

@@ -30,7 +30,21 @@ export type SimEvent =
   | { type: 'parried'; who: number; src: number }
   /** The guard dropped: out of Stamina, or the hit was a guard break. */
   | { type: 'guardBroken'; who: number }
-  | { type: 'denied'; id: number; reason: 'stamina' | 'focus' | 'cooldown' }
+  | {
+      type: 'denied';
+      id: number;
+      reason: 'stamina' | 'focus' | 'cooldown' | 'requires' | 'locked';
+    }
+  | { type: 'techniqueUsed'; who: number; technique: string }
+  | { type: 'channelStarted'; who: number; technique: string; ticks: number }
+  | { type: 'channelCancelled'; who: number; technique: string }
+  /** A song finished. Pays Performance XP. */
+  | { type: 'perform'; who: number; technique: string }
+  /** A creature that would have noticed a hidden unit did not. Pays Stealth XP. */
+  | { type: 'sneak'; who: number; creature: number }
+  /** Health restored by a technique. `src` is who cast it. */
+  | { type: 'healed'; id: number; src: number; amount: number; tag: string }
+  | { type: 'loadoutSwapped'; who: number; active: number; locked: boolean }
   | { type: 'died'; id: number; team: 0 | 1 }
   | { type: 'respawned'; id: number }
   | { type: 'echoDropped'; id: number; coin: number }

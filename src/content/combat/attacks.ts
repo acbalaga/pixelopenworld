@@ -9,7 +9,8 @@ export type HitShape =
   /** Everything within `radius` of the attacker. Used for slams, with a ground marker. */
   | { kind: 'circle'; radius: number };
 
-export type Family = 'blades' | 'heavy' | 'polearms' | 'archery' | 'unarmed' | 'creature';
+export type Family =
+  'blades' | 'heavy' | 'polearms' | 'archery' | 'unarmed' | 'creature' | 'magic' | 'shield';
 
 /** One attack. `windup` is the telegraph: the hit shape is dangerous only during `active`. */
 export interface AttackDef {
@@ -35,8 +36,18 @@ export interface AttackDef {
   applies?: boolean;
   /** Launches a projectile when the active frames begin (spells, spat seeds). */
   projectile?: { speed: number; ttl: number; element: string };
-  /** Cost, in tenths, and the pool it draws from. Basic attacks cost nothing. */
-  cost?: { pool: 'sta' | 'foc'; amount: number };
+  /** The active frames hold this many separate hits, evenly spaced (Crosscut, Flurry). */
+  hits?: number;
+  /** The last of several hits counts the target as staggered (Crosscut). */
+  lastHitStaggers?: true;
+  /** A volley of projectiles in a fan: how many, and the angle between them in degrees (Scatter). */
+  volley?: { arrows: number; spreadDeg: number };
+  /** Targets are drawn in toward the caster instead of pushed (Undertow). `knock` is how far. */
+  pull?: true;
+  /** Percent of the damage dealt that heals the caster (Drain). */
+  drain?: number;
+  /** Every hit is a critical hit (Ambush). */
+  crit?: true;
   /** Heavy hits add to hit pause. */
   heavy?: boolean;
 }
@@ -336,7 +347,6 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 8,
     shape: { kind: 'line', reach: 22, halfWidth: 9 },
     dash: 40,
-    cost: { pool: 'sta', amount: 250 },
     heavy: true,
   },
   /** Polearms technique: a stepping thrust that runs the whole line through. Longer and narrower than the blades lunge. */
@@ -351,14 +361,13 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 14,
     shape: { kind: 'line', reach: 34, halfWidth: 7 },
     dash: 28,
-    cost: { pool: 'sta', amount: 250 },
     pierce: true,
     heavy: true,
   },
   /** Ember technique: casting only. The bolt itself is a projectile. */
   'technique.ember_bolt': {
     id: 'technique.ember_bolt',
-    family: 'blades',
+    family: 'magic',
     windup: 6,
     active: 1,
     recover: 6,
@@ -367,7 +376,241 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 6,
     shape: { kind: 'line', reach: 0, halfWidth: 0 },
     projectile: { speed: 5, ttl: 40, element: 'ember' },
-    cost: { pool: 'foc', amount: 300 },
+    applies: true,
+  },
+  // ---- Band 0 and band 15 techniques (M3-13) ----
+  /** Blades band 15: two quick cuts. The second lands as if the target were staggered. */
+  'technique.blades_crosscut': {
+    id: 'technique.blades_crosscut',
+    family: 'blades',
+    windup: 3,
+    active: 6,
+    recover: 6,
+    mult: 80,
+    stagger: 6,
+    knock: 4,
+    shape: { kind: 'arc', reach: 24, cos256: 100 },
+    hits: 2,
+    lastHitStaggers: true,
+  },
+  /** Heavy Arms band 0: a slow slam with a ground marker, and a great deal of stagger. */
+  'technique.heavy_overhead': {
+    id: 'technique.heavy_overhead',
+    family: 'heavy',
+    windup: 12,
+    active: 3,
+    recover: 12,
+    mult: 270,
+    stagger: 30,
+    knock: 14,
+    shape: { kind: 'circle', radius: 26 },
+    heavy: true,
+    pierce: true,
+  },
+  /** Heavy Arms band 15: a full circle. Costly, and it breaks a raised guard. */
+  'technique.heavy_whirl': {
+    id: 'technique.heavy_whirl',
+    family: 'heavy',
+    windup: 8,
+    active: 4,
+    recover: 12,
+    mult: 140,
+    stagger: 18,
+    knock: 16,
+    shape: { kind: 'circle', radius: 34 },
+    heavy: true,
+    pierce: true,
+  },
+  /** Polearms band 15: a wide sweep that throws what it hits well back. */
+  'technique.polearms_sweep': {
+    id: 'technique.polearms_sweep',
+    family: 'polearms',
+    windup: 8,
+    active: 3,
+    recover: 10,
+    mult: 120,
+    stagger: 10,
+    knock: 30,
+    shape: { kind: 'arc', reach: 38, cos256: 0 },
+    pierce: true,
+  },
+  /** Archery band 0: hold to charge, loose along a line. Standing still charges it faster. */
+  'technique.archery_aimed': {
+    id: 'technique.archery_aimed',
+    family: 'archery',
+    windup: 10,
+    active: 1,
+    recover: 8,
+    mult: 140,
+    stagger: 10,
+    knock: 8,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 6, ttl: 36, element: 'archery' },
+  },
+  /** Archery band 15: three arrows in a cone. */
+  'technique.archery_scatter': {
+    id: 'technique.archery_scatter',
+    family: 'archery',
+    windup: 8,
+    active: 1,
+    recover: 10,
+    mult: 80,
+    stagger: 4,
+    knock: 5,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 5, ttl: 30, element: 'archery' },
+    volley: { arrows: 3, spreadDeg: 16 },
+  },
+  /** Unarmed band 0: a palm strike that sends them back. Every hit refunds Stamina, as unarmed hits do. */
+  'technique.unarmed_palm': {
+    id: 'technique.unarmed_palm',
+    family: 'unarmed',
+    windup: 4,
+    active: 2,
+    recover: 5,
+    mult: 230,
+    stagger: 8,
+    knock: 28,
+    shape: { kind: 'arc', reach: 18, cos256: 100 },
+  },
+  /** Unarmed band 15: five fast hits, each refunding a little Stamina. */
+  'technique.unarmed_flurry': {
+    id: 'technique.unarmed_flurry',
+    family: 'unarmed',
+    windup: 3,
+    active: 10,
+    recover: 8,
+    mult: 55,
+    stagger: 4,
+    knock: 2,
+    shape: { kind: 'arc', reach: 16, cos256: 100 },
+    hits: 5,
+  },
+  /** Shieldcraft band 0: a short shove with the shield, and a lot of stagger. */
+  'technique.shieldcraft_bash': {
+    id: 'technique.shieldcraft_bash',
+    family: 'shield',
+    windup: 4,
+    active: 2,
+    recover: 8,
+    mult: 60,
+    stagger: 30,
+    knock: 18,
+    shape: { kind: 'arc', reach: 18, cos256: 100 },
+  },
+  /** Ember band 15: a ring of fire around the caster. */
+  'technique.ember_flame_ring': {
+    id: 'technique.ember_flame_ring',
+    family: 'magic',
+    windup: 8,
+    active: 2,
+    recover: 10,
+    mult: 90,
+    stagger: 4,
+    knock: 10,
+    shape: { kind: 'circle', radius: 38 },
+    element: 'ember',
+    applies: true,
+    pierce: true,
+  },
+  /** Tide band 0: a cone of water. Wet, and a small push. */
+  'technique.tide_splash': {
+    id: 'technique.tide_splash',
+    family: 'magic',
+    windup: 6,
+    active: 2,
+    recover: 8,
+    mult: 70,
+    stagger: 4,
+    knock: 8,
+    shape: { kind: 'arc', reach: 34, cos256: 60 },
+    pierce: true,
+    element: 'tide',
+    applies: true,
+  },
+  /** Tide band 15: a line that drags whoever it touches in toward the caster. */
+  'technique.tide_undertow': {
+    id: 'technique.tide_undertow',
+    family: 'magic',
+    windup: 8,
+    active: 2,
+    recover: 10,
+    mult: 60,
+    stagger: 0,
+    knock: 40,
+    shape: { kind: 'line', reach: 64, halfWidth: 10 },
+    pierce: true,
+    pull: true,
+    element: 'tide',
+    applies: true,
+  },
+  /** Gale band 0: a line of wind with a strong knockback. */
+  'technique.gale_gust': {
+    id: 'technique.gale_gust',
+    family: 'magic',
+    windup: 6,
+    active: 2,
+    recover: 8,
+    mult: 50,
+    stagger: 6,
+    knock: 44,
+    shape: { kind: 'line', reach: 56, halfWidth: 12 },
+    pierce: true,
+    element: 'gale',
+  },
+  /** Stone band 0: a heavy, short-ranged stone. Stagger more than damage. */
+  'technique.stone_fist': {
+    id: 'technique.stone_fist',
+    family: 'magic',
+    windup: 8,
+    active: 1,
+    recover: 10,
+    mult: 150,
+    stagger: 30,
+    knock: 10,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 4, ttl: 14, element: 'stone' },
+  },
+  /** Hexing band 0: a line that Hexes what it hits. */
+  'technique.hexing_hex': {
+    id: 'technique.hexing_hex',
+    family: 'magic',
+    windup: 6,
+    active: 1,
+    recover: 8,
+    mult: 40,
+    stagger: 0,
+    knock: 2,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 5, ttl: 30, element: 'hexing' },
+    applies: true,
+  },
+  /** Hexing band 15: a short line of damage that heals the caster for half of it. */
+  'technique.hexing_drain': {
+    id: 'technique.hexing_drain',
+    family: 'magic',
+    windup: 8,
+    active: 2,
+    recover: 10,
+    mult: 100,
+    stagger: 0,
+    knock: 0,
+    shape: { kind: 'line', reach: 50, halfWidth: 8 },
+    element: 'hexing',
+    drain: 50,
+  },
+  /** Stealth band 15: the first strike out of Hide, and it always crits. */
+  'technique.stealth_ambush': {
+    id: 'technique.stealth_ambush',
+    family: 'blades',
+    windup: 3,
+    active: 2,
+    recover: 8,
+    mult: 120,
+    stagger: 10,
+    knock: 6,
+    shape: { kind: 'arc', reach: 22, cos256: 100 },
+    crit: true,
   },
   /** A common creature's swipe. Telegraph of 12 ticks is 400 ms, above the 350 ms tier 1 minimum. */
   'attack.creature_swipe': {
@@ -474,8 +717,8 @@ export interface WeaponDef {
   chainWindow: number;
   /** Reach used to decide whether Flow has a target. */
   reach: number;
-  /** The lunge every weapon of this family gives its holder, in slot 1. Null for none. */
-  lunge: string | null;
+  /** The band 0 technique every weapon of this family gives its holder, in slot 1. Null for none. */
+  signature: string | null;
 }
 
 export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
@@ -487,7 +730,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.sword_combo_1', 'attack.sword_combo_2', 'attack.sword_combo_3'],
     chainWindow: 4,
     reach: 24,
-    lunge: 'technique.blades_lunge',
+    signature: 'technique.blades_lunge',
   },
   spear: {
     id: 'spear',
@@ -497,7 +740,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.spear_combo_1', 'attack.spear_combo_2', 'attack.spear_combo_3'],
     chainWindow: 4,
     reach: 40,
-    lunge: 'technique.polearms_lunge',
+    signature: 'technique.polearms_lunge',
   },
   /** What the avatar fights with when nothing is held. */
   fists: {
@@ -508,7 +751,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.fist_combo_1', 'attack.fist_combo_2', 'attack.fist_combo_3'],
     chainWindow: 4,
     reach: 16,
-    lunge: null,
+    signature: 'technique.unarmed_palm',
   },
   /** Heavy Arms. */
   maul: {
@@ -519,7 +762,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.maul_combo_1', 'attack.maul_combo_2', 'attack.maul_combo_3'],
     chainWindow: 5,
     reach: 26,
-    lunge: null,
+    signature: 'technique.heavy_overhead',
   },
   /** Archery. Reach is its range: the arrow flies speed times ttl px. */
   bow: {
@@ -530,7 +773,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.bow_combo_1', 'attack.bow_combo_2', 'attack.bow_combo_3'],
     chainWindow: 4,
     reach: 120,
-    lunge: null,
+    signature: 'technique.archery_aimed',
   },
   /** Wrapped fists: the bare-hand swings with a little more behind them. */
   wraps: {
@@ -541,7 +784,7 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.wraps_combo_1', 'attack.wraps_combo_2', 'attack.wraps_combo_3'],
     chainWindow: 4,
     reach: 16,
-    lunge: null,
+    signature: 'technique.unarmed_palm',
   },
   /** What a common creature fights with. */
   claws: {
@@ -552,41 +795,6 @@ export const WEAPONS: Readonly<Record<string, WeaponDef>> = {
     combo: ['attack.creature_swipe', 'attack.creature_swipe', 'attack.creature_swipe'],
     chainWindow: 0,
     reach: 20,
-    lunge: null,
-  },
-};
-
-/** A technique: an attack that is used from a slot, with a cooldown. */
-export interface TechniqueDef {
-  id: string;
-  attack: string;
-  /** Hold to aim, release to fire. */
-  aimed: boolean;
-  cooldown: number;
-  /** Button icon sprite id. */
-  icon: string;
-}
-
-export const TECHNIQUES: Readonly<Record<string, TechniqueDef>> = {
-  'technique.blades_lunge': {
-    id: 'technique.blades_lunge',
-    attack: 'technique.blades_lunge',
-    aimed: false,
-    cooldown: 45,
-    icon: 'ui.icon_lunge',
-  },
-  'technique.polearms_lunge': {
-    id: 'technique.polearms_lunge',
-    attack: 'technique.polearms_lunge',
-    aimed: false,
-    cooldown: 45,
-    icon: 'ui.icon_lunge',
-  },
-  'technique.ember_bolt': {
-    id: 'technique.ember_bolt',
-    attack: 'technique.ember_bolt',
-    aimed: true,
-    cooldown: 60,
-    icon: 'ui.icon_ember',
+    signature: null,
   },
 };

@@ -12,7 +12,13 @@ export type ModStat =
   /** Walking speed, percent (statuses). */
   | 'moveSpeed'
   /** Skill XP, percent (Rested). */
-  | 'xp';
+  | 'xp'
+  /** Stamina regeneration, percent (Hum of Courage). */
+  | 'staRegen'
+  /** Stamina cost of a dodge, percent (Tailwind). */
+  | 'dodgeCost'
+  /** Ticks added to the perfect dodge window (Light Feet). */
+  | 'perfectWindow';
 
 /** One change to a stat: a flat `add`, a `pct` of the base, or both. Stamina and Focus in tenths. */
 export interface Mod {

@@ -12,6 +12,7 @@ import { interactFixture } from './systems/fixtures';
 import { hintSeen } from './systems/hints';
 import { interactNpc, talk } from './systems/npcs';
 import { buy, buyback, haggle, mend, sell } from './trade';
+import { assign, swapLoadout } from './combat/techniques';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, newStorage, recomputeGear } from './items';
 import { madeItems } from './ledger';
@@ -38,7 +39,15 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
     handle,
   });
   setComp(state.entities, id, 'pools', newPools(state.tick));
-  setComp(state.entities, id, 'fighter', newFighter(0, [null, ...B.starter.techniques]));
+  const fighter = newFighter(0, [null, ...B.starter.techniques]);
+  setComp(state.entities, id, 'fighter', fighter);
+  setComp(state.entities, id, 'loadouts', {
+    active: 0,
+    sets: [
+      { main: null, off: null, slots: [...fighter.slots] },
+      { main: null, off: null, slots: [null, null, null, null] },
+    ],
+  });
   setComp(state.entities, id, 'combatant', {
     weapon: 'sword',
     power: WEAPONS.sword?.power ?? 10,
@@ -79,6 +88,8 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   else if (c.type === 'buyback') buyback(state, who, c);
   else if (c.type === 'mend') mend(state, who, c);
   else if (c.type === 'haggle') haggle(state, who, c);
+  else if (c.type === 'loadout') swapLoadout(state, who);
+  else if (c.type === 'assign') assign(state, who, c.slot, c.technique);
   applyFighterCommand(state, who, c);
 }
 

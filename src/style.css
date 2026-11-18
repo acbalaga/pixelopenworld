@@ -1294,3 +1294,30 @@ canvas {
 .pow-trial-log {
   margin-bottom: calc(var(--px) * 3);
 }
+
+/* The technique list in the Skills tab (M3-13). */
+.pow-tech {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+  padding: calc(var(--px) * 2) 0;
+}
+.pow-tech-head {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+}
+.pow-tech-slots {
+  display: flex;
+  gap: calc(var(--px) * 2);
+}
+.pow-tech-slot {
+  min-width: 48px;
+  min-height: 44px;
+}
+.pow-tech-slot.is-on {
+  border-image: none;
+  border-color: var(--pal-47);
+  background: var(--pal-47);
+  color: var(--pal-0);
+}

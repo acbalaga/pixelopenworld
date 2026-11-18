@@ -1,5 +1,6 @@
 import type { Mod } from '../items/affixes';
 import { STATUS_BALANCE as B } from '../balance/status';
+import { TECHNIQUE_BALANCE as TB } from '../balance/techniques';
 
 /** The eleven statuses of design/04. Each has one icon with its own shape and one clear rule. */
 export type StatusId =
@@ -13,7 +14,12 @@ export type StatusId =
   | 'dazed'
   | 'warded'
   | 'fed'
-  | 'rested';
+  | 'rested'
+  // Timed effects of techniques (M3-13).
+  | 'tailwind'
+  | 'courage'
+  | 'mending'
+  | 'hidden';
 
 /** The six schools, as the element ids attacks and fixtures use. */
 export type ElementId = 'ember' | 'tide' | 'gale' | 'stone' | 'mending' | 'hexing';
@@ -45,6 +51,10 @@ export const STATUS_PRIORITY: readonly StatusId[] = [
   'warded',
   'fed',
   'rested',
+  'hidden',
+  'tailwind',
+  'courage',
+  'mending',
 ];
 
 export const STATUSES: Readonly<Record<StatusId, StatusDef>> = {
@@ -123,6 +133,41 @@ export const STATUSES: Readonly<Record<StatusId, StatusDef>> = {
     ticks: B.fedTicks,
     stacks: 'refresh',
     rule: 'fed',
+  },
+  tailwind: {
+    id: 'tailwind',
+    iconKey: 'ui.icon_gust',
+    ticks: TB.tailwind.ticks,
+    stacks: 'refresh',
+    mods: [
+      { stat: 'moveSpeed', pct: TB.tailwind.speedPct },
+      { stat: 'dodgeCost', pct: TB.tailwind.dodgeCostPct },
+    ],
+    rule: 'tailwind',
+  },
+  courage: {
+    id: 'courage',
+    iconKey: 'ui.icon_note',
+    ticks: TB.courage.ticks,
+    stacks: 'refresh',
+    mods: [{ stat: 'staRegen', pct: TB.courage.regenPct }],
+    rule: 'courage',
+  },
+  mending: {
+    id: 'mending',
+    iconKey: 'ui.icon_heart',
+    ticks: TB.mending.ticks,
+    stacks: 'refresh',
+    tickEffect: { every: TB.mending.every, heal: TB.mending.heal },
+    rule: 'mending',
+  },
+  hidden: {
+    id: 'hidden',
+    iconKey: 'ui.icon_hide',
+    ticks: TB.hide.ticks,
+    stacks: 'refresh',
+    mods: [{ stat: 'moveSpeed', pct: TB.hide.speedPct - 100 }],
+    rule: 'hidden',
   },
   rested: {
     id: 'rested',

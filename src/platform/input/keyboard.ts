@@ -64,6 +64,7 @@ const KEY_BUTTONS: Record<string, ButtonId> = {
   KeyE: 'context',
   Escape: 'menu',
   KeyB: 'bag',
+  KeyQ: 'swap',
 };
 
 /** Key codes the page should stop the browser from acting on. */

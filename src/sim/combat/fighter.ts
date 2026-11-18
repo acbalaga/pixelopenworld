@@ -151,7 +151,8 @@ export function startAttack(
   if (!f || !def) return false;
   // Dazed units cannot start an attack or a technique.
   if (hasStatus(state, who, 'dazed')) return false;
-  if (def.cost && !spend(state, who, def.cost.pool, def.cost.amount)) return false;
+  // A swap in combat locks every attack for a moment.
+  if (state.tick < (f.lockUntil ?? 0)) return false;
   const me = centerPx(state, who);
   const av = getComp(state.entities, who, 'avatar');
   let aim: Vec | null = null;
@@ -196,6 +197,14 @@ export interface HitInfo {
   /** The element the hit carries, and whether it applies the element's status. */
   elem?: string;
   applies?: boolean;
+  /** Draws the target in instead of pushing it away. */
+  pull?: boolean;
+  /** Percent of the damage that heals the attacker. */
+  drain?: number;
+  /** A critical hit whatever the roll. */
+  crit?: boolean;
+  /** Count the target as staggered for the damage bonus. */
+  asStaggered?: boolean;
 }
 
 /** Applies one hit to `dst`: i-frames, perfect dodge, damage, stagger, knockback, hit pause, death. */
@@ -208,7 +217,11 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
 
   if (f.invuln > 0) {
     emit(state.events, { type: 'dodged', src: h.src, dst });
-    if (f.state === 'dodge' && state.tick - f.dodgeStart <= C.dodge.perfectWindow)
+    if (
+      f.state === 'dodge' &&
+      state.tick - f.dodgeStart <=
+        C.dodge.perfectWindow + modAdd(activeMods(state, dst), 'perfectWindow')
+    )
       emit(state.events, { type: 'perfectDodge', id: dst, src: h.src });
     return;
   }
@@ -242,9 +255,10 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     }
   }
 
-  const crit =
+  const roll =
     nextU32(state.rng.combat) % 100 <
     C.crit.chancePct + modAdd(activeMods(state, h.src), 'critPct');
+  const crit = roll || h.crit === true;
   const prop = propertyPct(state, dst, h.tag, mid, h.from, wasStaggered);
   const defense = Math.max(
     SB.defenseFloor,
@@ -252,7 +266,7 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
   );
   const amount = computeDamage(h.power, h.mult, h.rank, defense, h.element, {
     crit,
-    staggered: wasStaggered,
+    staggered: wasStaggered || h.asStaggered === true,
     pct: Math.floor((prop * through) / 100),
   });
   pools.hp = Math.max(0, pools.hp - amount);
@@ -271,6 +285,20 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     ...(h.elem ? { elem: h.elem, applies: h.applies === true } : {}),
   });
   if (blocked) emit(state.events, { type: 'blocked', who: dst, src: h.src, amount });
+  // Drain: the caster is healed for a share of what the hit did.
+  if (h.drain && srcPools && h.src !== dst) {
+    const back = Math.floor((amount * h.drain) / 100);
+    const before = srcPools.hp;
+    srcPools.hp = Math.min(srcPools.hpMax, srcPools.hp + back);
+    if (srcPools.hp > before)
+      emit(state.events, {
+        type: 'healed',
+        id: h.src,
+        src: h.src,
+        amount: srcPools.hp - before,
+        tag: 'drain',
+      });
+  }
   // Every unarmed hit gives some Stamina back.
   const refund = refundOf(h.tag);
   if (srcPools && refund > 0) srcPools.sta = Math.min(srcPools.staMax, srcPools.sta + refund);
@@ -290,7 +318,12 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
       dx /= l;
       dy /= l;
     }
-    const dist = knockPx(h.tag, h.knock, l);
+    // A pull stops short of the caster's feet instead of carrying through them.
+    const dist = h.pull ? Math.min(h.knock, Math.max(0, l - 12)) : knockPx(h.tag, h.knock, l);
+    if (h.pull) {
+      dx = -dx;
+      dy = -dy;
+    }
     const per = ((blocked ? dist >> 1 : dist) * SUBPX) / C.knockTicks;
     const k = getComp(e, dst, 'knock');
     const add = { x: Math.round(dx * per), y: Math.round(dy * per) };
@@ -381,7 +414,7 @@ export function kill(state: SimState, id: EntityId): void {
 }
 
 /** Resolves the active frames of `who`'s attack: finds targets in the shape and hits them. */
-export function resolveSwing(state: SimState, who: EntityId, def: AttackDef): void {
+export function resolveSwing(state: SimState, who: EntityId, def: AttackDef, lastHit = true): void {
   const f = getComp(state.entities, who, 'fighter');
   const cb = getComp(state.entities, who, 'combatant');
   const me = centerPx(state, who);
@@ -411,8 +444,13 @@ export function resolveSwing(state: SimState, who: EntityId, def: AttackDef): vo
       knock: def.knock,
       element: 100,
       heavy: def.heavy === true,
-      tag: def.family,
+      // A spell pays XP to its element, a blow to its weapon family.
+      tag: def.element ?? def.family,
       ...(def.element ? { elem: def.element, applies: def.applies === true } : {}),
+      ...(def.pull ? { pull: true } : {}),
+      ...(def.drain ? { drain: def.drain } : {}),
+      ...(def.crit ? { crit: true } : {}),
+      ...(def.lastHitStaggers && lastHit ? { asStaggered: true } : {}),
     });
   }
 }

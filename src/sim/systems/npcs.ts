@@ -1,7 +1,7 @@
-import { TECHNIQUES } from '../../content/combat/attacks';
 import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
 import type { Effect } from '../../content/dialogue/types';
 import { give, learnRecipe } from '../items';
+import { learnTechnique } from '../combat/techniques';
 import { holds, requestState } from '../journal';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
@@ -13,6 +13,7 @@ import { contextTarget } from './interact';
 import { dayIndex } from '../time';
 import { near, newNpc } from '../trade';
 
+export { learnTechnique } from '../combat/techniques';
 export { buy, buyback, haggle, mend, sell, shopPurse, tradeSystem } from '../trade';
 export { buyPrice, sellPrice } from '../economy';
 import { earnCoin } from '../ledger';
@@ -57,16 +58,6 @@ function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   else if ('learnTechnique' in e) learnTechnique(state, who, e.learnTechnique);
   else if ('openShop' in e && SHOPS[e.openShop])
     emit(state.events, { type: 'shopOpened', who, shop: e.openShop });
-}
-
-/** Teaches a technique: it takes the first free slot after the weapon's lunge. Known ones are skipped. */
-export function learnTechnique(state: SimState, who: EntityId, technique: string): void {
-  const f = getComp(state.entities, who, 'fighter');
-  if (!f || !TECHNIQUES[technique] || f.slots.includes(technique)) return;
-  const free = f.slots.findIndex((s, i) => i > 0 && s === null);
-  if (free < 0) return;
-  f.slots[free] = technique;
-  emit(state.events, { type: 'techniqueLearned', who, technique });
 }
 
 /** Pays a finished request, once. */

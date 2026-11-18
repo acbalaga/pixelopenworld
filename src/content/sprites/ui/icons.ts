@@ -266,6 +266,116 @@ const haggle = icon('ui.icon_haggle', (im) => {
   im.rect(1, 8, 2, 8, W);
 });
 
+/** Slam: a hammer head coming down on a ground ring. */
+const slam = icon('ui.icon_slam', (im) => {
+  im.rect(3, 0, 8, 4, METAL);
+  im.rect(3, 0, 8, 0, METAL_DARK);
+  im.rect(5, 5, 6, 8, WOOD);
+  im.rect(0, 10, 11, 10, W);
+  im.rect(2, 9, 3, 9, W);
+  im.rect(8, 9, 9, 9, W);
+  im.rect(1, 11, 10, 11, METAL_DARK);
+});
+
+/** Whirl: a circle of motion, a ring broken at one side with an arrow head. */
+const whirl = icon('ui.icon_whirl', (im) => {
+  im.rect(4, 0, 8, 0, W);
+  im.rect(2, 1, 3, 1, W);
+  im.rect(1, 2, 1, 3, W);
+  im.rect(0, 4, 0, 7, W);
+  im.rect(1, 8, 1, 9, W);
+  im.rect(2, 10, 3, 10, W);
+  im.rect(4, 11, 8, 11, W);
+  im.rect(9, 10, 10, 10, W);
+  im.rect(10, 8, 10, 9, W);
+  im.rect(8, 4, 11, 4, METAL);
+  im.rect(9, 5, 10, 5, METAL);
+  im.set(9, 6, METAL);
+});
+
+/** Arrow: a shaft with a head and fletching, pointing up and right. */
+const arrow = icon('ui.icon_arrow', (im) => {
+  line(im, 1, 10, 9, 2, WOOD);
+  im.rect(8, 0, 11, 3, METAL);
+  im.rect(9, 1, 10, 2, W);
+  line(im, 0, 8, 2, 10, W);
+  line(im, 2, 11, 3, 9, W);
+});
+
+/** Palm: an open hand with four fingers and a thumb. */
+const palm = icon('ui.icon_palm', (im) => {
+  for (const x of [2, 4, 6, 8]) im.rect(x, 1, x + 1, 5, GOLD[3]);
+  im.rect(2, 5, 9, 10, GOLD[3]);
+  im.rect(0, 5, 1, 8, GOLD[2]);
+  im.rect(3, 10, 8, 11, GOLD[2]);
+});
+
+/** Gust: three curling streaks of wind. */
+const gust = icon('ui.icon_gust', (im) => {
+  im.rect(0, 2, 7, 2, W);
+  im.rect(8, 1, 9, 1, W);
+  im.rect(10, 2, 10, 3, W);
+  im.rect(2, 5, 9, 5, METAL);
+  im.rect(10, 4, 11, 4, METAL);
+  im.rect(0, 8, 6, 8, W);
+  im.rect(7, 9, 8, 9, W);
+  im.rect(9, 8, 9, 7, W);
+});
+
+/** Splash: a wave cresting over three drops. */
+const splash = icon('ui.icon_splash', (im) => {
+  im.rect(0, 7, 11, 11, WATER[2]);
+  im.rect(0, 6, 3, 6, WATER[2]);
+  im.rect(5, 5, 8, 6, WATER[2]);
+  im.rect(9, 4, 11, 5, WATER[3]);
+  im.rect(0, 11, 11, 11, WATER[1]);
+  im.rect(1, 1, 2, 3, WATER[3]);
+  im.rect(5, 0, 6, 2, WATER[3]);
+  im.rect(9, 1, 10, 2, WATER[3]);
+});
+
+/** Stone: a jagged boulder. */
+const stone = icon('ui.icon_stone', (im) => {
+  im.rect(3, 1, 8, 2, METAL);
+  im.rect(1, 3, 10, 6, METAL);
+  im.rect(0, 5, 11, 9, METAL_DARK);
+  im.rect(2, 10, 9, 11, METAL_DARK);
+  im.rect(2, 3, 4, 4, W);
+  line(im, 6, 4, 8, 8, METAL_DARK);
+});
+
+/** Heart: Mending. */
+const heart = icon('ui.icon_heart', (im) => {
+  im.rect(1, 1, 4, 2, FIRE);
+  im.rect(7, 1, 10, 2, FIRE);
+  im.rect(0, 3, 11, 5, FIRE);
+  im.rect(1, 6, 10, 6, FIRE);
+  im.rect(2, 7, 9, 7, FIRE_DARK);
+  im.rect(3, 8, 8, 8, FIRE_DARK);
+  im.rect(4, 9, 7, 9, FIRE_DARK);
+  im.rect(5, 10, 6, 10, FIRE_DARK);
+  im.rect(2, 2, 3, 3, FIRE_LIGHT);
+});
+
+/** Hide: a hooded figure, a dark shape with two small eyes. */
+const hide = icon('ui.icon_hide', (im) => {
+  im.rect(4, 0, 7, 1, METAL_DARK);
+  im.rect(3, 2, 8, 6, METAL_DARK);
+  im.rect(1, 7, 10, 11, METAL_DARK);
+  im.rect(4, 4, 4, 4, W);
+  im.rect(7, 4, 7, 4, W);
+  im.rect(5, 6, 6, 6, METAL);
+});
+
+/** Note: a pair of beamed eighth notes. */
+const note = icon('ui.icon_note', (im) => {
+  im.rect(3, 1, 10, 2, W);
+  im.rect(3, 1, 4, 8, W);
+  im.rect(9, 1, 10, 7, W);
+  im.rect(1, 8, 4, 10, W);
+  im.rect(7, 7, 10, 9, W);
+});
+
 export const UI_ICONS: readonly SpriteDef[] = [
   attack,
   lunge,
@@ -288,6 +398,16 @@ export const UI_ICONS: readonly SpriteDef[] = [
   rested,
   buy,
   haggle,
+  slam,
+  whirl,
+  arrow,
+  palm,
+  gust,
+  splash,
+  stone,
+  heart,
+  hide,
+  note,
 ];
 
 /** Icon sprite id for each on-screen button. Technique buttons take their icon from the technique. */
@@ -298,4 +418,5 @@ export const BUTTON_ICONS: Readonly<Record<string, string>> = {
   context: 'ui.icon_context',
   menu: 'ui.icon_menu',
   bag: 'ui.icon_bag',
+  swap: 'ui.icon_haggle',
 };

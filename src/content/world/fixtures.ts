@@ -24,7 +24,8 @@ export type FixtureType =
   | 'storage'
   | 'station'
   | 'bed'
-  | 'element';
+  | 'element'
+  | 'wall';
 
 export interface FixtureDef {
   kind: string;
@@ -151,6 +152,8 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },
   // A bedroll by the square Waystone. Sleeping on it applies Rested (M3-09).
   { kind: 'fixture.bed', type: 'bed', sprite: 'prop.bedroll', size: 14 },
+  // Raised by the Earth Wall technique (M3-13). It blocks bodies and bolts and does not last.
+  { kind: 'fixture.earth_wall', type: 'wall', sprite: 'prop.earth_wall', size: 16 },
   // Element set pieces (M3-09). One for each school, none on a route the slice needs.
   // A wall of dry brush: Ember burns it to ash, and it grows back.
   {

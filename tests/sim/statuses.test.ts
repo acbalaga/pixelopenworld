@@ -223,7 +223,7 @@ describe('status framework: the same rules for the avatar and for creatures', ()
   });
 
   it('every status has its own icon and its own rule', () => {
-    expect(new Set(IDS.filter((i) => i !== 'fed').map((i) => STATUSES[i].iconKey)).size).toBe(10);
+    expect(new Set(IDS.filter((i) => i !== 'fed').map((i) => STATUSES[i].iconKey)).size).toBe(14);
     for (const id of IDS) expect(STATUS_PRIORITY).toContain(id);
   });
 });

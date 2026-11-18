@@ -70,8 +70,8 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 16 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(16);
+  it('list 10 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(10);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
     for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
@@ -150,6 +150,17 @@ describe('every skill that is not pending earns XP', () => {
         feed(s);
       }
     },
+    'skill.tide': (s, me) => hit(s, me, 'tide'),
+    'skill.gale': (s, me) => hit(s, me, 'gale'),
+    'skill.stone': (s, me) => hit(s, me, 'stone'),
+    'skill.mending': (s, me) =>
+      feed(s, { type: 'healed', id: me, src: me, amount: 3, tag: 'mending' }),
+    'skill.performance': (s, me) =>
+      feed(s, { type: 'perform', who: me, technique: 'technique.performance_hum' }),
+    'skill.stealth': (s, me) => {
+      const foe = spawnEnemy(s, 'creature.mossling', 400, 300);
+      feed(s, { type: 'sneak', who: me, creature: foe });
+    },
     'skill.bartering': (s, me) =>
       feed(s, { type: 'haggleWon', who: me, shop: 'shop.brin', item: 'item.dish_bread', price: 2 }),
     'skill.hexing': (s, me) => {
@@ -178,8 +189,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 20 skills with a system after M3-10', () => {
-    expect(active).toHaveLength(20);
+  it('has 26 skills with a system after M3-13', () => {
+    expect(active).toHaveLength(26);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

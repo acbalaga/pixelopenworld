@@ -70,16 +70,25 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
       },
       // Magic.
       { id: 'skill.ember', name: 'Ember', family: 'magic', sources: damage('ember') },
-      { id: 'skill.tide', name: 'Tide', family: 'magic', sources: [] },
-      { id: 'skill.gale', name: 'Gale', family: 'magic', sources: [] },
-      { id: 'skill.stone', name: 'Stone', family: 'magic', sources: [] },
-      { id: 'skill.mending', name: 'Mending', family: 'magic', sources: [] },
+      { id: 'skill.tide', name: 'Tide', family: 'magic', sources: damage('tide') },
+      { id: 'skill.gale', name: 'Gale', family: 'magic', sources: damage('gale') },
+      { id: 'skill.stone', name: 'Stone', family: 'magic', sources: damage('stone') },
+      {
+        id: 'skill.mending',
+        name: 'Mending',
+        family: 'magic',
+        // Health restored by a Mending technique pays.
+        sources: [{ on: 'heal', base: 4, firstTime: 100, scaled: false }],
+      },
       {
         id: 'skill.hexing',
         name: 'Hexing',
         family: 'magic',
         // Hexing something pays, and the first time pays a lump. Spells arrive in M3-13.
-        sources: [{ on: 'statusApplied', tag: 'hexed', base: 10, firstTime: 100 }],
+        sources: [
+          { on: 'statusApplied', tag: 'hexed', base: 10, firstTime: 100 },
+          ...damage('hexing'),
+        ],
       },
       // Gathering.
       {
@@ -145,10 +154,22 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
           { on: 'sale', base: 3, scaled: false },
         ],
       },
-      { id: 'skill.performance', name: 'Performance', family: 'social', sources: [] },
+      {
+        id: 'skill.performance',
+        name: 'Performance',
+        family: 'social',
+        // A finished song pays, and the first of each song a lump.
+        sources: [{ on: 'perform', base: 12, firstTime: 80, scaled: false }],
+      },
       { id: 'skill.leadership', name: 'Leadership', family: 'social', sources: [] },
       { id: 'skill.taming', name: 'Taming', family: 'social', sources: [] },
-      { id: 'skill.stealth', name: 'Stealth', family: 'social', sources: [] },
+      {
+        id: 'skill.stealth',
+        name: 'Stealth',
+        family: 'social',
+        // Passing a creature unnoticed pays, and the first of each kind a lump.
+        sources: [{ on: 'sneak', base: 8, firstTime: 60, scaled: false }],
+      },
       // Exploration.
       { id: 'skill.cartography', name: 'Cartography', family: 'exploration', sources: [] },
       {
@@ -184,16 +205,10 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
  * XP to a skill listed here. A test checks that every skill not listed earns XP.
  */
 export const PENDING_SKILLS: string[] = [
-  'skill.tide',
-  'skill.gale',
-  'skill.stone',
-  'skill.mending',
   'skill.tailoring',
   'skill.alchemy',
   'skill.enchanting',
   'skill.tinkering',
-  'skill.performance',
-  'skill.stealth',
   // Late skills, M4 to M6.
   'skill.farming',
   'skill.husbandry',

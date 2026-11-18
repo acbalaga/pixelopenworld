@@ -2,6 +2,7 @@ import { COMBAT as C } from '../../content/balance/combat';
 import { getComp, query } from '../kernel/entities';
 import type { SimState } from '../state';
 import { nudge } from './movement';
+import { applyMods, statusMods } from '../mods';
 
 /**
  * Pool regeneration (design/04). Health only after a quiet spell. Stamina fast, after a short
@@ -16,7 +17,10 @@ export function poolsSystem(state: SimState): void {
     if (t - p.lastCombat >= C.pools.hpRegenDelay && t % C.pools.hpRegenEvery === 0)
       p.hp = Math.min(p.hpMax, p.hp + 1);
     if (t - p.lastSpend >= C.pools.staRegenDelay)
-      p.sta = Math.min(p.staMax, p.sta + C.pools.staRegen);
+      p.sta = Math.min(
+        p.staMax,
+        p.sta + applyMods(C.pools.staRegen, 'staRegen', statusMods(state, id)),
+      );
     const v = getComp(state.entities, id, 'vel');
     const still = !v || (v.x === 0 && v.y === 0);
     const every = still ? C.pools.focRegenStillEvery : C.pools.focRegenEvery;
