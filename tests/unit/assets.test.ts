@@ -98,7 +98,8 @@ describe('validation', () => {
   });
 });
 
-describe('bake', () => {
+// A full bake takes 25 s or more on a slow runner, so each test gets room for two.
+describe('bake', { timeout: 120_000 }, () => {
   it('running twice gives byte-identical output', () => {
     const a = bakeAll(SPRITES, TILES);
     const b = bakeAll(SPRITES, TILES);
@@ -111,7 +112,7 @@ describe('bake', () => {
     const out = bakeAll(SPRITES, TILES);
     const dir = join(__dirname, '..', '..', 'baked');
     const on = readdirSync(dir)
-      .filter((n) => n !== '.gitkeep')
+      .filter((n) => n !== '.gitkeep' && n !== 'world')
       .sort();
     expect(on).toEqual([...out.keys()].sort());
     expect(readFileSync(join(dir, 'manifest.json'), 'utf8')).toBe(out.get('manifest.json'));

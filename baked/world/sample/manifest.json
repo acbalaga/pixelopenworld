@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "region": "sample",
+  "seed": 4242,
+  "chunks": {
+    "w": 2,
+    "h": 2
+  },
+  "bridgeTiles": 12,
+  "files": [
+    {
+      "file": "chunk-0-0.bin",
+      "cx": 0,
+      "cy": 0,
+      "hash": "709ddd62964304d0"
+    },
+    {
+      "file": "chunk-1-0.bin",
+      "cx": 1,
+      "cy": 0,
+      "hash": "fd72ad5ed5046063"
+    },
+    {
+      "file": "chunk-0-1.bin",
+      "cx": 0,
+      "cy": 1,
+      "hash": "8f4d76bcba055774"
+    },
+    {
+      "file": "chunk-1-1.bin",
+      "cx": 1,
+      "cy": 1,
+      "hash": "ce0fe91ffa61c8b3"
+    }
+  ],
+  "interiors": [
+    {
+      "id": "interior.cellar",
+      "dir": "interior-cellar",
+      "tiles": {
+        "w": 8,
+        "h": 6
+      },
+      "entrances": [
+        {
+          "x": 24,
+          "y": 20
+        }
+      ],
+      "chunks": [
+        {
+          "file": "chunk-0-0.bin",
+          "cx": 0,
+          "cy": 0,
+          "hash": "c9303b5febf7c3dc"
+        }
+      ]
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "old_oak",
+      "x": 10,
+      "y": 12
+    }
+  ],
+  "wakePoints": [
+    {
+      "id": "sample_wake",
+      "x": 20,
+      "y": 34
+    }
+  ],
+  "waystones": [
+    {
+      "id": "sample_stone",
+      "x": 28,
+      "y": 33
+    }
+  ],
+  "zones": [
+    {
+      "id": "wood_edge",
+      "roster": "roster.wood_edge",
+      "polygon": [
+        {
+          "x": 34,
+          "y": 2
+        },
+        {
+          "x": 62,
+          "y": 2
+        },
+        {
+          "x": 62,
+          "y": 18
+        },
+        {
+          "x": 34,
+          "y": 18
+        }
+      ]
+    }
+  ]
+}

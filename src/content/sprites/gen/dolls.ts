@@ -1,4 +1,11 @@
-import { DOLL_ANIMS, DOLL_DRAWN_DIRS, DOLL_ORIGIN, type BodyType } from '../../dolls/parts';
+import {
+  DOLL_ANIMS,
+  DOLL_DRAWN_DIRS,
+  DOLL_ORIGIN,
+  WORK_ANIMS,
+  type BodyType,
+  type WorkAnim,
+} from '../../dolls/parts';
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
 
@@ -89,6 +96,67 @@ function actionPose(dir: Dir, action: Action, n: number): Pose {
     } else p.shiftY = n === 0 ? 0 : toward;
   }
   return p;
+}
+
+/**
+ * Poses for the four frames of a work animation. Held items read `stance`, so a swing reuses the
+ * attack stances and the rest stay at rest with the arms doing the work.
+ */
+function workPose(dir: Dir, work: WorkAnim, n: number): Pose {
+  const side = dir === 'right';
+  const toward = dir === 'up' ? -1 : 1;
+  const p = poseOf(dir, 'idle');
+  switch (work) {
+    case 'work_swing': {
+      const a = actionPose(dir, 'attack', n < 3 ? n : 0);
+      return n < 3 ? a : p;
+    }
+    case 'work_reach':
+      p.bob = n === 1 || n === 2 ? 1 : 0;
+      if (side) {
+        p.armDx = [0, 3, 3, 1][n] as number;
+        p.shiftX = n === 1 || n === 2 ? 1 : 0;
+      } else {
+        p.armDy = [
+          [0, 0],
+          [2, 2],
+          [2, 2],
+          [0, 1],
+        ][n] as [number, number];
+        p.shiftY = n === 1 || n === 2 ? toward : 0;
+      }
+      return p;
+    case 'work_stir':
+      if (side) p.armDx = [-1, 2, 1, -2][n] as number;
+      else
+        p.armDy = [
+          [-1, 0],
+          [0, -1],
+          [1, 0],
+          [0, 1],
+        ][n] as [number, number];
+      p.bob = n === 1 ? -1 : 0;
+      return p;
+    case 'work_hands':
+      p.stance = n % 2 === 0 ? 'rest' : 'windup';
+      if (side) p.armDx = [0, 2, 0, 2][n] as number;
+      else p.armDy = n % 2 === 0 ? [-2, -2] : [1, 1];
+      p.bob = n % 2 === 0 ? 0 : 1;
+      return p;
+    case 'work_cast':
+      p.stance = (['windup', 'strike', 'recover', 'rest'] as const)[n] ?? 'rest';
+      if (side) {
+        p.armDx = [-3, 4, 3, 3][n] as number;
+        p.legX = [9, 13];
+      } else
+        p.armDy = [
+          [0, -4],
+          [0, 3],
+          [0, 2],
+          [0, 2],
+        ][n] as [number, number];
+      return p;
+  }
 }
 
 /** Body geometry. B is slimmer through shoulders, waist and legs. */
@@ -598,6 +666,11 @@ const POSES: { name: string; pose: Pose }[] = [
   ...DOLL_DRAWN_DIRS.map((d) => ({ name: `hurt_${d}`, pose: actionPose(d, 'hurt', 0) })),
   ...DOLL_DRAWN_DIRS.flatMap((d) =>
     [0, 1].map((n) => ({ name: `dodge_${d}_${n}`, pose: actionPose(d, 'dodge', n) })),
+  ),
+  ...WORK_ANIMS.flatMap((w) =>
+    DOLL_DRAWN_DIRS.flatMap((d) =>
+      [0, 1, 2, 3].map((n) => ({ name: `${w}_${d}_${n}`, pose: workPose(d, w, n) })),
+    ),
   ),
 ];
 

@@ -329,6 +329,7 @@ describe('variants: day phase, season, weather', () => {
   const test: NodeDef = {
     id: 'node.test',
     tag: 'fishing',
+    workAnim: 'work_cast',
     tier: 1,
     yields: [
       { item: 'item.fish_river', weight: 1 },

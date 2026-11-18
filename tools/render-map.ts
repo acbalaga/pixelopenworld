@@ -1,5 +1,5 @@
-// CLI: `tsx tools/render-map.ts [out.png] [x0,y0,x1,y1]`. Stitches the baked chunks of the slice
-// map into one PNG, with the same layers and tile art the game draws (no entities). Optional
+// CLI: `tsx tools/render-map.ts [out.png] [x0,y0,x1,y1] [--region <id>]`. Stitches the baked chunks
+// of the slice map (or of a baked region under baked/world/<id>) into one PNG, with the same layers and tile art the game draws (no entities). Optional
 // rectangle in tiles crops the render.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -26,14 +26,21 @@ const manifest = JSON.parse(readFileSync(join(baked, 'manifest.json'), 'utf8')) 
 };
 const atlas = PNG.sync.read(readFileSync(join(baked, 'atlas-core.png')));
 
-const files = readdirSync(baked).filter((n) => /^chunk-slice-\d+-\d+\.bin$/.test(n));
+const argv = process.argv.slice(2);
+const ri = argv.indexOf('--region');
+const region = ri >= 0 ? argv[ri + 1] : undefined;
+if (ri >= 0) argv.splice(ri, 2);
+const chunkDir = region ? join(baked, 'world', region) : baked;
+const files = readdirSync(chunkDir).filter((n) =>
+  region ? /^chunk-\d+-\d+\.bin$/.test(n) : /^chunk-slice-\d+-\d+\.bin$/.test(n),
+);
 const world = new TileWorld(
-  files.map((f) => decodeChunk(new Uint8Array(readFileSync(join(baked, f))))),
+  files.map((f) => decodeChunk(new Uint8Array(readFileSync(join(chunkDir, f))))),
 );
 const b = world.bounds();
 if (!b) throw new Error('no slice chunks baked');
 
-const crop = process.argv[3]?.split(',').map(Number);
+const crop = argv[1]?.split(',').map(Number);
 const [cx0, cy0, cx1, cy1] =
   crop && crop.length === 4 ? (crop as [number, number, number, number]) : [b.x0, b.y0, b.x1, b.y1];
 const out = new PNG({ width: (cx1 - cx0) * 16, height: (cy1 - cy0) * 16 });
@@ -108,6 +115,6 @@ for (const layer of layers) {
     }
   }
 }
-const target = process.argv[2] ?? join(root, 'map-slice.png');
+const target = argv[0] ?? join(root, region ? `map-${region}.png` : 'map-slice.png');
 writeFileSync(target, PNG.sync.write(out, { colorType: 2, deflateLevel: 9, filterType: 4 }));
 console.log(`render-map: ${out.width}x${out.height} -> ${target}`);

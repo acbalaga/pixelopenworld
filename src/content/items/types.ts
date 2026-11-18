@@ -1,6 +1,13 @@
 import type { Craft } from './stations';
 import type { DayPhase, Season, Weather } from '../balance/time';
-import type { BottomStyle, ClothColor, MainHand, OffHand, TopStyle } from '../dolls/parts';
+import type {
+  BottomStyle,
+  ClothColor,
+  MainHand,
+  OffHand,
+  TopStyle,
+  WorkAnim,
+} from '../dolls/parts';
 
 export type ItemCategory =
   'weapon' | 'armor' | 'tool' | 'consumable' | 'material' | 'currency' | 'misc';
@@ -136,6 +143,8 @@ export interface NodeDef {
   /** Skill XP tag sent with the gathered event, and the skill that rolls quality. */
   tag: string;
   tier: number;
+  /** The avatar's work animation while it gathers here. */
+  workAnim: WorkAnim;
   /** The tool that helps. Without one the node needs none. */
   tool?: ToolKind;
   yields: readonly YieldDef[];

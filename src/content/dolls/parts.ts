@@ -136,6 +136,20 @@ export const DOLL_DRAWN_DIRS = ['down', 'up', 'right'] as const;
 type DrawnDir = (typeof DOLL_DRAWN_DIRS)[number];
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
 
+/**
+ * Work animations (D16). A node or station names one in its `workAnim`. Four frames each, in
+ * every facing: swing (Logging, Mining, Smithing), reach (Foraging), stir (Cooking, Alchemy),
+ * hands (Tailoring, Enchanting, Tinkering, Woodworking), cast (Fishing).
+ */
+export const WORK_ANIMS = [
+  'work_swing',
+  'work_reach',
+  'work_stir',
+  'work_hands',
+  'work_cast',
+] as const;
+export type WorkAnim = (typeof WORK_ANIMS)[number];
+
 /** Frame names every layer provides: walk 4, idle 1, attack 3, hurt 1, dodge 2, per drawn direction. */
 export const DOLL_FRAMES: readonly string[] = [
   ...DOLL_DRAWN_DIRS.flatMap((d) => range(4).map((n) => `walk_${d}_${n}`)),
@@ -143,11 +157,14 @@ export const DOLL_FRAMES: readonly string[] = [
   ...DOLL_DRAWN_DIRS.flatMap((d) => range(3).map((n) => `attack_${d}_${n}`)),
   ...DOLL_DRAWN_DIRS.map((d) => `hurt_${d}`),
   ...DOLL_DRAWN_DIRS.flatMap((d) => range(2).map((n) => `dodge_${d}_${n}`)),
+  ...WORK_ANIMS.flatMap((w) =>
+    DOLL_DRAWN_DIRS.flatMap((d) => range(4).map((n) => `${w}_${d}_${n}`)),
+  ),
 ];
 
 /**
  * Animations, in four facings. Left shares the right frames mirrored. Idle is two frames (a slow
- * breath), walk four, attack three (windup, strike, recover), hurt one, dodge two.
+ * breath), walk four, attack three (windup, strike, recover), hurt one, dodge two, and each work animation four.
  */
 export const DOLL_ANIMS: Readonly<Record<string, AnimDef>> = Object.fromEntries(
   (['down', 'up', 'right', 'left'] as const).flatMap((f) => {
@@ -160,6 +177,9 @@ export const DOLL_ANIMS: Readonly<Record<string, AnimDef>> = Object.fromEntries(
       [`attack_${f}`, { fps: 12, frames: seq('attack', 3), ...flip }],
       [`hurt_${f}`, { fps: 4, frames: [`hurt_${d}`], ...flip }],
       [`dodge_${f}`, { fps: 8, frames: seq('dodge', 2), ...flip }],
+      ...WORK_ANIMS.map(
+        (w) => [`${w}_${f}`, { fps: 6, frames: seq(w, 4), ...flip }] as [string, AnimDef],
+      ),
     ] as [string, AnimDef][];
   }),
 );
