@@ -460,6 +460,28 @@ function chest(): SpriteDef {
   });
 }
 
+function anvil(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(3, 12, 12, 14, WOOD[1]);
+  im.rect(5, 9, 10, 12, METAL[1]);
+  im.rect(2, 6, 13, 8, METAL[2]);
+  im.rect(2, 6, 13, 6, METAL[3]);
+  im.rect(11, 7, 14, 7, METAL[2]);
+  im.rect(4, 8, 11, 8, METAL[1]);
+  return toSprite('prop.anvil', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+function workbench(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 7, 14, 9, WOOD[3]);
+  im.rect(1, 7, 14, 7, WOOD[2]);
+  im.rect(2, 10, 3, 14, WOOD[1]);
+  im.rect(12, 10, 13, 14, WOOD[1]);
+  im.rect(4, 5, 7, 6, METAL[2]);
+  im.rect(9, 4, 11, 6, WOOD[2]);
+  return toSprite('prop.workbench', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 function tablet(): SpriteDef {
   const im = new Img(16, 16);
   im.rect(3, 2, 12, 14, STONE[2]);
@@ -511,6 +533,8 @@ export function worldSprites(): SpriteDef[] {
     plate(),
     block(),
     chest(),
+    anvil(),
+    workbench(),
     tablet(),
   ];
 }

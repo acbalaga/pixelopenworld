@@ -29,6 +29,9 @@ export const MATERIAL_ITEMS: readonly ItemDef[] = [
   }),
   mat('item.nightshade', 8, 2),
   mat('item.glowcap', 10, 2),
+  // What a failed craft leaves.
+  mat('item.slag', 0, 1, false),
+  mat('item.wood_scraps', 0, 1, false),
   // From the water (fishing).
   mat('item.fish_river', 6),
   mat('item.fish_silver', 14, 2),

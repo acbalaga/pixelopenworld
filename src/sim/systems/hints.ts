@@ -71,8 +71,8 @@ function finished(
         return e.type === 'attackStarted' && e.id === who && e.attack.startsWith('technique.');
       case 'gatherStarted':
         return e.type === 'gatherStarted' && e.id === who;
-      case 'cooked':
-        return e.type === 'cooked' && e.id === who;
+      case 'crafted':
+        return e.type === 'crafted' && e.id === who;
     }
   });
 }

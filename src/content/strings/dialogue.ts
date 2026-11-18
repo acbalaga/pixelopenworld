@@ -17,6 +17,8 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.brin.greet': 'Welcome to the counter. Looking, buying, or selling?',
   'dlg.brin.again': 'Back again. What will it be?',
   'dlg.brin.c_shop': 'Show me what you have.',
+  'dlg.brin.c_test': 'I want to be tested at the anvil.',
+  'dlg.hesper.c_cook': 'I want to be tested at the pot.',
 
   'dlg.tobin.greet': 'Tools and blades. Everything here has been hit with a hammer at least once.',
   'dlg.tobin.again': 'Back at the anvil. What do you need?',

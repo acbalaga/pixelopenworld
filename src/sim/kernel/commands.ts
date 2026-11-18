@@ -1,4 +1,4 @@
-import { ITEMS_BALANCE } from '../../content/balance/items';
+import { CRAFTING } from '../../content/balance/crafting';
 import { EQUIP_SLOTS } from '../../content/items/types';
 import { isDirection, type Direction } from './fixed';
 
@@ -36,8 +36,17 @@ export type Command =
   | { type: 'store'; dir: 'in' | 'out'; slot: number }
   /** Eat or use the item in bag slot `slot`. */
   | { type: 'use'; slot: number }
-  /** Cook these ingredients at the camp pot in front. Experiments are cooks with no recipe. */
+  /**
+   * Craft from these ingredient units (1 to 4) at the station in front. A known or unknown
+   * recipe of the station's craft starts the manual step. No recipe is a failed craft.
+   */
+  | { type: 'craft'; items: string[] }
+  /** Craft with no manual step. For bots, tests and automation: the grade is 0. */
   | { type: 'cook'; items: string[] }
+  /** A tap of the manual step. The sim records the tick itself. */
+  | { type: 'craftStep' }
+  /** Repair the gear in bag slot `slot` at the anvil in front. */
+  | { type: 'repair'; slot: number }
   /**
    * Dialogue with an NPC: enter `node` (choice -1, runs its effects) or pick choice `choice` of it.
    * The sim looks the effects up itself, so only real conversations can change anything.
@@ -119,15 +128,22 @@ export function validateCommand(raw: unknown): Validated {
       if (typeof r.slot !== 'string' || !EQUIP_SLOTS.includes(r.slot as never))
         return { ok: false, reason: 'bad slot' };
       return { ok: true, command: { type: 'unequip', slot: r.slot } };
+    case 'craft':
     case 'cook':
       if (
         !Array.isArray(r.items) ||
         r.items.length < 1 ||
-        r.items.length > ITEMS_BALANCE.cook.maxIngredients ||
+        r.items.length > CRAFTING.maxIngredients ||
         !r.items.every((i) => typeof i === 'string' && /^item\.[a-z0-9_]{1,40}$/.test(i))
       )
         return { ok: false, reason: 'bad ingredients' };
-      return { ok: true, command: { type: 'cook', items: [...(r.items as string[])] } };
+      return { ok: true, command: { type: r.type, items: [...(r.items as string[])] } };
+    case 'craftStep':
+      return { ok: true, command: { type: 'craftStep' } };
+    case 'repair':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
+        return { ok: false, reason: 'bad slot' };
+      return { ok: true, command: { type: 'repair', slot: r.slot as number } };
     case 'talk': {
       const name = /^[a-z0-9_.]{1,60}$/;
       if (typeof r.npc !== 'string' || !name.test(r.npc) || typeof r.node !== 'string')

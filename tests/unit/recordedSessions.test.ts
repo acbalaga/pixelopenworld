@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateSave } from '../../src/save/integrity';
 import { spawnNode } from '../../src/sim/items';
+import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { tamper } from '../support/saves';
 import { BOAR, BOSS, MOSSLING, Run, SPITBLOOM, TPS } from '../support/bots';
 
@@ -146,6 +147,73 @@ describe('recorded sessions: honest play is never flagged', () => {
     expect(l.xpEarned['skill.fishing']).toBeGreaterThan(0);
     expect(report(run)).toBe('ok');
   }, 120_000);
+
+  it('smith, carpenter and cook: gathers, smelts, saws, forges, mends and cooks for 30 minutes', async () => {
+    const run = new Run(505);
+    await run.save();
+    const at = (kind: string, tx: number, ty: number): void => {
+      spawnNode(run.s, kind, tx * 16 + 8, ty * 16 + 14);
+    };
+    for (const y of [40, 42, 44, 46]) at('node.copper_vein', 10, y);
+    for (const y of [40, 42, 44, 46]) at('node.oak_tree', 12, y);
+    spawnFixture(run.s, 'fixture.anvil', 18, 41);
+    spawnFixture(run.s, 'fixture.workbench', 18, 43);
+    const mine = (tx: number, ty: number, swings: number): void => {
+      run.stand(tx + 1, ty, 6);
+      run.tick({ type: 'interact' });
+      for (let k = 0; k < swings; k++) {
+        run.run(15);
+        run.tick({ type: 'interact' });
+      }
+      run.run(40);
+    };
+    /** Crafts at a station south of the avatar, tapping each target on its tick. */
+    const craftAt = (tx: number, ty: number, items: string[], taps: readonly number[]): void => {
+      run.stand(tx, ty - 1, 4);
+      run.tick({ type: 'craft', items });
+      const c = run.s.entities.comps.craft[run.me];
+      if (!c) return;
+      for (let i = 0; i < 120 && run.s.entities.comps.craft[run.me]; i++) {
+        run.tick(
+          ...(taps.includes(run.s.tick + 1 - c.start) ? [{ type: 'craftStep' as const }] : []),
+        );
+      }
+    };
+    let loops = 0;
+    while (run.ticks < MINUTES_30) {
+      const y = [40, 42, 44, 46][loops % 4]!;
+      mine(10, y, 1);
+      mine(12, y, 3);
+      if (run.count('item.copper_ore') >= 2 && run.count('item.coal') >= 1)
+        craftAt(18, 41, ['item.copper_ore', 'item.copper_ore', 'item.coal'], [20, 50, 80]);
+      if (run.count('item.oak_log') >= 2)
+        craftAt(18, 43, ['item.oak_log', 'item.oak_log'], [20, 50, 80]);
+      if (run.count('item.copper_ingot') >= 2 && run.count('item.oak_plank') >= 1)
+        craftAt(18, 41, ['item.copper_ingot', 'item.copper_ingot', 'item.oak_plank'], [20, 50, 80]);
+      if (run.count('item.oak_plank') >= 3)
+        craftAt(18, 43, ['item.oak_plank', 'item.oak_plank', 'item.oak_plank'], [21, 49]);
+      // A wasted experiment now and then.
+      if (loops % 9 === 8 && run.count('item.oak_log') >= 1) craftAt(18, 43, ['item.oak_log'], []);
+      // Mend the pick when it is worn.
+      const pick = run.s.entities.comps.inventory[run.me]!.slots.findIndex(
+        (x) => x?.item === 'item.pick_copper',
+      );
+      if (pick >= 0 && run.count('item.copper_ingot') >= 1) {
+        run.s.entities.comps.inventory[run.me]!.slots[pick]!.dur = 10;
+        run.stand(18, 40, 4);
+        run.tick({ type: 'repair', slot: pick });
+      }
+      loops++;
+      if (loops % 6 === 0) await run.autosave();
+    }
+    await run.save();
+    const l = run.s.ledger;
+    expect(Object.keys(l.crafts).length).toBeGreaterThan(1);
+    expect(l.itemsMade.craft?.['item.copper_ingot']).toBeGreaterThan(0);
+    expect(l.xpEarned['skill.smithing']).toBeGreaterThan(0);
+    expect(l.xpEarned['skill.woodworking']).toBeGreaterThan(0);
+    expect(report(run)).toBe('ok');
+  }, 180_000);
 
   it('adventurer: dies and takes its echo back, opens a chest, fights a boar, a shooter and the boss', async () => {
     const run = new Run(303);

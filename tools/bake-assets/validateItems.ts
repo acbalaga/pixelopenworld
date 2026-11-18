@@ -1,7 +1,9 @@
 import { ITEM_STRINGS } from '../../src/content/strings/items';
 import { CREATURES } from '../../src/content/creatures';
 import { ITEMS } from '../../src/content/items';
-import { NODES, RECIPES } from '../../src/content/items/recipes';
+import { CRAFTING } from '../../src/content/balance/crafting';
+import { NODES, RECIPES, expand } from '../../src/content/items/recipes';
+import { STATIONS } from '../../src/content/items/stations';
 import { SKILLS } from '../../src/content/skills';
 import { WEAPONS } from '../../src/content/combat/attacks';
 import type { ItemDef, NodeDef, RecipeDef } from '../../src/content/items/types';
@@ -64,15 +66,26 @@ export function validateItems(
   for (const [key, r] of Object.entries(recipes)) {
     const l = `recipe ${key}`;
     if (r.id !== key) errors.push(`${l}: id does not match its key`);
-    if (r.ingredients.length < 1 || r.ingredients.length > 3)
-      errors.push(`${l}: needs 1 to 3 ingredients`);
-    for (const i of r.ingredients)
-      if (!known(i)) errors.push(`${l}: ingredient ${i} does not exist`);
+    const units = r.ingredients.reduce((n, i) => n + i.qty, 0);
+    if (units < 1 || units > CRAFTING.maxIngredients)
+      errors.push(`${l}: needs 1 to ${CRAFTING.maxIngredients} ingredient units`);
+    for (const i of r.ingredients) {
+      if (!known(i.item)) errors.push(`${l}: ingredient ${i.item} does not exist`);
+      if (!Number.isInteger(i.qty) || i.qty < 1)
+        errors.push(`${l}: ingredient quantity must be 1 or more`);
+    }
     if (!known(r.result)) errors.push(`${l}: result ${r.result} does not exist`);
+    if (!Number.isInteger(r.qty) || r.qty < 1)
+      errors.push(`${l}: result quantity must be 1 or more`);
+    const station = STATIONS[r.station];
+    if (!station) errors.push(`${l}: unknown station ${r.station}`);
+    else if (station.craft !== r.craft) errors.push(`${l}: ${r.craft} is not made at ${r.station}`);
+    if (!['start', 'teach', 'buy', 'find', 'experiment'].includes(r.learn))
+      errors.push(`${l}: unknown way to learn it ${r.learn}`);
   }
   const seen = new Map<string, string>();
   for (const r of Object.values(recipes)) {
-    const k = [...r.ingredients].sort().join(',');
+    const k = `${r.station}|${expand(r.ingredients).sort().join(',')}`;
     const other = seen.get(k);
     if (other) errors.push(`recipe ${r.id}: same ingredients as ${other}`);
     seen.set(k, r.id);

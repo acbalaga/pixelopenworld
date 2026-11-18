@@ -1,6 +1,9 @@
 import { DIALOGUES, NPCS, SHOPS } from '../../content/dialogue';
 import type { DialogueNode } from '../../content/dialogue/types';
+import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS } from '../../content/items';
+import { RECIPES, expand } from '../../content/items/recipes';
+import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { fill } from '../../content/strings/skills';
@@ -9,6 +12,7 @@ import { holds, startNode } from '../../sim/journal';
 import type { Command } from '../../sim/kernel/commands';
 import type { SimEvent } from '../../sim/kernel/events';
 import type { SimState } from '../../sim/state';
+import { countItem } from '../../sim/items';
 import { buyPrice, sellPrice, shopPurse } from '../../sim/systems/npcs';
 
 export interface TalkDeps {
@@ -55,6 +59,10 @@ export class TalkSheet {
   private shopTab: 'buy' | 'sell' = 'buy';
   private ready = false;
   private storageOpen = false;
+  private stationKind: string | null = null;
+  private lastStation: string | null = null;
+  private stationMsg = '';
+  private picked: string[] = [];
 
   constructor(
     private readonly root: HTMLElement,
@@ -81,6 +89,7 @@ export class TalkSheet {
     this.actions = null;
     this.shopId = null;
     this.storageOpen = false;
+    this.stationKind = null;
     this.deps.onOpenChange(false);
   }
 
@@ -174,7 +183,13 @@ export class TalkSheet {
     if (e.type === 'talkStarted') this.openTalk(e.npc);
     else if (e.type === 'shopOpened') this.openShop(e.shop);
     else if (e.type === 'storageOpened') this.openStorage();
-    else if (this.storageOpen && e.type === 'storageMoved') this.renderStorage();
+    else if (e.type === 'stationOpened') this.openStation(e.station);
+    else if (e.type === 'craftStarted') this.close();
+    else if (e.type === 'crafted' || e.type === 'craftFailed') this.afterCraft(e);
+    else if (e.type === 'repaired' && this.stationKind) {
+      this.stationMsg = fill(S.craft.mended, { item: nameOf(e.item) });
+      this.renderStation();
+    } else if (this.storageOpen && e.type === 'storageMoved') this.renderStorage();
     else if (this.shopId && e.type === 'bought') {
       this.shopMsg = fill(S.shop.bought, { item: nameOf(e.item), n: String(e.coin) });
       this.renderShop();
@@ -289,6 +304,194 @@ export class TalkSheet {
     put(s, head, tabs, purse, msg, list);
     (s.querySelector('.pow-shop-list button') as HTMLElement | null)?.focus();
     this.ready = true;
+  }
+
+  /** The result of a craft: the panel comes back with what was made. */
+  private afterCraft(e: Extract<SimEvent, { type: 'crafted' | 'craftFailed' }>): void {
+    if (!this.lastStation) return;
+    const { state, who } = this.deps.read();
+    if (e.id !== who) return;
+    const msg =
+      e.type === 'crafted'
+        ? fill(S.craft.made, {
+            n: String(e.qty),
+            item: nameOf(e.item),
+            quality: S.craft.qualities[e.quality] ?? '',
+          })
+        : fill(S.craft.failed, {
+            item: nameOf(
+              CRAFTING.failItem[STATIONS[this.lastStation]?.craft ?? ''] ?? 'item.burnt_mess',
+            ),
+          });
+    void state;
+    this.openStation(this.lastStation, msg);
+  }
+
+  /** A crafting station: pick up to four ingredients or a known recipe, craft, and repair at the anvil. */
+  openStation(kind: string, msg = ''): void {
+    const def = STATIONS[kind];
+    if (!def) return;
+    this.mount('pow-shop pow-station', S.craft.title[kind] ?? kind);
+    this.stationKind = kind;
+    this.lastStation = kind;
+    this.stationMsg = msg;
+    if (!msg) this.picked = [];
+    this.renderStation();
+  }
+
+  private renderStation(): void {
+    const s = this.sheet;
+    const kind = this.stationKind;
+    const def = kind ? STATIONS[kind] : undefined;
+    if (!s || !kind || !def) return;
+    const { state, who } = this.deps.read();
+    const inv = state.entities.comps.inventory[who];
+    s.textContent = '';
+    const head = el('header', 'pow-shop-head');
+    put(head, el('h2', 'pow-talk-name', S.craft.title[kind] ?? kind));
+    const close = el('button', 'pow-button pow-close', S.craft.close);
+    close.type = 'button';
+    close.addEventListener('click', () => this.close());
+    head.appendChild(close);
+    const msg = el('p', 'pow-shop-msg', this.stationMsg);
+    msg.setAttribute('role', 'status');
+
+    const held = (item: string): number => (inv ? countItem(inv, item) : 0);
+    const pickedOf = (item: string): number => this.picked.filter((p) => p === item).length;
+    const full = this.picked.length >= CRAFTING.maxIngredients;
+
+    // Known recipes of this station: one tap fills the ingredients.
+    const known = el('section', 'pow-storage-col');
+    put(known, el('h3', 'pow-heading', S.craft.known));
+    const recipes = Object.values(RECIPES).filter(
+      (r) => r.station === kind && inv?.recipes.includes(r.id),
+    );
+    const list = el('ul', 'pow-shop-list');
+    for (const r of recipes) {
+      const units = expand(r.ingredients);
+      const can = units.every((u) => held(u) >= units.filter((x) => x === u).length);
+      const li = el('li', 'pow-shop-row');
+      const b = el('button', 'pow-button', nameOf(r.result));
+      b.type = 'button';
+      b.disabled = !can;
+      b.dataset.key = `recipe-${r.id}`;
+      b.setAttribute(
+        'aria-label',
+        `${nameOf(r.result)}: ${r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')}`,
+      );
+      b.addEventListener('click', () => {
+        this.picked = units;
+        this.stationMsg = '';
+        this.renderStation();
+      });
+      put(
+        li,
+        b,
+        el('span', 'pow-hint', r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')),
+      );
+      list.appendChild(li);
+    }
+    if (recipes.length === 0) list.appendChild(el('li', 'pow-hint', S.craft.noRecipes));
+    known.appendChild(list);
+
+    // What is chosen.
+    const chosen = el('section', 'pow-storage-col');
+    put(
+      chosen,
+      el('h3', 'pow-heading', fill(S.craft.ingredients, { max: String(CRAFTING.maxIngredients) })),
+    );
+    const picks = el('ul', 'pow-shop-list');
+    if (this.picked.length === 0) picks.appendChild(el('li', 'pow-hint', S.craft.none));
+    this.picked.forEach((item, i) => {
+      const li = el('li', 'pow-shop-row');
+      const b = el('button', 'pow-button', nameOf(item));
+      b.type = 'button';
+      b.dataset.key = `picked-${i}`;
+      b.addEventListener('click', () => {
+        this.picked.splice(i, 1);
+        this.renderStation();
+      });
+      li.appendChild(b);
+      picks.appendChild(li);
+    });
+    chosen.appendChild(picks);
+    const go = el('button', 'pow-button pow-choice', S.craft.craft);
+    go.type = 'button';
+    go.dataset.key = 'craft-go';
+    go.disabled = this.picked.length === 0;
+    go.addEventListener('click', () => {
+      this.deps.send({ type: 'craft', items: [...this.picked] });
+      this.stationMsg = '';
+    });
+    const clear = el('button', 'pow-button', S.craft.clear);
+    clear.type = 'button';
+    clear.addEventListener('click', () => {
+      this.picked = [];
+      this.renderStation();
+    });
+    put(chosen, go, clear);
+
+    // The bag: tap a stack to add one unit.
+    const bag = el('section', 'pow-storage-col');
+    put(bag, el('h3', 'pow-heading', S.craft.bag));
+    const stacks = el('ul', 'pow-shop-list');
+    const seen = new Set<string>();
+    inv?.slots.forEach((st) => {
+      if (!st || st.item === 'item.coin' || seen.has(st.item)) return;
+      seen.add(st.item);
+      const left = held(st.item) - pickedOf(st.item);
+      const li = el('li', 'pow-shop-row');
+      const icon = el('canvas', 'pow-icon');
+      icon.width = 12;
+      icon.height = 12;
+      icon.setAttribute('aria-hidden', 'true');
+      this.deps.drawIcon(icon, ITEMS[st.item]?.icon ?? '');
+      const b = el('button', 'pow-button', `${nameOf(st.item)} x${left}`);
+      b.type = 'button';
+      b.dataset.key = `add-${st.item}`;
+      b.disabled = left <= 0 || full;
+      b.addEventListener('click', () => {
+        this.picked.push(st.item);
+        this.stationMsg = '';
+        this.renderStation();
+      });
+      put(li, icon, b);
+      stacks.appendChild(li);
+    });
+    bag.appendChild(stacks);
+    put(s, head, msg, known, chosen, bag);
+
+    // Repair at the anvil.
+    if (def.craft === 'smithing') {
+      const rep = el('section', 'pow-storage-col');
+      put(rep, el('h3', 'pow-heading', S.craft.repair));
+      const rl = el('ul', 'pow-shop-list');
+      let any = false;
+      inv?.slots.forEach((st, slot) => {
+        const d = st ? ITEMS[st.item] : undefined;
+        if (!st || !d?.durability || (st.dur ?? d.durability) >= d.durability) return;
+        any = true;
+        const li = el('li', 'pow-shop-row');
+        const b = el('button', 'pow-button', `${S.craft.repair}: ${nameOf(st.item)}`);
+        b.type = 'button';
+        b.dataset.key = `repair-${slot}`;
+        b.addEventListener('click', () => this.deps.send({ type: 'repair', slot }));
+        put(
+          li,
+          b,
+          el(
+            'span',
+            'pow-hint',
+            fill(S.craft.repairCost, { item: nameOf(CRAFTING.repairMaterial[d.tier] ?? '') }),
+          ),
+        );
+        rl.appendChild(li);
+      });
+      if (!any) rl.appendChild(el('li', 'pow-hint', S.craft.repairNone));
+      put(rep, rl);
+      s.appendChild(rep);
+    }
+    (s.querySelector('button.pow-choice') as HTMLElement | null)?.focus();
   }
 
   /** The storage chest: two lists, tap a stack to move it across. */

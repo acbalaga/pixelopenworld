@@ -1,3 +1,4 @@
+import { RECIPES } from '../../src/content/items/recipes';
 import type { DollSpec } from '../../src/content/dolls/parts';
 import { deriveSummary, findAvatar } from '../../src/shared/summary';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
@@ -136,6 +137,10 @@ export function asSchema5(s: SimState): SimState {
     delete (f as { guardT?: unknown }).guardT;
     delete (f as { still?: unknown }).still;
   }
+  delete (s.rng as { craft?: unknown }).craft;
+  delete (s.entities.comps as { craft?: unknown }).craft;
+  for (const inv of s.entities.comps.inventory)
+    if (inv) inv.recipes = inv.recipes.filter((id) => RECIPES[id]?.learn !== 'start');
   delete (s.entities.comps as { storage?: unknown }).storage;
   for (const inv of s.entities.comps.inventory) {
     if (!inv) continue;

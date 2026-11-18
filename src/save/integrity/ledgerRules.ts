@@ -1,3 +1,4 @@
+import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { REQUESTS } from '../../content/dialogue';
 import { RECIPES } from '../../content/items/recipes';
@@ -5,7 +6,7 @@ import { buyPrice } from '../../sim/systems/npcs';
 import { xpToNext } from '../../sim/skills';
 import { maxItemPerKill } from './bounds';
 import type { Reason } from './reasons';
-import { BURNT, canCome, droppedBy } from './sources';
+import { canCome, droppedBy } from './sources';
 import type { View } from './view';
 
 const sum = (t: Record<string, number>): number => Object.values(t).reduce((a, b) => a + b, 0);
@@ -90,19 +91,24 @@ export function ledgerRules(v: View): Reason[] {
         `${item} paid ${paid[item] ?? 0}, expected ${gifts[item] ?? 0}`,
       );
 
-  // Crafts: every successful cook made exactly its recipe's result.
-  const cooked = ledger.itemsMade.cook ?? {};
+  // Crafts: every successful craft made exactly its recipe's result, `qty` times. Old saves
+  // recorded cooking under `cook`, so both sources count. Failed crafts leave only their fail item.
+  const crafted: Record<string, number> = {};
+  for (const src of ['cook', 'craft'])
+    for (const [item, n] of Object.entries(ledger.itemsMade[src] ?? {}))
+      crafted[item] = (crafted[item] ?? 0) + n;
   const results: Record<string, number> = {};
   for (const [rid, n] of Object.entries(ledger.crafts)) {
     const r = RECIPES[rid];
-    if (r) results[r.result] = (results[r.result] ?? 0) + n;
+    if (r) results[r.result] = (results[r.result] ?? 0) + n * r.qty;
   }
-  for (const item of new Set([...Object.keys(results), ...Object.keys(cooked)])) {
-    if (item === BURNT) continue;
-    if ((cooked[item] ?? 0) !== (results[item] ?? 0))
+  const fails = new Set<string>(Object.values(CRAFTING.failItem));
+  for (const item of new Set([...Object.keys(results), ...Object.keys(crafted)])) {
+    if (fails.has(item)) continue;
+    if ((crafted[item] ?? 0) !== (results[item] ?? 0))
       fail(
         'CRAFT_MISMATCH',
-        `${item} cooked ${cooked[item] ?? 0}, crafts say ${results[item] ?? 0}`,
+        `${item} crafted ${crafted[item] ?? 0}, crafts say ${results[item] ?? 0}`,
       );
   }
 

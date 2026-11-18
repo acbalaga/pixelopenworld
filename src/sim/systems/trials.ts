@@ -130,8 +130,7 @@ function perform(
 }
 
 /**
- * Applies one sim event to the Trials of `who`, if the acting source is manual. Craft quality is carried by the craft events of M3-07, so until then a
- * craft counts at Common.
+ * Applies one sim event to the Trials of `who`, if the acting source is manual.
  */
 export function advanceTrials(
   state: SimState,
@@ -155,11 +154,11 @@ export function advanceTrials(
     case 'attackStarted':
       if (e.id === who) perform(state, who, 'technique', e.attack);
       return;
-    case 'cooked':
+    case 'crafted':
       if (e.id !== who) return;
       for (const { def, p } of active(state, who)) {
         const o = def.objective;
-        if (o.kind !== 'craft' || o.recipe !== e.recipe || o.minQuality > 0) continue;
+        if (o.kind !== 'craft' || o.recipe !== e.recipe || e.quality < o.minQuality) continue;
         p.n = 1;
         finish(state, who, def, p, 1);
       }

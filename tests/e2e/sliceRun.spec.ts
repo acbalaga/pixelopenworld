@@ -106,7 +106,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await page.keyboard.press('Escape');
   await saveNow(page);
 
-  // Cook at the camp pot: stand south of it, face it, press the cook key.
+  // Cook at the camp pot: stand south of it, face it, open its panel, craft.
   await page.goto('/?at=42,41');
   await inWorld(page);
   await face(page, 'KeyW', 60);
@@ -117,7 +117,15 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
     pow.giveItem('item.sunwort', 1);
     pow.giveItem('item.dewmint', 1);
   });
-  await page.keyboard.press('KeyC');
+  // The context key opens the pot's panel. Pick the two herbs, craft, and tap the rhythm step.
+  await page.keyboard.press('KeyE');
+  await page.locator('[data-key="add-item.sunwort"]').click();
+  await page.locator('[data-key="add-item.dewmint"]').click();
+  await page.locator('[data-key="craft-go"]').click();
+  for (const wait of [500, 500, 500, 500]) {
+    await page.waitForTimeout(wait);
+    await page.keyboard.press('KeyE');
+  }
   await expect.poll(async () => (await snap(page)).held['item.herb_tea'] ?? 0).toBe(1);
   expect((await snap(page)).recipes).toContain('recipe.herb_tea');
   await shot(page, 'run-cooked');

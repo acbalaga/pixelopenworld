@@ -26,7 +26,7 @@ export type Done =
   /** A sim event of this type, with the extra test the system applies for that type. */
   | {
       kind: 'event';
-      type: 'lockChanged' | 'dodgeStarted' | 'techniqueUsed' | 'gatherStarted' | 'cooked';
+      type: 'lockChanged' | 'dodgeStarted' | 'techniqueUsed' | 'gatherStarted' | 'crafted';
     }
   /** The interface reports it (the Menu opened), by the `hint` command. */
   | { kind: 'ui' };
@@ -84,7 +84,7 @@ export const HINTS: readonly HintDef[] = [
     id: 'hint.cook',
     text: 'cook',
     when: { kind: 'potInReach' },
-    done: { kind: 'event', type: 'cooked' },
+    done: { kind: 'event', type: 'crafted' },
     expire: 25 * SEC,
   },
   {

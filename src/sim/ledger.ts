@@ -33,7 +33,16 @@ export interface Ledger {
 export type CoinSource = 'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed';
 export type CoinSink = 'purchase' | 'echo';
 export type ItemSource =
-  'start' | 'loot' | 'gather' | 'cook' | 'chest' | 'request' | 'dialogue' | 'shop' | 'seed';
+  | 'start'
+  | 'loot'
+  | 'gather'
+  | 'cook'
+  | 'craft'
+  | 'chest'
+  | 'request'
+  | 'dialogue'
+  | 'shop'
+  | 'seed';
 
 /** An empty ledger. */
 export function newLedger(): Ledger {

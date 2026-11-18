@@ -42,7 +42,26 @@ export type SimEvent =
   /** A gathering node was worked. Sent by the gathering system, read by skills. */
   | { type: 'gathered'; id: number; tag: string; item: string; tier: number }
   /** A dish or item was made. Sent by the crafting system, read by skills. */
-  | { type: 'cooked'; id: number; tag: string; recipe: string; tier: number }
+  /**
+   * A craft finished. `tag` is the craft (the skill tag), `quality` 0 to 3. Sent by crafting,
+   * read by skills, Trials and hints.
+   */
+  | {
+      type: 'crafted';
+      id: number;
+      tag: string;
+      recipe: string;
+      tier: number;
+      item: string;
+      qty: number;
+      quality: number;
+      source: 'manual' | 'routine';
+    }
+  /** The avatar used a crafting station: the client opens its panel. */
+  | { type: 'stationOpened'; id: number; who: number; station: string }
+  | { type: 'craftStarted'; id: number; station: string; recipe: string }
+  | { type: 'craftTap'; id: number; n: number }
+  | { type: 'repaired'; id: number; item: string; tier: number }
   | { type: 'skillXp'; id: number; skill: string; amount: number }
   | { type: 'skillRankUp'; id: number; skill: string; points: number; mastery: string | null }
   /** XP has filled the bar but the next point waits on a Trial. */
@@ -73,7 +92,7 @@ export type SimEvent =
     }
   | { type: 'nodeReady'; id: number }
   | { type: 'recipeDiscovered'; id: number; recipe: string }
-  | { type: 'cookFailed'; id: number }
+  | { type: 'craftFailed'; id: number }
   | { type: 'doorOpened'; id: number; who: number }
   | { type: 'doorLocked'; id: number; who: number; key: string }
   | { type: 'gateOpened'; id: number }

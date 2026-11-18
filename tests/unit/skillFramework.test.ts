@@ -89,7 +89,17 @@ describe('schema 5 to 6 migration', () => {
     expect(sk.nightAcc).toBe(0);
     const before = earned(s, me, 'skill.cooking');
     s.world = OPEN;
-    feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.herb_tea', tier: 1 });
+    feed(s, {
+      type: 'crafted',
+      id: me,
+      tag: 'cooking',
+      recipe: 'recipe.herb_tea',
+      tier: 1,
+      item: 'item.herb_tea',
+      qty: 1,
+      quality: 0,
+      source: 'manual',
+    });
     // Only the base 25. The 100 lump was paid before the upgrade.
     expect(earned(s, me, 'skill.cooking') - before).toBe(25);
   });

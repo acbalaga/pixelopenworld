@@ -57,6 +57,12 @@ export const FOOD_ITEMS: readonly ItemDef[] = [
     quality: true,
     food: { hp: 10, sta: 150, foc: 0 },
   }),
+  item('item.silver_chowder', 'consumable', {
+    value: 30,
+    tier: 2,
+    quality: true,
+    food: { hp: 36, sta: 100, foc: 120, fed: { ticks: 4 * T, hpMax: 20, staMax: 60, focMax: 80 } },
+  }),
   item('item.fish_baked', 'consumable', {
     value: 24,
     tier: 2,

@@ -18,6 +18,7 @@ import { itemsSystem } from './systems/items';
 import { wearSystem } from './items';
 import { skillsSystem } from './systems/skills';
 import { trialsSystem } from './systems/trials';
+import { craftSystem } from './crafting';
 import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
@@ -47,6 +48,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   projectileSystem,
   poolsSystem,
   itemsSystem,
+  craftSystem,
   requestsSystem,
   hintsSystem,
   // Last, so they see every event the other systems sent this tick. Trials run before skills,

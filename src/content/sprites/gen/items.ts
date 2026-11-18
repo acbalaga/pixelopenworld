@@ -610,6 +610,25 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   spear('spear_iron', WOOD, METAL),
   spear('spear_steel', ROSE, STEEL),
   buckler('shield_buckler', WOOD),
+  icon('slag', (im) => {
+    im.rect(2, 6, 9, 10, STONE[0]);
+    im.rect(3, 5, 7, 6, STONE[1]);
+    im.set(4, 7, FIRE[2]);
+    im.set(7, 8, FIRE[1]);
+  }),
+  icon('wood_scraps', (im) => {
+    line(im, 2, 9, 8, 4, WOOD[2]);
+    line(im, 3, 10, 9, 6, WOOD[1]);
+    line(im, 2, 6, 6, 9, WOOD[3]);
+  }),
+  icon('silver_chowder', (im) => {
+    im.rect(2, 6, 9, 8, STONE[3]);
+    im.rect(3, 9, 8, 9, STONE[2]);
+    im.rect(3, 5, 8, 6, CREAM[2]);
+    im.rect(3, 5, 5, 5, CREAM[3]);
+    im.set(6, 5, STEEL[2]);
+    im.set(7, 3, STONE[3]);
+  }),
   icon('fish_river', (im) => {
     im.rect(2, 5, 8, 7, WATER[2]);
     im.rect(2, 5, 8, 5, WATER[3]);

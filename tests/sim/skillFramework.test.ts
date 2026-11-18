@@ -70,8 +70,8 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 20 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(20);
+  it('list 18 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(18);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
     for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
@@ -103,8 +103,42 @@ describe('every skill that is not pending earns XP', () => {
       feed(s, { type: 'gathered', id: me, tag: 'logging', item: 'item.oak_log', tier: 1 }),
     'skill.fishing': (s, me) =>
       feed(s, { type: 'gathered', id: me, tag: 'fishing', item: 'item.fish_river', tier: 1 }),
+    'skill.smithing': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'smithing',
+        recipe: 'recipe.copper_ingot',
+        tier: 1,
+        item: 'item.copper_ingot',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
+    'skill.woodworking': (s, me) =>
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'woodworking',
+        recipe: 'recipe.oak_plank',
+        tier: 1,
+        item: 'item.oak_plank',
+        qty: 2,
+        quality: 0,
+        source: 'manual',
+      }),
     'skill.cooking': (s, me) =>
-      feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.herb_tea', tier: 1 }),
+      feed(s, {
+        type: 'crafted',
+        id: me,
+        tag: 'cooking',
+        recipe: 'recipe.herb_tea',
+        tier: 1,
+        item: 'item.herb_tea',
+        qty: 1,
+        quality: 0,
+        source: 'manual',
+      }),
     'skill.survival': (s, me) => feed(s, { type: 'eaten', id: me, item: 'item.berry_red' }),
     'skill.athletics': (s, me) => {
       const p = s.entities.comps.pos[me]!;
@@ -138,8 +172,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 16 skills with a system after M3-06', () => {
-    expect(active).toHaveLength(16);
+  it('has 18 skills with a system after M3-07', () => {
+    expect(active).toHaveLength(18);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {
@@ -241,15 +275,19 @@ describe('Deciphering', () => {
   });
 });
 
-describe('Cooking moved from cook to craft', () => {
-  it('pays through the cooked event as craft:cooking, with a first-time lump per recipe', () => {
+describe('Cooking pays as craft:cooking', () => {
+  it('pays through the crafted event as craft:cooking, with a first-time lump per recipe', () => {
     const { s, me } = world();
     const ev = (recipe: string): SimEvent => ({
-      type: 'cooked',
+      type: 'crafted',
       id: me,
       tag: 'cooking',
       recipe,
       tier: 1,
+      item: 'item.herb_tea',
+      qty: 1,
+      quality: 0,
+      source: 'manual',
     });
     feed(s, ev('recipe.herb_tea'));
     expect(earned(s, me, 'skill.cooking')).toBe(125);

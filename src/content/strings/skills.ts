@@ -31,6 +31,12 @@ export const TRIAL_STRINGS: Readonly<Record<string, string>> = {
   'trial.athletics.15.intro':
     'The cave mouth is a long way from the Waystone. Start from the stone and get there in forty seconds. Run, do not stroll.',
   'trial.athletics.15.hint': 'The Pilgrim wants a run from the Waystone to the cave mouth.',
+  'trial.smithing.15.intro':
+    'Smelt it, strike it, and bring me an iron sword that is better than common. I will show you the recipe. The rest is your hands.',
+  'trial.smithing.15.hint': 'Brin wants an iron sword made at the anvil, Fine or better.',
+  'trial.cooking.15.intro':
+    'A Hearty Stew, and not a plain one. Cook it until it comes out Fine or better, then put it in my hands. I will teach you the pot.',
+  'trial.cooking.15.hint': 'Hesper wants a Hearty Stew cooked to Fine or better.',
   'trial.foraging.15.intro':
     'And if you want to call yourself a forager, bring me sunwort picked at dawn or dusk. It keeps its scent then.',
   'trial.foraging.15.hint': 'Hesper wants sunwort picked at the turn of the day.',

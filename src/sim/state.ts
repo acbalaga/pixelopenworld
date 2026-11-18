@@ -169,6 +169,20 @@ export interface Gather {
   wait: number;
 }
 
+/** A craft under way at a station: the recipe, the manual step so far, and what the inputs were worth. */
+export interface CraftSession {
+  station: string;
+  recipe: string;
+  /** Tick the craft began. */
+  start: number;
+  /** Tap ticks, as ticks since `start`. Only the sim records them. */
+  taps: number[];
+  /** Summed quality and count of the ingredient units that carry quality. */
+  matSum: number;
+  matN: number;
+  source: 'manual' | 'routine';
+}
+
 /** The Fed buff from a meal. Bonuses to the pool maxima until `until`. One at a time. */
 export interface Fed {
   item: string;
@@ -324,6 +338,7 @@ export interface Components {
   pickup: Pickup;
   node: GatherNode;
   gather: Gather;
+  craft: CraftSession;
   fed: Fed;
   fixture: Fixture;
   journal: Journal;
@@ -369,6 +384,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'pickup',
   'node',
   'gather',
+  'craft',
   'fed',
   'fixture',
   'journal',

@@ -1,6 +1,8 @@
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { TIME } from '../content/balance/time';
 import { ITEMS } from '../content/items';
+import { RECIPES } from '../content/items/recipes';
+import { createStream } from '../sim/kernel/rng';
 import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
@@ -235,6 +237,32 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       g.wait = 0;
     }
     return { ...old, schema: 10, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 10 to 11 (M3-07): crafting gets its own RNG stream, seeded from the save's seed the way
+   * `createStreams` does, and a `craft` component (no craft under way). A new avatar knows the
+   * start recipes of every craft. An old avatar keeps what it knew and gains them too.
+   */
+  10: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      seed: number;
+      rng: Record<string, unknown>;
+      entities: {
+        comps: {
+          pos: unknown[];
+          craft?: unknown[];
+          inventory: ({ recipes: string[] } | null)[];
+        };
+      };
+    };
+    raw.rng.craft = createStream(raw.seed, 'craft');
+    raw.entities.comps.craft = raw.entities.comps.pos.map(() => null);
+    const start = Object.values(RECIPES)
+      .filter((r) => r.learn === 'start')
+      .map((r) => r.id);
+    for (const inv of raw.entities.comps.inventory)
+      if (inv) for (const id of start) if (!inv.recipes.includes(id)) inv.recipes.push(id);
+    return { ...old, schema: 11, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
 };
 

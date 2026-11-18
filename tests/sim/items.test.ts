@@ -4,7 +4,7 @@ import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
 import { CREATURES } from '../../src/content/creatures';
 import { WEAPONS } from '../../src/content/combat/attacks';
 import { ITEMS } from '../../src/content/items';
-import { NODES, RECIPES } from '../../src/content/items/recipes';
+import { NODES, RECIPES, expand } from '../../src/content/items/recipes';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnEnemy } from '../../src/sim/combat/enemy';
 import {
@@ -445,25 +445,27 @@ describe('cooking and experiments', () => {
     const r = atPot();
     stash(r, 'item.sunwort', 3);
     stash(r, 'item.dewmint', 3);
-    expect(inv(r).recipes).toEqual([]);
+    // A new avatar knows the start recipes, and none of the cooking ones.
+    const cooking = (): string[] => inv(r).recipes.filter((id) => RECIPES[id]?.craft === 'cooking');
+    expect(cooking()).toEqual([]);
     r.tick({ type: 'cook', items: ['item.dewmint', 'item.sunwort'] });
     expect(ofType(r.events, 'recipeDiscovered')).toEqual([
       { type: 'recipeDiscovered', id: r.me, recipe: 'recipe.herb_tea' },
     ]);
-    expect(inv(r).recipes).toEqual(['recipe.herb_tea']);
+    expect(cooking()).toEqual(['recipe.herb_tea']);
     expect(countItem(inv(r), 'item.herb_tea')).toBe(1);
     expect(countItem(inv(r), 'item.sunwort')).toBe(2);
     r.tick({ type: 'cook', items: ['item.sunwort', 'item.dewmint'] });
     expect(ofType(r.events, 'recipeDiscovered')).toHaveLength(1);
-    expect(inv(r).recipes).toEqual(['recipe.herb_tea']);
+    expect(cooking()).toEqual(['recipe.herb_tea']);
     expect(countItem(inv(r), 'item.herb_tea')).toBe(2);
-    expect(ofType(r.events, 'cooked')).toHaveLength(2);
+    expect(ofType(r.events, 'crafted')).toHaveLength(2);
   });
   it('a burnt mess is still edible, but weak, and gives no Fed buff', () => {
     const r = atPot();
     stash(r, 'item.sunwort');
-    stash(r, 'item.berry_blue');
-    r.tick({ type: 'cook', items: ['item.sunwort', 'item.berry_blue'] });
+    stash(r, 'item.clay');
+    r.tick({ type: 'cook', items: ['item.sunwort', 'item.clay'] });
     const mess = ITEMS['item.burnt_mess']!.food!;
     const best = Math.max(...Object.values(ITEMS).map((i) => i.food?.hp ?? 0));
     expect(mess.hp).toBeGreaterThan(0);
@@ -479,12 +481,12 @@ describe('cooking and experiments', () => {
   it('a combination with no recipe burns the ingredients and teaches nothing', () => {
     const r = atPot();
     stash(r, 'item.sunwort');
-    stash(r, 'item.berry_blue');
-    r.tick({ type: 'cook', items: ['item.sunwort', 'item.berry_blue'] });
-    expect(ofType(r.events, 'cookFailed')).toHaveLength(1);
+    stash(r, 'item.clay');
+    r.tick({ type: 'cook', items: ['item.sunwort', 'item.clay'] });
+    expect(ofType(r.events, 'craftFailed')).toHaveLength(1);
     expect(countItem(inv(r), 'item.burnt_mess')).toBe(1);
     expect(countItem(inv(r), 'item.sunwort')).toBe(0);
-    expect(inv(r).recipes).toEqual([]);
+    expect(inv(r).recipes.filter((id) => RECIPES[id]?.craft === 'cooking')).toEqual([]);
   });
   it('needs a pot in front and the ingredients in the bag, and takes nothing otherwise', () => {
     const r = rig();
@@ -496,17 +498,19 @@ describe('cooking and experiments', () => {
     spawnCampPot(r.s, p.x, p.y + 10);
     r.tick({ type: 'cook', items: ['item.sunwort', 'item.sunwort'] });
     expect(countItem(inv(r), 'item.sunwort')).toBe(1);
-    expect(ofType(r.events, 'cookFailed')).toHaveLength(0);
+    expect(ofType(r.events, 'craftFailed')).toHaveLength(0);
   });
-  it('all four recipes work, and cooking pays Cooking skill XP', () => {
+  it('all fourteen cooking recipes work at the pot, and cooking pays Cooking skill XP', () => {
     const r = atPot();
-    for (const rec of Object.values(RECIPES)) {
-      for (const i of rec.ingredients) stash(r, i);
-      r.tick({ type: 'cook', items: [...rec.ingredients] });
-      expect(countItem(inv(r), rec.result), rec.id).toBe(1);
+    const cooking = Object.values(RECIPES).filter((x) => x.craft === 'cooking');
+    expect(cooking).toHaveLength(14);
+    for (const rec of cooking) {
+      const units = expand(rec.ingredients);
+      for (const i of units) stash(r, i);
+      r.tick({ type: 'cook', items: units });
+      expect(countItem(inv(r), rec.result), rec.id).toBeGreaterThanOrEqual(rec.qty);
     }
-    expect(Object.keys(RECIPES)).toHaveLength(4);
-    expect(inv(r).recipes).toHaveLength(4);
+    expect(inv(r).recipes.filter((id) => RECIPES[id]?.craft === 'cooking')).toHaveLength(14);
     const skills = r.s.entities.comps.skills[r.me]!;
     expect(skills.points['skill.cooking']! + skills.xp['skill.cooking']!).toBeGreaterThan(0);
   });
