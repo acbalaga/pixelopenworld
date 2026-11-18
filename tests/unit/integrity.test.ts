@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { REQUESTS } from '../../src/content/dialogue';
+import { REQUESTS } from '../../src/content/requests';
 import { SKILLS_BALANCE } from '../../src/content/balance/skills';
 import { validateSave } from '../../src/save/integrity';
 import {

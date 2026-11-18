@@ -247,7 +247,8 @@ function signpost(): SpriteDef {
 }
 
 /** The request board: a frame with pinned notes. */
-function board(): SpriteDef {
+/** The notice board's pixels, as a tile for the map and as a prop the avatar can stand at. */
+function boardImg(): Img {
   const im = new Img(16, 16);
   im.rect(2, 1, 13, 11, WOOD[1]);
   im.rect(3, 2, 12, 10, WOOD[2]);
@@ -262,13 +263,47 @@ function board(): SpriteDef {
     im.set(x, y, FIRE[1]);
   im.rect(3, 11, 4, 14, WOOD[1]);
   im.rect(11, 11, 12, 14, WOOD[1]);
-  return toSprite('tile.board', 'core', ORIGIN_TILE, { base: outlined(im) });
+  return im;
 }
 
-/**
- * The Waystone: a floating diamond pylon. A faceted crystal hangs above a small emitter plate,
- * bobbing and pulsing, with a few shards orbiting it. Four frames loop as one animation.
- */
+function board(): SpriteDef {
+  return toSprite('tile.board', 'core', ORIGIN_TILE, { base: outlined(boardImg()) });
+}
+
+/** The request board in the square (M3-11): the same board, standing on its own feet. */
+function boardProp(): SpriteDef {
+  return toSprite('prop.board', 'core', ORIGIN_FEET, { base: outlined(boardImg()) });
+}
+
+/** A satchel a patrol dropped: a leather bag with a flap and a buckle. Closed, ajar, and open. */
+function satchel(): SpriteDef {
+  const body = (im: Img): void => {
+    im.rect(3, 6, 12, 13, WOOD[2]);
+    im.rect(3, 6, 12, 8, WOOD[3]);
+    im.rect(3, 12, 12, 13, WOOD[1]);
+    im.rect(3, 6, 3, 13, WOOD[1]);
+  };
+  const closed = new Img(16, 16);
+  body(closed);
+  closed.rect(7, 8, 8, 10, GOLD[2]);
+  closed.rect(5, 4, 10, 5, WOOD[1]);
+  closed.set(5, 3, WOOD[1]);
+  closed.set(10, 3, WOOD[1]);
+  const ajar = new Img(16, 16);
+  body(ajar);
+  ajar.rect(4, 6, 11, 7, DARK);
+  ajar.rect(5, 3, 10, 4, WOOD[1]);
+  const open = new Img(16, 16);
+  body(open);
+  open.rect(4, 6, 11, 8, DARK);
+  open.rect(5, 2, 10, 3, WOOD[1]);
+  return toSprite('prop.satchel', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    opening_0: outlined(ajar),
+    open: outlined(open),
+  });
+}
+
 function waystone(): SpriteDef {
   const frame = (n: number): Img => {
     const im = new Img(16, 24);
@@ -746,6 +781,8 @@ export function worldSprites(): SpriteDef[] {
     barrel(),
     signpost(),
     board(),
+    boardProp(),
+    satchel(),
     waystone(),
     lockedDoor(),
     gate(),

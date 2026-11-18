@@ -1,3 +1,4 @@
+import type { DayPhase, Season, Weather } from '../balance/time';
 import type { DollSpec } from '../dolls/parts';
 import type { BagFilter } from '../items/types';
 
@@ -9,7 +10,11 @@ export type Cond =
   | { request: string; is: 'none' | 'active' | 'ready' | 'done' }
   | { trial: string; is: 'offered' | 'passed'; not?: boolean }
   | { pathWorn: string; not?: boolean }
-  | { pathEarned: string; not?: boolean };
+  | { pathEarned: string; not?: boolean }
+  | { renown: { region: string; atLeast: number } }
+  | { phase: DayPhase[] }
+  | { season: Season[] }
+  | { weather: Weather[] };
 
 /** Something a node or a choice does. The sim applies it, so the client cannot invent one. */
 export type Effect =
@@ -20,7 +25,11 @@ export type Effect =
   | { startRequest: string }
   | { turnIn: string }
   | { learnTechnique: string }
-  | { openShop: string };
+  | { openShop: string }
+  /** Raises the home region's Renown. Only on a choice that also sets a flag it requires unset. */
+  | { renown: number }
+  /** Takes items from the bag, if it holds that many. */
+  | { takeItem: string; qty: number };
 
 export interface Choice {
   /** String key of the button label. */
@@ -74,19 +83,4 @@ export interface ShopDef {
   firmness: number;
   /** The shop mends gear for coin. */
   repairs?: true;
-}
-
-export interface RequestDef {
-  id: string;
-  giver: string;
-  /** String keys: the title, and the progress line with `{n}` and `{max}`. */
-  title: string;
-  log: string;
-  goal: { kill: string; count: number };
-  reward: {
-    coin: number;
-    items: readonly { item: string; qty: number }[];
-    /** Techniques taught on turn-in. */
-    techniques?: readonly string[];
-  };
 }

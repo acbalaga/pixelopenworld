@@ -22,6 +22,8 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
   const pos = { x: px(tx * TILE + 8), y: px(ty * TILE + TILE) };
   setComp(state.entities, id, 'pos', pos);
   setComp(state.entities, id, 'fixture', { kind, open: false, home: { ...pos } });
+  if (def.type === 'board' && def.board)
+    setComp(state.entities, id, 'board', { id: def.board, day: -1, posted: [] });
   if (def.unlockedBy) {
     // Hidden portal: a solid slab in the doorway until it is unlocked.
     const slab = px(def.size ?? TILE);
@@ -118,6 +120,8 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   f.open = true;
   for (const l of def.loot.items) give(state, who, l.item, l.qty, 'chest');
   if (a && def.loot.coin) earnCoin(state, who, def.loot.coin, 'chest');
+  const j = getComp(state.entities, who, 'journal');
+  if (j && def.setsFlag && !j.flags.includes(def.setsFlag)) j.flags.push(def.setsFlag);
   emit(state.events, { type: 'chestOpened', id, who });
 }
 
@@ -213,6 +217,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useWaystone(state, who, target);
     case 'storage':
       emit(state.events, { type: 'storageOpened', id: target, who });
+      return;
+    case 'board':
+      emit(state.events, { type: 'boardOpened', id: target, who, board: def.board ?? '' });
       return;
     case 'bed':
       return useBed(state, who, target);

@@ -29,6 +29,7 @@ export const REASON_CODES = [
   'TRIAL_PROGRESS_ORPHAN',
   'TRIAL_UNPASSED',
   'REQUEST_STATE',
+  'RENOWN_RANGE',
   'TICK_PLAYTIME_MISMATCH',
   // Ledger: what the avatar holds does not reconcile with what the sim recorded.
   'COIN_RECONCILE',
@@ -37,6 +38,7 @@ export const REASON_CODES = [
   'ITEM_SOURCE_LOCKED',
   'LOOT_WITHOUT_KILL',
   'REQUEST_PAYOUT_MISMATCH',
+  'REQUEST_REWARD_UNMATCHED',
   'CRAFT_MISMATCH',
   'PURCHASE_MISMATCH',
   'BUYBACK_EXCEEDS_SOLD',

@@ -1,4 +1,4 @@
-import type { Dialogue, NpcDef, RequestDef, ShopDef } from './types';
+import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
 export type * from './types';
 
@@ -223,24 +223,63 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
   },
 };
 
-export const REQUESTS: Readonly<Record<string, RequestDef>> = {
-  'request.clear_pests': {
-    id: 'request.clear_pests',
-    giver: 'npc.guard',
-    title: 'request.clear_pests.title',
-    log: 'request.clear_pests.log',
-    goal: { kill: 'creature.mossling', count: 4 },
-    reward: { coin: 50, items: [{ item: 'item.ring_copper', qty: 1 }] },
-  },
-  'request.ember_pods': {
-    id: 'request.ember_pods',
-    giver: 'npc.scholar',
-    title: 'request.ember_pods.title',
-    log: 'request.ember_pods.log',
-    goal: { kill: 'creature.spitbloom', count: 2 },
-    reward: { coin: 30, items: [], techniques: ['technique.ember_bolt'] },
-  },
-};
+/**
+ * One request's conversation: the four nodes (ask, accepted, progress, report), the entry that
+ * turns it in, and the two choices that reach it. The ask line is the request's own text.
+ */
+function requestFlow(
+  key: string,
+  request: string,
+  npc: string,
+  askText: string,
+): {
+  nodes: Record<string, DialogueNode>;
+  ready: { if: readonly Cond[]; node: string };
+  offer: Choice;
+  remind: Choice;
+} {
+  const is = (state: 'none' | 'active' | 'ready'): { request: string; is: typeof state } => ({
+    request,
+    is: state,
+  });
+  return {
+    nodes: {
+      [`${key}_ask`]: {
+        id: `${key}_ask`,
+        text: askText,
+        choices: [
+          { text: 'dlg.c_accept', next: `${key}_accepted`, do: [{ startRequest: request }] },
+          { text: 'dlg.c_later', next: null },
+        ],
+      },
+      [`${key}_accepted`]: {
+        id: `${key}_accepted`,
+        text: `dlg.${npc}.${key}_accepted`,
+        next: null,
+      },
+      [`${key}_progress`]: {
+        id: `${key}_progress`,
+        text: `dlg.${npc}.${key}_progress`,
+        next: null,
+      },
+      [`${key}_report`]: {
+        id: `${key}_report`,
+        text: `dlg.${npc}.${key}_report`,
+        do: [{ turnIn: request }],
+        next: null,
+      },
+    },
+    ready: { if: [is('ready')], node: `${key}_report` },
+    offer: { text: `dlg.${npc}.c_${key}`, next: `${key}_ask`, if: [is('none')] },
+    remind: { text: `dlg.${npc}.c_${key}_remind`, next: `${key}_progress`, if: [is('active')] },
+  };
+}
+
+const boar = requestFlow('boar', 'request.cave_boar', 'orla', 'request.cave_boar.ask');
+const lamps = requestFlow('lamps', 'request.old_lamps', 'wren', 'request.old_lamps.ask');
+const supper = requestFlow('supper', 'request.watch_supper', 'hesper', 'request.watch_supper.ask');
+const anvil = requestFlow('anvil', 'request.anvil_metal', 'brin', 'request.anvil_metal.ask');
+const deep = requestFlow('deep', 'request.deep_room', 'pilgrim', 'request.deep_room.ask');
 
 const asked = { request: 'request.clear_pests' } as const;
 const pods = { request: 'request.ember_pods' } as const;
@@ -248,8 +287,9 @@ const pods = { request: 'request.ember_pods' } as const;
 export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
   'npc.shopkeeper': {
     npc: 'npc.shopkeeper',
-    entries: [{ if: [{ flag: 'met_brin' }], node: 'again' }, { node: 'greet' }],
+    entries: [anvil.ready, { if: [{ flag: 'met_brin' }], node: 'again' }, { node: 'greet' }],
     nodes: {
+      ...anvil.nodes,
       greet: {
         id: 'greet',
         text: 'dlg.brin.greet',
@@ -275,6 +315,8 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.brin.again',
         choices: [
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
+          anvil.offer,
+          anvil.remind,
           {
             text: 'dlg.brin.c_test',
             next: 'offer_smithing',
@@ -357,8 +399,9 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
   },
   'npc.cook': {
     npc: 'npc.cook',
-    entries: [{ if: [{ flag: 'cook_taught' }], node: 'again' }, { node: 'greet' }],
+    entries: [supper.ready, { if: [{ flag: 'cook_taught' }], node: 'again' }, { node: 'greet' }],
     nodes: {
+      ...supper.nodes,
       greet: {
         id: 'greet',
         text: 'dlg.hesper.greet',
@@ -383,6 +426,8 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         id: 'again',
         text: 'dlg.hesper.again',
         choices: [
+          supper.offer,
+          supper.remind,
           { text: 'dlg.hesper.c_test', next: 'trial_again' },
           {
             text: 'dlg.hesper.c_cook',
@@ -401,11 +446,13 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
     npc: 'npc.guard',
     entries: [
       { if: [{ ...asked, is: 'ready' }], node: 'report' },
+      boar.ready,
       { if: [{ ...asked, is: 'active' }], node: 'progress' },
       { if: [{ ...asked, is: 'done' }], node: 'after' },
       { node: 'ask' },
     ],
     nodes: {
+      ...boar.nodes,
       ask: {
         id: 'ask',
         text: 'dlg.orla.ask',
@@ -427,6 +474,8 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         id: 'after',
         text: 'dlg.orla.after',
         choices: [
+          boar.offer,
+          boar.remind,
           { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.c_bye', next: null },
         ],
@@ -465,11 +514,13 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
     npc: 'npc.scholar',
     entries: [
       { if: [{ ...pods, is: 'ready' }], node: 'report' },
+      lamps.ready,
       { if: [{ ...pods, is: 'active' }], node: 'progress' },
       { if: [{ ...pods, is: 'done' }], node: 'after' },
       { node: 'ask' },
     ],
     nodes: {
+      ...lamps.nodes,
       ask: {
         id: 'ask',
         text: 'dlg.wren.ask',
@@ -491,6 +542,8 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         id: 'after',
         text: 'dlg.wren.after',
         choices: [
+          lamps.offer,
+          lamps.remind,
           { text: 'dlg.wren.c_teach', next: 'teach' },
           { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.c_bye', next: null },
@@ -554,13 +607,16 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
   'npc.pilgrim': {
     npc: 'npc.pilgrim',
     style: 'chat',
-    entries: [{ node: 'one' }],
+    entries: [deep.ready, { node: 'one' }],
     nodes: {
+      ...deep.nodes,
       one: { id: 'one', text: 'dlg.pilgrim.one', next: 'two' },
       two: {
         id: 'two',
         text: 'dlg.pilgrim.two',
         choices: [
+          deep.offer,
+          deep.remind,
           { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.c_bye', next: null },
         ],

@@ -1,14 +1,24 @@
-import { DIALOGUES, REQUESTS } from '../content/dialogue';
+import { DIALOGUES } from '../content/dialogue';
 import type { Cond } from '../content/dialogue/types';
 import { TRIALS } from '../content/skills';
 import { countItem } from './items';
+import { renownIn } from './renown';
 import { trialPassed } from './skills';
+import { currentWeather, dayPhase, seasonOf } from './time';
 import { getComp, type EntityId } from './kernel/entities';
 import type { Journal, SimState } from './state';
 
 /** A fresh journal. */
 export function newJournal(): Journal {
-  return { flags: [], hints: [], hint: null, requests: {} };
+  return {
+    flags: [],
+    hints: [],
+    hint: null,
+    requests: {},
+    renown: {},
+    tradeCoin: {},
+    pinned: null,
+  };
 }
 
 /** State of a request for the avatar: `none` if never taken. */
@@ -47,26 +57,12 @@ export function holds(state: SimState, who: EntityId, conds: readonly Cond[] | u
         (getComp(state.entities, who, 'paths')?.earned.includes(c.pathEarned) === true) !==
         (c.not === true)
       );
+    if ('renown' in c) return renownIn(state, who, c.renown.region) >= c.renown.atLeast;
+    if ('phase' in c) return c.phase.includes(dayPhase(state.worldTick));
+    if ('season' in c) return c.season.includes(seasonOf(state.worldTick));
+    if ('weather' in c) return c.weather.includes(currentWeather(state));
     return requestState(j, c.request) === c.is;
   });
-}
-
-/** Progress text pieces for the HUD: the title key, the log key, and counts. Null if none is active. */
-export function pinnedRequest(
-  j: Journal,
-): { title: string; log: string; n: number; max: number; ready: boolean } | null {
-  for (const [id, r] of Object.entries(j.requests)) {
-    const def = REQUESTS[id];
-    if (!def || r.state === 'done') continue;
-    return {
-      title: def.title,
-      log: def.log,
-      n: r.progress,
-      max: def.goal.count,
-      ready: r.state === 'ready',
-    };
-  }
-  return null;
 }
 
 /** The node a talk with `npc` starts at for `who`: the first entry whose conditions hold. */

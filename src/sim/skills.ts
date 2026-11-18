@@ -1,4 +1,5 @@
 import { COMBAT as C } from '../content/balance/combat';
+import { REQUEST_BALANCE as RB } from '../content/balance/requests';
 import { SKILLS_BALANCE as B } from '../content/balance/skills';
 import { SKILLS, TRIALS, trialKey } from '../content/skills';
 import { activeMods, applyMods, modAdd, statusMods } from './mods';
@@ -7,6 +8,7 @@ import { getComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import type { SimState, Skills } from './state';
 import { earnedXp } from './ledger';
+import { addRenown } from './renown';
 
 /** An avatar with no skill points. */
 export function newSkills(): Skills {
@@ -170,6 +172,7 @@ export function passTrial(state: SimState, who: EntityId, trialId: string): bool
   s.passed.push(trialKey(t.skill, t.threshold));
   s.offered = s.offered.filter((o) => o !== trialId);
   delete s.trial[trialId];
+  addRenown(state, who, RB.homeRegion, RB.renown.perTrial);
   emit(state.events, { type: 'trialPassed', id: who, trial: trialId });
   settle(state, who, t.skill);
   return true;

@@ -60,13 +60,13 @@ import { UI_STRINGS } from '../content/strings/ui';
 import { PATHS } from '../content/paths';
 import { PATH_STRINGS } from '../content/strings/paths';
 import { chooseTextRenderer } from '../ui/text/rule';
-import { DIALOGUE_STRINGS } from '../content/strings/dialogue';
 import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
-import { newJournal, pinnedRequest } from '../sim/journal';
+import { pinnedLine } from '../sim/requestLog';
 import { TalkSheet } from '../ui/dom/talk';
-import { ChatTicker, HintLine } from '../ui/dom/ambient';
+import { ChatTicker, HintLine, PinnedLine } from '../ui/dom/ambient';
 import { confirmRetire } from '../ui/dom/retire';
+import { BoardSheet } from '../ui/dom/board';
 import { populateMap } from '../sim/world/populate';
 import { runFrontEnd, type FrontEndResult } from '../ui/dom/frontEnd';
 import {
@@ -809,6 +809,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (open) input.sampler.keyboard.reset();
     },
   });
+  const board = new BoardSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      talkOpen = open;
+      if (open) input.sampler.keyboard.reset();
+    },
+  });
+  const pinned = new PinnedLine(root);
   attachSwipe({
     height: () => canvas.getBoundingClientRect().height,
     bottomInset: () => readSafeInsets(probe).bottom,
@@ -1158,6 +1167,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             notices.openTablet();
           }
           talk.onEvent(e);
+          board.onEvent(e);
           const sfx = sfxFor(e, who);
           if (sfx) audio.playSfx(sfx);
           const h = hapticFor(e, who);
@@ -1328,22 +1338,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
         settings.get().reducedMotion,
       );
-      // The pinned request line, bottom left above the build label.
-      const pin = pinnedRequest(state.entities.comps.journal[who] ?? newJournal());
-      if (pin) {
-        const text = fill(DIALOGUE_STRINGS[pin.log] ?? pin.log, {
-          n: String(pin.n),
-          max: String(pin.max),
-        });
-        fonts.small.draw(
-          renderer,
-          pin.ready ? `${text} Done` : text,
-          v.safe.x + 3,
-          v.safe.y + v.safe.h - 19,
-          pin.ready ? GOLD : INK,
-          { outline: DARK },
-        );
-      }
+      // The pinned request is clear text in the DOM (design/09), drawn below the HUD.
+      pinned.set(menuOpen || talkOpen ? null : pinnedLine(state, who));
       // The gather timing sweep when working a node.
       const gat = state.entities.comps.gather[who];
       const gs = gat ? gatherSweep(state, who) : null;

@@ -1,9 +1,11 @@
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
-import { REQUESTS } from '../../content/dialogue';
+import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
+import { REQUESTS } from '../../content/requests';
 import { RECIPES } from '../../content/items/recipes';
 import { ITEMS } from '../../content/items';
 import { buyPrice, lowestBuy } from '../../sim/economy';
+import { MAX_STANDING_COIN } from '../../sim/requestGen';
 import { xpToNext } from '../../sim/skills';
 import { maxItemPerKill } from './bounds';
 import type { Reason } from './reasons';
@@ -77,28 +79,44 @@ export function ledgerRules(v: View): Reason[] {
       fail('LOOT_WITHOUT_KILL', `${item} x${n} from ${kills} kills of ${from.join(', ')}`);
   }
 
-  // Requests: a finished request paid out exactly its reward, and kill goals were met.
+  // Requests: a finished request paid out exactly its reward, and its kill steps were met. A
+  // standing request is made at the board, so its reward is counted in `requestRewards` as it is
+  // paid, and that tally is bounded by what a board can post.
   let coin = 0;
   const gifts: Record<string, number> = {};
   for (const [id, r] of Object.entries(journal.requests)) {
-    const def = REQUESTS[id];
+    const def = REQUESTS[id] ?? r.gen;
     if (!def) continue;
     if (r.state !== 'done' && r.state !== 'ready') continue;
-    if (def.goal.kill && (ledger.kills[def.goal.kill] ?? 0) < def.goal.count)
-      fail('REQUEST_STATE', `${id} finished with ${ledger.kills[def.goal.kill] ?? 0} kills`);
-    if (r.state !== 'done') continue;
+    const sol = def.solutions.find((s) => s.id === r.solution);
+    for (const o of sol?.steps ?? []) {
+      if (o.kind !== 'defeat' || !o.creature) continue;
+      if ((ledger.kills[o.creature] ?? 0) < o.count)
+        fail('REQUEST_STATE', `${id} finished with ${ledger.kills[o.creature] ?? 0} kills`);
+    }
+    if (r.state !== 'done' || r.gen) continue;
     coin += def.reward.coin;
     for (const i of def.reward.items) gifts[i.item] = (gifts[i.item] ?? 0) + i.qty;
   }
+  const standing = ledger.requestRewards ?? {};
+  const n = standing.n ?? 0;
+  const days = Math.max(0, v.plain.createdAt - v.plain.startedAt) / (48 * 60_000);
+  const posted = RB.boardSize * (Math.ceil(days) + 2);
+  if (n > posted || (standing.coin ?? 0) > n * MAX_STANDING_COIN)
+    fail('REQUEST_REWARD_UNMATCHED', `standing rewards n ${n}, coin ${standing.coin ?? 0}`);
+  for (const [k, q] of Object.entries(standing))
+    if (k !== 'n' && k !== 'coin' && q > 0)
+      fail('REQUEST_REWARD_UNMATCHED', `standing requests pay no ${k}`);
+  coin += standing.coin ?? 0;
   if ((ledger.coinEarned.request ?? 0) !== coin)
     fail('REQUEST_PAYOUT_MISMATCH', `coin ${ledger.coinEarned.request ?? 0}, expected ${coin}`);
   const paid = ledger.itemsMade.request ?? {};
-  for (const item of new Set([...Object.keys(gifts), ...Object.keys(paid)]))
-    if ((paid[item] ?? 0) !== (gifts[item] ?? 0))
-      fail(
-        'REQUEST_PAYOUT_MISMATCH',
-        `${item} paid ${paid[item] ?? 0}, expected ${gifts[item] ?? 0}`,
-      );
+  for (const item of new Set([...Object.keys(gifts), ...Object.keys(paid)])) {
+    const got = paid[item] ?? 0;
+    const want = gifts[item] ?? 0;
+    if (got > want) fail('REQUEST_REWARD_UNMATCHED', `${item} paid ${got}, rewards ${want}`);
+    else if (got < want) fail('REQUEST_PAYOUT_MISMATCH', `${item} paid ${got}, expected ${want}`);
+  }
 
   // Crafts: every successful craft made exactly its recipe's result, `qty` times. Old saves
   // recorded cooking under `cook`, so both sources count. Failed crafts leave only their fail item.

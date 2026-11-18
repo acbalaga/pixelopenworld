@@ -1,9 +1,13 @@
+import { REQUEST_STRINGS } from './requests';
 import { TRIAL_STRINGS } from './skills';
 
 /** Dialogue, request and shop text. Plain voices, nothing about the world's hidden layer. No em dashes. */
 export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   ...TRIAL_STRINGS,
+  ...REQUEST_STRINGS,
   'dlg.c_bye': 'Goodbye.',
+  'dlg.c_accept': 'I will see to it.',
+  'dlg.c_later': 'Not right now.',
   'dlg.c_test': 'I want to be tested.',
   'dlg.orla.tests': 'Which test?',
   'dlg.orla.c_blades': 'The blade test.',
@@ -26,6 +30,11 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.brin.again': 'Back again, {address}. What will it be?',
   'dlg.brin.c_shop': 'Show me what you have.',
   'dlg.brin.c_test': 'I want to be tested at the anvil.',
+  'dlg.brin.c_anvil': 'Anything I can do for the shop?',
+  'dlg.brin.c_anvil_remind': 'About the metal.',
+  'dlg.brin.anvil_accepted': 'Ore or ingots, I do not mind which. Bring it to the counter.',
+  'dlg.brin.anvil_progress': 'Six copper ore, or two copper ingots. To the counter.',
+  'dlg.brin.anvil_report': 'That will keep the anvil hot. Your coin.',
   'dlg.hesper.c_cook': 'I want to be tested at the pot.',
 
   'dlg.tobin.greet': 'Tools and blades. Everything here has been hit with a hammer at least once.',
@@ -46,6 +55,11 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
     'And if you want to call yourself a forager, bring me sunwort picked at dawn or dusk. It keeps its scent then.',
   'dlg.hesper.again': 'You again. The pot is yours whenever you need it.',
   'dlg.hesper.c_test': 'Remind me about the test.',
+  'dlg.hesper.c_supper': 'Does the watch need feeding?',
+  'dlg.hesper.c_supper_remind': 'About the watch supper.',
+  'dlg.hesper.supper_accepted': 'Stews or skewers, whichever you can make. Bring them to me.',
+  'dlg.hesper.supper_progress': 'Three Hearty Stews, or five Herbed Skewers. Bring them here.',
+  'dlg.hesper.supper_report': 'That will feed them. Here is your coin.',
 
   'dlg.orla.ask':
     'Mosslings are chewing up the meadow gardens. Clear out four of them and I will sleep easier. Will you?',
@@ -56,6 +70,12 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.orla.progress': 'Still at it? Four Mosslings, no more and no fewer.',
   'dlg.orla.report': 'That is all four. Take this, you have earned it.',
   'dlg.orla.after': 'Quiet meadows at last. Thank you.',
+  'dlg.orla.c_boar': 'Is there anything else that needs doing?',
+  'dlg.orla.c_boar_remind': 'About the boar.',
+  'dlg.orla.boar_accepted': 'Mind its charge. The cave mouth is south-east of the square.',
+  'dlg.orla.boar_progress':
+    'The boar is still at the cave mouth, or the satchel is still in the first room. Either will do.',
+  'dlg.orla.boar_report': 'The cave mouth is clear. Here is your pay.',
 
   'dlg.wren.ask':
     'I study how a seed holds fire. The Spitblooms down in the cave keep theirs in the pods. Put two of them down and I will show you how it is done.',
@@ -67,12 +87,17 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.wren.report':
     'Good. Now hold it, aim, and let go. It costs Focus, not breath. That is the Ember bolt, and it is yours.',
   'dlg.wren.after': 'Mind your Focus. It comes back slower than breath.',
+  'dlg.wren.c_lamps': 'Is there anything else you need?',
+  'dlg.wren.c_lamps_remind': 'About the lamps.',
+  'dlg.wren.lamps_accepted': 'Brin sells it, or find it where you can. Bring it to me.',
+  'dlg.wren.lamps_progress': 'Two flasks of lantern oil. Bring them to me.',
+  'dlg.wren.lamps_report': 'Lit at last. Take this for the trouble.',
 
   'dlg.pilgrim.one': 'anyone know where the good loot is around here?',
   'dlg.pilgrim.two': 'also this dummy has 2000 hp. send help',
-
-  'request.clear_pests.title': 'Clear the pests',
-  'request.ember_pods.title': 'A seed that holds fire',
-  'request.ember_pods.log': 'Spitblooms put down: {n} of {max}',
-  'request.clear_pests.log': 'Mosslings cleared: {n} of {max}',
+  'dlg.pilgrim.c_deep': 'heard anything odd from the cave?',
+  'dlg.pilgrim.c_deep_remind': 'about the deep room',
+  'dlg.pilgrim.deep_accepted': 'cool. its past the first rooms. dont stand still',
+  'dlg.pilgrim.deep_progress': 'still stirring down there. 3 spitblooms or a song',
+  'dlg.pilgrim.deep_report': 'quiet now. thanks. here, for the trouble',
 };

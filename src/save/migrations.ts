@@ -1,5 +1,7 @@
 import { ITEMS_BALANCE } from '../content/balance/items';
+import { REQUEST_BALANCE } from '../content/balance/requests';
 import { TIME } from '../content/balance/time';
+import { REQUESTS } from '../content/requests';
 import { ITEMS } from '../content/items';
 import { TECHNIQUES } from '../content/combat/techniques';
 import { RECIPES } from '../content/items/recipes';
@@ -9,6 +11,7 @@ import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
 import { NO_FIGHT } from '../sim/fight';
 import { dayIndex } from '../sim/time';
+import { solutionMax } from '../sim/systems/requests';
 import { newDeeds } from '../sim/systems/deeds';
 import { newNpc } from '../sim/trade';
 import { deserializeState, serializeState } from '../sim/state';
@@ -401,6 +404,75 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     c.deeds = c.pos.map((_, i) => (c.avatar[i] ? newDeeds() : null));
     c.paths = c.pos.map((_, i) => (c.avatar[i] ? { earned: [], worn: [], shown: null } : null));
     return { ...old, schema: 16, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 16 to 17 (M3-11): requests v2. Each request the avatar holds gets solutions and step
+   * progress: an active one keeps its count in the step it was on, a ready or finished one has
+   * every step done under its first solution. The journal gains Renown (what finished requests
+   * and passed Trials were worth, as if it had been counted all along), no trade net, and no pin.
+   * A `requests` RNG stream, a `board` component (none placed: the map adds the board), and the
+   * ledger's `requestRewards` tally.
+   */
+  16: (old) => {
+    type OldRec = { state: 'active' | 'ready' | 'done'; progress: number };
+    const raw = JSON.parse(old.sim) as {
+      seed: number;
+      rng: Record<string, unknown>;
+      ledger?: Record<string, unknown>;
+      entities: {
+        comps: {
+          pos: unknown[];
+          board?: unknown[];
+          skills: ({ passed: string[] } | null)[];
+          journal: ({ requests: Record<string, unknown>; [k: string]: unknown } | null)[];
+        };
+      };
+    };
+    raw.rng.requests = createStream(raw.seed, 'requests');
+    const c = raw.entities.comps;
+    c.board = c.pos.map(() => null);
+    c.journal = c.journal.map((j, i) => {
+      if (!j) return j;
+      let renown = 0;
+      const requests: Record<string, unknown> = {};
+      for (const [id, r] of Object.entries(j.requests as Record<string, OldRec>)) {
+        const def = REQUESTS[id];
+        const sol = def?.solutions[0];
+        if (!def || !sol) {
+          requests[id] = { state: r.state, solution: null, prog: {}, progress: r.progress };
+          continue;
+        }
+        const finished = r.state !== 'active';
+        const prog: Record<string, unknown> = {};
+        for (const s of def.solutions)
+          prog[s.id] = {
+            step: finished && s.id === sol.id ? s.steps.length : 0,
+            p: { n: !finished && s.id === sol.id ? r.progress : 0, t0: 0 },
+          };
+        requests[id] = {
+          state: r.state,
+          solution: finished ? sol.id : null,
+          prog,
+          progress: finished ? solutionMax(def, sol.id) : r.progress,
+        };
+        if (r.state === 'done') renown += def.reward.renown;
+      }
+      renown += (c.skills[i]?.passed.length ?? 0) * REQUEST_BALANCE.renown.perTrial;
+      return {
+        ...j,
+        requests,
+        renown: renown > 0 ? { [REQUEST_BALANCE.homeRegion]: renown } : {},
+        tradeCoin: {},
+        pinned: null,
+      };
+    });
+    if (raw.ledger) raw.ledger.requestRewards = {};
+    return {
+      ...old,
+      schema: 17,
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
+      ledger: { ...old.ledger, requestRewards: {} },
+    };
   },
 };
 
