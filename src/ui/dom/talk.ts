@@ -289,6 +289,7 @@ export class TalkSheet {
       qtyText: string,
       run: (() => void) | null,
       extra: HTMLElement | null = null,
+      glyph: string | null = null,
     ): void => {
       const li = el('li', 'pow-shop-row');
       const icon = el('canvas', 'pow-icon');
@@ -298,8 +299,11 @@ export class TalkSheet {
       this.deps.drawIcon(icon, ITEMS[item]?.icon ?? '');
       const name = el('span', 'pow-shop-name', `${nameOf(item)}${qtyText}`);
       const cost = el('span', 'pow-shop-price', fill(S.shop.price, { n: String(price) }));
-      const b = el('button', 'pow-button', label);
+      const b = el('button', glyph ? 'pow-button pow-icon-button' : 'pow-button');
       b.type = 'button';
+      if (glyph) b.appendChild(this.glyph(glyph));
+      else b.textContent = label;
+      b.title = label;
       b.setAttribute(
         'aria-label',
         `${label} ${nameOf(item)}, ${fill(S.shop.price, { n: String(price) })}`,
@@ -316,8 +320,10 @@ export class TalkSheet {
       start: Extract<Command, { type: 'haggle' }>,
       item: string,
     ): HTMLElement => {
-      const b = el('button', 'pow-button', S.shop.haggle.button);
+      const b = el('button', 'pow-button pow-icon-button');
       b.type = 'button';
+      b.appendChild(this.glyph('ui.icon_haggle'));
+      b.title = S.shop.haggle.button;
       b.setAttribute('aria-label', `${S.shop.haggle.button} ${nameOf(item)}`);
       b.addEventListener('click', () => this.deps.send(start));
       return b;
@@ -342,6 +348,7 @@ export class TalkSheet {
           left > 0 && !locked
             ? haggleButton({ type: 'haggle', shop: shop.id, step: 'start', item, dir: 'buy' }, item)
             : null,
+          left > 0 ? 'ui.icon_buy' : null,
         );
       }
     } else if (this.shopTab === 'sell') {
@@ -401,6 +408,16 @@ export class TalkSheet {
     put(s, head, tabs, purse, msg, list);
     (s.querySelector('.pow-shop-list button') as HTMLElement | null)?.focus();
     this.ready = true;
+  }
+
+  /** A 12 x 12 icon canvas for a button. The button's label and aria-label carry the words. */
+  private glyph(iconId: string): HTMLCanvasElement {
+    const c = el('canvas', 'pow-icon');
+    c.width = 12;
+    c.height = 12;
+    c.setAttribute('aria-hidden', 'true');
+    this.deps.drawIcon(c, iconId);
+    return c;
   }
 
   /** The haggle panel: the price standing, the exchanges left, and the four choices. */
