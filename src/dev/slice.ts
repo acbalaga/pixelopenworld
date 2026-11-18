@@ -16,6 +16,7 @@ import type { SimState } from '../sim/state';
 import type { StatusId } from '../content/combat/statuses';
 import { elementHitsWorld } from '../sim/elements';
 import { applyStatus } from '../sim/statuses';
+import { learnTechnique } from '../sim/combat/techniques';
 
 /** What the hooks need from the running scene. */
 export interface SliceHookContext {
@@ -53,6 +54,9 @@ export interface PowDevApi {
   leftHanded(on: boolean): void;
   /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
   trial(id: string, what: 'offer' | 'pass'): void;
+  /** Sets skill points and teaches taught techniques, as if earned. For screenshots of loadouts. */
+  rank(skill: string, points: number): void;
+  learn(technique: string): void;
   /** Pays coin into the purse, as a seed (dev only). For screenshots of shops. */
   giveCoin(n: number): void;
   /** Puts statuses on the avatar, as if applied by a spell. For screenshots of the status row. */
@@ -124,6 +128,13 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         offerTrial(state, who, id);
         passTrial(state, who, id);
       }
+    },
+    rank(skill, points) {
+      const s = getComp(state.entities, who, 'skills');
+      if (s) s.points[skill] = points;
+    },
+    learn(technique) {
+      learnTechnique(state, who, technique);
     },
     giveCoin(n) {
       earnCoin(state, who, n, 'seed');

@@ -21,6 +21,7 @@ import { trialsSystem } from './systems/trials';
 import { craftSystem } from './crafting';
 import { elementsSystem } from './elements';
 import { tradeSystem } from './trade';
+import { channelSystem } from './combat/techniques';
 import { statusSystem } from './statuses';
 import type { EntityId } from './kernel/entities';
 
@@ -49,6 +50,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   fixturesSystem,
   knockSystem,
   projectileSystem,
+  channelSystem,
   elementsSystem,
   statusSystem,
   poolsSystem,

@@ -266,9 +266,9 @@ export function recomputeGear(state: SimState, who: EntityId): void {
     }
   }
   cb.defense = defense;
-  // Slot 1 is the lunge of whatever is held: every blade and every polearm has one.
+  // Slot 1 is the band 0 technique of whatever is held: every weapon family has one.
   const fighter = getComp(state.entities, who, 'fighter');
-  if (fighter) fighter.slots[0] = WEAPONS[cb.weapon]?.lunge ?? null;
+  if (fighter) fighter.slots[0] = WEAPONS[cb.weapon]?.signature ?? null;
   // No shield, no guard.
   if (fighter && !hasShield(state, who)) fighter.guard = false;
   recomputePools(state, who);

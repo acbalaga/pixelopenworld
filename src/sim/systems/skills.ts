@@ -127,6 +127,17 @@ export function skillsSystem(state: SimState): void {
           tier: target?.tier ?? 0,
           subject: target?.kind ?? null,
         });
+      } else if (e.type === 'sneak' && e.who === who) {
+        practice(state, who, {
+          on: 'sneak',
+          tag: undefined,
+          tier: 0,
+          subject: getComp(state.entities, e.creature, 'combatant')?.kind ?? null,
+        });
+      } else if (e.type === 'perform' && e.who === who) {
+        practice(state, who, { on: 'perform', tag: undefined, tier: 0, subject: e.technique });
+      } else if (e.type === 'healed' && e.src === who && e.tag === 'mending') {
+        practice(state, who, { on: 'heal', tag: undefined, tier: 0, subject: null });
       } else if (e.type === 'haggleWon' && e.who === who) {
         practice(state, who, { on: 'haggle', tag: undefined, tier: 0, subject: e.shop });
       } else if (e.type === 'sold' && e.who === who) {

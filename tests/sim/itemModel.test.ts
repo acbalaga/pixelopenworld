@@ -221,9 +221,13 @@ describe('modifiers', () => {
     const before = s.entities.comps.pools[me]!.staMax;
     const i = inv(s, me);
     i.slots[0] = { ...newStack('item.ring_silver', 1), affixes: ['affix.stamina_1'] };
-    expect(activeMods(s, me)).toEqual([]);
+    // Light Feet, the Evasion passive, is known from the first point and is the only mod there is.
+    expect(activeMods(s, me)).toEqual([{ stat: 'perfectWindow', add: 2 }]);
     equip(s, me, 0);
-    expect(activeMods(s, me)).toEqual(AFFIXES['affix.stamina_1']!.mods);
+    expect(activeMods(s, me)).toEqual([
+      ...AFFIXES['affix.stamina_1']!.mods,
+      { stat: 'perfectWindow', add: 2 },
+    ]);
     expect(s.entities.comps.pools[me]!.staMax).toBe(before + 100);
     i.equipment.accessory = null;
     equip(s, me, 0);

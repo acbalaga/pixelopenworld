@@ -12,6 +12,9 @@ import {
 import { SKILLS, TRIALS, trialCount, type SkillFamily } from '../../content/skills';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { UI_STRINGS } from '../../content/strings/ui';
+import { TECHNIQUE_LIST } from '../../content/combat/techniques';
+import { TECHNIQUE_STRINGS } from '../../content/strings/techniques';
+import { knows } from '../../sim/combat/techniques';
 import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
 import { NPCS } from '../../content/dialogue';
 import { AFFIXES } from '../../content/items/affixes';
@@ -253,6 +256,76 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
     if (rows.length > 0) out.push({ family, label: UI_STRINGS.skillsFamilies[family], rows });
   }
   return out;
+}
+
+export interface TechniqueRowView {
+  id: string;
+  name: string;
+  desc: string;
+  icon: string;
+  kind: 'active' | 'passive';
+  known: boolean;
+  /** For a technique not known yet: what it takes. */
+  need: string | null;
+  /** The slot (1 to 3, the second to fourth button) it sits in now, or 0 for none. */
+  slot: number;
+}
+
+export interface TechniqueGroupView {
+  skill: string;
+  name: string;
+  rows: TechniqueRowView[];
+}
+
+export interface TechniquesView {
+  /** The loadout in use, 1 or 2, and what each slot button holds (technique ids). */
+  active: number;
+  slots: (string | null)[];
+  groups: TechniqueGroupView[];
+}
+
+/**
+ * Every technique of the skills the avatar has ranked, and every one it knows, grouped by skill.
+ * A known active can be put in slot 2, 3 or 4 of the active loadout.
+ */
+export function techniquesView(state: SimState, who: number): TechniquesView {
+  const s = state.entities.comps.skills[who];
+  const f = state.entities.comps.fighter[who];
+  const ld = state.entities.comps.loadouts[who];
+  const groups: TechniqueGroupView[] = [];
+  for (const id of Object.keys(SKILLS)) {
+    const rows: TechniqueRowView[] = [];
+    for (const t of TECHNIQUE_LIST) {
+      if (t.skill !== id) continue;
+      const known = s !== undefined && s !== null ? knows(state, who, t) : false;
+      const points = s?.points[id] ?? 0;
+      // A locked technique shows only once its skill has been ranked, so there is still a surprise.
+      if (!known && points < 1) continue;
+      let need: string | null = null;
+      if (!known)
+        need =
+          points < t.band
+            ? fill(UI_STRINGS.techNeedSkill, { skill: SKILLS[id]?.name ?? '', n: t.band })
+            : UI_STRINGS.techNeedTeacher;
+      rows.push({
+        id: t.id,
+        name: TECHNIQUE_STRINGS[t.nameKey] ?? t.id,
+        desc: TECHNIQUE_STRINGS[t.descKey] ?? '',
+        icon: t.icon,
+        kind: t.kind,
+        known,
+        need,
+        slot: f
+          ? Math.max(
+              0,
+              f.slots.findIndex((x, i) => i > 0 && x === t.id),
+            )
+          : 0,
+      });
+    }
+    if (rows.length > 0) groups.push({ skill: id, name: SKILLS[id]?.name ?? id, rows });
+  }
+  return { active: (ld?.active ?? 0) + 1, slots: f ? [...f.slots] : [], groups };
 }
 
 export function bagView(

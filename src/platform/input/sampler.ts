@@ -51,6 +51,7 @@ export class InputSampler {
     r.context = pressed.has('context');
     r.menu = pressed.has('menu');
     r.bag = pressed.has('bag');
+    r.swap = pressed.has('swap');
     if (t.dodge) r.dodge = t.dodge;
     else if (pressed.has('dodge')) r.dodge = { dir: r.moveDir };
     r.targetTap = t.targetTap;
@@ -129,6 +130,7 @@ export class CommandMapper {
     if (r.attack) out.push({ type: 'attack' });
     if (r.dodge) out.push({ type: 'dodge', dir: r.dodge.dir });
     if (r.context) out.push({ type: 'interact' });
+    if (r.swap) out.push({ type: 'loadout' });
     if (r.targetTap) {
       const w = this.toWorld(r.targetTap);
       if (w) out.push({ type: 'lock', x: w.x, y: w.y });

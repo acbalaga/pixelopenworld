@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TECHNIQUES } from '../../src/content/combat/attacks';
+import { TECHNIQUES } from '../../src/content/combat/techniques';
 import { SPRITES } from '../../src/content/sprites';
 import { BUTTON_ICONS, UI_ICONS } from '../../src/content/sprites/ui/icons';
 import { gridFromDef, TRANSPARENT } from '../../src/content/sprites/grid';

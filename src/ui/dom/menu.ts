@@ -19,6 +19,7 @@ import {
   characterView,
   itemDetail,
   skillsView,
+  techniquesView,
   trialLog,
   type BagFilterId,
   type BagSortId,
@@ -237,7 +238,7 @@ export class MenuSheet {
       case 'character':
         return JSON.stringify(characterView(state, who));
       case 'skills':
-        return JSON.stringify(skillsView(state, who));
+        return JSON.stringify([skillsView(state, who), techniquesView(state, who)]);
       case 'bag':
         return JSON.stringify([bagView(state, who), this.selected]);
       default:
@@ -375,6 +376,7 @@ export class MenuSheet {
       put(sec, h, ul);
       this.body.appendChild(sec);
     }
+    this.renderTechniques();
     if (fams.length === 0 && log.length === 0)
       this.body.appendChild(el('p', 'pow-hint', S.skillsEmpty));
     for (const fam of fams) {
@@ -423,6 +425,54 @@ export class MenuSheet {
       put(sec, h, ul);
       this.body.appendChild(sec);
     }
+  }
+
+  /** The technique list: what each skill gives, and which slot of the active loadout holds it. */
+  private renderTechniques(): void {
+    const { state, who } = this.deps.read();
+    const v = techniquesView(state, who);
+    if (v.groups.length === 0) return;
+    const sec = el('section', 'pow-techniques');
+    const h = this.heading(`${S.techniquesTitle}: ${fill(S.techniquesLoadout, { n: v.active })}`);
+    sec.appendChild(h);
+    sec.appendChild(el('p', 'pow-hint', S.techniquesHint));
+    for (const g of v.groups) {
+      sec.appendChild(this.heading(g.name, 'h4'));
+      const ul = el('ul', 'pow-skills');
+      for (const r of g.rows) {
+        const li = el('li', 'pow-tech');
+        const head = el('div', 'pow-tech-head');
+        put(head, this.icon(r.icon), el('span', 'pow-skill-name', r.name));
+        li.appendChild(head);
+        li.appendChild(el('p', 'pow-hint', r.known ? r.desc : (r.need ?? '')));
+        if (r.known && r.kind === 'passive') li.appendChild(el('p', 'pow-hint', S.techPassive));
+        if (r.known && r.kind === 'active') {
+          const row = el('div', 'pow-tech-slots');
+          for (const n of [2, 3, 4]) {
+            const here = r.slot === n - 1;
+            const b = el(
+              'button',
+              here ? 'pow-button pow-tech-slot is-on' : 'pow-button pow-tech-slot',
+              String(n),
+            );
+            b.type = 'button';
+            b.setAttribute('aria-pressed', String(here));
+            b.setAttribute(
+              'aria-label',
+              here ? fill(S.techClear, { name: r.name, n }) : fill(S.techPut, { name: r.name, n }),
+            );
+            b.addEventListener('click', () =>
+              this.deps.send({ type: 'assign', slot: n - 1, technique: here ? null : r.id }),
+            );
+            row.appendChild(b);
+          }
+          li.appendChild(row);
+        }
+        ul.appendChild(li);
+      }
+      sec.appendChild(ul);
+    }
+    this.body.appendChild(sec);
   }
 
   // ---- Bag ----

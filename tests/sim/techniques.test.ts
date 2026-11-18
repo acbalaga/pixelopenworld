@@ -33,9 +33,9 @@ describe('the lunge follows the weapon', () => {
     give(s, me, 'item.spear_ash', 1, 'start');
     expect(equip(s, me, bagSlot(s, me, 'item.spear_ash'))).toBe(true);
     expect(slots(s, me)[0]).toBe('technique.polearms_lunge');
-    // The sword went back to the bag. Take the spear off: fists have no lunge.
+    // The sword went back to the bag. Take the spear off: bare hands use the Palm.
     expect(unequip(s, me, 'main')).toBe(true);
-    expect(slots(s, me)[0]).toBeNull();
+    expect(slots(s, me)[0]).toBe('technique.unarmed_palm');
     expect(equip(s, me, bagSlot(s, me, 'item.sword_rusty'))).toBe(true);
     expect(slots(s, me)[0]).toBe('technique.blades_lunge');
   });

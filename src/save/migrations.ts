@@ -1,6 +1,7 @@
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { TIME } from '../content/balance/time';
 import { ITEMS } from '../content/items';
+import { TECHNIQUES } from '../content/combat/techniques';
 import { RECIPES } from '../content/items/recipes';
 import { createStream } from '../sim/kernel/rng';
 import { intact } from './integrity/reasons';
@@ -321,6 +322,53 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       schema: 13,
       sim: serializeState(deserializeState(JSON.stringify(raw))),
       ledger: { ...old.ledger, itemsSold: {} },
+    };
+  },
+  /**
+   * 13 to 14 (M3-13): loadouts and channels. Every avatar's current technique slots become
+   * loadout 0, loadout 1 starts empty, no channel is running. A technique that was already in a
+   * slot and needs teaching (Ember Bolt) is marked as learned, so it stays known.
+   */
+  13: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          pos: unknown[];
+          fighter: ({ slots: (string | null)[] } | null)[];
+          avatar: unknown[];
+          journal: ({ flags: string[] } | null)[];
+          loadouts?: unknown[];
+          channel?: unknown[];
+        };
+      };
+    };
+    const c = raw.entities.comps;
+    c.channel = c.pos.map(() => null);
+    c.loadouts = c.pos.map((_, i) => {
+      const f = c.fighter[i];
+      if (!f || !c.avatar[i]) return null;
+      for (const id of f.slots) {
+        const t = id ? TECHNIQUES[id] : undefined;
+        const j = c.journal[i];
+        if (t?.taught && j && !j.flags.includes(`learned.${t.id}`)) j.flags.push(`learned.${t.id}`);
+      }
+      return {
+        active: 0,
+        sets: [
+          { main: null, off: null, slots: [...f.slots] },
+          { main: null, off: null, slots: [null, null, null, null] },
+        ],
+      };
+    });
+    const sim = serializeState(deserializeState(JSON.stringify(raw)));
+    // The learned flags count in the summary's flag total, so it is kept in step.
+    const me = c.avatar.findIndex((a) => a);
+    const flags = me >= 0 ? (c.journal[me]?.flags.length ?? 0) : 0;
+    return {
+      ...old,
+      schema: 14,
+      sim,
+      ...(old.summary ? { summary: { ...old.summary, flags } } : {}),
     };
   },
 };

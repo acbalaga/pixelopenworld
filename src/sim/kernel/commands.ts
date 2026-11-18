@@ -57,6 +57,10 @@ export type Command =
   | { type: 'buy'; shop: string; item: string; qty: number }
   /** Sell from bag slot `slot` to the shop in front of you. */
   | { type: 'sell'; shop: string; slot: number; qty: number }
+  /** Swap to the other loadout (the HUD swap button). */
+  | { type: 'loadout' }
+  /** Put a known technique in slot 1, 2 or 3 (the second to fourth button), or empty it. */
+  | { type: 'assign'; slot: number; technique: string | null }
   /** Buy back the stack at `index` of what this shop was sold, at the price it paid. */
   | { type: 'buyback'; shop: string; index: number }
   /** The repair service: mend a carried item (`bag`) or a worn one (`worn`, slot index of the equip slots). */
@@ -194,6 +198,24 @@ export function validateCommand(raw: unknown): Validated {
         command: { type: 'sell', shop: r.shop, slot: r.slot as number, qty: r.qty as number },
       };
     }
+    case 'loadout':
+      return { ok: true, command: { type: 'loadout' } };
+    case 'assign':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 1 || (r.slot as number) > 3)
+        return { ok: false, reason: 'bad slot' };
+      if (
+        r.technique !== null &&
+        (typeof r.technique !== 'string' || !/^technique\.[a-z0-9_]{1,40}$/.test(r.technique))
+      )
+        return { ok: false, reason: 'bad technique' };
+      return {
+        ok: true,
+        command: {
+          type: 'assign',
+          slot: r.slot as number,
+          technique: r.technique as string | null,
+        },
+      };
     case 'buyback':
     case 'mend':
     case 'haggle': {

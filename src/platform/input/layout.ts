@@ -99,6 +99,13 @@ export function computeLayout(
     w: min,
     h: min,
   });
+  // The loadout swap sits under the menu button, out of the way of the thumb arc.
+  buttons.swap = mirror({
+    x: width - margin - ins.right - min,
+    y: margin + ins.top + min + gap,
+    w: min,
+    h: min,
+  });
   buttons.bag = mirror({
     x: width - margin - ins.right - min * 2 - gap,
     y: margin + ins.top,

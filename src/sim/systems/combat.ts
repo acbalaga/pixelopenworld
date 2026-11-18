@@ -152,7 +152,13 @@ function advanceAttack(state: SimState, id: EntityId): void {
     }
     // Creatures are not moved by the avatar movement system, so their dashes are applied here.
     if (def.dash && !getComp(state.entities, id, 'avatar')) nudge(state, id, f.dv.x, f.dv.y);
-    resolveSwing(state, id, def);
+    // Several hits split the active frames evenly: each one starts with a clean list of who it has hit.
+    if (def.hits && def.hits > 1) {
+      const per = def.active / def.hits;
+      const into = f.t - activeFrom;
+      if (Number.isInteger(into / per)) f.hit = [];
+      resolveSwing(state, id, def, into >= def.active - per);
+    } else resolveSwing(state, id, def);
   } else {
     f.dv = { x: 0, y: 0 };
   }

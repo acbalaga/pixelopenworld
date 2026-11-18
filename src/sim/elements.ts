@@ -183,6 +183,11 @@ export function elementsSystem(state: SimState): void {
   for (const id of query(state.entities, 'fixture')) {
     const f = getComp(state.entities, id, 'fixture');
     if (f?.until === undefined || state.worldTick < f.until) continue;
+    // A fixture raised by a technique simply goes when its time is up.
+    if (f.temp) {
+      destroy(state.entities, id);
+      continue;
+    }
     const body = getComp(state.entities, id, 'body');
     // Nothing grows back on top of someone: wait a little and try again.
     if (body && standsOn(state, id)) {

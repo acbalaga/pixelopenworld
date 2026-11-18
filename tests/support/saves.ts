@@ -139,6 +139,11 @@ export function asSchema5(s: SimState): SimState {
   }
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
+  // Schema 14: loadouts, channels and the learned flags of taught techniques.
+  delete (s.entities.comps as { loadouts?: unknown }).loadouts;
+  delete (s.entities.comps as { channel?: unknown }).channel;
+  for (const j of s.entities.comps.journal)
+    if (j) j.flags = j.flags.filter((f) => !f.startsWith('learned.'));
   // Schema 13: trade. No trade stream, haggle component, itemsSold or shop state.
   delete (s.rng as { trade?: unknown }).trade;
   delete (s.entities.comps as { haggle?: unknown }).haggle;

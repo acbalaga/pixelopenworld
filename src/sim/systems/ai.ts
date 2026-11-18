@@ -10,6 +10,7 @@ import { int } from '../kernel/rng';
 import type { Ai, SimState } from '../state';
 import { nudge } from './movement';
 import { sightBlocked } from '../elements';
+import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
 import { applyMods, hasStatus, statusMods } from '../mods';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
@@ -29,7 +30,7 @@ function pct(state: SimState, id: EntityId): number {
 }
 
 /** Nearest living player-side fighter within `range` px of `me`, or null. */
-function acquire(state: SimState, me: Vec, range: number): EntityId | null {
+function acquire(state: SimState, me: Vec, range: number, by: EntityId): EntityId | null {
   let best: EntityId | null = null;
   let bestD = range;
   for (const id of query(state.entities, 'fighter', 'pos')) {
@@ -38,8 +39,16 @@ function acquire(state: SimState, me: Vec, range: number): EntityId | null {
     const c = centerPx(state, id);
     if (!c) continue;
     const d = len({ x: c.x - me.x, y: c.y - me.y });
+    // A hidden unit is noticed from a fraction of the range. A creature that would have noticed
+    // it at the full range and did not has been passed by: that counts once per creature per hide.
+    const hidden = (getComp(state.entities, id, 'statuses') ?? []).find((s) => s.id === 'hidden');
+    const reach = hidden ? Math.floor((range * TB.hide.noticePct) / 100) : range;
+    if (hidden && d <= range && d > reach && !(hidden.ids ??= []).includes(by)) {
+      hidden.ids.push(by);
+      emit(state.events, { type: 'sneak', who: id, creature: by });
+    }
     // Steam hides whoever stands in or behind it.
-    if (d <= bestD && !sightBlocked(state, me, c)) {
+    if (d <= Math.min(bestD, reach) && !sightBlocked(state, me, c)) {
       best = id;
       bestD = d;
     }
@@ -180,7 +189,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
 
   switch (ai.state) {
     case 'idle': {
-      const t = acquire(state, me, def.notice);
+      const t = acquire(state, me, def.notice, id);
       if (t !== null) {
         ai.target = t;
         enter(ai, 'notice');
@@ -192,7 +201,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
       break;
     }
     case 'wander': {
-      const t = acquire(state, me, def.notice);
+      const t = acquire(state, me, def.notice, id);
       if (t !== null) {
         ai.target = t;
         enter(ai, 'notice');

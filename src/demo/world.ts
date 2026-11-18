@@ -14,7 +14,7 @@ import { randomDoll } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
-import { TECHNIQUES } from '../content/combat/attacks';
+import { TECHNIQUES } from '../content/combat/techniques';
 import { BUILD_LABEL } from '../shared/version';
 import { attachInput } from '../platform/input/dom';
 import { sfxFor, hapticFor, vibrate } from '../platform/combatFx';
@@ -166,6 +166,7 @@ const LABELS: Record<string, string> = {
   context: 'E',
   menu: 'M',
   bag: 'B',
+  swap: 'S',
   attack: 'A',
 };
 // Anim sets are indexed up, down, right, left; the sim facing is N, E, S, W (0, 2, 4, 6).
@@ -1331,7 +1332,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             renderer,
             kit,
             rect,
-            LABELS[id] ?? '?',
+            // The swap button shows which loadout is in use.
+            id === 'swap'
+              ? String((state.entities.comps.loadouts[who]?.active ?? 0) + 1)
+              : (LABELS[id] ?? '?'),
             held.has(id) || cooling || (id === 'guard' && guardUp),
             'small',
             icon,

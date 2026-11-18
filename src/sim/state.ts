@@ -94,6 +94,8 @@ export interface Fighter {
   guardT: number;
   /** Ticks since the fighter last moved. Archery charges on it. */
   still: number;
+  /** Tick until which every technique slot and the basic attack are locked (a swap in combat). */
+  lockUntil?: number;
 }
 
 /** What a fighter hits with and how hard it is to hurt. */
@@ -193,6 +195,31 @@ export interface StatusEntry {
   until: number;
   src: number;
   item?: string;
+  /** Hidden: creatures that would have noticed the unit and did not, so each counts once (`sneak`). */
+  ids?: number[];
+}
+
+/**
+ * What one loadout wields and slots (M3-13). `main` and `off` are bag slot indexes where the item
+ * for that hand was when the loadout was left, checked on swap. `slots` are the four technique slots.
+ */
+export interface Loadout {
+  main: number | null;
+  off: number | null;
+  slots: (string | null)[];
+}
+
+/** Two loadouts and which one is in use. The fighter's own slots are the active set's. */
+export interface Loadouts {
+  active: 0 | 1;
+  sets: [Loadout, Loadout];
+}
+
+/** A song or other channel in progress: the slot, the technique and the tick it finishes. */
+export interface Channel {
+  slot: number;
+  technique: string;
+  until: number;
 }
 
 /** A lingering cloud (steam): hurts and hides what stands in it until `until`. */
@@ -260,6 +287,8 @@ export interface Projectile {
   element: string;
   /** The hit applies the element's paired status (the technique's data says so). */
   applies?: boolean;
+  /** Percent of the damage that heals the owner. */
+  drain?: number;
 }
 
 /** Coin left behind by a death. */
@@ -315,6 +344,8 @@ export interface Fixture {
   until?: number;
   /** A hidden niche that has been revealed. */
   revealed?: boolean;
+  /** A fixture made by a technique: it is removed when `until` passes (Earth Wall). */
+  temp?: true;
 }
 
 /** What the avatar has done with people: flags set by dialogue, and requests taken. */
@@ -382,6 +413,8 @@ export interface Components {
   gather: Gather;
   craft: CraftSession;
   haggle: Haggle;
+  loadouts: Loadouts;
+  channel: Channel;
   statuses: StatusEntry[];
   cloud: Cloud;
   fixture: Fixture;
@@ -430,6 +463,8 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'gather',
   'craft',
   'haggle',
+  'loadouts',
+  'channel',
   'statuses',
   'cloud',
   'fixture',

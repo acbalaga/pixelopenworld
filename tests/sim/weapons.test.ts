@@ -473,3 +473,42 @@ describe('time to kill', () => {
     expect(hi).toBeLessThanOrEqual(8 * 30);
   });
 });
+
+describe('time to kill with techniques', () => {
+  /** As `ttk`, but the weapon's own technique (slot 1) is pressed whenever it is ready. */
+  function ttkWithTechnique(item: string, dist: number): number {
+    const r = rig('flow');
+    wear(r, item);
+    face(r);
+    const p = pos(r);
+    const foe = spawnEnemy(r.s, 'creature.mossling', p.x + dist, p.y);
+    const spot = { ...r.s.entities.comps.pos[foe]! };
+    for (let t = 1; t <= 900; t++) {
+      const at = r.s.entities.comps.pos[foe];
+      if (at) {
+        at.x = spot.x;
+        at.y = spot.y;
+      }
+      r.tick({ type: 'technique', slot: 0, phase: 'press', aim: null });
+      if (!r.s.entities.alive[foe] || fighter(r, foe)?.state === 'dead') return t;
+    }
+    return Infinity;
+  }
+  const weapons: [string, string, number][] = [
+    ['blades', 'item.sword_rusty', 14],
+    ['heavy', 'item.maul_oak', 14],
+    ['polearms', 'item.spear_ash', 14],
+    ['archery', 'item.bow_short', 60],
+    ['unarmed', 'item.wraps_cloth', 12],
+  ];
+  it('every family still kills a tier 1 Mossling in about the same time with its technique in use', () => {
+    const times = weapons.map(([, item, d]) => ttkWithTechnique(item, d));
+    process.stdout.write(
+      `TTK with technique ${weapons.map(([n], i) => `${n}=${times[i]}`).join(' ')}\n`,
+    );
+    expect(Math.max(...times) / Math.min(...times)).toBeLessThanOrEqual(1.15);
+    // Techniques may bring a kill a little under the 4 second basic floor, never past 8.
+    expect(Math.min(...times)).toBeGreaterThanOrEqual(3 * 30);
+    expect(Math.max(...times)).toBeLessThanOrEqual(8 * 30);
+  });
+});

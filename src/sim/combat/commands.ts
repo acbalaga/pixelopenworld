@@ -1,20 +1,16 @@
 import { COMBAT as C } from '../../content/balance/combat';
-import { ATTACKS, TECHNIQUES, WEAPONS } from '../../content/combat/attacks';
+import { ATTACKS, WEAPONS } from '../../content/combat/attacks';
+import { isAimed, TECHNIQUES } from '../../content/combat/techniques';
 import type { Command } from '../kernel/commands';
 import { emit } from '../kernel/events';
 import { getComp, type EntityId } from '../kernel/entities';
 import { dirStep, SUBPX, type Direction } from '../kernel/fixed';
 import type { SimState } from '../state';
-import { centerPx, foes, nearestInArc, spend, startAttack } from './fighter';
+import { centerPx, foes, spend, startAttack } from './fighter';
+import { fireTechnique } from './techniques';
 import { len } from './geometry';
 import { setGuard } from './guard';
-import { hasStatus } from '../mods';
-
-/** True when the fighter can begin something new. */
-function free(state: SimState, who: EntityId): boolean {
-  const f = getComp(state.entities, who, 'fighter');
-  return !!f && f.state === 'idle';
-}
+import { applyMods, hasStatus, statusMods } from '../mods';
 
 /** World point of the target a swing should face: the lock if there is one. */
 export function lockPoint(state: SimState, who: EntityId): { x: number; y: number } | null {
@@ -66,7 +62,8 @@ export function applyFighterCommand(state: SimState, who: EntityId, c: Command):
     case 'dodge': {
       if (f.state !== 'idle' && f.state !== 'attack') return;
       if (hasStatus(state, who, 'rooted')) return;
-      if (!spend(state, who, 'sta', C.dodge.cost)) return;
+      if (!spend(state, who, 'sta', applyMods(C.dodge.cost, 'dodgeCost', statusMods(state, who))))
+        return;
       const d = dirStep(dodgeDir(state, who, c.dir));
       const l = len(d);
       const step = (C.dodge.distance * SUBPX) / C.dodge.ticks / l;
@@ -111,7 +108,7 @@ export function applyFighterCommand(state: SimState, who: EntityId, c: Command):
         f.aiming = -1;
         fire();
       } else if (c.phase === 'aim') {
-        if (tech.aimed) f.aiming = c.slot;
+        if (isAimed(tech)) f.aiming = c.slot;
         else fire();
       } else if (f.aiming === c.slot) {
         f.aiming = -1;
@@ -134,29 +131,4 @@ export function startComboStep(state: SimState, who: EntityId): void {
   if (startAttack(state, who, w.combo[step] as string, lockPoint(state, who))) {
     f.combo = (step + 1) % 3;
   }
-}
-
-/** Fires a technique from a slot, if it is off cooldown, affordable and the fighter is free. */
-function fireTechnique(state: SimState, who: EntityId, slot: number, aim: Direction | null): void {
-  const f = getComp(state.entities, who, 'fighter');
-  const techId = f?.slots[slot];
-  const tech = techId ? TECHNIQUES[techId] : undefined;
-  if (!f || !tech || !free(state, who)) return;
-  if ((f.cooldowns[slot] ?? 0) > 0) {
-    emit(state.events, { type: 'denied', id: who, reason: 'cooldown' });
-    return;
-  }
-  const me = centerPx(state, who);
-  const a = getComp(state.entities, who, 'avatar');
-  if (!me || !a) return;
-  // Aim: the held aim direction, else the lock, else the nearest foe in front, else facing.
-  let point = lockPoint(state, who);
-  if (aim !== null) {
-    const d = dirStep(aim);
-    point = { x: me.x + d.x * 100, y: me.y + d.y * 100 };
-  } else if (!point) {
-    const near = nearestInArc(state, who, dirStep(a.facing), 160, 0);
-    point = near === null ? null : centerPx(state, near);
-  }
-  if (startAttack(state, who, tech.attack, point, tech.id)) f.cooldowns[slot] = tech.cooldown;
 }

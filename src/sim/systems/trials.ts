@@ -1,4 +1,4 @@
-import { TECHNIQUES } from '../../content/combat/attacks';
+import { TECHNIQUES } from '../../content/combat/techniques';
 import { FIXTURES } from '../../content/world/fixtures';
 import { TRIALS } from '../../content/skills';
 import type { TrialDef, TrialObjective } from '../../content/skills/types';

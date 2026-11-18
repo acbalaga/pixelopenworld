@@ -125,6 +125,13 @@ export function statusSystem(state: SimState): void {
   for (const who of query(state.entities, 'statuses')) {
     const list = getComp(state.entities, who, 'statuses');
     if (!list) continue;
+    // Hiding ends with a strike or a blow taken.
+    if (hasStatus(state, who, 'hidden')) {
+      const fi = getComp(state.entities, who, 'fighter');
+      const hurt = state.events.list.some((e) => e.type === 'damageDealt' && e.dst === who);
+      if (fi && ((fi.state === 'attack' && fi.atk !== null) || hurt))
+        clearStatus(state, who, 'hidden');
+    }
     const dead = getComp(state.entities, who, 'fighter')?.state === 'dead';
     for (const st of [...list]) {
       const def = STATUSES[st.id as StatusId];
@@ -148,7 +155,16 @@ export function statusSystem(state: SimState): void {
         if (te.damage) drain(state, who, te.damage, st.src, `status.${def.id}`);
         if (te.heal) {
           const pools = getComp(state.entities, who, 'pools');
+          const before = pools?.hp ?? 0;
           if (pools) pools.hp = Math.min(pools.hpMax, pools.hp + te.heal);
+          if (pools && pools.hp > before)
+            emit(state.events, {
+              type: 'healed',
+              id: who,
+              src: st.src,
+              amount: pools.hp - before,
+              tag: def.id,
+            });
         }
       }
     }
