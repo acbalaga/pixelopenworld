@@ -14,6 +14,7 @@ import { validateCreatures } from './validateCreatures';
 import { validateRealItems } from './validateItems';
 import { validateDialogue } from './validateDialogue';
 import { validateReachability } from './validateReachability';
+import { validateRegions } from './validateRegions';
 
 /** Sprite, creature and spawner validation together. */
 function validateAll(): string[] {
@@ -27,6 +28,7 @@ function validateAll(): string[] {
     ...validateRealItems(new Set(SPRITES.map((s) => s.id))),
     ...validateDialogue(),
     ...validateReachability(),
+    ...validateRegions(),
   ];
 }
 

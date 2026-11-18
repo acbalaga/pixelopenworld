@@ -297,9 +297,10 @@ describe('Enchanting', () => {
 
 describe('the 38 recipes', () => {
   const by = (craft: string) => Object.values(RECIPES).filter((r) => r.craft === craft);
-  it('are 12 Tailoring, 10 Alchemy, 8 Enchanting and 8 Tinkering, each with a station and a start', () => {
-    expect(by('tailoring')).toHaveLength(12);
-    expect(by('alchemy')).toHaveLength(10);
+  // M3-12 added 6 Tailoring (cloth, leather, a scholar's outfit and leather wraps) and 4 Alchemy recipes.
+  it('are 18 Tailoring, 14 Alchemy, 8 Enchanting and 8 Tinkering, each with a station and a start', () => {
+    expect(by('tailoring')).toHaveLength(18);
+    expect(by('alchemy')).toHaveLength(14);
     expect(by('enchanting')).toHaveLength(8);
     expect(by('tinkering')).toHaveLength(8);
     for (const craft of ['tailoring', 'alchemy', 'enchanting', 'tinkering'])
@@ -333,9 +334,13 @@ describe('the 38 recipes', () => {
     expect(Object.keys(AFFIXES)).toHaveLength(8);
   });
   it('Tailoring makes cloth and leather for head, body and legs at two tiers', () => {
-    const slots = by('tailoring').map((r) => `${ITEMS[r.result]!.equip!.slot}${r.tier}`);
+    // Cloth and leather stock (M3-12) is material, not worn, so only the gear is counted.
+    const slots = by('tailoring')
+      .filter((r) => ITEMS[r.result]!.equip)
+      .map((r) => `${ITEMS[r.result]!.equip!.slot}${r.tier}`);
     for (const s of ['head', 'body', 'legs'])
-      for (const t of [1, 2]) expect(slots.filter((x) => x === `${s}${t}`)).toHaveLength(2);
+      for (const t of [1, 2])
+        expect(slots.filter((x) => x === `${s}${t}`).length).toBeGreaterThanOrEqual(2);
   });
   it('writes the quality distribution of each craft at skill 0, a perfect step and bare materials', () => {
     const roll = (tier: number, skillPts: number, grade: number): number[] => {

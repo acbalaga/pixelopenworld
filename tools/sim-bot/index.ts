@@ -29,6 +29,8 @@ const OUT = arg('--out') ?? 'reports/sim-bot.md';
 interface Thresholds {
   simBot: {
     timeTo15: [number, number];
+    /** The band for the gathering and crafting loops, which are meant to be slower than combat. */
+    timeTo15Slow: [number, number];
     /** Per policy: the XP per hour of its skill, and coin per hour, as [min, max]. */
     xpPerHour: Record<string, [number, number]>;
     coinPerHour: Record<string, [number, number]>;
@@ -130,6 +132,7 @@ for (const p of POLICIES) if (!only || p.id === only) results.push(await play(p)
 
 const name = (id: string): string => SKILLS[id]?.name ?? id;
 const th = thresholds.simBot;
+const bandOf = (p: Policy): [number, number] => (p.pace === 'slow' ? th.timeTo15Slow : th.timeTo15);
 const xpRows = results.flatMap((r) =>
   Object.entries(r.xpPerHour)
     .sort((a, b) => b[1] - a[1])
@@ -147,11 +150,11 @@ const coinRows = results.map(
 const timeRows = results
   .filter((r) => r.policy.skill)
   .map((r) => {
-    const [lo, hi] = th.timeTo15;
+    const [lo, hi] = bandOf(r.policy);
     const t = r.to15;
     return `| ${r.policy.label} | ${name(r.policy.skill as string)} | ${
       t === null ? `not in ${CAP}` : t.toFixed(1)
-    } | ${t !== null && t >= lo && t <= hi ? 'yes' : 'NO'} |`;
+    } | ${lo} to ${hi} | ${t !== null && t >= lo && t <= hi ? 'yes' : 'NO'} |`;
   });
 const flagged = results.flatMap((r) => r.flags.map((f) => `${r.policy.id} ${f}`));
 
@@ -164,10 +167,10 @@ Made by \`npm run sim-bot\` (POW-M3-12). Do not edit by hand. Four v1 policies d
 
 ## Time to rank 15
 
-"Time to 15" is when the skill has 14 points and a full bar: the next point waits on a Trial (design/03). The target is derived from the curve: \`4 h * xpTo(15) / xpTo(50)\`, about 27 minutes. The band is ${th.timeTo15[0]} to ${th.timeTo15[1]} minutes (M3-02).
+"Time to 15" is when the skill has 14 points and a full bar: the next point waits on a Trial (design/03). The target is derived from the curve: \`4 h * xpTo(15) / xpTo(50)\`, about 27 minutes. The band is ${th.timeTo15[0]} to ${th.timeTo15[1]} minutes (M3-02) for combat. Foraging and Cooking are slower on purpose, ${th.timeTo15Slow[0]} to ${th.timeTo15Slow[1]} minutes: on the first map they are paced by how fast the nodes come back, and the slow pace pays in kind (a large first-time bonus for every new herb and dish, and a sale price for what is made).
 
-| Loop | Skill | Minutes to 15 | In band |
-| --- | --- | --- | --- |
+| Loop | Skill | Minutes to 15 | Band | In band |
+| --- | --- | --- | --- | --- |
 ${timeRows.join('\n')}
 
 ## XP per hour, top four skills of each policy
@@ -205,9 +208,10 @@ if (flagged.length > th.maxFlags)
   bad.push(`${flagged.length} snapshots were flagged by the validator`);
 if (process.argv.includes('--check')) {
   for (const r of results) {
-    if (r.policy.skill && (r.to15 === null || r.to15 < th.timeTo15[0] || r.to15 > th.timeTo15[1]))
+    const [blo, bhi] = bandOf(r.policy);
+    if (r.policy.skill && (r.to15 === null || r.to15 < blo || r.to15 > bhi))
       bad.push(
-        `${r.policy.id}: time to 15 is ${r.to15?.toFixed(1) ?? 'never'}, outside ${th.timeTo15.join(' to ')}`,
+        `${r.policy.id}: time to 15 is ${r.to15?.toFixed(1) ?? 'never'}, outside ${blo} to ${bhi}`,
       );
     const [cl, ch] = th.coinPerHour[r.policy.id] ?? [0, Infinity];
     if (r.coinPerHour < cl || r.coinPerHour > ch)

@@ -14,6 +14,8 @@ export interface Build {
   kind: 'weapon' | 'magic';
   /** Main-hand weapon by tier (1, 2). Missing means bare hands. */
   weapon?: { 1?: string; 2?: string };
+  /** What the character carries besides bread, by tier: mages carry Focus potions. */
+  potion?: { 1: string; 2: string };
   /** Spells to learn and slot, best first, by tier. The harness casts the first affordable one. */
   spells?: { 1: string[]; 2: string[] };
 }
@@ -38,27 +40,30 @@ export const BUILDS: readonly Build[] = [
     label: 'Heavy Arms (maul)',
     skill: 'skill.heavy',
     kind: 'weapon',
-    weapon: { 1: 'item.maul_oak', 2: 'item.maul_oak' },
+    weapon: { 1: 'item.maul_oak', 2: 'item.maul_iron' },
   },
   {
     id: 'archery',
-    label: 'Archery (short bow)',
+    label: 'Archery (bow)',
     skill: 'skill.archery',
     kind: 'weapon',
-    weapon: { 1: 'item.bow_short', 2: 'item.bow_short' },
+    weapon: { 1: 'item.bow_short', 2: 'item.bow_long' },
   },
   {
     id: 'unarmed',
     label: 'Unarmed (cloth wraps)',
     skill: 'skill.unarmed',
     kind: 'weapon',
-    weapon: { 1: 'item.wraps_cloth', 2: 'item.wraps_cloth' },
+    weapon: { 1: 'item.wraps_cloth', 2: 'item.wraps_leather' },
   },
   {
     id: 'ember',
     label: 'Ember (fire)',
     skill: 'skill.ember',
     kind: 'magic',
+    // Spell power follows the weapon in hand (no focus orb exists yet), so a mage carries a blade.
+    weapon: { 1: 'item.sword_rusty', 2: 'item.sword_iron' },
+    potion: { 1: 'item.potion_focus', 2: 'item.potion_focus_m' },
     spells: {
       1: ['technique.ember_bolt'],
       2: ['technique.ember_flame_ring', 'technique.ember_bolt'],
@@ -69,6 +74,9 @@ export const BUILDS: readonly Build[] = [
     label: 'Tide (water)',
     skill: 'skill.tide',
     kind: 'magic',
+    // Spell power follows the weapon in hand (no focus orb exists yet), so a mage carries a blade.
+    weapon: { 1: 'item.sword_rusty', 2: 'item.sword_iron' },
+    potion: { 1: 'item.potion_focus', 2: 'item.potion_focus_m' },
     spells: {
       1: ['technique.tide_splash'],
       2: ['technique.tide_undertow', 'technique.tide_splash'],
@@ -79,6 +87,18 @@ export const BUILDS: readonly Build[] = [
     label: 'Stone (earth)',
     skill: 'skill.stone',
     kind: 'magic',
+    // Spell power follows the weapon in hand (no focus orb exists yet), so a mage carries a blade.
+    weapon: { 1: 'item.sword_rusty', 2: 'item.sword_iron' },
+    potion: { 1: 'item.potion_focus', 2: 'item.potion_focus_m' },
     spells: { 1: ['technique.stone_fist'], 2: ['technique.stone_fist'] },
   },
 ];
+
+/**
+ * What every build wears: nothing at tier 1 (a new character has no armor), and head, body and
+ * legs of iron at tier 2, which is what the first map is meant to lead to.
+ */
+export const ARMOR: Record<1 | 2, string[]> = {
+  1: [],
+  2: ['item.helm_iron', 'item.cuirass_iron', 'item.greaves_iron'],
+};

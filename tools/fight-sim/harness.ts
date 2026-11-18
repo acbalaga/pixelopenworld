@@ -9,7 +9,7 @@ import type { Direction } from '../../src/sim/kernel/fixed';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { recomputePools } from '../../src/sim/skills';
 import { stepWorld } from '../../src/sim/step';
-import type { Build } from './builds';
+import { ARMOR, type Build } from './builds';
 
 export const TPS = 30;
 const OPEN = {
@@ -50,6 +50,15 @@ function dress(s: SimState, me: number, build: Build, tier: 1 | 2, rank: number)
       inv.slots.findIndex((x) => x?.item === weapon),
     );
   }
+  for (const piece of ARMOR[tier]) {
+    give(s, me, piece, 1, 'start');
+    const inv = s.entities.comps.inventory[me]!;
+    equip(
+      s,
+      me,
+      inv.slots.findIndex((x) => x?.item === piece),
+    );
+  }
   const spells = build.spells?.[tier] ?? [];
   spells.forEach((id, i) => {
     const t = TECHNIQUES[id]!;
@@ -67,10 +76,11 @@ function dress(s: SimState, me: number, build: Build, tier: 1 | 2, rank: number)
 }
 
 /**
- * One headless fight on the real sim: the avatar at (30, 30) facing east, the creature one tile
- * east. The policy is the plain one a player learns first: swing every tick, cast the best spell
- * that is affordable and off cooldown, dodge on a fixed rhythm. It is the same for every build,
- * so the numbers compare builds, not policies.
+ * One headless fight on the real sim: the avatar at (30, 30) facing east, `count` creatures
+ * standing a tile or so away in a column. The policy is the plain one a player learns first: lock
+ * the nearest, close in, swing, cast the best affordable spell, eat when hurt, and dodge a blow
+ * as its telegraph runs out (the avatar is invulnerable for the last frames of a dodge). It is the
+ * same for every build, so the numbers compare builds, not policies.
  */
 export function fight(
   build: Build,
@@ -78,6 +88,7 @@ export function fight(
   rank: number,
   creature: string,
   seed: number,
+  count = 1,
 ): FightResult {
   const s = createDemoState(seed, 0);
   s.world = OPEN;
@@ -91,12 +102,18 @@ export function fight(
   tick({ type: 'move', dir: null });
   const spells = dress(s, me, build, tier, rank);
   give(s, me, FOOD, 6, 'start');
-  // The seed varies how the fight starts: how far the creature stands (14 to 22 px) and how long
+  const potion = build.potion?.[tier];
+  if (potion) give(s, me, potion, 6, 'start');
+  // The seed varies how the fight starts: how far the creatures stand (14 to 22 px) and how long
   // the player waits before the first swing (0 to 9 ticks), so a run is a spread, not one number.
   const j = Math.imul(seed ^ 0x9e3779b9, 2654435761) >>> 0;
   const gap = 14 + (j % 9);
   const wait = (j >>> 8) % 10;
-  const foe = spawnCreature(s, creature, 30 * 16 + 8 + gap, 30 * 16 + 14, -1);
+  const foes: number[] = [];
+  for (let k = 0; k < count; k++) {
+    const dy = (k - (count - 1) / 2) * 20;
+    foes.push(spawnCreature(s, creature, 30 * 16 + 8 + gap + (k % 2) * 10, 30 * 16 + 14 + dy, -1));
+  }
   for (let i = 0; i < wait; i++) tick();
   const pools = s.entities.comps.pools[me]!;
   const startHp = pools.hp;
@@ -113,12 +130,17 @@ export function fight(
     const a = ATTACKS[TECHNIQUES[id]?.attack ?? ''];
     return a?.projectile ? a.projectile.speed * a.projectile.ttl : 90;
   };
-  const engage =
-    build.kind === 'magic'
-      ? Math.min(90, Math.min(...spells.map(reachOf)) * 0.7)
-      : weapon?.family === 'archery'
-        ? 90
-        : (weapon?.reach ?? 20) * 0.85;
+  // How far a spell can touch: a projectile's flight, or the reach of its shape around the avatar.
+  const spellReach = (id: string): number => {
+    const a = ATTACKS[TECHNIQUES[id]?.attack ?? ''];
+    if (a?.projectile) return a.projectile.speed * a.projectile.ttl;
+    const shape = a?.shape as { reach?: number } | undefined;
+    return (shape?.reach ?? 24) + 16;
+  };
+  // Where a blow lands, and where a spell is cast from. A mage closes to the spell's distance
+  // while a spell is ready and affordable, and to the blade's reach when it is not.
+  const meleeEngage = (weapon?.family === 'archery' ? 90 : (weapon?.reach ?? 20)) * 0.85;
+  const spellEngage = Math.min(90, Math.min(...spells.map(reachOf), 90) * 0.7);
   let ttk: number | null = null;
   let died = false;
   let eaten = 0;
@@ -127,9 +149,14 @@ export function fight(
     const p = s.entities.comps.pos[id]!;
     return { x: p.x / 256, y: p.y / 256 };
   };
+  // An id can be reused by a drop once a creature is gone, so it must still be that creature.
+  const alive = (id: number): boolean =>
+    s.entities.alive[id] === true &&
+    s.entities.comps.combatant[id]?.kind === creature &&
+    s.entities.comps.fighter[id]?.state !== 'dead';
   for (let i = 0; i < max; i++) {
-    const foeDead = !s.entities.alive[foe] || s.entities.comps.fighter[foe]?.state === 'dead';
-    if (foeDead) {
+    const live = foes.filter(alive);
+    if (live.length === 0) {
       ttk = (s.tick - t0) / TPS;
       break;
     }
@@ -139,13 +166,35 @@ export function fight(
     }
     const cmds: Command[] = [];
     const mp = here(me);
+    // The nearest creature is the one fought.
+    let foe = live[0] as number;
+    let best = Infinity;
+    for (const id of live) {
+      const p = here(id);
+      const d = Math.hypot(p.x - mp.x, p.y - mp.y);
+      if (d < best) {
+        best = d;
+        foe = id;
+      }
+    }
     const fp = here(foe);
     const dx = fp.x - mp.x;
     const dy = fp.y - mp.y;
-    const dist = Math.hypot(dx, dy);
-    // Keep the foe locked, so swings and shots turn to it.
-    if (i % 15 === 0 || s.entities.comps.fighter[me]?.lock == null)
+    const dist = best;
+    if (i % 15 === 0 || s.entities.comps.fighter[me]?.lock !== foe)
       cmds.push({ type: 'lock', x: Math.round(fp.x), y: Math.round(fp.y - 6) });
+    // Drink a Focus potion when a spell is wanted and Focus has run out, as a mage does.
+    if (
+      potion &&
+      i % 20 === 0 &&
+      pools.foc < Math.min(...spells.map((id) => TECHNIQUES[id]?.cost?.amount ?? 0))
+    ) {
+      const slot = s.entities.comps.inventory[me]!.slots.findIndex((x) => x?.item === potion);
+      if (slot >= 0) {
+        cmds.push({ type: 'use', slot });
+        eaten++;
+      }
+    }
     // Eat when hurt, the way a player does, from a pack of bread.
     if (pools.hp < 40 && i % 30 === 0) {
       const slot = s.entities.comps.inventory[me]!.slots.findIndex((x) => x?.item === FOOD);
@@ -154,21 +203,55 @@ export function fight(
         eaten++;
       }
     }
-    // Close the distance; stop at the engaging distance.
     const toward = dirToward(dx, dy);
-    cmds.push({ type: 'move', dir: dist > engage ? toward : null });
-    const cast = spells.find((id) => {
-      const t = TECHNIQUES[id]!;
-      return (cd.get(id) ?? 0) <= s.tick && t.cost?.pool === 'foc' && pools.foc >= t.cost.amount;
-    });
-    if (cast && dist <= engage + 20) {
-      cmds.push({ type: 'technique', slot: spells.indexOf(cast) + 1, phase: 'press', aim: toward });
-      cd.set(cast, s.tick + (TECHNIQUES[cast]!.cooldown ?? 0));
-    } else if (dist <= engage + 6) {
-      cmds.push({ type: 'attack' });
+    // Read the nearest creature's telegraph, as a player watches the one in front. The dodge
+    // starts a little early or late: a player's reaction is not exact. The avatar is invulnerable
+    // for the first frames of a dodge, so one begun inside the last 5 ticks of the wind-up avoids
+    // the blow, and one begun earlier or after it does not.
+    let dodge = false;
+    {
+      const fi = s.entities.comps.fighter[foe];
+      const def = fi?.atk ? ATTACKS[fi.atk] : undefined;
+      if (fi && fi.state === 'attack' && def && dist <= 130) {
+        const left = def.windup - fi.t;
+        const started = s.tick - fi.t;
+        const noise = (Math.imul((seed * 31 + foe) ^ started, 2654435761) >>> 0) % 10;
+        const threshold = 3 + noise - 4;
+        if (left >= 0 && left <= threshold) dodge = true;
+      }
     }
-    // Dodge on a fixed rhythm, as a player does at a telegraph.
-    if (i % 60 === 40) cmds.push({ type: 'dodge', dir: null });
+    if (dodge) {
+      // Sideways to the line of the blow, so a charge goes past.
+      cmds.push({ type: 'dodge', dir: ((toward + 2) % 8) as Direction });
+    } else {
+      const ready = spells.some((id) => {
+        const t = TECHNIQUES[id]!;
+        return (cd.get(id) ?? 0) <= s.tick && t.cost?.pool === 'foc' && pools.foc >= t.cost.amount;
+      });
+      const engage = build.kind === 'magic' && ready ? spellEngage : meleeEngage;
+      cmds.push({ type: 'move', dir: dist > engage ? toward : null });
+      // A spell is cast only when it is ready, affordable and can reach the creature.
+      const cast = spells.find((id) => {
+        const t = TECHNIQUES[id]!;
+        return (
+          (cd.get(id) ?? 0) <= s.tick &&
+          t.cost?.pool === 'foc' &&
+          pools.foc >= t.cost.amount &&
+          dist <= spellReach(id)
+        );
+      });
+      if (cast && dist <= engage + 20) {
+        cmds.push({
+          type: 'technique',
+          slot: spells.indexOf(cast) + 1,
+          phase: 'press',
+          aim: toward,
+        });
+        cd.set(cast, s.tick + (TECHNIQUES[cast]!.cooldown ?? 0));
+      } else if (dist <= meleeEngage + 14) {
+        cmds.push({ type: 'attack' });
+      }
+    }
     tick(...cmds);
     if (pools.sta < sta) staSpent += sta - pools.sta;
     if (pools.foc < foc) focSpent += foc - pools.foc;

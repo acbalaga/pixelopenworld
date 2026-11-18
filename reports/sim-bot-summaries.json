@@ -7,9 +7,9 @@
     "playSeconds": 8,
     "coin": 0,
     "skillPoints": {
-     "skill.foraging": 2
+     "skill.foraging": 1
     },
-    "totalSkillPoints": 2,
+    "totalSkillPoints": 1,
     "itemCount": 5,
     "requestsDone": 0,
     "flags": 0
@@ -22,9 +22,9 @@
     "playSeconds": 73,
     "coin": 0,
     "skillPoints": {
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 6,
+    "totalSkillPoints": 5,
     "itemCount": 17,
     "requestsDone": 0,
     "flags": 0
@@ -37,9 +37,9 @@
     "playSeconds": 139,
     "coin": 24,
     "skillPoints": {
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 6,
+    "totalSkillPoints": 5,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -52,9 +52,9 @@
     "playSeconds": 205,
     "coin": 24,
     "skillPoints": {
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 6,
+    "totalSkillPoints": 5,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -67,9 +67,9 @@
     "playSeconds": 270,
     "coin": 40,
     "skillPoints": {
-     "skill.foraging": 8
+     "skill.foraging": 7
     },
-    "totalSkillPoints": 8,
+    "totalSkillPoints": 7,
     "itemCount": 4,
     "requestsDone": 0,
     "flags": 0
@@ -82,9 +82,9 @@
     "playSeconds": 336,
     "coin": 45,
     "skillPoints": {
-     "skill.foraging": 9
+     "skill.foraging": 7
     },
-    "totalSkillPoints": 9,
+    "totalSkillPoints": 7,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -97,9 +97,9 @@
     "playSeconds": 402,
     "coin": 45,
     "skillPoints": {
-     "skill.foraging": 9
+     "skill.foraging": 7
     },
-    "totalSkillPoints": 9,
+    "totalSkillPoints": 7,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -112,9 +112,9 @@
     "playSeconds": 467,
     "coin": 45,
     "skillPoints": {
-     "skill.foraging": 10
+     "skill.foraging": 8
     },
-    "totalSkillPoints": 10,
+    "totalSkillPoints": 8,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -127,9 +127,9 @@
     "playSeconds": 533,
     "coin": 57,
     "skillPoints": {
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 9,
     "itemCount": 9,
     "requestsDone": 0,
     "flags": 0
@@ -142,9 +142,9 @@
     "playSeconds": 598,
     "coin": 66,
     "skillPoints": {
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 9,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -157,9 +157,9 @@
     "playSeconds": 664,
     "coin": 82,
     "skillPoints": {
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 9,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -172,9 +172,9 @@
     "playSeconds": 730,
     "coin": 82,
     "skillPoints": {
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 9,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -187,9 +187,9 @@
     "playSeconds": 795,
     "coin": 82,
     "skillPoints": {
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 7,
     "requestsDone": 0,
     "flags": 0
@@ -202,9 +202,9 @@
     "playSeconds": 861,
     "coin": 87,
     "skillPoints": {
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -217,9 +217,9 @@
     "playSeconds": 927,
     "coin": 103,
     "skillPoints": {
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -232,9 +232,9 @@
     "playSeconds": 992,
     "coin": 103,
     "skillPoints": {
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -247,9 +247,9 @@
     "playSeconds": 1058,
     "coin": 103,
     "skillPoints": {
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 13,
     "requestsDone": 0,
     "flags": 0
@@ -262,9 +262,9 @@
     "playSeconds": 1124,
     "coin": 119,
     "skillPoints": {
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 8,
     "requestsDone": 0,
     "flags": 0
@@ -277,9 +277,9 @@
     "playSeconds": 1189,
     "coin": 125,
     "skillPoints": {
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 2,
     "requestsDone": 0,
     "flags": 0
@@ -292,9 +292,9 @@
     "playSeconds": 1255,
     "coin": 125,
     "skillPoints": {
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -307,9 +307,9 @@
     "playSeconds": 1321,
     "coin": 130,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -322,9 +322,9 @@
     "playSeconds": 1386,
     "coin": 130,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -337,9 +337,9 @@
     "playSeconds": 1452,
     "coin": 130,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 13,
     "requestsDone": 0,
     "flags": 0
@@ -352,9 +352,9 @@
     "playSeconds": 1517,
     "coin": 140,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 19,
     "requestsDone": 0,
     "flags": 0
@@ -367,9 +367,9 @@
     "playSeconds": 1583,
     "coin": 140,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 19,
     "requestsDone": 0,
     "flags": 0
@@ -382,9 +382,9 @@
     "playSeconds": 1649,
     "coin": 145,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 16,
     "requestsDone": 0,
     "flags": 0
@@ -397,9 +397,9 @@
     "playSeconds": 1714,
     "coin": 145,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 22,
     "requestsDone": 0,
     "flags": 0
@@ -412,9 +412,9 @@
     "playSeconds": 1780,
     "coin": 145,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 28,
     "requestsDone": 0,
     "flags": 0
@@ -427,9 +427,9 @@
     "playSeconds": 1846,
     "coin": 151,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 25,
     "requestsDone": 0,
     "flags": 0
@@ -442,9 +442,9 @@
     "playSeconds": 1911,
     "coin": 151,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 33,
     "requestsDone": 0,
     "flags": 0
@@ -457,9 +457,9 @@
     "playSeconds": 1977,
     "coin": 157,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 27,
     "requestsDone": 0,
     "flags": 0
@@ -472,9 +472,9 @@
     "playSeconds": 2043,
     "coin": 157,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 32,
     "requestsDone": 0,
     "flags": 0
@@ -487,9 +487,9 @@
     "playSeconds": 2108,
     "coin": 162,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 33,
     "requestsDone": 0,
     "flags": 0
@@ -502,9 +502,9 @@
     "playSeconds": 2174,
     "coin": 162,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 33,
     "requestsDone": 0,
     "flags": 0
@@ -517,9 +517,9 @@
     "playSeconds": 2240,
     "coin": 166,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 13,
     "itemCount": 33,
     "requestsDone": 0,
     "flags": 0
@@ -1629,9 +1629,9 @@
     "playSeconds": 8,
     "coin": 0,
     "skillPoints": {
-     "skill.foraging": 2
+     "skill.foraging": 1
     },
-    "totalSkillPoints": 2,
+    "totalSkillPoints": 1,
     "itemCount": 4,
     "requestsDone": 0,
     "flags": 0
@@ -1644,10 +1644,10 @@
     "playSeconds": 75,
     "coin": 0,
     "skillPoints": {
-     "skill.foraging": 6,
-     "skill.cooking": 3
+     "skill.foraging": 5,
+     "skill.cooking": 2
     },
-    "totalSkillPoints": 9,
+    "totalSkillPoints": 7,
     "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
@@ -1660,10 +1660,10 @@
     "playSeconds": 140,
     "coin": 10,
     "skillPoints": {
-     "skill.foraging": 6,
-     "skill.cooking": 3
+     "skill.foraging": 5,
+     "skill.cooking": 2
     },
-    "totalSkillPoints": 9,
+    "totalSkillPoints": 7,
     "itemCount": 8,
     "requestsDone": 0,
     "flags": 0
@@ -1676,10 +1676,10 @@
     "playSeconds": 206,
     "coin": 10,
     "skillPoints": {
-     "skill.foraging": 6,
-     "skill.cooking": 3
+     "skill.foraging": 5,
+     "skill.cooking": 2
     },
-    "totalSkillPoints": 9,
+    "totalSkillPoints": 7,
     "itemCount": 8,
     "requestsDone": 0,
     "flags": 0
@@ -1692,10 +1692,10 @@
     "playSeconds": 267,
     "coin": 35,
     "skillPoints": {
-     "skill.foraging": 8,
-     "skill.cooking": 8
+     "skill.foraging": 7,
+     "skill.cooking": 6
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 13,
     "itemCount": 8,
     "requestsDone": 0,
     "flags": 0
@@ -1708,10 +1708,10 @@
     "playSeconds": 333,
     "coin": 35,
     "skillPoints": {
-     "skill.foraging": 9,
-     "skill.cooking": 8
+     "skill.foraging": 7,
+     "skill.cooking": 6
     },
-    "totalSkillPoints": 17,
+    "totalSkillPoints": 13,
     "itemCount": 11,
     "requestsDone": 0,
     "flags": 0
@@ -1724,10 +1724,10 @@
     "playSeconds": 398,
     "coin": 35,
     "skillPoints": {
-     "skill.foraging": 9,
-     "skill.cooking": 8
+     "skill.foraging": 7,
+     "skill.cooking": 6
     },
-    "totalSkillPoints": 17,
+    "totalSkillPoints": 13,
     "itemCount": 11,
     "requestsDone": 0,
     "flags": 0
@@ -1740,10 +1740,10 @@
     "playSeconds": 459,
     "coin": 35,
     "skillPoints": {
-     "skill.foraging": 10,
-     "skill.cooking": 10
+     "skill.foraging": 8,
+     "skill.cooking": 8
     },
-    "totalSkillPoints": 20,
+    "totalSkillPoints": 16,
     "itemCount": 13,
     "requestsDone": 0,
     "flags": 0
@@ -1754,13 +1754,13 @@
    "summary": {
     "tick": 15756,
     "playSeconds": 525,
-    "coin": 46,
+    "coin": 51,
     "skillPoints": {
-     "skill.foraging": 10,
-     "skill.cooking": 10
+     "skill.foraging": 8,
+     "skill.cooking": 8
     },
-    "totalSkillPoints": 20,
-    "itemCount": 13,
+    "totalSkillPoints": 16,
+    "itemCount": 12,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1768,14 +1768,14 @@
   {
    "minute": 10,
    "summary": {
-    "tick": 17726,
+    "tick": 17725,
     "playSeconds": 590,
-    "coin": 62,
+    "coin": 61,
     "skillPoints": {
-     "skill.foraging": 10,
-     "skill.cooking": 10
+     "skill.foraging": 8,
+     "skill.cooking": 8
     },
-    "totalSkillPoints": 20,
+    "totalSkillPoints": 16,
     "itemCount": 12,
     "requestsDone": 0,
     "flags": 0
@@ -1784,14 +1784,14 @@
   {
    "minute": 11,
    "summary": {
-    "tick": 19532,
+    "tick": 19531,
     "playSeconds": 651,
-    "coin": 62,
+    "coin": 61,
     "skillPoints": {
-     "skill.foraging": 11,
-     "skill.cooking": 11
+     "skill.foraging": 9,
+     "skill.cooking": 9
     },
-    "totalSkillPoints": 22,
+    "totalSkillPoints": 18,
     "itemCount": 12,
     "requestsDone": 0,
     "flags": 0
@@ -1800,15 +1800,15 @@
   {
    "minute": 12,
    "summary": {
-    "tick": 21501,
+    "tick": 21500,
     "playSeconds": 716,
-    "coin": 74,
+    "coin": 81,
     "skillPoints": {
-     "skill.foraging": 11,
-     "skill.cooking": 11
+     "skill.foraging": 9,
+     "skill.cooking": 9
     },
-    "totalSkillPoints": 22,
-    "itemCount": 12,
+    "totalSkillPoints": 18,
+    "itemCount": 10,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1816,14 +1816,14 @@
   {
    "minute": 13,
    "summary": {
-    "tick": 23533,
+    "tick": 23531,
     "playSeconds": 784,
-    "coin": 84,
+    "coin": 81,
     "skillPoints": {
-     "skill.foraging": 12,
-     "skill.cooking": 12
+     "skill.foraging": 10,
+     "skill.cooking": 10
     },
-    "totalSkillPoints": 24,
+    "totalSkillPoints": 20,
     "itemCount": 13,
     "requestsDone": 0,
     "flags": 0
@@ -1832,14 +1832,14 @@
   {
    "minute": 14,
    "summary": {
-    "tick": 25565,
+    "tick": 25563,
     "playSeconds": 852,
-    "coin": 90,
+    "coin": 87,
     "skillPoints": {
-     "skill.foraging": 12,
-     "skill.cooking": 13
+     "skill.foraging": 10,
+     "skill.cooking": 10
     },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 20,
     "itemCount": 12,
     "requestsDone": 0,
     "flags": 0
@@ -1848,14 +1848,14 @@
   {
    "minute": 15,
    "summary": {
-    "tick": 27536,
+    "tick": 27534,
     "playSeconds": 917,
-    "coin": 115,
+    "coin": 113,
     "skillPoints": {
-     "skill.foraging": 12,
-     "skill.cooking": 13
+     "skill.foraging": 10,
+     "skill.cooking": 10
     },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 20,
     "itemCount": 14,
     "requestsDone": 0,
     "flags": 0
@@ -1864,14 +1864,14 @@
   {
    "minute": 16,
    "summary": {
-    "tick": 29504,
+    "tick": 29502,
     "playSeconds": 983,
-    "coin": 115,
+    "coin": 113,
     "skillPoints": {
-     "skill.foraging": 12,
-     "skill.cooking": 13
+     "skill.foraging": 10,
+     "skill.cooking": 10
     },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 20,
     "itemCount": 14,
     "requestsDone": 0,
     "flags": 0
@@ -1880,31 +1880,31 @@
   {
    "minute": 17,
    "summary": {
-    "tick": 31473,
+    "tick": 31471,
     "playSeconds": 1049,
-    "coin": 115,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 13,
-     "skill.cooking": 13
+     "skill.foraging": 11,
+     "skill.cooking": 10
     },
-    "totalSkillPoints": 26,
-    "itemCount": 22,
+    "totalSkillPoints": 21,
+    "itemCount": 21,
     "requestsDone": 0,
     "flags": 0
    }
   },
   {
-   "minute": 19,
+   "minute": 18,
    "summary": {
-    "tick": 33301,
-    "playSeconds": 1110,
-    "coin": 125,
+    "tick": 33299,
+    "playSeconds": 1109,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 13,
-     "skill.cooking": 13
+     "skill.foraging": 11,
+     "skill.cooking": 11
     },
-    "totalSkillPoints": 26,
-    "itemCount": 20,
+    "totalSkillPoints": 22,
+    "itemCount": 21,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1912,15 +1912,15 @@
   {
    "minute": 20,
    "summary": {
-    "tick": 35270,
+    "tick": 35268,
     "playSeconds": 1175,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 13,
-     "skill.cooking": 13
+     "skill.foraging": 11,
+     "skill.cooking": 11
     },
-    "totalSkillPoints": 26,
-    "itemCount": 20,
+    "totalSkillPoints": 22,
+    "itemCount": 21,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1928,15 +1928,15 @@
   {
    "minute": 21,
    "summary": {
-    "tick": 37238,
+    "tick": 37236,
     "playSeconds": 1241,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 13,
-     "skill.cooking": 13
+     "skill.foraging": 11,
+     "skill.cooking": 11
     },
-    "totalSkillPoints": 26,
-    "itemCount": 20,
+    "totalSkillPoints": 22,
+    "itemCount": 21,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1944,15 +1944,15 @@
   {
    "minute": 22,
    "summary": {
-    "tick": 39129,
+    "tick": 39127,
     "playSeconds": 1304,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 12
     },
-    "totalSkillPoints": 28,
-    "itemCount": 22,
+    "totalSkillPoints": 24,
+    "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1960,15 +1960,15 @@
   {
    "minute": 23,
    "summary": {
-    "tick": 41099,
+    "tick": 41097,
     "playSeconds": 1369,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 12
     },
-    "totalSkillPoints": 28,
-    "itemCount": 22,
+    "totalSkillPoints": 24,
+    "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1976,15 +1976,15 @@
   {
    "minute": 24,
    "summary": {
-    "tick": 43069,
+    "tick": 43067,
     "playSeconds": 1435,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 12
     },
-    "totalSkillPoints": 28,
-    "itemCount": 22,
+    "totalSkillPoints": 24,
+    "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
    }
@@ -1992,15 +1992,15 @@
   {
    "minute": 25,
    "summary": {
-    "tick": 44896,
+    "tick": 44894,
     "playSeconds": 1496,
-    "coin": 125,
+    "coin": 118,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
-    "itemCount": 22,
+    "totalSkillPoints": 25,
+    "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2008,15 +2008,15 @@
   {
    "minute": 26,
    "summary": {
-    "tick": 46930,
+    "tick": 46928,
     "playSeconds": 1564,
-    "coin": 133,
+    "coin": 139,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
-    "itemCount": 24,
+    "totalSkillPoints": 25,
+    "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2024,14 +2024,14 @@
   {
    "minute": 27,
    "summary": {
-    "tick": 48901,
-    "playSeconds": 1630,
-    "coin": 142,
+    "tick": 48899,
+    "playSeconds": 1629,
+    "coin": 139,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 25,
     "itemCount": 23,
     "requestsDone": 0,
     "flags": 0
@@ -2040,14 +2040,14 @@
   {
    "minute": 28,
    "summary": {
-    "tick": 50872,
+    "tick": 50870,
     "playSeconds": 1695,
-    "coin": 142,
+    "coin": 139,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 25,
     "itemCount": 29,
     "requestsDone": 0,
     "flags": 0
@@ -2056,15 +2056,15 @@
   {
    "minute": 29,
    "summary": {
-    "tick": 52843,
+    "tick": 52841,
     "playSeconds": 1761,
-    "coin": 142,
+    "coin": 148,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 12,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
-    "itemCount": 31,
+    "totalSkillPoints": 25,
+    "itemCount": 30,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2072,15 +2072,15 @@
   {
    "minute": 30,
    "summary": {
-    "tick": 54670,
+    "tick": 54668,
     "playSeconds": 1822,
-    "coin": 142,
+    "coin": 148,
     "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.foraging": 13,
+     "skill.cooking": 13
     },
-    "totalSkillPoints": 28,
-    "itemCount": 31,
+    "totalSkillPoints": 26,
+    "itemCount": 30,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2088,15 +2088,15 @@
   {
    "minute": 31,
    "summary": {
-    "tick": 56683,
+    "tick": 56681,
     "playSeconds": 1889,
-    "coin": 142,
+    "coin": 148,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 31,
+    "totalSkillPoints": 27,
+    "itemCount": 30,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2104,15 +2104,15 @@
   {
    "minute": 32,
    "summary": {
-    "tick": 58492,
+    "tick": 58490,
     "playSeconds": 1949,
-    "coin": 150,
+    "coin": 156,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 31,
+    "totalSkillPoints": 27,
+    "itemCount": 30,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2120,15 +2120,15 @@
   {
    "minute": 34,
    "summary": {
-    "tick": 60463,
+    "tick": 60461,
     "playSeconds": 2015,
-    "coin": 150,
+    "coin": 156,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 31,
+    "totalSkillPoints": 27,
+    "itemCount": 30,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2136,15 +2136,15 @@
   {
    "minute": 35,
    "summary": {
-    "tick": 62431,
-    "playSeconds": 2081,
-    "coin": 150,
+    "tick": 62429,
+    "playSeconds": 2080,
+    "coin": 156,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 36,
+    "totalSkillPoints": 27,
+    "itemCount": 35,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2152,15 +2152,15 @@
   {
    "minute": 36,
    "summary": {
-    "tick": 64240,
+    "tick": 64238,
     "playSeconds": 2141,
-    "coin": 150,
+    "coin": 156,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 40,
+    "totalSkillPoints": 27,
+    "itemCount": 39,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2168,15 +2168,15 @@
   {
    "minute": 37,
    "summary": {
-    "tick": 66211,
-    "playSeconds": 2207,
-    "coin": 158,
+    "tick": 66209,
+    "playSeconds": 2206,
+    "coin": 168,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 39,
+    "totalSkillPoints": 27,
+    "itemCount": 37,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2184,15 +2184,15 @@
   {
    "minute": 38,
    "summary": {
-    "tick": 68224,
+    "tick": 68222,
     "playSeconds": 2274,
-    "coin": 158,
+    "coin": 168,
     "skillPoints": {
-     "skill.foraging": 14,
+     "skill.foraging": 13,
      "skill.cooking": 14
     },
-    "totalSkillPoints": 28,
-    "itemCount": 39,
+    "totalSkillPoints": 27,
+    "itemCount": 37,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2200,15 +2200,15 @@
   {
    "minute": 39,
    "summary": {
-    "tick": 70258,
+    "tick": 70256,
     "playSeconds": 2341,
-    "coin": 158,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14
     },
     "totalSkillPoints": 28,
-    "itemCount": 46,
+    "itemCount": 43,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2216,15 +2216,15 @@
   {
    "minute": 40,
    "summary": {
-    "tick": 72226,
+    "tick": 72224,
     "playSeconds": 2407,
-    "coin": 158,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14
     },
     "totalSkillPoints": 28,
-    "itemCount": 46,
+    "itemCount": 43,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2232,15 +2232,15 @@
   {
    "minute": 41,
    "summary": {
-    "tick": 74197,
+    "tick": 74195,
     "playSeconds": 2473,
-    "coin": 158,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14
     },
     "totalSkillPoints": 28,
-    "itemCount": 46,
+    "itemCount": 43,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2248,9 +2248,25 @@
   {
    "minute": 42,
    "summary": {
-    "tick": 76048,
+    "tick": 76046,
     "playSeconds": 2534,
-    "coin": 158,
+    "coin": 174,
+    "skillPoints": {
+     "skill.foraging": 14,
+     "skill.cooking": 14
+    },
+    "totalSkillPoints": 28,
+    "itemCount": 44,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 43,
+   "summary": {
+    "tick": 78038,
+    "playSeconds": 2601,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14
@@ -2262,34 +2278,18 @@
    }
   },
   {
-   "minute": 43,
-   "summary": {
-    "tick": 78040,
-    "playSeconds": 2601,
-    "coin": 158,
-    "skillPoints": {
-     "skill.foraging": 14,
-     "skill.cooking": 14
-    },
-    "totalSkillPoints": 28,
-    "itemCount": 50,
-    "requestsDone": 0,
-    "flags": 0
-   }
-  },
-  {
    "minute": 44,
    "summary": {
-    "tick": 80008,
+    "tick": 80006,
     "playSeconds": 2666,
-    "coin": 158,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 50,
+    "itemCount": 47,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2297,16 +2297,16 @@
   {
    "minute": 46,
    "summary": {
-    "tick": 82000,
+    "tick": 81998,
     "playSeconds": 2733,
-    "coin": 188,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 46,
+    "itemCount": 48,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2314,16 +2314,16 @@
   {
    "minute": 47,
    "summary": {
-    "tick": 83851,
-    "playSeconds": 2795,
-    "coin": 188,
+    "tick": 83849,
+    "playSeconds": 2794,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 51,
+    "itemCount": 53,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2331,16 +2331,16 @@
   {
    "minute": 48,
    "summary": {
-    "tick": 85822,
+    "tick": 85820,
     "playSeconds": 2860,
-    "coin": 188,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 51,
+    "itemCount": 53,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2348,16 +2348,16 @@
   {
    "minute": 49,
    "summary": {
-    "tick": 87793,
+    "tick": 87791,
     "playSeconds": 2926,
-    "coin": 198,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 49,
+    "itemCount": 53,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2365,16 +2365,16 @@
   {
    "minute": 50,
    "summary": {
-    "tick": 89824,
+    "tick": 89822,
     "playSeconds": 2994,
-    "coin": 198,
+    "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 54,
+    "itemCount": 58,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2382,16 +2382,16 @@
   {
    "minute": 51,
    "summary": {
-    "tick": 91794,
+    "tick": 91793,
     "playSeconds": 3059,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 59,
+    "itemCount": 58,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2401,14 +2401,14 @@
    "summary": {
     "tick": 93764,
     "playSeconds": 3125,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 59,
+    "itemCount": 58,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2416,16 +2416,16 @@
   {
    "minute": 53,
    "summary": {
-    "tick": 95776,
+    "tick": 95777,
     "playSeconds": 3192,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 65,
+    "itemCount": 64,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2433,16 +2433,16 @@
   {
    "minute": 54,
    "summary": {
-    "tick": 97746,
+    "tick": 97748,
     "playSeconds": 3258,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 65,
+    "itemCount": 64,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2450,16 +2450,16 @@
   {
    "minute": 55,
    "summary": {
-    "tick": 99777,
+    "tick": 99779,
     "playSeconds": 3325,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 67,
+    "itemCount": 66,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2467,16 +2467,16 @@
   {
    "minute": 56,
    "summary": {
-    "tick": 101606,
+    "tick": 101609,
     "playSeconds": 3386,
-    "coin": 198,
+    "coin": 204,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 70,
+    "itemCount": 69,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2484,16 +2484,16 @@
   {
    "minute": 58,
    "summary": {
-    "tick": 103576,
+    "tick": 103580,
     "playSeconds": 3452,
-    "coin": 198,
+    "coin": 219,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 70,
+    "itemCount": 66,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2501,16 +2501,16 @@
   {
    "minute": 59,
    "summary": {
-    "tick": 105546,
+    "tick": 105550,
     "playSeconds": 3518,
-    "coin": 198,
+    "coin": 219,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 70,
+    "itemCount": 66,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2518,16 +2518,16 @@
   {
    "minute": 60,
    "summary": {
-    "tick": 107556,
+    "tick": 107560,
     "playSeconds": 3585,
-    "coin": 198,
+    "coin": 219,
     "skillPoints": {
      "skill.foraging": 14,
      "skill.cooking": 14,
      "skill.survival": 1
     },
     "totalSkillPoints": 29,
-    "itemCount": 77,
+    "itemCount": 73,
     "requestsDone": 0,
     "flags": 0
    }
@@ -2557,9 +2557,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 8,
+    "totalSkillPoints": 7,
     "itemCount": 18,
     "requestsDone": 2,
     "flags": 0
@@ -2573,9 +2573,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 8,
+    "totalSkillPoints": 7,
     "itemCount": 18,
     "requestsDone": 2,
     "flags": 0
@@ -2589,9 +2589,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 6
+     "skill.foraging": 5
     },
-    "totalSkillPoints": 8,
+    "totalSkillPoints": 7,
     "itemCount": 18,
     "requestsDone": 2,
     "flags": 0
@@ -2605,9 +2605,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 8
+     "skill.foraging": 6
     },
-    "totalSkillPoints": 10,
+    "totalSkillPoints": 8,
     "itemCount": 26,
     "requestsDone": 2,
     "flags": 0
@@ -2621,9 +2621,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 9
+     "skill.foraging": 8
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 10,
     "itemCount": 32,
     "requestsDone": 2,
     "flags": 0
@@ -2637,9 +2637,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 9
+     "skill.foraging": 8
     },
-    "totalSkillPoints": 11,
+    "totalSkillPoints": 10,
     "itemCount": 32,
     "requestsDone": 2,
     "flags": 0
@@ -2653,9 +2653,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 10
+     "skill.foraging": 8
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 36,
     "requestsDone": 2,
     "flags": 0
@@ -2669,9 +2669,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 10
+     "skill.foraging": 8
     },
-    "totalSkillPoints": 12,
+    "totalSkillPoints": 10,
     "itemCount": 38,
     "requestsDone": 2,
     "flags": 0
@@ -2685,9 +2685,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 42,
     "requestsDone": 2,
     "flags": 0
@@ -2701,9 +2701,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 46,
     "requestsDone": 2,
     "flags": 0
@@ -2717,9 +2717,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 11
+     "skill.foraging": 9
     },
-    "totalSkillPoints": 13,
+    "totalSkillPoints": 11,
     "itemCount": 48,
     "requestsDone": 2,
     "flags": 0
@@ -2733,9 +2733,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 50,
     "requestsDone": 2,
     "flags": 0
@@ -2749,9 +2749,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 55,
     "requestsDone": 2,
     "flags": 0
@@ -2765,9 +2765,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 61,
     "requestsDone": 2,
     "flags": 0
@@ -2781,9 +2781,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 12
+     "skill.foraging": 10
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 12,
     "itemCount": 61,
     "requestsDone": 2,
     "flags": 0
@@ -2797,9 +2797,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 15,
+    "totalSkillPoints": 13,
     "itemCount": 65,
     "requestsDone": 2,
     "flags": 0
@@ -2813,9 +2813,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 15,
+    "totalSkillPoints": 13,
     "itemCount": 73,
     "requestsDone": 2,
     "flags": 0
@@ -2829,9 +2829,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 15,
+    "totalSkillPoints": 13,
     "itemCount": 73,
     "requestsDone": 2,
     "flags": 0
@@ -2845,9 +2845,9 @@
     "coin": 63,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 13
+     "skill.foraging": 11
     },
-    "totalSkillPoints": 15,
+    "totalSkillPoints": 13,
     "itemCount": 73,
     "requestsDone": 2,
     "flags": 0
@@ -2861,9 +2861,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 87,
     "requestsDone": 3,
     "flags": 0
@@ -2877,9 +2877,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 87,
     "requestsDone": 3,
     "flags": 0
@@ -2893,9 +2893,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 87,
     "requestsDone": 3,
     "flags": 0
@@ -2909,9 +2909,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 96,
     "requestsDone": 3,
     "flags": 0
@@ -2925,9 +2925,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 102,
     "requestsDone": 3,
     "flags": 0
@@ -2941,9 +2941,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 102,
     "requestsDone": 3,
     "flags": 0
@@ -2957,9 +2957,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 12
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 14,
     "itemCount": 108,
     "requestsDone": 3,
     "flags": 0
@@ -2973,9 +2973,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 110,
     "requestsDone": 3,
     "flags": 0
@@ -2989,9 +2989,9 @@
     "coin": 101,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 112,
     "requestsDone": 3,
     "flags": 0
@@ -3005,9 +3005,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 120,
     "requestsDone": 4,
     "flags": 0
@@ -3021,9 +3021,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 120,
     "requestsDone": 4,
     "flags": 0
@@ -3037,9 +3037,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 125,
     "requestsDone": 4,
     "flags": 0
@@ -3053,9 +3053,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 130,
     "requestsDone": 4,
     "flags": 0
@@ -3069,9 +3069,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 132,
     "requestsDone": 4,
     "flags": 0
@@ -3085,9 +3085,9 @@
     "coin": 133,
     "skillPoints": {
      "skill.blades": 2,
-     "skill.foraging": 14
+     "skill.foraging": 13
     },
-    "totalSkillPoints": 16,
+    "totalSkillPoints": 15,
     "itemCount": 132,
     "requestsDone": 4,
     "flags": 0

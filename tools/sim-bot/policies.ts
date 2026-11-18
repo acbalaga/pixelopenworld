@@ -35,6 +35,12 @@ export interface Policy {
   label: string;
   /** The skill whose time to rank 15 this loop measures, if it is the loop for one. */
   skill?: string;
+  /**
+   * `slow` for the gathering and crafting loops: on the first map they are paced by how fast the
+   * nodes come back, so they take longer than combat to rank 15, and are meant to (they pay in
+   * kind: each gather and each dish is worth a lot).
+   */
+  pace?: 'quick' | 'slow';
   seed: number;
   /** Called once with the run, before the first step. */
   setup?(run: Run): void;
@@ -57,6 +63,7 @@ export const GATHER: Policy = {
   id: 'gather',
   label: 'Forage the herb patches and berry bushes, sell what is gathered',
   skill: 'skill.foraging',
+  pace: 'slow',
   seed: 12,
   step(run, n) {
     forage(run, n);
@@ -81,6 +88,7 @@ export const CRAFT: Policy = {
   id: 'craft',
   label: 'Forage, cook at the camp pot, sell the dishes',
   skill: 'skill.cooking',
+  pace: 'slow',
   seed: 13,
   step(run, n) {
     forage(run, n);

@@ -38,7 +38,26 @@ const family = (
     equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
   });
 
+/** A tier 2 weapon of a family that had only tier 1 (M3-12): iron, longer, or leather. */
+const family2 = (
+  id: string,
+  value: number,
+  power: number,
+  weapon: 'maul' | 'bow' | 'wraps',
+): ItemDef =>
+  item(id, 'weapon', {
+    value,
+    tier: 2,
+    quality: true,
+    durability: 100,
+    affixSlots: 2,
+    equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
+  });
+
 export const WEAPON_ITEMS: readonly ItemDef[] = [
+  family2('item.maul_iron', 80, 15, 'maul'),
+  family2('item.bow_long', 85, 15, 'bow'),
+  family2('item.wraps_leather', 40, 12, 'wraps'),
   family('item.maul_oak', 35, 12, 'maul'),
   family('item.bow_short', 38, 10, 'bow'),
   family('item.wraps_cloth', 15, 7, 'wraps'),

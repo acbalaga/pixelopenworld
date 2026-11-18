@@ -117,90 +117,117 @@ const ROSE: Tones4 = [40, 41, 42, 43];
 const STONE: Tones4 = [16, 17, 18, 19];
 
 // ---- Mossling: a round mossy creature on stubby feet. 16 x 16, feet at (8, 14).
-const mossling: Maker = {
-  id: 'creature.mossling',
-  size: 16,
-  origin: [8, 14],
-  walks: true,
-  draw(p) {
-    const im = new Img(16, 16);
-    const x = 8 + (p.view === 'right' ? p.lunge : 0);
-    const y = 9 - p.bob + (p.view === 'down' ? Math.max(0, p.lunge) : 0) - (p.rear ? 1 : 0);
-    const ry = 4.5 + p.stretch * 0.5;
-    // Feet first, so the body overlaps them.
-    const lift = (i: number): number => (p.step < 0 ? 0 : (p.step + i) % 2 === 0 ? 1 : 0);
-    if (p.view === 'right') {
-      im.rect(5, 12 - lift(0), 7, 13 - lift(0), WOOD[0]);
-      im.rect(9, 12 - lift(1), 11, 13 - lift(1), WOOD[1]);
-    } else {
-      im.rect(4, 12 - lift(0), 6, 13 - lift(0), WOOD[0]);
-      im.rect(9, 12 - lift(1), 11, 13 - lift(1), WOOD[1]);
-    }
-    shadedEllipse(im, x, y, p.view === 'right' ? 5.2 : 5.5, ry, FOLIAGE);
-    // Moss tufts on top, light.
-    for (const [dx, dy] of [
-      [-2, -5],
-      [1, -5],
-      [3, -4],
-      [-4, -3],
-    ] as const)
-      im.set(Math.round(x + dx), Math.round(y + dy), p.view === 'up' ? FOLIAGE[3] : FOLIAGE[2]);
-    im.set(Math.round(x - 1), Math.round(y - 6), FOLIAGE[3]);
-    if (p.view === 'down') {
-      const e = p.hurt ? 0 : 3;
-      im.rect(x - 3, y - 1, x - 2, y, e);
-      im.rect(x + 1, y - 1, x + 2, y, e);
-      if (!p.hurt) {
-        im.set(x - 2, y, 0);
-        im.set(x + 2, y, 0);
+interface MosslingLook {
+  body: Tones4;
+  feet: Tones4;
+}
+
+function mosslingMaker(id: string, look: MosslingLook): Maker {
+  return {
+    id,
+    size: 16,
+    origin: [8, 14],
+    walks: true,
+    draw(p) {
+      const im = new Img(16, 16);
+      const x = 8 + (p.view === 'right' ? p.lunge : 0);
+      const y = 9 - p.bob + (p.view === 'down' ? Math.max(0, p.lunge) : 0) - (p.rear ? 1 : 0);
+      const ry = 4.5 + p.stretch * 0.5;
+      // Feet first, so the body overlaps them.
+      const lift = (i: number): number => (p.step < 0 ? 0 : (p.step + i) % 2 === 0 ? 1 : 0);
+      if (p.view === 'right') {
+        im.rect(5, 12 - lift(0), 7, 13 - lift(0), look.feet[0]);
+        im.rect(9, 12 - lift(1), 11, 13 - lift(1), look.feet[1]);
+      } else {
+        im.rect(4, 12 - lift(0), 6, 13 - lift(0), look.feet[0]);
+        im.rect(9, 12 - lift(1), 11, 13 - lift(1), look.feet[1]);
       }
-      if (p.open) im.rect(x - 1, y + 2, x, y + 3, 20);
-    } else if (p.view === 'right') {
-      im.rect(x + 1, y - 1, x + 2, y, p.hurt ? 0 : 3);
-      if (!p.hurt) im.set(x + 2, y, 0);
-      if (p.open) im.rect(x + 3, y + 2, x + 4, y + 3, 20);
-    }
-    return im;
-  },
-};
+      shadedEllipse(im, x, y, p.view === 'right' ? 5.2 : 5.5, ry, look.body);
+      // Moss tufts on top, light.
+      for (const [dx, dy] of [
+        [-2, -5],
+        [1, -5],
+        [3, -4],
+        [-4, -3],
+      ] as const)
+        im.set(
+          Math.round(x + dx),
+          Math.round(y + dy),
+          p.view === 'up' ? look.body[3] : look.body[2],
+        );
+      im.set(Math.round(x - 1), Math.round(y - 6), look.body[3]);
+      if (p.view === 'down') {
+        const e = p.hurt ? 0 : 3;
+        im.rect(x - 3, y - 1, x - 2, y, e);
+        im.rect(x + 1, y - 1, x + 2, y, e);
+        if (!p.hurt) {
+          im.set(x - 2, y, 0);
+          im.set(x + 2, y, 0);
+        }
+        if (p.open) im.rect(x - 1, y + 2, x, y + 3, 20);
+      } else if (p.view === 'right') {
+        im.rect(x + 1, y - 1, x + 2, y, p.hurt ? 0 : 3);
+        if (!p.hurt) im.set(x + 2, y, 0);
+        if (p.open) im.rect(x + 3, y + 2, x + 4, y + 3, 20);
+      }
+      return im;
+    },
+  };
+}
+
+const mossling = mosslingMaker('creature.mossling', { body: FOLIAGE, feet: WOOD });
 
 // ---- Spitbloom: a rooted flower that spits seeds. 16 x 16, base at (8, 14).
-const spitbloom: Maker = {
-  id: 'creature.spitbloom',
-  size: 16,
-  origin: [8, 14],
-  walks: false,
-  draw(p) {
-    const im = new Img(16, 16);
-    const sway = p.view === 'right' ? p.lunge : 0;
-    // Stem and two leaves.
-    im.rect(7, 9 - p.bob, 8, 13, FOLIAGE[1]);
-    im.rect(8, 9 - p.bob, 8, 13, FOLIAGE[0]);
-    im.rect(3, 11, 6, 12, FOLIAGE[2]);
-    im.rect(4, 10, 5, 10, FOLIAGE[3]);
-    im.rect(9, 12, 12, 13, FOLIAGE[1]);
-    im.rect(10, 11, 11, 11, FOLIAGE[2]);
-    // The head: bigger when winding up, petals all around.
-    const r = p.rear ? 4.6 : p.open ? 3.6 : 4;
-    const cx = 8 + sway;
-    const cy = 6 - p.bob - (p.rear ? 1 : 0) + (p.open ? 1 : 0);
-    shadedEllipse(im, cx, cy, r + 1.5, r + 0.5, ROSE);
-    shadedEllipse(im, cx, cy, r - 1, r - 1.5, [41, 42, 43, 43]);
-    if (p.view === 'down') {
-      const w = p.open ? 3 : 2;
-      im.rect(cx - w + 1, cy - 1, cx + w - 2, cy + (p.open ? 2 : 1), p.hurt ? 20 : 0);
-      if (p.open && !p.hurt) im.set(cx, cy, 20);
-      im.set(cx - 3, cy - 2, p.hurt ? 0 : 46);
-      im.set(cx + 2, cy - 2, p.hurt ? 0 : 46);
-    } else if (p.view === 'right') {
-      im.rect(cx + 2, cy - 1, cx + (p.open ? 5 : 3), cy + (p.open ? 2 : 1), p.hurt ? 20 : 0);
-      im.set(cx, cy - 2, p.hurt ? 0 : 46);
-    } else {
-      im.rect(cx - 1, cy - 2, cx, cy - 1, ROSE[3]);
-    }
-    return im;
-  },
-};
+interface BloomLook {
+  stem: Tones4;
+  head: Tones4;
+  inner: Tones4;
+}
+
+function bloomMaker(id: string, look: BloomLook): Maker {
+  return {
+    id,
+    size: 16,
+    origin: [8, 14],
+    walks: false,
+    draw(p) {
+      const im = new Img(16, 16);
+      const sway = p.view === 'right' ? p.lunge : 0;
+      // Stem and two leaves.
+      im.rect(7, 9 - p.bob, 8, 13, look.stem[1]);
+      im.rect(8, 9 - p.bob, 8, 13, look.stem[0]);
+      im.rect(3, 11, 6, 12, look.stem[2]);
+      im.rect(4, 10, 5, 10, look.stem[3]);
+      im.rect(9, 12, 12, 13, look.stem[1]);
+      im.rect(10, 11, 11, 11, look.stem[2]);
+      // The head: bigger when winding up, petals all around.
+      const r = p.rear ? 4.6 : p.open ? 3.6 : 4;
+      const cx = 8 + sway;
+      const cy = 6 - p.bob - (p.rear ? 1 : 0) + (p.open ? 1 : 0);
+      shadedEllipse(im, cx, cy, r + 1.5, r + 0.5, look.head);
+      shadedEllipse(im, cx, cy, r - 1, r - 1.5, look.inner);
+      if (p.view === 'down') {
+        const w = p.open ? 3 : 2;
+        im.rect(cx - w + 1, cy - 1, cx + w - 2, cy + (p.open ? 2 : 1), p.hurt ? 20 : 0);
+        if (p.open && !p.hurt) im.set(cx, cy, 20);
+        im.set(cx - 3, cy - 2, p.hurt ? 0 : 46);
+        im.set(cx + 2, cy - 2, p.hurt ? 0 : 46);
+      } else if (p.view === 'right') {
+        im.rect(cx + 2, cy - 1, cx + (p.open ? 5 : 3), cy + (p.open ? 2 : 1), p.hurt ? 20 : 0);
+        im.set(cx, cy - 2, p.hurt ? 0 : 46);
+      } else {
+        im.rect(cx - 1, cy - 2, cx, cy - 1, look.head[3]);
+      }
+      return im;
+    },
+  };
+}
+
+const spitbloom = bloomMaker('creature.spitbloom', {
+  stem: FOLIAGE,
+  head: ROSE,
+  inner: [41, 42, 43, 43],
+});
 
 // ---- Boars: side view is the main drawing; front and back are narrower.
 interface BoarLook {
@@ -333,6 +360,24 @@ const bramblehide = boarMaker('creature.old_bramblehide', 48, 2.1, {
   tusk: 3,
 });
 
+// ---- Whisperwood creatures (M3-12): tier 2, the same bodies in the colors of the old forest.
+const WATER: Tones4 = [12, 13, 14, 15];
+const FIRE: Tones4 = [20, 21, 22, 23];
+const thornling = mosslingMaker('creature.thornling', { body: WOOD, feet: STONE });
+const fogcap = bloomMaker('creature.fogcap', {
+  stem: STONE,
+  head: WATER,
+  inner: [13, 14, 15, 15],
+});
+const cinderback = boarMaker('creature.cinderback_boar', 32, 1.5, {
+  body: STONE,
+  bristle: FIRE,
+  snout: STONE,
+  eye: 23,
+  berry: 21,
+  tusk: 3,
+});
+
 // ---- Training dummy: a post with a crossbar and a straw head. 16 x 24, feet at (8, 22).
 const dummy: Maker = {
   id: 'creature.training_dummy',
@@ -371,5 +416,5 @@ const dummy: Maker = {
 
 /** Every creature sprite. */
 export function creatureSprites(): SpriteDef[] {
-  return [mossling, spitbloom, boar, bramblehide, dummy].map(sprite);
+  return [mossling, spitbloom, boar, bramblehide, thornling, fogcap, cinderback, dummy].map(sprite);
 }

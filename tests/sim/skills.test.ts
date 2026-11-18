@@ -68,6 +68,8 @@ function setPoints(s: SimState, me: number, skill: string, points: number): void
 
 /** The base XP of a skill's first source, so tuning it does not break the tests. */
 const baseOf = (skill: string): number => (SKILLS[skill]?.sources[0] as { base: number }).base;
+const lumpOf = (skill: string): number =>
+  (SKILLS[skill]?.sources[0] as { firstTime: number }).firstTime;
 
 describe('XP curve and challenge', () => {
   it('xp to next point grows smoothly with points', () => {
@@ -147,8 +149,10 @@ describe('XP mapping from sim events', () => {
     });
     expect(earned(s, me, 'skill.ember')).toBe(10);
     expect(earned(s, me, 'skill.evasion')).toBe(12);
-    expect(earned(s, me, 'skill.foraging')).toBe(baseOf('skill.foraging') + 100);
-    expect(earned(s, me, 'skill.cooking')).toBe(baseOf('skill.cooking') + 100);
+    expect(earned(s, me, 'skill.foraging')).toBe(
+      baseOf('skill.foraging') + lumpOf('skill.foraging'),
+    );
+    expect(earned(s, me, 'skill.cooking')).toBe(baseOf('skill.cooking') + lumpOf('skill.cooking'));
     expect(earned(s, me, 'skill.blades')).toBe(0);
   });
   it('ignores events from other fighters and tags nobody maps', () => {
@@ -211,7 +215,7 @@ describe('first-time bonus', () => {
     const base = baseOf('skill.foraging');
     feed(s, gather(me, 'item.herb'));
     const first = earned(s, me, 'skill.foraging');
-    expect(first).toBe(base + 100);
+    expect(first).toBe(base + lumpOf('skill.foraging'));
     // The same item again pays the plain rate: no lump, and at most the base (the rate falls as
     // the skill rises past a tier 1 target).
     feed(s, gather(me, 'item.herb'));
@@ -221,7 +225,7 @@ describe('first-time bonus', () => {
     // A new item carries its own lump.
     const before = earned(s, me, 'skill.foraging');
     feed(s, gather(me, 'item.berry'));
-    expect(earned(s, me, 'skill.foraging') - before).toBeGreaterThan(100);
+    expect(earned(s, me, 'skill.foraging') - before).toBeGreaterThan(lumpOf('skill.foraging'));
   });
   it('fires on the first kill of a creature, not on hits', () => {
     const { s, me } = world();

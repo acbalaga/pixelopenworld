@@ -1,7 +1,10 @@
 {
   "fightSim": {
     "maxDeathPct": 5,
-    "maxDeviationsUnlisted": 0
+    "maxDeviationsUnlisted": 0,
+    "preparedPackMaxDeathPct": 25,
+    "unpreparedPackMinDeathPct": 30,
+    "toleranceSec": 0.75
   },
   "simBot": {
     "timeTo15": [20, 40],
@@ -23,7 +26,8 @@
       "fight": 10,
       "craft": 0,
       "request": 2
-    }
+    },
+    "timeTo15Slow": [35, 70]
   },
   "_note": "Past these, `npm run balance:ci` fails. The fight sim bands are design/04 (see tools/fight-sim/targets.ts); the sim bot bands are set around the tuned numbers in reports/sim-bot.md with room for a short run. Move a number only in a balance PR with before and after reports."
 }

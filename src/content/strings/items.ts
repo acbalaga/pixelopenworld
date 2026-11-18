@@ -8,6 +8,15 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.maul_oak.desc': 'A short oak haft and an iron block. Slow, and it staggers what it hits.',
   'item.bow_short.name': 'Short Bow',
   'item.bow_short.desc': 'Stand still and the arrow flies harder. No quiver to fill.',
+  'item.maul_iron.name': 'Iron Maul',
+  'item.maul_iron.desc':
+    'An iron head on an ash haft. It staggers what it hits and takes a long breath to swing.',
+  'item.bow_long.name': 'Long Bow',
+  'item.bow_long.desc':
+    'Ash, drawn long. It sends the arrow further and harder than the short bow.',
+  'item.wraps_leather.name': 'Leather Wraps',
+  'item.wraps_leather.desc':
+    'Leather bound over the knuckles and wrists. Every hit gives some breath back.',
   'item.wraps_cloth.name': 'Cloth Wraps',
   'item.wraps_cloth.desc': 'Strips of cloth round the knuckles. Every hit gives some breath back.',
   'item.spear_ash.name': 'Ash Spear',
