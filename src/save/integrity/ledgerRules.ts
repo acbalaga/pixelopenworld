@@ -71,6 +71,15 @@ export function ledgerRules(v: View): Reason[] {
   for (const [item, n] of Object.entries(ledger.itemsMade.start ?? {}))
     if (n > (kit[item] ?? 0)) fail('START_KIT_MISMATCH', `${item} x${n}`);
 
+  // A technique read from a manual needs a copy of that manual found in the world (a chest or a
+  // pickup). The manual is made from `chest` when the chest is opened, so the ledger holds it.
+  for (const [technique, via] of Object.entries(journal.learnedVia ?? {})) {
+    if (via !== 'manual') continue;
+    const copies = Object.values(ITEMS).filter((i) => i.manual?.technique === technique);
+    const found = copies.reduce((a, i) => a + (ledger.itemsMade.chest?.[i.id] ?? 0), 0);
+    if (found < 1) fail('MANUAL_READ_UNSOURCED', technique);
+  }
+
   // Loot needs kills of something that drops it, in numbers that could have dropped it.
   for (const [item, n] of Object.entries(ledger.itemsMade.loot ?? {})) {
     const from = droppedBy(item);

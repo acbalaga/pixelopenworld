@@ -1,4 +1,3 @@
-import { ITEMS_BALANCE as B } from '../content/balance/items';
 import { MOVEMENT as M } from '../content/balance/movement';
 import { pinRequest, takeFromBoard, turnInAtBoard } from './systems/requests';
 import { Dir, px } from './kernel/fixed';
@@ -42,7 +41,7 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
     handle,
   });
   setComp(state.entities, id, 'pools', newPools(state.tick));
-  const fighter = newFighter(0, [null, ...B.starter.techniques]);
+  const fighter = newFighter(0, [null]);
   setComp(state.entities, id, 'fighter', fighter);
   setComp(state.entities, id, 'deeds', newDeeds());
   setComp(state.entities, id, 'paths', { earned: [], worn: [], shown: null });

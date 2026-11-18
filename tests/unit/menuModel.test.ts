@@ -53,11 +53,13 @@ describe('character view', () => {
 });
 
 describe('skills view', () => {
-  it('lists nothing for a new avatar: no skill is shown before it first ranks up', () => {
+  it('lists nothing for a new avatar, and a skill appears at 0 points once it awakens', () => {
     const { s, me } = rig();
     expect(skillsView(s, me)).toEqual([]);
     addXp(s, me, 'skill.blades', xpToNext(0) - 1);
-    expect(skillsView(s, me)).toEqual([]);
+    const rows = skillsView(s, me).flatMap((f) => f.rows);
+    expect(rows.map((r) => r.id)).toEqual(['skill.blades']);
+    expect(rows[0]).toMatchObject({ points: 0, mastery: 'Novice' });
   });
 
   it('groups the skills by family, with rank and progress', () => {

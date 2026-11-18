@@ -147,7 +147,18 @@ export type SimEvent =
   | { type: 'talkStarted'; who: number; npc: string }
   | { type: 'requestStarted'; who: number; request: string }
   | { type: 'shortcutOpened'; id: number }
-  | { type: 'techniqueLearned'; who: number; technique: string }
+  | {
+      type: 'techniqueLearned';
+      who: number;
+      technique: string;
+      via: 'insight' | 'manual' | 'taught' | 'request';
+    }
+  /** A skill's first XP, a manual or a lesson woke it (M4-15). */
+  | { type: 'skillAwakened'; id: number; skill: string }
+  /** A manual was read and used up. */
+  | { type: 'manualRead'; who: number; item: string; technique: string }
+  /** A manual was read whose technique is already known, so it was kept. */
+  | { type: 'manualKnown'; who: number; item: string; technique: string }
   | { type: 'requestProgress'; who: number; request: string; progress: number }
   | { type: 'requestReady'; who: number; request: string }
   | { type: 'requestCompleted'; who: number; request: string }

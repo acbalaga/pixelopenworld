@@ -23,6 +23,9 @@ export type XpEvent =
   | 'eatRaw'
   | 'tabletRead';
 
+/** What an insight count can follow: any XP event, or a perfect dodge (which pays no XP of its own). */
+export type InsightEvent = XpEvent | 'perfectDodge';
+
 /**
  * One row of the XP mapping table: when `on` happens, and its `tag` matches, the skill earns
  * `base` XP, scaled by the challenge of the target unless `scaled` is false.

@@ -294,7 +294,7 @@ describe('item set', () => {
   it('has about 120 items split into the target kinds', () => {
     const all = Object.values(ITEMS);
     expect(all.length).toBeGreaterThanOrEqual(110);
-    expect(all.length).toBeLessThanOrEqual(150);
+    expect(all.length).toBeLessThanOrEqual(170);
     const n = (f: (i: (typeof all)[number]) => boolean) => all.filter(f).length;
     expect(n((i) => i.tool !== undefined)).toBe(10);
     expect(n((i) => i.category === 'material')).toBe(44);

@@ -1,3 +1,4 @@
+import { know } from '../support/know';
 import { describe, expect, it } from 'vitest';
 import { PATHS_BALANCE as B } from '../../src/content/balance/paths';
 import { COMBAT as CB } from '../../src/content/balance/combat';
@@ -299,7 +300,7 @@ describe('gifts apply only while the Path is worn', () => {
         comps(r).skills.points['skill.ember'] ?? 0,
         0,
       );
-      r.s.entities.comps.journal[r.me]!.flags.push('learned.technique.ember_bolt');
+      know(r.s, r.me, 'technique.ember_bolt');
       assign(r.s, r.me, 1, 'technique.ember_bolt');
       const p = r.s.entities.comps.pools[r.me]!;
       p.foc = p.focMax;
@@ -450,7 +451,7 @@ describe('gifts apply only while the Path is worn', () => {
   });
   it('songTicksPct: Busker makes a song last 50 percent longer', () => {
     const song = (r: Rig): number => {
-      comps(r).skills.points['skill.performance'] = 0;
+      know(r.s, r.me, 'technique.performance_hum');
       assign(r.s, r.me, 1, 'technique.performance_hum');
       const p = r.s.entities.comps.pools[r.me]!;
       p.foc = p.focMax;

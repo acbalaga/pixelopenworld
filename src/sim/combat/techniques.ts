@@ -1,3 +1,4 @@
+import { SKILLS_BALANCE } from '../../content/balance/skills';
 import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
 import { ATTACKS, WEAPONS } from '../../content/combat/attacks';
 import {
@@ -21,42 +22,66 @@ import { spawnFixture } from '../systems/fixtures';
 import { centerPx, nearestInArc, spend, startAttack } from './fighter';
 import { len } from './geometry';
 import { hasShield } from './guard';
+import { knows, learnedFlag, syncSignature } from './knowledge';
+import { awaken } from '../skills';
 
 /**
  * Techniques (M3-13): which are known, what the slots hold, using one, channels and loadouts.
  * A technique is data (`content/combat/techniques.ts`); this is the rules that run it.
  */
 
-/** True if the avatar knows the technique: the skill points reach its band, and it was taught if it needs that. */
-export function knows(state: SimState, who: EntityId, t: TechniqueDef): boolean {
-  const s = getComp(state.entities, who, 'skills');
-  if (!s || (s.points[t.skill] ?? 0) < t.band) return false;
-  if (!t.taught) return true;
-  return getComp(state.entities, who, 'journal')?.flags.includes(`learned.${t.id}`) === true;
-}
+export { knows, syncSignature } from './knowledge';
 
 /** Every technique the avatar knows, in table order. */
 export function knownTechniques(state: SimState, who: EntityId): TechniqueDef[] {
   return TECHNIQUE_LIST.filter((t) => knows(state, who, t));
 }
 
+/** How a technique was learned. A request reward counts as being taught. */
+export type LearnVia = 'insight' | 'manual' | 'taught' | 'request';
+
 /**
- * Teaches a technique that needs teaching. It takes the first free slot after the weapon's own
- * (slots 2 to 4). Known ones are skipped.
+ * Teaches a technique (a person, a manual, an insight or a request). It awakens the skill, writes
+ * the learned flag, and takes the first free slot after the weapon's own (slots 2 to 4) if it is
+ * an active. Known ones are skipped.
  */
-export function learnTechnique(state: SimState, who: EntityId, technique: string): void {
+export function learnTechnique(
+  state: SimState,
+  who: EntityId,
+  technique: string,
+  via: LearnVia = 'taught',
+): void {
   const t = TECHNIQUES[technique];
   const f = getComp(state.entities, who, 'fighter');
   const j = getComp(state.entities, who, 'journal');
   if (!t || !f || !j) return;
-  const flag = `learned.${t.id}`;
+  const flag = learnedFlag(t.id);
   if (j.flags.includes(flag)) return;
+  awaken(state, who, t.skill);
   j.flags.push(flag);
-  emit(state.events, { type: 'techniqueLearned', who, technique });
+  j.learnedVia[t.id] = via === 'request' ? 'taught' : via;
+  emit(state.events, { type: 'techniqueLearned', who, technique, via });
+  // The weapon's own technique goes in slot 1 once it is known.
+  syncSignature(state, who);
   if (t.kind === 'active' && !f.slots.includes(technique)) {
     const free = f.slots.findIndex((s, i) => i > 0 && s === null);
     if (free >= 0) assign(state, who, free, technique);
   }
+}
+
+/**
+ * Counts one use toward an insight technique (design/03). Reaching the count in
+ * `SKILLS_BALANCE.insight` learns it. Counts stop once it is known.
+ */
+export function countInsight(state: SimState, who: EntityId, t: TechniqueDef): void {
+  const s = getComp(state.entities, who, 'skills');
+  const need = SKILLS_BALANCE.insight[t.id];
+  if (!s || need === undefined || knows(state, who, t)) return;
+  const j = getComp(state.entities, who, 'journal');
+  if (j?.flags.includes(learnedFlag(t.id))) return;
+  const n = (s.insight[t.id] ?? 0) + 1;
+  s.insight[t.id] = n;
+  if (n >= need) learnTechnique(state, who, t.id, 'insight');
 }
 
 /** Puts a known active technique in slot 1, 2 or 3 (the second, third and fourth button), or empties it. */

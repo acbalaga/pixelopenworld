@@ -35,6 +35,20 @@ export const SKILLS_BALANCE = {
     /** Extra pay for each point of skill the target is above par. */
     abovePctPerPoint: 5,
   },
+  /**
+   * Insight counts (design/11 Sources): how many of the technique's event it takes to learn it by
+   * practice. Training dummy hits count until the skill reaches `dummyInsightUntil` points.
+   */
+  insight: {
+    'technique.blades_lunge': 30,
+    'technique.heavy_overhead': 25,
+    'technique.polearms_lunge': 30,
+    'technique.archery_aimed': 25,
+    'technique.unarmed_palm': 30,
+    'technique.shieldcraft_bash': 20,
+    'technique.evasion_light_feet': 12,
+  } as Readonly<Record<string, number>>,
+  dummyInsightUntil: 5,
   /** Sprint pays once for every this many px run. */
   sprintPx: 32,
   /** A feet move longer than this in one tick is a teleport or respawn and pays no sprint XP. */

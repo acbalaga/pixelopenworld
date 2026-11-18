@@ -49,7 +49,15 @@ describe('integrity: TECHNIQUE_UNKNOWN', () => {
 
   it('passes an honest save and a technique its skill has earned', () => {
     expect(codes(plain)).not.toContain('TECHNIQUE_UNKNOWN');
-    expect(codes(slotted(1, 'technique.performance_hum'))).not.toContain('TECHNIQUE_UNKNOWN');
+    // Hum of Courage is taught: it needs its skill awake and the learned flag.
+    const taught = tamper(plain, (s, me) => {
+      s.entities.comps.fighter[me]!.slots[1] = 'technique.performance_hum';
+      s.entities.comps.skills[me]!.awake.push('skill.performance');
+      s.entities.comps.journal[me]!.flags.push('learned.technique.performance_hum');
+    });
+    expect(codes(taught)).not.toContain('TECHNIQUE_UNKNOWN');
+    // Without the lesson it is flagged.
+    expect(codes(slotted(1, 'technique.performance_hum'))).toContain('TECHNIQUE_UNKNOWN');
   });
   it('flags a band the skill has not reached, a taught technique never taught, and an unknown id', () => {
     expect(codes(slotted(1, 'technique.heavy_whirl'))).toContain('TECHNIQUE_UNKNOWN');

@@ -266,6 +266,13 @@ export interface Skills {
   points: Record<string, number>;
   /** XP toward the next point. Held in the bank while the next point waits on a Trial. */
   xp: Record<string, number>;
+  /**
+   * Skills that have awakened (M4-15): the first XP, a manual read or a person's lesson. A dormant
+   * skill shows nowhere. A skill with points or banked XP counts as awake whatever this says.
+   */
+  awake: string[];
+  /** Insight counts toward a technique, by technique id (M4-15). Only techniques with that source. */
+  insight: Record<string, number>;
   /** Trial flags passed, as `skill@threshold`. */
   passed: string[];
   /** Trial ids an NPC has given and that are not passed yet. */
@@ -380,6 +387,8 @@ export interface Fixture {
 /** What the avatar has done with people: flags set by dialogue, and requests taken. */
 export interface Journal {
   flags: string[];
+  /** How each technique was learned, for those that came from a manual (M4-15). By technique id. */
+  learnedVia: Record<string, 'insight' | 'manual' | 'taught'>;
   /** Hints that have been shown and are done (acted on, or expired). Never shown again. */
   hints: string[];
   /** The hint on screen now, with where and when it appeared, or null. */

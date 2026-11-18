@@ -1,7 +1,7 @@
 import { COMBAT as C } from '../content/balance/combat';
 import { REQUEST_BALANCE as RB } from '../content/balance/requests';
 import { SKILLS_BALANCE as B } from '../content/balance/skills';
-import { SKILLS, TRIALS, trialKey } from '../content/skills';
+import { PENDING_SKILLS, SKILLS, TRIALS, trialKey } from '../content/skills';
 import { activeMods, applyMods, modAdd, statusMods } from './mods';
 import { NO_FIGHT } from './fight';
 import { getComp, type EntityId } from './kernel/entities';
@@ -15,6 +15,8 @@ export function newSkills(): Skills {
   return {
     points: {},
     xp: {},
+    awake: [],
+    insight: {},
     passed: [],
     offered: [],
     seen: [],
@@ -50,6 +52,23 @@ export function masteryName(points: number): string {
   let name: string = B.mastery[0].name;
   for (const m of B.mastery) if (points >= m.points) name = m.name;
   return name;
+}
+
+/** True once the skill has awakened. A skill with points or banked XP is awake whatever the list says. */
+export function isAwake(s: Skills, skill: string): boolean {
+  return s.awake.includes(skill) || (s.points[skill] ?? 0) > 0 || (s.xp[skill] ?? 0) > 0;
+}
+
+/**
+ * Wakes a skill (design/03): its first XP, a manual read, or a person's lesson. A skill never
+ * goes back to sleep. Skills with no XP source yet never awaken. Returns true if it just did.
+ */
+export function awaken(state: SimState, who: EntityId, skill: string): boolean {
+  const s = getComp(state.entities, who, 'skills');
+  if (!s || !SKILLS[skill] || PENDING_SKILLS.includes(skill) || isAwake(s, skill)) return false;
+  s.awake.push(skill);
+  emit(state.events, { type: 'skillAwakened', id: who, skill });
+  return true;
 }
 
 /** Skill points, 0 if none yet. */
@@ -136,6 +155,7 @@ function settle(state: SimState, who: EntityId, skill: string): void {
 export function addXp(state: SimState, who: EntityId, skill: string, amount: number): void {
   const s = getComp(state.entities, who, 'skills');
   if (!s || amount <= 0 || !SKILLS[skill]) return;
+  awaken(state, who, skill);
   const p = s.points[skill] ?? 0;
   if (p >= B.maxPoints) return;
   // Rested adds a percent, through the same mod path as everything else.

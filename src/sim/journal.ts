@@ -1,3 +1,4 @@
+import { isAwake } from './skills';
 import { DIALOGUES } from '../content/dialogue';
 import type { Cond } from '../content/dialogue/types';
 import { TRIALS } from '../content/skills';
@@ -12,6 +13,7 @@ import type { Journal, SimState } from './state';
 export function newJournal(): Journal {
   return {
     flags: [],
+    learnedVia: {},
     hints: [],
     hint: null,
     requests: {},
@@ -37,6 +39,7 @@ export function holds(state: SimState, who: EntityId, conds: readonly Cond[] | u
     if ('flag' in c) return j.flags.includes(c.flag) !== (c.not === true);
     if ('item' in c) return (inv ? countItem(inv, c.item) : 0) >= c.atLeast;
     if ('skill' in c) return (sk?.points[c.skill] ?? 0) >= c.atLeast;
+    if ('awake' in c) return sk ? isAwake(sk, c.awake) : false;
     if ('trial' in c) {
       const t = TRIALS[c.trial];
       const on =

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { REQUESTS } from '../../src/content/requests';
+import { learnTechnique } from '../../src/sim/combat/techniques';
+import { knowQuiet } from '../support/know';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { give, equip, unequip } from '../../src/sim/items';
 import { getComp, spawn, setComp } from '../../src/sim/kernel/entities';
@@ -16,7 +18,10 @@ function world(): { s: SimState; me: number } {
   const s = createDemoState(7, 0);
   s.world = OPEN;
   const f = feetAt(20, 20);
-  return { s, me: createAvatar(s, f.x, f.y) };
+  const me = createAvatar(s, f.x, f.y);
+  // The weapon techniques are known here, so the lunge follows the weapon held.
+  knowQuiet(s, me);
+  return { s, me };
 }
 const slots = (s: SimState, me: number): (string | null)[] =>
   getComp(s.entities, me, 'fighter')!.slots;
@@ -24,8 +29,12 @@ const bagSlot = (s: SimState, me: number, item: string): number =>
   getComp(s.entities, me, 'inventory')!.slots.findIndex((x) => x?.item === item);
 
 describe('the lunge follows the weapon', () => {
-  it('a sword gives the Blades lunge, and nothing else is known at the start', () => {
-    const { s, me } = world();
+  it('a blade gives the Blades lunge once it is known, and nothing is known at the start', () => {
+    const s = createDemoState(7, 0);
+    s.world = OPEN;
+    const me = createAvatar(s, feetAt(20, 20).x, feetAt(20, 20).y);
+    expect(slots(s, me)).toEqual([null, null, null, null]);
+    learnTechnique(s, me, 'technique.blades_lunge', 'insight');
     expect(slots(s, me)).toEqual(['technique.blades_lunge', null, null, null]);
   });
   it('a spear gives the Polearms lunge, bare hands give none, and the sword gives it back', () => {

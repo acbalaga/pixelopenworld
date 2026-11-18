@@ -1,4 +1,18 @@
 import { WAKE_IDS, WAKE_POINTS } from './wake';
+
+/** Stand-in spots for the manual chests on the slice map, by manual item id. */
+export const MANUAL_SPOTS: Readonly<Record<string, { x: number; y: number }>> = {
+  'item.manual_lunge': { x: 35, y: 21 },
+  'item.manual_palm': { x: 68, y: 55 },
+  'item.manual_light_feet': { x: 28, y: 61 },
+  'item.manual_kindling': { x: 65, y: 24 },
+  'item.manual_splash': { x: 47, y: 58 },
+  'item.manual_gust': { x: 26, y: 35 },
+  'item.manual_stone_fist': { x: 49, y: 27 },
+  'item.manual_mend': { x: 56, y: 21 },
+  'item.manual_road_songs': { x: 29, y: 27 },
+  'item.manual_hide': { x: 43, y: 21 },
+};
 import { rng } from '../sprites/gen/img';
 import type { Stamp, StampCell } from '../../sim/world/stamp';
 import { CAVE_ROOMS, OUTDOORS } from './rooms';
@@ -230,6 +244,9 @@ function outdoors(g: Grid, objects: Obj[]): void {
   // Objects.
   // A new character appears just south of the Waystone.
   object(g, 47, 39, 'spawn.player', objects);
+  // Manuals in chests (M4-15): stand-in spots outside the square until M4-11 and M4-21 place them.
+  for (const [manual, at] of Object.entries(MANUAL_SPOTS))
+    object(g, at.x, at.y, `fixture.chest_${manual.replace(/^item\./, '')}`, objects);
   // Where a new character wakes (M4-14). The sim picks one with the `start` stream.
   for (const id of WAKE_IDS) object(g, WAKE_POINTS[id].x, WAKE_POINTS[id].y, `wake.${id}`, objects);
   object(g, 47, 37, 'fixture.waystone', objects);

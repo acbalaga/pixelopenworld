@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TECHNIQUE_BALANCE as TB } from '../../src/content/balance/techniques';
 import { ATTACKS } from '../../src/content/combat/attacks';
 import { TECHNIQUE_LIST, TECHNIQUES } from '../../src/content/combat/techniques';
+import { knowQuiet } from '../support/know';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnCreature, spawnEnemy } from '../../src/sim/combat/enemy';
 import { assign, knows, knownTechniques, learnTechnique } from '../../src/sim/combat/techniques';
@@ -30,6 +31,8 @@ function rig(): Rig {
   const s = createDemoState(7, 0);
   s.world = OPEN;
   const me = createAvatar(s, feetAt(20, 20).x, feetAt(20, 20).y);
+  // These tests are about what techniques do, so each weapon's own technique is known.
+  knowQuiet(s, me);
   const events: SimEvent[] = [];
   const tick = (...cmds: Command[]): void => {
     stepWorld(s, me, { commands: cmds });
@@ -73,7 +76,7 @@ function wear(r: Rig, item: string): void {
 function slot(r: Rig, n: number, id: string): void {
   const t = TECHNIQUES[id]!;
   rank(r, t.skill, Math.max(t.band, r.s.entities.comps.skills[r.me]!.points[t.skill] ?? 0));
-  if (t.taught) learnTechnique(r.s, r.me, id);
+  if (t.source !== 'trial') learnTechnique(r.s, r.me, id);
   expect(assign(r.s, r.me, n, id), id).toBe(true);
 }
 const press = (n: number): Command => ({ type: 'technique', slot: n, phase: 'press', aim: null });
@@ -124,6 +127,9 @@ describe('the table', () => {
     const hum = TECHNIQUES['technique.performance_hum']!;
     const cross = TECHNIQUES['technique.blades_crosscut']!;
     const splash = TECHNIQUES['technique.tide_splash']!;
+    // Hum of Courage is taught now, and Crosscut needs the rank 15 Trial.
+    expect(knows(r.s, r.me, hum)).toBe(false);
+    learnTechnique(r.s, r.me, hum.id);
     expect(knows(r.s, r.me, hum)).toBe(true);
     expect(knows(r.s, r.me, cross)).toBe(false);
     rank(r, 'skill.blades', 15);

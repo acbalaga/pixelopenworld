@@ -3,6 +3,7 @@
  * by kind (`fixture.*` objects). Data only. The sim reads these and never hard-codes a puzzle.
  */
 
+import { MANUALS } from '../items/manuals';
 import type { ElementId } from '../combat/statuses';
 
 /** What an element hit does to a fixture (M3-09). */
@@ -259,9 +260,21 @@ const LIST: readonly FixtureDef[] = [
   },
 ];
 
+/**
+ * One chest for each manual (M4-15), named for the manual: `fixture.chest_manual_lunge`. They are
+ * stand-ins on the slice map until POW-M4-11 and POW-M4-21 move each to its place in the region.
+ */
+const MANUAL_CHESTS: readonly FixtureDef[] = MANUALS.map((m) => ({
+  kind: `fixture.chest_${m.id.replace(/^item\./, '')}`,
+  type: 'chest',
+  sprite: 'prop.chest',
+  size: 12,
+  loot: { items: [{ item: m.id, qty: 1 }] },
+}));
+
 /** Every fixture kind. */
 export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries(
-  LIST.map((f) => [f.kind, f]),
+  [...LIST, ...MANUAL_CHESTS].map((f) => [f.kind, f]),
 );
 
 /** A named rectangle of the world, in tiles (x1 and y1 exclusive). The camera snaps to it. */

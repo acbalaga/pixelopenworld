@@ -1,3 +1,4 @@
+import { MANUALS } from '../items/manuals';
 /**
  * Regions and what each must supply (design/02, POW-M3-12). The slice is the first map: it is
  * Dawnmeadow's home ground, and it prepares a character for the regions outside it. Everything
@@ -48,7 +49,13 @@ export const REGIONS: readonly RegionDef[] = [
         'spawner.bramble_boar',
         'spawner.old_bramblehide',
       ],
-      chests: ['fixture.chest_key', 'fixture.chest_side', 'fixture.satchel'],
+      chests: [
+        'fixture.chest_key',
+        'fixture.chest_side',
+        'fixture.satchel',
+        // Manuals (M4-15), stand-ins until M4-11 and M4-21 place them.
+        ...MANUALS.map((m) => `fixture.chest_${m.id.replace(/^item\./, '')}`),
+      ],
     },
   },
   {
