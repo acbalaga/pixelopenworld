@@ -610,6 +610,77 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   spear('spear_iron', WOOD, METAL),
   spear('spear_steel', ROSE, STEEL),
   buckler('shield_buckler', WOOD),
+  icon('fish_river', (im) => {
+    im.rect(2, 5, 8, 7, WATER[2]);
+    im.rect(2, 5, 8, 5, WATER[3]);
+    im.rect(8, 4, 10, 8, WATER[1]);
+    im.set(3, 6, STONE[3]);
+  }),
+  icon('fish_silver', (im) => {
+    im.rect(2, 5, 8, 7, STEEL[1]);
+    im.rect(2, 5, 8, 5, STEEL[2]);
+    im.rect(8, 4, 10, 8, STEEL[0]);
+    im.set(3, 6, GOLD[3]);
+  }),
+  // Gathering nodes as they stand in the world.
+  icon('node_vein_copper', (im) => {
+    im.rect(1, 3, 10, 10, STONE[1]);
+    im.rect(2, 2, 9, 3, STONE[2]);
+    im.rect(1, 3, 3, 8, STONE[2]);
+    for (const [x, y] of [
+      [4, 5],
+      [7, 4],
+      [6, 8],
+      [3, 8],
+    ] as const)
+      im.rect(x, y, x + 1, y + 1, COPPER[2]);
+    im.set(4, 5, COPPER[3]);
+  }),
+  icon('node_vein_iron', (im) => {
+    im.rect(1, 3, 10, 10, STONE[1]);
+    im.rect(2, 2, 9, 3, STONE[2]);
+    im.rect(1, 3, 3, 8, STONE[2]);
+    for (const [x, y] of [
+      [4, 5],
+      [7, 4],
+      [6, 8],
+      [3, 8],
+    ] as const)
+      im.rect(x, y, x + 1, y + 1, RUST[2]);
+    im.set(7, 4, STEEL[2]);
+  }),
+  icon('node_vein_spent', (im) => {
+    im.rect(1, 5, 10, 10, STONE[1]);
+    im.rect(2, 4, 9, 5, STONE[2]);
+    im.rect(1, 5, 3, 9, STONE[2]);
+    im.set(5, 7, STONE[0]);
+  }),
+  icon('node_oak', (im) => {
+    disc(im, 6, 4, 4, LEAF);
+    im.rect(5, 8, 6, 11, WOOD[1]);
+    im.rect(5, 8, 5, 11, WOOD[2]);
+  }),
+  icon('node_ash', (im) => {
+    disc(im, 6, 4, 4, [LEAF[0], LEAF[2], LEAF[3], GOLD[3]]);
+    im.rect(5, 8, 6, 11, STONE[2]);
+    im.rect(5, 8, 5, 11, STONE[3]);
+  }),
+  icon('node_stump', (im) => {
+    im.rect(3, 7, 8, 10, WOOD[1]);
+    im.rect(3, 6, 8, 7, WOOD[3]);
+    im.rect(5, 6, 6, 6, WOOD[2]);
+  }),
+  icon('node_fish', (im) => {
+    im.rect(1, 3, 10, 9, WATER[1]);
+    im.rect(2, 4, 9, 8, WATER[2]);
+    im.rect(4, 5, 7, 6, WATER[3]);
+    im.rect(8, 2, 9, 3, STONE[3]);
+  }),
+  icon('node_fish_spent', (im) => {
+    im.rect(1, 3, 10, 9, WATER[1]);
+    im.rect(2, 4, 9, 8, WATER[1]);
+    im.rect(3, 6, 8, 6, WATER[2]);
+  }),
   icon('maul_oak', (im) => {
     line(im, 3, 10, 8, 4, WOOD[2]);
     line(im, 4, 10, 9, 4, WOOD[1]);

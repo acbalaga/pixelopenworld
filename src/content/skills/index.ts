@@ -76,15 +76,30 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
       { id: 'skill.mending', name: 'Mending', family: 'magic', sources: [] },
       { id: 'skill.hexing', name: 'Hexing', family: 'magic', sources: [] },
       // Gathering.
-      { id: 'skill.mining', name: 'Mining', family: 'gathering', sources: [] },
-      { id: 'skill.logging', name: 'Logging', family: 'gathering', sources: [] },
+      {
+        id: 'skill.mining',
+        name: 'Mining',
+        family: 'gathering',
+        sources: [{ on: 'gather', tag: 'mining', base: 20, firstTime: 100 }],
+      },
+      {
+        id: 'skill.logging',
+        name: 'Logging',
+        family: 'gathering',
+        sources: [{ on: 'gather', tag: 'logging', base: 20, firstTime: 100 }],
+      },
       {
         id: 'skill.foraging',
         name: 'Foraging',
         family: 'gathering',
         sources: [{ on: 'gather', tag: 'foraging', base: 20, firstTime: 100 }],
       },
-      { id: 'skill.fishing', name: 'Fishing', family: 'gathering', sources: [] },
+      {
+        id: 'skill.fishing',
+        name: 'Fishing',
+        family: 'gathering',
+        sources: [{ on: 'gather', tag: 'fishing', base: 20, firstTime: 100 }],
+      },
       { id: 'skill.farming', name: 'Farming', family: 'gathering', sources: [] },
       { id: 'skill.husbandry', name: 'Husbandry', family: 'gathering', sources: [] },
       // Crafting.
@@ -146,9 +161,6 @@ export const PENDING_SKILLS: string[] = [
   'skill.stone',
   'skill.mending',
   'skill.hexing',
-  'skill.mining',
-  'skill.logging',
-  'skill.fishing',
   'skill.smithing',
   'skill.woodworking',
   'skill.tailoring',

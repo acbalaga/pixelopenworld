@@ -17,10 +17,10 @@ describe('item content', () => {
   it('the real content is valid', () => {
     expect(validateRealItems(sprites)).toEqual([]);
   });
-  it('the set has about 120 items, four recipes and two node kinds', () => {
+  it('the set has about 120 items, four recipes and seven node kinds', () => {
     expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
     expect(Object.keys(RECIPES)).toHaveLength(4);
-    expect(Object.keys(NODES)).toHaveLength(2);
+    expect(Object.keys(NODES)).toHaveLength(7);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(
       Object.values(ITEMS).filter((i) => i.equip?.slot === 'main' && i.equip.weapon === 'sword'),

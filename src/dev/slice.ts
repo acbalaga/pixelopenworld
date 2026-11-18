@@ -44,6 +44,8 @@ export interface PowDevApi {
   giveXp(skill: string, amount: number): void;
   /** Gives an item if the bag lacks it and wears it. For screenshots of weapons and shields. */
   wear(item: string): void;
+  /** Makes every gathering node ready or spent, for screenshots. */
+  nodes(what: 'ready' | 'spent'): void;
   /** Left or right handed layout, for screenshots of the controls. */
   leftHanded(on: boolean): void;
   /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
@@ -99,6 +101,10 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       if (!inv) return;
       if (!inv.slots.some((s) => s?.item === item)) addItem(inv, item, 1);
       command({ type: 'equip', slot: inv.slots.findIndex((s) => s?.item === item) });
+    },
+    nodes(what) {
+      for (const n of state.entities.comps.node)
+        if (n) n.readyAt = what === 'ready' ? 0 : state.worldTick + 1_000_000;
     },
     leftHanded(on) {
       settings.set({ handedness: on ? 'left' : 'right' });

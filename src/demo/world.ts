@@ -40,6 +40,7 @@ import {
   writeDeviceClock,
 } from '../platform/clock';
 import { worldTickAt } from '../sim/time';
+import { gatherSweep } from '../sim/gathering';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
 import { browserSettingsEnv, SettingsStore } from '../platform/settings';
@@ -532,7 +533,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const p = e.comps.pos[id];
       const def = n ? NODES[n.kind] : undefined;
       if (!n || !p || !def) continue;
-      const sprite = state.tick >= n.readyAt ? def.sprite.ready : def.sprite.spent;
+      const sprite = state.worldTick >= n.readyAt ? def.sprite.ready : def.sprite.spent;
       renderer.drawSprite(
         Layer.Objects,
         iconOf(sprite),
@@ -1217,23 +1218,31 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       }
       // The gather timing sweep when working a node.
       const gat = state.entities.comps.gather[who];
-      if (gat) {
-        const g = ITEMS_BALANCE.gather;
+      const gs = gat ? gatherSweep(state, who) : null;
+      if (gat && gs) {
+        const bal = ITEMS_BALANCE.gather;
+        // A sweep shows its sweet window. Fishing fills while it waits, then the bite window is gold.
+        const total = gs.def.fishing ? gat.wait + bal.fishBiteTicks : gs.sweep.ticks;
+        const from = gs.def.fishing ? gat.wait : gs.sweep.sweetFrom;
+        const to = gs.def.fishing ? total - 1 : gs.sweep.sweetTo;
         const w = 40;
         const gx = Math.floor(v.width / 2) - w / 2;
         const gy = v.safe.y + v.safe.h - 40;
         renderer.drawRect(Layer.Hud, gx - 1, gy - 1, w + 2, 7, DARK);
         renderer.drawRect(Layer.Hud, gx, gy, w, 5, '#3a3f46');
-        const k = w / g.sweepTicks;
+        const k = w / total;
         renderer.drawRect(
           Layer.Hud,
-          gx + Math.round(g.sweetFrom * k),
+          gx + Math.round(from * k),
           gy,
-          Math.max(1, Math.round((g.sweetTo - g.sweetFrom + 1) * k)),
+          Math.max(1, Math.round((to - from + 1) * k)),
           5,
           GOLD,
         );
         renderer.drawRect(Layer.Hud, gx + Math.round(gat.t * k), gy - 1, 2, 7, INK);
+        // A tree takes several swings: one pip each, lit once done.
+        for (let i = 0; i < gs.sweep.swings && gs.sweep.swings > 1; i++)
+          renderer.drawRect(Layer.Hud, gx + i * 6, gy + 7, 4, 2, i < gat.swing ? GOLD : INK);
       }
       // Build id and time, bottom left, so a refreshed page can be told from a stale one.
       fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {

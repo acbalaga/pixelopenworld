@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateSave } from '../../src/save/integrity';
+import { spawnNode } from '../../src/sim/items';
 import { tamper } from '../support/saves';
 import { BOAR, BOSS, MOSSLING, Run, SPITBLOOM, TPS } from '../support/bots';
 
@@ -93,6 +94,56 @@ describe('recorded sessions: honest play is never flagged', () => {
     expect(l.itemsMade.gather).toBeDefined();
     expect(Object.keys(l.crafts).length).toBeGreaterThan(0);
     expect(l.xpEarned['skill.foraging']).toBeGreaterThan(0);
+    expect(report(run)).toBe('ok');
+  }, 120_000);
+
+  it('miner, logger and angler: works veins, trees and a pond for 30 minutes, bare handed, so every sweep is slow', async () => {
+    const run = new Run(404);
+    await run.save();
+    const at = (kind: string, tx: number, ty: number): void => {
+      spawnNode(run.s, kind, tx * 16 + 8, ty * 16 + 14);
+    };
+    at('node.copper_vein', 12, 30);
+    at('node.iron_vein', 12, 32);
+    at('node.oak_tree', 14, 30);
+    at('node.ash_tree', 14, 32);
+    at('node.fishing_spot', 16, 30);
+    const spots: [number, number, number][] = [
+      [12, 30, 1],
+      [14, 30, 3],
+      [16, 30, 0],
+      [12, 32, 1],
+      [14, 32, 3],
+    ];
+    let loops = 0;
+    while (run.ticks < MINUTES_30) {
+      const [x, y, swings] = spots[loops % spots.length]!;
+      run.stand(x + 1, y, 6);
+      run.tick({ type: 'interact' });
+      if (swings === 0) {
+        // Fishing: wait for the bite, then tap inside its window.
+        for (let i = 0; i < 300 && run.s.entities.comps.gather[run.me]; i++) {
+          run.run(1);
+          const g = run.s.entities.comps.gather[run.me];
+          if (g && g.t === g.wait && loops % 2 === 0) run.tick({ type: 'interact' });
+        }
+      } else {
+        for (let k = 0; k < swings; k++) {
+          run.run(15);
+          run.tick({ type: 'interact' });
+        }
+      }
+      run.run(40);
+      loops++;
+      if (loops % 12 === 0) await run.autosave();
+    }
+    await run.save();
+    const l = run.s.ledger;
+    expect(l.itemsMade.gather?.['item.copper_ore']).toBeGreaterThan(0);
+    expect(l.itemsMade.gather?.['item.oak_log']).toBeGreaterThan(0);
+    expect(l.xpEarned['skill.mining']).toBeGreaterThan(0);
+    expect(l.xpEarned['skill.logging']).toBeGreaterThan(0);
+    expect(l.xpEarned['skill.fishing']).toBeGreaterThan(0);
     expect(report(run)).toBe('ok');
   }, 120_000);
 

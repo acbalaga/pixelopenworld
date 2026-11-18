@@ -9,11 +9,12 @@ import { emit } from './kernel/events';
 import type { Command } from './kernel/commands';
 import { SUBPX } from './kernel/fixed';
 import { hasShield } from './combat/guard';
-import { int, next, weighted, type Rng } from './kernel/rng';
+import { int, next, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { applyMods, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
+import { pressGather, startGather } from './gathering';
 import { FIXTURES } from '../content/world/fixtures';
 import { earnCoin, madeItems, recordCraft, type ItemSource } from './ledger';
 
@@ -417,38 +418,17 @@ export function learnRecipe(state: SimState, who: EntityId, recipeId: string): b
   return true;
 }
 
-/** Ends a gather: picks the yield, pays it, and starts the node's respawn. */
-export function resolveGather(state: SimState, who: EntityId, sweet: boolean): void {
-  const g = getComp(state.entities, who, 'gather');
-  const node = g ? getComp(state.entities, g.node, 'node') : null;
-  const def = node ? NODES[node.kind] : undefined;
-  state.entities.comps.gather[who] = null;
-  if (!g || !node || !def) return;
-  const item = weighted(
-    state.rng.loot,
-    def.yields.map((y) => [y.item, y.weight] as const),
-  );
-  const qty =
-    int(state.rng.loot, B.gather.baseMin, B.gather.baseMax) + (sweet ? B.gather.sweetBonus : 0);
-  node.readyAt = state.tick + def.respawn;
-  emit(state.events, { type: 'gatherResolved', id: who, node: g.node, sweet, item, qty });
-  give(state, who, item, qty, 'gather');
-  emit(state.events, { type: 'gathered', id: who, tag: def.tag, item, tier: def.tier });
-}
-
 /** The context button: starts a gather on a ready node, or lands the timing press. */
 function interact(state: SimState, who: EntityId): void {
   const g = getComp(state.entities, who, 'gather');
   if (g) {
-    resolveGather(state, who, g.t >= B.gather.sweetFrom && g.t <= B.gather.sweetTo);
+    pressGather(state, who);
     return;
   }
   if (!idle(state, who)) return;
   const target = contextTarget(state, who);
-  const node = target === null ? null : getComp(state.entities, target, 'node');
-  if (target === null || !node || state.tick < node.readyAt) return;
-  setComp(state.entities, who, 'gather', { node: target, t: 0 });
-  emit(state.events, { type: 'gatherStarted', id: who, node: target });
+  if (target === null) return;
+  startGather(state, who, target);
 }
 
 /** Applies an item command to the avatar `who`. */

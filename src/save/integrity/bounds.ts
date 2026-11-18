@@ -12,7 +12,7 @@ import { MOVEMENT } from '../../content/balance/movement';
 import { SHOP_BALANCE } from '../../content/balance/shop';
 import { ATTACKS } from '../../content/combat/attacks';
 import { CREATURES } from '../../content/creatures';
-import { RECIPES } from '../../content/items/recipes';
+import { NODES, RECIPES } from '../../content/items/recipes';
 import { ITEMS } from '../../content/items';
 import { REQUESTS, SHOPS } from '../../content/dialogue';
 import { FIXTURES } from '../../content/world/fixtures';
@@ -66,8 +66,35 @@ export const CREATURE_SWING_TICKS_MIN = Math.min(
 /** Blocked or parried hits per second: six attackers (the engagement cap, design/04) at the fastest creature cycle. */
 export const BLOCK_EVENTS_PER_SECOND = (TPS / CREATURE_SWING_TICKS_MIN) * 6;
 
-/** Gathers per second: one sweep takes `sweepTicks`. */
-export const GATHER_EVENTS_PER_SECOND = TPS / ITEMS_BALANCE.gather.sweepTicks;
+/**
+ * The shortest time to work one node, in ticks. A sweep takes its `ticks` (the default or the
+ * node's own), a tree takes `swings` of them, and a fishing spot waits at least `fishWaitMin`
+ * for a bite. Read from content, so a new node or a retune moves the bound with it.
+ */
+export const GATHER_CYCLE_TICKS_MIN = Math.min(
+  ...Object.values(NODES).map((n) =>
+    n.fishing
+      ? ITEMS_BALANCE.gather.fishWaitMin
+      : (n.sweep?.ticks ?? ITEMS_BALANCE.gather.sweepTicks) *
+        (n.sweep?.swings ?? ITEMS_BALANCE.gather.swings),
+  ),
+);
+
+/** Gathers per second: one node takes at least `GATHER_CYCLE_TICKS_MIN`. */
+export const GATHER_EVENTS_PER_SECOND = TPS / GATHER_CYCLE_TICKS_MIN;
+
+/** The most items one gather can pay: the largest base plus every sweep sweet. */
+export const GATHER_YIELD_MAX = Math.max(
+  ...Object.values(NODES).map(
+    (n) =>
+      (n.sweep?.baseMax ?? ITEMS_BALANCE.gather.baseMax) +
+      (n.sweep?.swings ?? ITEMS_BALANCE.gather.swings) *
+        (n.sweep?.sweetBonus ?? ITEMS_BALANCE.gather.sweetBonus),
+  ),
+);
+
+/** Items from `gather` per second at the fastest rate and the largest yield (rule GATHER_RATE). */
+export const GATHER_ITEMS_PER_SECOND = GATHER_EVENTS_PER_SECOND * GATHER_YIELD_MAX;
 
 /** Cooks per second. Judgement: cooking has no timer in the sim, so two a second is far past a hand. */
 export const COOK_EVENTS_PER_SECOND = 2;

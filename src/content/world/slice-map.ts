@@ -138,6 +138,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
     4,
     cell(Terrain.Water),
   );
+  // A small pond east of the square, for the fishing spot on its bank.
+  g.rect(62, 45, 66, 48, cell(Terrain.Water));
   // Bridge where the road crosses the stream. Boards run along the road.
   for (let y = 50; y < 64; y++)
     for (let x = 46; x < 49; x++)
@@ -215,6 +217,13 @@ function outdoors(g: Grid, objects: Obj[]): void {
     [66, 72, 2],
     [62, 74, 2],
     [20, 40, 2],
+    // Trees, and the pond's bank.
+    [18, 43, 1],
+    [25, 47, 1],
+    [31, 41, 1],
+    [21, 35, 1],
+    [28, 36, 1],
+    [61, 46, 1],
   ] as const)
     clear(cx, cy, rad);
   // Objects.
@@ -243,6 +252,16 @@ function outdoors(g: Grid, objects: Obj[]): void {
     [29, 38],
   ] as const)
     object(g, x, y, 'node.berry_bush', objects);
+  // Gathering: four oaks and an ash in the meadow, a fishing spot on the pond.
+  for (const [x, y] of [
+    [18, 43],
+    [25, 47],
+    [31, 41],
+    [21, 35],
+  ] as const)
+    object(g, x, y, 'node.oak_tree', objects);
+  object(g, 28, 36, 'node.ash_tree', objects);
+  object(g, 61, 46, 'node.fishing_spot', objects);
   // Spawners ramp up from the square: gentle Mosslings first, then a shooter, boars past the stream.
   object(g, 53, 38, 'spawner.training_dummy', objects);
   object(g, 30, 44, 'spawner.mossling', objects);
@@ -306,6 +325,7 @@ function cave(g: Grid, objects: Obj[]): void {
     // portal, nothing to find until it is used from the other side.
     fixture(x0 + 9, y0, 'fixture.arrival_a_shortcut');
     object(g, x0 + 5, y0 + 6, 'spawner.mossling', objects);
+    object(g, x0 + 3, y0 + 3, 'node.copper_vein', objects);
   });
   carve('room.b', (x0, y0) => {
     portal(x0, y0 + 10, 'fixture.portal_b_west');
@@ -314,6 +334,7 @@ function cave(g: Grid, objects: Obj[]): void {
     portal(x0 + 21, y0 + 10, 'fixture.portal_b_east');
     fixture(x0 + 20, y0 + 10, 'fixture.door_boss');
     object(g, x0 + 10, y0 + 10, 'spawner.bramble_boar', objects);
+    object(g, x0 + 4, y0 + 15, 'node.copper_vein', objects);
   });
   // The puzzle room from its stamp.
   const c = CAVE_ROOMS.find((r) => r.id === 'room.c');
@@ -331,6 +352,7 @@ function cave(g: Grid, objects: Obj[]): void {
     }),
   );
   fixture(c.x0 + 15, c.y0 + 7, 'fixture.plate_puzzle');
+  object(g, c.x0 + 2, c.y0 + 2, 'node.copper_vein', objects);
   carve('room.d', (x0, y0) => {
     portal(x0 + 9, y0, 'fixture.portal_d_north');
     fixture(x0 + 14, y0 + 5, 'fixture.chest_side');
@@ -341,6 +363,7 @@ function cave(g: Grid, objects: Obj[]): void {
     portal(x0, y0 + 11, 'fixture.portal_e_west');
     portal(x0 + 18, y0, 'fixture.portal_e_shortcut');
     object(g, x0 + 16, y0 + 11, 'spawner.old_bramblehide', objects);
+    object(g, x0 + 5, y0 + 6, 'node.iron_vein', objects);
   });
   // Walls: a wall tile with floor directly below is a lit face, and a few carry torches.
   for (let y = 96; y < H - 1; y++) {

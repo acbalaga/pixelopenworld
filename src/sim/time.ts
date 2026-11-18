@@ -1,4 +1,12 @@
-import { TIME, type DayPhase } from '../content/balance/time';
+import {
+  DAYS_PER_SEASON,
+  SEASONS,
+  TIME,
+  type DayPhase,
+  type Season,
+  type Weather,
+} from '../content/balance/time';
+import type { SimState } from './state';
 
 const CYCLE_MIN = TIME.phases.reduce((n, p) => n + p.minutes, 0);
 
@@ -12,6 +20,19 @@ export function dayPhase(tick: number): DayPhase {
     if (t < end) return p.phase;
   }
   return TIME.phases[0].phase;
+}
+
+/** The season a tick falls in: seven in-game days each, four seasons a year. */
+export function seasonOf(tick: number): Season {
+  const cycleTicks = CYCLE_MIN * TIME.ticksPerMinute;
+  const day = Math.floor((tick + TIME.startMinute * TIME.ticksPerMinute) / cycleTicks);
+  return SEASONS[Math.floor(day / DAYS_PER_SEASON) % SEASONS.length] as Season;
+}
+
+/** The weather here and now. Always clear until regional weather arrives (M4-09). */
+export function currentWeather(state: SimState): Weather {
+  void state;
+  return 'clear';
 }
 
 /**

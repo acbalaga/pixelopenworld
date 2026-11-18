@@ -3,6 +3,7 @@ import {
   CHEST_COIN_TOTAL,
   COOK_EVENTS_PER_SECOND,
   COUNT_SLACK,
+  GATHER_ITEMS_PER_SECOND,
   KILLS_PER_SECOND_MAX,
   PLAY_SLACK_SECONDS,
   coinCeiling,
@@ -41,6 +42,11 @@ export function plausibility(v: View): Reason[] {
     fail('KILLS_IMPLAUSIBLE', `${kills} kills in ${seconds} s`);
   if (sum(ledger.crafts) > COOK_EVENTS_PER_SECOND * seconds + COUNT_SLACK)
     fail('CRAFTS_IMPLAUSIBLE', `${sum(ledger.crafts)} crafts in ${seconds} s`);
+
+  // Items from gathering against the fastest a hand can work the nodes.
+  const gathered = sum(ledger.itemsMade.gather ?? {});
+  if (gathered > GATHER_ITEMS_PER_SECOND * seconds + COUNT_SLACK)
+    fail('GATHER_RATE', `${gathered} items gathered in ${seconds} s`);
 
   // Coin, source by source.
   const spent = ledger.coinSpent.purchase ?? 0;

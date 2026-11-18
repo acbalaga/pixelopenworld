@@ -160,6 +160,13 @@ export interface GatherNode {
 export interface Gather {
   node: number;
   t: number;
+  /** Sweeps done so far on a node that takes several, and the sweet hits among them. */
+  swing: number;
+  hits: number;
+  /** Bag slot of the tool in use, or -1 for none. */
+  tool: number;
+  /** Fishing: ticks until the bite. 0 for a sweep. */
+  wait: number;
 }
 
 /** The Fed buff from a meal. Bonuses to the pool maxima until `until`. One at a time. */

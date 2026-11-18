@@ -324,6 +324,7 @@ export const UI_STRINGS = {
       XP_IMPLAUSIBLE: 'More experience was earned than is possible in the time played.',
       KILLS_IMPLAUSIBLE: 'More creatures were defeated than is possible in the time played.',
       CRAFTS_IMPLAUSIBLE: 'More was cooked than is possible in the time played.',
+      GATHER_RATE: 'More was gathered than is possible in the time played.',
       PLAYTIME_EXCEEDS_ELAPSED: 'More time was played than has passed since the save began.',
       CHAIN_BROKEN: 'The save and its backup do not follow on from each other.',
     },
