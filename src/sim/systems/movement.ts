@@ -5,6 +5,7 @@ import { getComp, query } from '../kernel/entities';
 import type { SimState } from '../state';
 import { moveBoxSolid, type Box } from './collision';
 import { guardWalkPct } from '../combat/guard';
+import { applyMods, hasStatus, statusMods } from '../mods';
 
 /** Target velocity for a direction at a cardinal speed. Diagonals use 1/sqrt(2), so they are not faster. */
 export function targetVelocity(dir: Direction | null, speed: number): { x: number; y: number } {
@@ -103,10 +104,14 @@ export function movementSystem(state: SimState): void {
       v.x = f.dv.x;
       v.y = f.dv.y;
     } else {
-      const frozen = state_ === 'hurt' || state_ === 'stagger' || state_ === 'dead';
+      const frozen =
+        state_ === 'hurt' ||
+        state_ === 'stagger' ||
+        state_ === 'dead' ||
+        hasStatus(state, id, 'rooted');
       const swing = state_ === 'attack' ? COMBAT.attackMoveFactor : guardWalkPct(state, id);
       const base = a.sprinting ? Math.round((M.walkSpeed * M.sprintFactor256) / 256) : M.walkSpeed;
-      const speed = Math.round((base * swing) / 100);
+      const speed = applyMods(Math.round((base * swing) / 100), 'moveSpeed', statusMods(state, id));
       const t = frozen ? { x: 0, y: 0 } : targetVelocity(a.intent, speed);
       const accel = Math.ceil(speed / M.accelTicks);
       const decel = Math.ceil(M.walkSpeed / M.decelTicks);

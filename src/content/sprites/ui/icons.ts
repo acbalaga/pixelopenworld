@@ -130,6 +130,117 @@ const winded = icon('ui.status_winded', (im) => {
   im.rect(9, 7, 11, 7, METAL_DARK);
 });
 
+const WATER = [12, 13, 14, 15] as const;
+const LEAF = [8, 9, 10, 11] as const;
+const VIOLET = [24, 25, 26, 27] as const;
+const BARK = [4, 5, 6, 7] as const;
+const GOLD = [44, 45, 46, 47] as const;
+
+/** A filled disc of `r` around (cx, cy), for bubbles and dots. */
+function disc(im: Img, cx: number, cy: number, r: number, c: number): void {
+  for (let y = -r; y <= r; y++)
+    for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + 1) im.set(cx + x, cy + y, c);
+}
+
+/** Burning: a flame, a point on top and a bright core. */
+const burning = icon('ui.status_burning', (im) => {
+  im.rect(5, 0, 6, 1, FIRE);
+  im.rect(4, 2, 7, 4, FIRE);
+  im.rect(2, 5, 9, 8, FIRE_DARK);
+  im.rect(3, 4, 8, 9, FIRE);
+  im.rect(4, 9, 7, 11, FIRE_DARK);
+  im.rect(5, 6, 6, 10, FIRE_LIGHT);
+});
+
+/** Wet: a drop, a point on top over a round belly. */
+const wet = icon('ui.status_wet', (im) => {
+  im.rect(5, 0, 6, 1, WATER[2]);
+  im.rect(4, 2, 7, 3, WATER[2]);
+  im.rect(3, 4, 8, 5, WATER[2]);
+  disc(im, 5, 7, 4, WATER[2]);
+  im.rect(3, 6, 4, 8, WATER[3]);
+  im.rect(6, 9, 8, 10, WATER[1]);
+});
+
+/** Chilled: a six armed snowflake, drawn as a plus and two diagonals. */
+const chilled = icon('ui.status_chilled', (im) => {
+  im.rect(5, 0, 6, 11, WATER[3]);
+  im.rect(0, 5, 11, 6, WATER[3]);
+  line(im, 1, 1, 10, 10, WATER[2]);
+  line(im, 10, 1, 1, 10, WATER[2]);
+  im.rect(4, 4, 7, 7, WATER[3]);
+});
+
+/** Staggered: a lightning crack. */
+const staggered = icon('ui.status_staggered', (im) => {
+  im.rect(6, 0, 9, 1, GOLD[3]);
+  im.rect(5, 2, 8, 3, GOLD[3]);
+  im.rect(4, 4, 8, 5, GOLD[3]);
+  im.rect(3, 6, 9, 7, GOLD[2]);
+  im.rect(5, 8, 7, 9, GOLD[2]);
+  im.rect(4, 10, 5, 11, GOLD[2]);
+});
+
+/** Poisoned: three bubbles of different sizes rising. */
+const poisoned = icon('ui.status_poisoned', (im) => {
+  disc(im, 4, 8, 3, LEAF[2]);
+  disc(im, 8, 5, 2, LEAF[3]);
+  disc(im, 5, 2, 1, LEAF[3]);
+  im.set(3, 7, LEAF[1]);
+  im.set(7, 4, LEAF[1]);
+});
+
+/** Hexed: an eye, an almond with a slit pupil. */
+const hexed = icon('ui.status_hexed', (im) => {
+  im.rect(2, 4, 9, 7, VIOLET[2]);
+  im.rect(0, 5, 11, 6, VIOLET[2]);
+  im.rect(3, 3, 8, 3, VIOLET[1]);
+  im.rect(3, 8, 8, 8, VIOLET[1]);
+  im.rect(5, 3, 6, 8, VIOLET[3]);
+  im.rect(5, 4, 6, 7, W);
+});
+
+/** Rooted: a trunk that splits into roots gripping the ground. */
+const rooted = icon('ui.status_rooted', (im) => {
+  im.rect(5, 0, 6, 5, BARK[2]);
+  line(im, 5, 5, 1, 9, BARK[2]);
+  line(im, 6, 5, 10, 9, BARK[2]);
+  line(im, 5, 6, 4, 11, BARK[1]);
+  line(im, 6, 6, 7, 11, BARK[1]);
+  im.rect(0, 10, 11, 11, BARK[0]);
+});
+
+/** Dazed: four dots orbiting an empty center. */
+const dazed = icon('ui.status_dazed', (im) => {
+  disc(im, 5, 1, 1, GOLD[3]);
+  disc(im, 10, 5, 1, GOLD[3]);
+  disc(im, 6, 10, 1, GOLD[3]);
+  disc(im, 1, 6, 1, GOLD[3]);
+  im.rect(4, 4, 7, 7, GOLD[1]);
+  im.rect(5, 5, 6, 6, GOLD[2]);
+});
+
+/** Warded: a shield with a cross. */
+const warded = icon('ui.status_warded', (im) => {
+  im.rect(1, 0, 10, 6, METAL);
+  im.rect(2, 7, 9, 8, METAL);
+  im.rect(3, 9, 8, 9, METAL);
+  im.rect(5, 10, 6, 11, METAL);
+  im.rect(1, 0, 10, 0, METAL_DARK);
+  im.rect(5, 1, 6, 9, W);
+  im.rect(2, 3, 9, 4, W);
+});
+
+/** Rested: a crescent moon. */
+const rested = icon('ui.status_rested', (im) => {
+  disc(im, 6, 6, 5, GOLD[3]);
+  disc(im, 8, 4, 4, 0);
+  for (let y = 0; y < 12; y++)
+    for (let x = 0; x < 12; x++) if (im.get(x, y) === 0) im.set(x, y, null);
+  im.set(10, 9, GOLD[3]);
+  im.set(10, 10, GOLD[3]);
+});
+
 export const UI_ICONS: readonly SpriteDef[] = [
   attack,
   lunge,
@@ -140,6 +251,16 @@ export const UI_ICONS: readonly SpriteDef[] = [
   menu,
   bag,
   winded,
+  burning,
+  wet,
+  chilled,
+  staggered,
+  poisoned,
+  hexed,
+  rooted,
+  dazed,
+  warded,
+  rested,
 ];
 
 /** Icon sprite id for each on-screen button. Technique buttons take their icon from the technique. */

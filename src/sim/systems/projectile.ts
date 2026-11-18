@@ -1,5 +1,6 @@
 import type { AttackDef } from '../../content/combat/attacks';
 import { dealDamage, centerPx, foes } from '../combat/fighter';
+import { elementHitsWorld } from '../elements';
 import { len } from '../combat/geometry';
 import { chargePct } from '../combat/properties';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
@@ -36,6 +37,7 @@ export function launchProjectile(
     stagger: def.stagger,
     knock: def.knock,
     element: proj.element,
+    ...(def.applies ? { applies: true } : {}),
   });
   emit(state.events, { type: 'projectileLaunched', id, owner });
 }
@@ -55,6 +57,11 @@ export function projectileSystem(state: SimState): void {
       continue;
     }
     const here = { x: Math.round(p.x / SUBPX), y: Math.round(p.y / SUBPX) };
+    // A bolt of an element that changes a fixture is spent on it.
+    if (elementHitsWorld(state, pr.element, here) > 0) {
+      destroy(state.entities, id);
+      continue;
+    }
     for (const target of foes(state, pr.team)) {
       const c = centerPx(state, target);
       if (!c || len({ x: c.x - here.x, y: c.y - here.y }) > HIT_RADIUS) continue;
@@ -70,6 +77,8 @@ export function projectileSystem(state: SimState): void {
         element: 100,
         heavy: false,
         tag: pr.element,
+        elem: pr.element,
+        applies: pr.applies === true,
       });
       destroy(state.entities, id);
       break;

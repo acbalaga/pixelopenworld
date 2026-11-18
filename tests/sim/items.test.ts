@@ -61,6 +61,7 @@ function rig(): Rig {
 const inv = (r: Rig) => r.s.entities.comps.inventory[r.me]!;
 const cb = (r: Rig) => r.s.entities.comps.combatant[r.me]!;
 const pools = (r: Rig) => r.s.entities.comps.pools[r.me]!;
+const fedOf = (r: Rig) => r.s.entities.comps.statuses[r.me]?.find((s) => s.id === 'fed');
 const ofType = <T extends SimEvent['type']>(evs: SimEvent[], t: T) =>
   evs.filter((e): e is Extract<SimEvent, { type: T }> => e.type === t);
 const feetPx = (r: Rig) => ({
@@ -395,7 +396,7 @@ describe('eating and the Fed buff', () => {
   it('a meal with no buff only restores', () => {
     const r = rig();
     r.tick({ type: 'use', slot: stash(r, 'item.dish_bread') });
-    expect(r.s.entities.comps.fed[r.me]).toBeNull();
+    expect(fedOf(r)).toBeUndefined();
   });
   it('the Fed buff replaces rather than stacks', () => {
     const r = rig();
@@ -410,12 +411,12 @@ describe('eating and the Fed buff', () => {
     });
     expect(pools(r).hpMax).toBe(C.pools.hpMax + 10);
     expect(pools(r).staMax).toBe(C.pools.staMax);
-    expect(r.s.entities.comps.fed[r.me]!.item).toBe('item.berry_compote');
+    expect(fedOf(r)!.item).toBe('item.berry_compote');
   });
   it('the buff ends on time and pools clamp back down', () => {
     const r = rig();
     r.tick({ type: 'use', slot: stash(r, 'item.hearty_stew') });
-    const until = r.s.entities.comps.fed[r.me]!.until;
+    const until = fedOf(r)!.until;
     r.s.tick = until - 2;
     r.run(1);
     expect(pools(r).hpMax).toBe(C.pools.hpMax + 20);
@@ -423,7 +424,7 @@ describe('eating and the Fed buff', () => {
     expect(ofType(r.events, 'fedEnded')).toHaveLength(1);
     expect(pools(r).hpMax).toBe(C.pools.hpMax);
     expect(pools(r).hp).toBeLessThanOrEqual(C.pools.hpMax);
-    expect(r.s.entities.comps.fed[r.me]).toBeNull();
+    expect(fedOf(r)).toBeUndefined();
   });
   it('non-food cannot be used', () => {
     const r = rig();
@@ -476,7 +477,7 @@ describe('cooking and experiments', () => {
     r.tick({ type: 'use', slot: inv(r).slots.findIndex((x) => x?.item === 'item.burnt_mess') });
     expect(pools(r).hp).toBe(10 + mess.hp);
     expect(countItem(inv(r), 'item.burnt_mess')).toBe(0);
-    expect(r.s.entities.comps.fed[r.me]).toBeNull();
+    expect(fedOf(r)).toBeUndefined();
   });
   it('a combination with no recipe burns the ingredients and teaches nothing', () => {
     const r = atPot();

@@ -17,6 +17,7 @@ import { dirStep, SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { nudge } from './movement';
 import { launchProjectile } from './projectile';
+import { elementHitsWorld } from '../elements';
 import { earnCoin, spendCoin } from '../ledger';
 
 /** The state machine for every fighter, run once per tick after commands. Ascending id order. */
@@ -138,6 +139,17 @@ function advanceAttack(state: SimState, id: EntityId): void {
       f.dv = { x: Math.round((f.aim.x / l) * per), y: Math.round((f.aim.y / l) * per) };
     }
     if (f.t === activeFrom && def.projectile) launchProjectile(state, id, def, def.projectile);
+    // A melee swing that carries an element touches the world at the end of its reach.
+    if (f.t === activeFrom && def.element) {
+      const me = centerPx(state, id);
+      const l = len(f.aim);
+      const reach = def.shape.kind === 'circle' ? 0 : def.shape.reach;
+      if (me && l > 0)
+        elementHitsWorld(state, def.element, {
+          x: me.x + (f.aim.x / l) * reach,
+          y: me.y + (f.aim.y / l) * reach,
+        });
+    }
     // Creatures are not moved by the avatar movement system, so their dashes are applied here.
     if (def.dash && !getComp(state.entities, id, 'avatar')) nudge(state, id, f.dv.x, f.dv.y);
     resolveSwing(state, id, def);

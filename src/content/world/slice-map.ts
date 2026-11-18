@@ -234,6 +234,18 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 42, 40, 'prop.camp_pot', objects);
   object(g, 36, 37, 'fixture.anvil', objects);
   object(g, 39, 38, 'fixture.workbench', objects);
+  // A bedroll by the Waystone (M3-09). Sleeping on it makes you Rested.
+  object(g, 45, 37, 'fixture.bed', objects);
+  // Element set pieces in the east meadow, one for each school (M3-09). No route needs them.
+  for (const [x, kind] of [
+    [62, 'fixture.brush_wall'],
+    [64, 'fixture.fire_barrier'],
+    [66, 'fixture.windmill_gate'],
+    [68, 'fixture.stone_gap'],
+    [70, 'fixture.withered_vine'],
+    [72, 'fixture.hidden_niche'],
+  ] as const)
+    object(g, x, 34, kind, objects);
   object(g, 40, 30, 'npc.shopkeeper', objects);
   object(g, 37, 34, 'npc.smith', objects);
   object(g, 41, 34, 'npc.outfitter', objects);

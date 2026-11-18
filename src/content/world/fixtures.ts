@@ -3,6 +3,14 @@
  * by kind (`fixture.*` objects). Data only. The sim reads these and never hard-codes a puzzle.
  */
 
+import type { ElementId } from '../combat/statuses';
+
+/** What an element hit does to a fixture (M3-09). */
+export type ElementAction = 'open' | 'close' | 'toggle' | 'reveal' | 'grow' | 'raise';
+
+/** Flags a tile or fixture can carry for element rules. */
+export type TileFlag = 'flammable' | 'water' | 'frozen';
+
 export type FixtureType =
   | 'portal'
   | 'arrival'
@@ -14,7 +22,9 @@ export type FixtureType =
   | 'tablet'
   | 'waystone'
   | 'storage'
-  | 'station';
+  | 'station'
+  | 'bed'
+  | 'element';
 
 export interface FixtureDef {
   kind: string;
@@ -36,6 +46,14 @@ export interface FixtureDef {
   room?: string;
   /** Portal: hidden behind a solid wall slab (its `sprite`) until a creature of this kind is defeated, then the slab goes and the portal works. */
   unlockedBy?: string;
+  /** Element rules: what a hit of each school does to this fixture. */
+  onElement?: Partial<Record<ElementId, ElementAction>>;
+  /** Element flags. `flammable` pieces burn to ash and, with `regrows`, grow back. */
+  flags?: readonly TileFlag[];
+  /** An opened piece returns to how it was after `brushRegrowTicks` world ticks. */
+  regrows?: boolean;
+  /** Not drawn and not solid until revealed. */
+  hidden?: boolean;
   /** Chest: what is inside. `coin` is carried coin. */
   loot?: { items: readonly { item: string; qty: number }[]; coin?: number };
 }
@@ -131,6 +149,60 @@ const LIST: readonly FixtureDef[] = [
   // Crafting stations in the square (M3-07). The camp pot is a prop with its own kind.
   { kind: 'fixture.anvil', type: 'station', sprite: 'prop.anvil', size: 12 },
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },
+  // A bedroll by the square Waystone. Sleeping on it applies Rested (M3-09).
+  { kind: 'fixture.bed', type: 'bed', sprite: 'prop.bedroll', size: 14 },
+  // Element set pieces (M3-09). One for each school, none on a route the slice needs.
+  // A wall of dry brush: Ember burns it to ash, and it grows back.
+  {
+    kind: 'fixture.brush_wall',
+    type: 'element',
+    sprite: 'prop.brush_wall',
+    size: 16,
+    onElement: { ember: 'open' },
+    flags: ['flammable'],
+    regrows: true,
+  },
+  // A fire that bars the way: Tide douses it.
+  {
+    kind: 'fixture.fire_barrier',
+    type: 'element',
+    sprite: 'prop.fire_barrier',
+    size: 16,
+    onElement: { tide: 'open' },
+  },
+  // A windmill gate: Gale spins it open.
+  {
+    kind: 'fixture.windmill_gate',
+    type: 'element',
+    sprite: 'prop.windmill_gate',
+    size: 16,
+    onElement: { gale: 'open' },
+  },
+  // A gap in the path: a Stone hit raises a step across it.
+  {
+    kind: 'fixture.stone_gap',
+    type: 'element',
+    sprite: 'prop.stone_gap',
+    size: 16,
+    onElement: { stone: 'raise' },
+  },
+  // A withered vine: Mending grows it into a ladder.
+  {
+    kind: 'fixture.withered_vine',
+    type: 'element',
+    sprite: 'prop.withered_vine',
+    size: 16,
+    onElement: { mending: 'grow' },
+  },
+  // A hidden niche: Hexing reveals it, and what it held.
+  {
+    kind: 'fixture.hidden_niche',
+    type: 'element',
+    sprite: 'prop.hidden_niche',
+    onElement: { hexing: 'reveal' },
+    hidden: true,
+    loot: { items: [{ item: 'item.herbed_skewer', qty: 1 }], coin: 25 },
+  },
 ];
 
 /** Every fixture kind. */

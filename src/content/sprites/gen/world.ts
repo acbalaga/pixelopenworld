@@ -384,6 +384,141 @@ function gateBars(rise: number): Img {
   return im;
 }
 
+const LEAF: Tones4 = [8, 9, 10, 11];
+const VIOLET: Tones4 = [24, 25, 26, 27];
+
+/** A wall of dry brush: tangled sticks and leaves. Burnt, it is a low heap of ash. */
+function brushWall(): SpriteDef {
+  const r = rng(71);
+  const closed = new Img(16, 16);
+  closed.rect(1, 3, 14, 14, WOOD[1]);
+  for (let i = 0; i < 40; i++) {
+    const x = 1 + Math.floor(r() * 14);
+    const y = 2 + Math.floor(r() * 12);
+    closed.rect(x, y, x + 1, y, r() < 0.5 ? WOOD[2] : GOLD[1]);
+  }
+  closed.rect(2, 2, 13, 4, WOOD[2]);
+  speckle(closed, r, GOLD[2], 0.18);
+  const open = new Img(16, 16);
+  open.rect(3, 11, 12, 14, STONE[1]);
+  open.rect(5, 10, 10, 11, STONE[2]);
+  speckle(open, r, STONE[0], 0.2);
+  return toSprite('prop.brush_wall', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A fire that bars the way. Doused, scorched ground and one thin curl of smoke. */
+function fireBarrier(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(1, 12, 14, 14, STONE[1]);
+  for (const x of [1, 6, 11]) {
+    closed.rect(x, 5, x + 3, 12, FIRE[1]);
+    closed.rect(x + 1, 2, x + 2, 6, FIRE[2]);
+    closed.rect(x + 1, 7, x + 2, 12, FIRE[3]);
+  }
+  const open = new Img(16, 16);
+  open.rect(2, 12, 13, 14, STONE[0]);
+  open.rect(4, 13, 11, 13, STONE[1]);
+  open.rect(7, 6, 8, 11, STONE[2]);
+  return toSprite('prop.fire_barrier', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A windmill gate: four blades across the way. Spun, the blades stand upright either side. */
+function windmillGate(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(7, 2, 8, 14, WOOD[2]);
+  closed.rect(1, 7, 14, 8, WOOD[3]);
+  closed.rect(2, 2, 5, 5, WOOD[1]);
+  closed.rect(10, 10, 13, 13, WOOD[1]);
+  closed.rect(10, 2, 13, 5, STONE[2]);
+  closed.rect(2, 10, 5, 13, STONE[2]);
+  closed.rect(7, 7, 8, 8, METAL[2]);
+  const open = new Img(16, 16);
+  open.rect(0, 2, 2, 14, WOOD[2]);
+  open.rect(13, 2, 15, 14, WOOD[2]);
+  open.rect(0, 2, 5, 3, WOOD[3]);
+  open.rect(10, 2, 15, 3, WOOD[3]);
+  open.rect(1, 7, 1, 8, METAL[2]);
+  open.rect(14, 7, 14, 8, METAL[2]);
+  return toSprite('prop.windmill_gate', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A gap in the path. A stone step rises across it. */
+function stoneGap(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(0, 5, 15, 14, DARK);
+  closed.rect(1, 6, 14, 13, STONE[0]);
+  closed.rect(2, 7, 13, 9, DARK);
+  closed.rect(0, 5, 15, 5, STONE[1]);
+  const open = new Img(16, 16);
+  open.rect(0, 5, 15, 14, DARK);
+  open.rect(1, 7, 14, 13, STONE[2]);
+  open.rect(1, 7, 14, 8, STONE[3]);
+  open.rect(1, 12, 14, 13, STONE[1]);
+  return toSprite('prop.stone_gap', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A withered vine hanging dead from a ledge. Grown, a green ladder of leaves and rungs. */
+function witheredVine(): SpriteDef {
+  const r = rng(73);
+  const closed = new Img(16, 16);
+  closed.rect(6, 1, 7, 12, WOOD[1]);
+  closed.rect(9, 3, 9, 9, WOOD[1]);
+  for (let i = 0; i < 8; i++)
+    closed.set(4 + Math.floor(r() * 8), 2 + Math.floor(r() * 10), WOOD[2]);
+  closed.rect(3, 13, 12, 14, WOOD[0]);
+  const open = new Img(16, 16);
+  open.rect(4, 0, 5, 14, LEAF[2]);
+  open.rect(10, 0, 11, 14, LEAF[2]);
+  for (let y = 2; y < 14; y += 3) open.rect(4, y, 11, y, WOOD[2]);
+  speckle(open, r, LEAF[3], 0.25);
+  return toSprite('prop.withered_vine', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A niche in a wall that was always there: a violet glow, and a small chest inside, then empty. */
+function hiddenNiche(): SpriteDef {
+  const closed = new Img(16, 16);
+  closed.rect(2, 3, 13, 14, STONE[0]);
+  closed.rect(3, 4, 12, 13, VIOLET[0]);
+  closed.rect(5, 9, 10, 13, WOOD[2]);
+  closed.rect(5, 9, 10, 9, WOOD[3]);
+  closed.rect(7, 10, 8, 11, GOLD[2]);
+  closed.rect(4, 5, 5, 6, VIOLET[3]);
+  const open = new Img(16, 16);
+  open.rect(2, 3, 13, 14, STONE[0]);
+  open.rect(3, 4, 12, 13, VIOLET[0]);
+  open.rect(5, 12, 10, 13, WOOD[1]);
+  return toSprite('prop.hidden_niche', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
+/** A bedroll with a pillow. */
+function bedroll(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 6, 14, 13, FIRE[1]);
+  im.rect(1, 6, 14, 8, FIRE[2]);
+  im.rect(2, 7, 5, 11, GOLD[3]);
+  im.rect(1, 12, 14, 13, FIRE[0]);
+  im.rect(11, 6, 11, 13, FIRE[0]);
+  return toSprite('prop.bedroll', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 function gate(): SpriteDef {
   const closed = new Img(16, 16);
   for (let x = 1; x < 16; x += 4) closed.rect(x, 1, x + 1, 15, METAL[1]);
@@ -536,5 +671,12 @@ export function worldSprites(): SpriteDef[] {
     anvil(),
     workbench(),
     tablet(),
+    brushWall(),
+    fireBarrier(),
+    windmillGate(),
+    stoneGap(),
+    witheredVine(),
+    hiddenNiche(),
+    bedroll(),
   ];
 }

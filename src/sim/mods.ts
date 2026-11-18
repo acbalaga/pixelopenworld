@@ -1,7 +1,9 @@
 import { AFFIXES, type Mod, type ModStat } from '../content/items/affixes';
 import { EQUIP_SLOTS } from '../content/items/types';
+import { ITEMS } from '../content/items';
+import { STATUSES, type StatusId } from '../content/combat/statuses';
 import { getComp, type EntityId } from './kernel/entities';
-import type { ItemStack, SimState } from './state';
+import type { ItemStack, SimState, StatusEntry } from './state';
 
 /**
  * The one path every bonus takes (M3 rule 8). Gear affixes feed it now. Passives, Path gifts and
@@ -15,12 +17,46 @@ export function stackMods(stack: ItemStack | null | undefined): Mod[] {
   return out;
 }
 
-/** Every active mod for an entity: what is worn now. */
-export function activeMods(state: SimState, who: EntityId): Mod[] {
-  const inv = getComp(state.entities, who, 'inventory');
-  if (!inv) return [];
+/** The unit's active statuses, or an empty list. */
+export function statusesOf(state: SimState, who: EntityId): readonly StatusEntry[] {
+  return getComp(state.entities, who, 'statuses') ?? [];
+}
+
+/** True if the unit has the status. */
+export function hasStatus(state: SimState, who: EntityId, id: StatusId): boolean {
+  return statusesOf(state, who).some((s) => s.id === id);
+}
+
+/**
+ * The mods of every status on an entity. A Fed status takes its pool bonuses from the meal that
+ * started it. Statuses of any unit, avatar or creature, go through this one path.
+ */
+export function statusMods(state: SimState, who: EntityId): Mod[] {
+  const list = getComp(state.entities, who, 'statuses');
+  if (!list) return [];
   const out: Mod[] = [];
-  for (const slot of EQUIP_SLOTS) out.push(...stackMods(inv.equipment[slot]));
+  for (const st of list) {
+    const def = STATUSES[st.id as StatusId];
+    if (!def) continue;
+    if (def.mods) out.push(...def.mods);
+    const fed = st.id === 'fed' && st.item ? ITEMS[st.item]?.food?.fed : undefined;
+    if (fed) {
+      out.push(
+        { stat: 'hpMax', add: fed.hpMax },
+        { stat: 'staMax', add: fed.staMax },
+        { stat: 'focMax', add: fed.focMax },
+      );
+    }
+  }
+  return out;
+}
+
+/** Every active mod for an entity: what is worn now, and what its statuses do. */
+export function activeMods(state: SimState, who: EntityId): Mod[] {
+  const out: Mod[] = [];
+  const inv = getComp(state.entities, who, 'inventory');
+  if (inv) for (const slot of EQUIP_SLOTS) out.push(...stackMods(inv.equipment[slot]));
+  out.push(...statusMods(state, who));
   return out;
 }
 

@@ -29,6 +29,10 @@ export interface AttackDef {
   pierce?: boolean;
   /** Dash during the active frames, px along aim. For lunges and charges. */
   dash?: number;
+  /** A melee attack that carries an element (ember, tide, gale, stone, mending, hexing). */
+  element?: string;
+  /** A hit applies its element's paired status (`ELEMENT_STATUS`). Set per technique by data. */
+  applies?: boolean;
   /** Launches a projectile when the active frames begin (spells, spat seeds). */
   projectile?: { speed: number; ttl: number; element: string };
   /** Cost, in tenths, and the pool it draws from. Basic attacks cost nothing. */

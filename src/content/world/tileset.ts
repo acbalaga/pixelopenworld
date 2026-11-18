@@ -1,4 +1,5 @@
 import type { TileCollision } from '../sprites/types';
+import type { TileFlag } from './fixtures';
 
 /** Terrain ids stored in the chunk ground layer. 0 means nothing. */
 export const Terrain = {
@@ -106,4 +107,29 @@ export function tilesetId(defId: string): number {
   const i = TILESET.indexOf(defId);
   if (i < 0) throw new Error(`tile ${defId} is not in the tileset`);
   return i + 1;
+}
+
+/**
+ * Element flags (M3-09) for the tiles of the detail and object layers, by tile definition id, and
+ * for terrains. `flammable` can burn, `water` douses and conducts, `frozen` melts to water.
+ */
+export const TILE_FLAGS: Readonly<Record<string, readonly TileFlag[]>> = {
+  'tile.bush_green_0': ['flammable'],
+  'tile.bush_berry_0': ['flammable'],
+  'tile.bush_dry_0': ['flammable'],
+  'tile.fence_h': ['flammable'],
+  'tile.fence_v': ['flammable'],
+  'tile.fence_post': ['flammable'],
+  'tile.crate': ['flammable'],
+  'tile.barrel': ['flammable'],
+};
+
+/** Flags of a terrain id. Water is `water`. */
+export const TERRAIN_FLAGS: Readonly<Record<number, readonly TileFlag[]>> = {
+  [Terrain.Water]: ['water'],
+};
+
+/** True if the tile definition id carries the flag. */
+export function tileHasFlag(defId: string, flag: TileFlag): boolean {
+  return TILE_FLAGS[defId]?.includes(flag) === true;
 }
