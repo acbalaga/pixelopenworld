@@ -1,4 +1,6 @@
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
+import { STATUS_BALANCE as SBAL } from '../../content/balance/status';
+import { STATUSES, type StatusId } from '../../content/combat/statuses';
 import { HINTS } from '../../content/hints';
 import { REQUESTS } from '../../content/dialogue';
 import { CREATURES } from '../../content/creatures';
@@ -158,6 +160,26 @@ export function consistency(v: View): Reason[] {
         : (r.state === 'ready' || r.state === 'done') && r.progress === n;
     if (!ok) fail('REQUEST_STATE', `${id} ${r.state} ${r.progress}/${n}`);
   }
+
+  // Statuses: known ids, one of each on a unit, and no longer than the longest a meal or a spell gives.
+  const longest = Math.max(
+    ...Object.values(STATUSES).map((d) => d.ticks),
+    ...Object.values(ITEMS).map((i) => i.food?.fed?.ticks ?? 0),
+  );
+  const limit = Math.floor((longest * (100 + SBAL.hexedExtendPct)) / 100);
+  sim.entities.comps.statuses.forEach((list) => {
+    if (!list) return;
+    const seen = new Set<string>();
+    for (const st of list) {
+      const def = STATUSES[st.id as StatusId];
+      if (!def || seen.has(st.id)) fail('STATUS_UNKNOWN', st.id);
+      else if (st.id === 'fed' && !(st.item && ITEMS[st.item]?.food?.fed))
+        fail('STATUS_UNKNOWN', `fed ${st.item}`);
+      else if (!isCount(st.until) || st.until - sim.tick > limit)
+        fail('STATUS_UNKNOWN', `${st.id} until ${st.until}`);
+      seen.add(st.id);
+    }
+  });
 
   // Pools follow ranks and gear, and a pool never sits above its maximum.
   const copy = deserializeState(plain.sim);

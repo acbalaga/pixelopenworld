@@ -11,6 +11,7 @@ import { SUBPX } from './kernel/fixed';
 import { hasShield } from './combat/guard';
 import { int, next, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
+import { applyStatus, statusesOf } from './statuses';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { applyMods, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
@@ -365,16 +366,11 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   pools.foc = Math.min(pools.focMax, pools.foc + food.foc);
   emit(state.events, { type: 'eaten', id: who, item });
   if (food.fed) {
-    const old = getComp(state.entities, who, 'fed');
-    setComp(state.entities, who, 'fed', {
-      item,
-      until: state.tick + food.fed.ticks,
-      hpMax: food.fed.hpMax,
-      staMax: food.fed.staMax,
-      focMax: food.fed.focMax,
-    });
-    recomputePools(state, who);
-    emit(state.events, { type: 'fedStarted', id: who, item, replaced: old?.item ?? null });
+    // One Fed at a time: a new meal replaces the old one, and the pool bonuses come from its mods.
+    const old = statusesOf(state, who).find((s) => s.id === 'fed');
+    const replaced = old?.item ?? null;
+    applyStatus(state, who, 'fed', -1, { ticks: food.fed.ticks, item });
+    emit(state.events, { type: 'fedStarted', id: who, item, replaced });
   }
   return true;
 }

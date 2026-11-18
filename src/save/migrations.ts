@@ -264,6 +264,34 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       if (inv) for (const id of start) if (!inv.recipes.includes(id)) inv.recipes.push(id);
     return { ...old, schema: 11, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 11 to 12 (M3-09): statuses become a component on every unit. A live `fed` component turns
+   * into a `fed` status with the same `until` and meal; the pool bonuses now come from the meal's
+   * mods. A meal the build no longer knows is dropped. The steam `cloud` component starts empty.
+   */
+  11: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          pos: unknown[];
+          fed?: ({ item: string; until: number } | null)[];
+          statuses?: unknown[];
+          cloud?: unknown[];
+        };
+      };
+    };
+    const comps = raw.entities.comps;
+    const fed = comps.fed ?? [];
+    comps.statuses = comps.pos.map((_, i) => {
+      const f = fed[i];
+      return f && ITEMS[f.item]?.food?.fed
+        ? [{ id: 'fed', until: f.until, src: -1, item: f.item }]
+        : null;
+    });
+    comps.cloud = comps.pos.map(() => null);
+    delete comps.fed;
+    return { ...old, schema: 12, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

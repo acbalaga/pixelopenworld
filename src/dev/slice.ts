@@ -13,6 +13,9 @@ import { madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
 import { addXp, offerTrial, passTrial } from '../sim/skills';
 import type { SimState } from '../sim/state';
+import type { StatusId } from '../content/combat/statuses';
+import { elementHitsWorld } from '../sim/elements';
+import { applyStatus } from '../sim/statuses';
 
 /** What the hooks need from the running scene. */
 export interface SliceHookContext {
@@ -50,6 +53,10 @@ export interface PowDevApi {
   leftHanded(on: boolean): void;
   /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
   trial(id: string, what: 'offer' | 'pass'): void;
+  /** Puts statuses on the avatar, as if applied by a spell. For screenshots of the status row. */
+  statuses(ids: string[]): void;
+  /** An element hits the world at a tile, as a bolt would. For screenshots of the set pieces. */
+  element(element: string, tx: number, ty: number): void;
 }
 
 const TILE = 16;
@@ -115,6 +122,12 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         offerTrial(state, who, id);
         passTrial(state, who, id);
       }
+    },
+    statuses(ids) {
+      for (const id of ids) applyStatus(state, who, id as StatusId);
+    },
+    element(element, tx, ty) {
+      elementHitsWorld(state, element, { x: tx * TILE + 8, y: ty * TILE + 8 });
     },
     giveXp(skill, amount) {
       addXp(state, who, skill, amount);

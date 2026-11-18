@@ -183,13 +183,25 @@ export interface CraftSession {
   source: 'manual' | 'routine';
 }
 
-/** The Fed buff from a meal. Bonuses to the pool maxima until `until`. One at a time. */
-export interface Fed {
-  item: string;
+/**
+ * One active status on a unit (M3-09). `until` is a sim tick. `src` is the entity that caused it,
+ * or -1 for none (a meal, a bed, the world). `item` is the meal behind a `fed` status, whose
+ * pool bonuses come from the food's data.
+ */
+export interface StatusEntry {
+  id: string;
   until: number;
-  hpMax: number;
-  staMax: number;
-  focMax: number;
+  src: number;
+  item?: string;
+}
+
+/** A lingering cloud (steam): hurts and hides what stands in it until `until`. */
+export interface Cloud {
+  kind: string;
+  until: number;
+  /** Radius in px. */
+  radius: number;
+  src: number;
 }
 
 /** Skill points and Trial progress for the avatar. Every key is a skill id from content. */
@@ -246,6 +258,8 @@ export interface Projectile {
   stagger: number;
   knock: number;
   element: string;
+  /** The hit applies the element's paired status (the technique's data says so). */
+  applies?: boolean;
 }
 
 /** Coin left behind by a death. */
@@ -297,6 +311,10 @@ export interface Fixture {
   open: boolean;
   /** Where it started, sub-pixel units. A block returns here when its room resets. */
   home: Vec;
+  /** Element fixtures: the world tick when a burnt or raised piece returns to how it was. */
+  until?: number;
+  /** A hidden niche that has been revealed. */
+  revealed?: boolean;
 }
 
 /** What the avatar has done with people: flags set by dialogue, and requests taken. */
@@ -339,7 +357,8 @@ export interface Components {
   node: GatherNode;
   gather: Gather;
   craft: CraftSession;
-  fed: Fed;
+  statuses: StatusEntry[];
+  cloud: Cloud;
   fixture: Fixture;
   journal: Journal;
   npc: Npc;
@@ -385,7 +404,8 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'node',
   'gather',
   'craft',
-  'fed',
+  'statuses',
+  'cloud',
   'fixture',
   'journal',
   'npc',

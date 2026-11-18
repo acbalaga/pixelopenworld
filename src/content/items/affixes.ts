@@ -2,7 +2,17 @@ import type { EquipSlot } from './types';
 
 /** A number a gear affix, passive, Path gift or status can change. Grows by ticket. */
 export type ModStat =
-  'power' | 'defense' | 'hpMax' | 'staMax' | 'focMax' | 'critPct' | 'gatherYield';
+  | 'power'
+  | 'defense'
+  | 'hpMax'
+  | 'staMax'
+  | 'focMax'
+  | 'critPct'
+  | 'gatherYield'
+  /** Walking speed, percent (statuses). */
+  | 'moveSpeed'
+  /** Skill XP, percent (Rested). */
+  | 'xp';
 
 /** One change to a stat: a flat `add`, a `pct` of the base, or both. Stamina and Focus in tenths. */
 export interface Mod {

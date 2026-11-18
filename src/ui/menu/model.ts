@@ -1,6 +1,8 @@
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
+import { STATUS_BALANCE } from '../../content/balance/status';
+import { STATUSES, type StatusId } from '../../content/combat/statuses';
 import {
   EQUIP_SLOTS,
   type BagFilter,
@@ -14,6 +16,7 @@ import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
 import { NPCS } from '../../content/dialogue';
 import { AFFIXES } from '../../content/items/affixes';
 import { gearStats, isBroken } from '../../sim/items';
+import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
 import { dayPhase } from '../../sim/time';
 import type { SimState } from '../../sim/state';
@@ -369,16 +372,20 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
 /** The status icons under the pool bars. Each has a shape and a name, never color alone. */
 export function statusIcons(state: SimState, who: number): StatusIconView[] {
   const out: StatusIconView[] = [];
-  const fed = state.entities.comps.fed[who];
-  if (fed) {
+  for (const st of visibleStatuses(statusesOf(state, who))) {
+    const def = STATUSES[st.id as StatusId];
+    if (!def) continue;
+    const isFed = st.id === 'fed' && st.item !== undefined;
     out.push({
-      id: 'fed',
-      icon: ITEMS[fed.item]?.icon ?? 'ui.icon_context',
-      label: fill(UI_STRINGS.statusFed, { item: itemName(fed.item) }),
-      ticksLeft: Math.max(0, fed.until - state.tick),
+      id: st.id,
+      icon: isFed ? (ITEMS[st.item as string]?.icon ?? def.iconKey) : def.iconKey,
+      label: isFed
+        ? fill(UI_STRINGS.statusFed, { item: itemName(st.item as string) })
+        : UI_STRINGS.statusNames[st.id as StatusId],
+      ticksLeft: Math.max(0, st.until - state.tick),
     });
   }
-  if (state.entities.comps.avatar[who]?.winded)
+  if (state.entities.comps.avatar[who]?.winded && out.length < STATUS_BALANCE.maxShown)
     out.push({
       id: 'winded',
       icon: 'ui.status_winded',

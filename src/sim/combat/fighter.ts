@@ -1,5 +1,6 @@
-import { activeMods, modAdd } from '../mods';
+import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
 import { COMBAT as C } from '../../content/balance/combat';
+import { STATUS_BALANCE as SB } from '../../content/balance/status';
 import { ATTACKS, type AttackDef, WEAPONS } from '../../content/combat/attacks';
 import { emit } from '../kernel/events';
 import { getComp, type EntityId } from '../kernel/entities';
@@ -148,6 +149,8 @@ export function startAttack(
   const f = getComp(state.entities, who, 'fighter');
   const def = ATTACKS[attackId];
   if (!f || !def) return false;
+  // Dazed units cannot start an attack or a technique.
+  if (hasStatus(state, who, 'dazed')) return false;
   if (def.cost && !spend(state, who, def.cost.pool, def.cost.amount)) return false;
   const me = centerPx(state, who);
   const av = getComp(state.entities, who, 'avatar');
@@ -190,6 +193,9 @@ export interface HitInfo {
   heavy: boolean;
   /** Weapon family or element, for skill XP. */
   tag: string;
+  /** The element the hit carries, and whether it applies the element's status. */
+  elem?: string;
+  applies?: boolean;
 }
 
 /** Applies one hit to `dst`: i-frames, perfect dodge, damage, stagger, knockback, hit pause, death. */
@@ -240,7 +246,11 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     nextU32(state.rng.combat) % 100 <
     C.crit.chancePct + modAdd(activeMods(state, h.src), 'critPct');
   const prop = propertyPct(state, dst, h.tag, mid, h.from, wasStaggered);
-  const amount = computeDamage(h.power, h.mult, h.rank, cb?.defense ?? 0, h.element, {
+  const defense = Math.max(
+    SB.defenseFloor,
+    applyMods(cb?.defense ?? 0, 'defense', statusMods(state, dst)),
+  );
+  const amount = computeDamage(h.power, h.mult, h.rank, defense, h.element, {
     crit,
     staggered: wasStaggered,
     pct: Math.floor((prop * through) / 100),
@@ -258,6 +268,7 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     bonus: wasStaggered,
     heavy: h.heavy,
     tag: h.tag,
+    ...(h.elem ? { elem: h.elem, applies: h.applies === true } : {}),
   });
   if (blocked) emit(state.events, { type: 'blocked', who: dst, src: h.src, amount });
   // Every unarmed hit gives some Stamina back.
@@ -401,6 +412,7 @@ export function resolveSwing(state: SimState, who: EntityId, def: AttackDef): vo
       element: 100,
       heavy: def.heavy === true,
       tag: def.family,
+      ...(def.element ? { elem: def.element, applies: def.applies === true } : {}),
     });
   }
 }

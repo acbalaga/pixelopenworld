@@ -19,6 +19,8 @@ import { wearSystem } from './items';
 import { skillsSystem } from './systems/skills';
 import { trialsSystem } from './systems/trials';
 import { craftSystem } from './crafting';
+import { elementsSystem } from './elements';
+import { statusSystem } from './statuses';
 import type { EntityId } from './kernel/entities';
 
 /** Systems in fixed run order. */
@@ -46,6 +48,8 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   fixturesSystem,
   knockSystem,
   projectileSystem,
+  elementsSystem,
+  statusSystem,
   poolsSystem,
   itemsSystem,
   craftSystem,

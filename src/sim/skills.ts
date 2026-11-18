@@ -1,7 +1,7 @@
 import { COMBAT as C } from '../content/balance/combat';
 import { SKILLS_BALANCE as B } from '../content/balance/skills';
 import { SKILLS, TRIALS, trialKey } from '../content/skills';
-import { activeMods, modAdd } from './mods';
+import { activeMods, applyMods, modAdd, statusMods } from './mods';
 import { NO_FIGHT } from './fight';
 import { getComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
@@ -69,7 +69,7 @@ export function pendingTrial(s: Skills, skill: string): number | null {
 }
 
 /**
- * Sets Health, Stamina and Focus maxima from skill points (design/03) and the Fed buff. Gains
+ * Sets Health, Stamina and Focus maxima from skill points (design/03) and the mods of worn gear and statuses (Fed). Gains
  * fill the pool too. Losses clamp it.
  */
 export function recomputePools(state: SimState, who: EntityId): void {
@@ -90,12 +90,11 @@ export function recomputePools(state: SimState, who: EntityId): void {
         sums[k] += pts * a.perPoint;
     }
   }
-  const fed = getComp(state.entities, who, 'fed');
   const mods = activeMods(state, who);
   const max = {
-    hp: C.pools.hpMax + sums.hp + (fed?.hpMax ?? 0) + modAdd(mods, 'hpMax'),
-    sta: C.pools.staMax + sums.sta + (fed?.staMax ?? 0) + modAdd(mods, 'staMax'),
-    foc: C.pools.focMax + sums.foc + (fed?.focMax ?? 0) + modAdd(mods, 'focMax'),
+    hp: C.pools.hpMax + sums.hp + modAdd(mods, 'hpMax'),
+    sta: C.pools.staMax + sums.sta + modAdd(mods, 'staMax'),
+    foc: C.pools.focMax + sums.foc + modAdd(mods, 'focMax'),
   };
   for (const k of ['hp', 'sta', 'foc'] as const) {
     const key = `${k}Max` as 'hpMax' | 'staMax' | 'focMax';
@@ -137,6 +136,8 @@ export function addXp(state: SimState, who: EntityId, skill: string, amount: num
   if (!s || amount <= 0 || !SKILLS[skill]) return;
   const p = s.points[skill] ?? 0;
   if (p >= B.maxPoints) return;
+  // Rested adds a percent, through the same mod path as everything else.
+  amount = applyMods(amount, 'xp', statusMods(state, who));
   const before = s.xp[skill] ?? 0;
   s.xp[skill] = before + amount;
   earnedXp(state, skill, amount);

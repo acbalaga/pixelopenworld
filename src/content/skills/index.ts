@@ -74,7 +74,13 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
       { id: 'skill.gale', name: 'Gale', family: 'magic', sources: [] },
       { id: 'skill.stone', name: 'Stone', family: 'magic', sources: [] },
       { id: 'skill.mending', name: 'Mending', family: 'magic', sources: [] },
-      { id: 'skill.hexing', name: 'Hexing', family: 'magic', sources: [] },
+      {
+        id: 'skill.hexing',
+        name: 'Hexing',
+        family: 'magic',
+        // Hexing something pays, and the first time pays a lump. Spells arrive in M3-13.
+        sources: [{ on: 'statusApplied', tag: 'hexed', base: 10, firstTime: 100 }],
+      },
       // Gathering.
       {
         id: 'skill.mining',
@@ -173,7 +179,6 @@ export const PENDING_SKILLS: string[] = [
   'skill.gale',
   'skill.stone',
   'skill.mending',
-  'skill.hexing',
   'skill.tailoring',
   'skill.alchemy',
   'skill.enchanting',

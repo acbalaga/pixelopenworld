@@ -15,6 +15,9 @@ export type SimEvent =
       heavy: boolean;
       /** What dealt it: the weapon family of a swing, or the element of a bolt. Pays skill XP. */
       tag: string;
+      /** The element the hit carried, and whether it applies the paired status (M3-09). */
+      elem?: string;
+      applies?: boolean;
     }
   | { type: 'dodgeStarted'; id: number }
   /** An attack found the target inside its invulnerable frames. */
@@ -74,6 +77,15 @@ export type SimEvent =
   | { type: 'equipped'; id: number; slot: string; item: string }
   | { type: 'unequipped'; id: number; slot: string; item: string }
   | { type: 'eaten'; id: number; item: string }
+  /** A status was applied (or refreshed) on `id`. `src` is -1 for none. */
+  /** The avatar slept on a bedroll. */
+  | { type: 'slept'; id: number; who: number }
+  | { type: 'statusApplied'; id: number; status: string; src: number; refreshed: boolean }
+  | { type: 'statusEnded'; id: number; status: string; how: 'expired' | 'cleared' }
+  /** An element met a status: the reaction fired at `id`. */
+  | { type: 'reaction'; id: number; reaction: string; src: number }
+  /** An element hit a fixture and it changed. `action` is one of the fixture actions. */
+  | { type: 'elementWorld'; id: number; element: string; action: string }
   | { type: 'fedStarted'; id: number; item: string; replaced: string | null }
   | { type: 'fedEnded'; id: number; item: string }
   | { type: 'gatherStarted'; id: number; node: number }

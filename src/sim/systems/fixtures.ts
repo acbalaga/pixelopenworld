@@ -6,6 +6,7 @@ import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kerne
 import { emit } from '../kernel/events';
 import { dirStep, px, SUBPX } from '../kernel/fixed';
 import { give, removeItem } from '../items';
+import { applyStatus } from '../statuses';
 import type { SimState } from '../state';
 import { overlapsSolid, type Box } from './collision';
 import { contextTarget } from './interact';
@@ -29,9 +30,11 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
   }
   if (def.type === 'portal' || def.type === 'arrival' || def.type === 'plate') return id;
   const size = px(def.size ?? TILE);
-  setComp(state.entities, id, 'body', { w: size, h: size, solid: true });
-  // Everything with a body can be used from the front.
-  if (def.type !== 'gate') setComp(state.entities, id, 'interactable', { kind });
+  // A hidden niche is a doorway in the wall: it does not block, and it cannot be used until revealed.
+  setComp(state.entities, id, 'body', { w: size, h: size, solid: def.hidden !== true });
+  // Everything with a body can be used from the front. Element pieces answer to elements only.
+  if (def.type !== 'gate' && def.type !== 'element')
+    setComp(state.entities, id, 'interactable', { kind });
   return id;
 }
 
@@ -112,6 +115,14 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   emit(state.events, { type: 'chestOpened', id, who });
 }
 
+/** Sleeping on the bedroll: Rested for a night's length. */
+function useBed(state: SimState, who: EntityId, id: EntityId): void {
+  if (!applyStatus(state, who, 'rested', -1))
+    // Already rested: the timer is refreshed, so this only fails for a unit that cannot be rested.
+    return;
+  emit(state.events, { type: 'slept', id, who });
+}
+
 function useWaystone(state: SimState, who: EntityId, id: EntityId): void {
   const a = getComp(state.entities, who, 'avatar');
   const p = getComp(state.entities, id, 'pos');
@@ -178,6 +189,12 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useWaystone(state, who, target);
     case 'storage':
       emit(state.events, { type: 'storageOpened', id: target, who });
+      return;
+    case 'bed':
+      return useBed(state, who, target);
+    case 'element':
+      // Only a revealed niche can be opened. The rest answer to elements, not to the button.
+      if (f.revealed) useChest(state, who, target);
       return;
     default:
   }

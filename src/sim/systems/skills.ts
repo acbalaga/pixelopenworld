@@ -119,6 +119,14 @@ export function skillsSystem(state: SimState): void {
           tier: target?.tier ?? 0,
           subject: dead ? (target?.kind ?? null) : null,
         });
+      } else if (e.type === 'statusApplied' && e.src === who && e.id !== who) {
+        const target = getComp(state.entities, e.id, 'combatant');
+        practice(state, who, {
+          on: 'statusApplied',
+          tag: e.status,
+          tier: target?.tier ?? 0,
+          subject: target?.kind ?? null,
+        });
       } else if (e.type === 'dodged' && e.dst === who) {
         const attacker = getComp(state.entities, e.src, 'combatant');
         practice(state, who, {

@@ -8,6 +8,7 @@ import type { SimState } from '../state';
 import { centerPx, foes, nearestInArc, spend, startAttack } from './fighter';
 import { len } from './geometry';
 import { setGuard } from './guard';
+import { hasStatus } from '../mods';
 
 /** True when the fighter can begin something new. */
 function free(state: SimState, who: EntityId): boolean {
@@ -64,6 +65,7 @@ export function applyFighterCommand(state: SimState, who: EntityId, c: Command):
 
     case 'dodge': {
       if (f.state !== 'idle' && f.state !== 'attack') return;
+      if (hasStatus(state, who, 'rooted')) return;
       if (!spend(state, who, 'sta', C.dodge.cost)) return;
       const d = dirStep(dodgeDir(state, who, c.dir));
       const l = len(d);

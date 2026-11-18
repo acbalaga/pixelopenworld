@@ -602,7 +602,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         continue;
       }
       let frame: string;
+      // A hidden niche is drawn only once Hexing has revealed it.
+      if (def.hidden && !f.revealed) continue;
       if (def.type === 'plate') frame = f.open ? 'down' : 'up';
+      else if (def.type === 'element') frame = f.open ? 'open' : 'closed';
       // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
       else if (def.type === 'storage') frame = 'closed';
       else if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
@@ -618,10 +621,32 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
       } else frame = 'base';
       const layer =
-        def.type === 'plate' || (def.type === 'door' && frame === 'open')
+        def.type === 'plate' ||
+        (def.type === 'door' && frame === 'open') ||
+        (def.type === 'element' && f.open && !def.hidden)
           ? Layer.Detail
           : Layer.Objects;
       renderer.drawSprite(layer, spriteFrame(def.sprite, frame), x, y);
+    }
+  };
+
+  // Steam clouds: a few pale puffs that drift with the clock, fading out as the cloud ends.
+  const drawClouds = (now: number): void => {
+    const e = state.entities;
+    for (const id of e.comps.cloud.keys()) {
+      const c = e.comps.cloud[id];
+      const p = e.comps.pos[id];
+      if (!c || !p) continue;
+      const x = Math.round(p.x / 256);
+      const y = Math.round(p.y / 256);
+      const left = Math.max(0, c.until - state.tick);
+      const k = Math.min(1, left / 20);
+      for (let i = 0; i < 5; i++) {
+        const a = (now / 600 + i * 1.3) % (Math.PI * 2);
+        const rx = Math.round(Math.cos(a) * c.radius * 0.5);
+        const ry = Math.round(Math.sin(a) * c.radius * 0.35);
+        renderer.drawRect(Layer.Objects, x + rx - 7, y + ry - 12, 14, 9, '#e8eef2', 0.55 * k);
+      }
     }
   };
 
@@ -1089,6 +1114,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         dt,
       );
       drawFixtures(now);
+      drawClouds(now);
       // People: they stand still and turn to face you when you are close.
       for (const id of state.entities.comps.npc.keys()) {
         const n = state.entities.comps.npc[id];

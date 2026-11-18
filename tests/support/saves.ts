@@ -121,7 +121,7 @@ export function tamper(
 
 /**
  * A state with what later schemas added taken off, so an old fixture's recorded hash can be
- * checked against it: nothing else changed. Covers skills.nightAcc (6), and storage, wear, worn
+ * checked against it: nothing else changed. Covers statuses and clouds (12) and skills.nightAcc (6), and storage, wear, worn
  * stacks and bag durability (7), and the fighter's guard fields (9).
  */
 export function asSchema5(s: SimState): SimState {
@@ -139,6 +139,10 @@ export function asSchema5(s: SimState): SimState {
   }
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
+  // Schema 12 moved Fed onto statuses. Every old fixture has no meal in progress.
+  delete (s.entities.comps as { statuses?: unknown }).statuses;
+  delete (s.entities.comps as { cloud?: unknown }).cloud;
+  (s.entities.comps as { fed?: unknown }).fed = s.entities.comps.pos.map(() => null);
   for (const inv of s.entities.comps.inventory)
     if (inv) inv.recipes = inv.recipes.filter((id) => RECIPES[id]?.learn !== 'start');
   delete (s.entities.comps as { storage?: unknown }).storage;

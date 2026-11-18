@@ -8,7 +8,6 @@ import { SUBPX } from '../kernel/fixed';
 import { int } from '../kernel/rng';
 import { tickGather } from '../gathering';
 import { canHold, collect, rollDrops, spawnPickup } from '../items';
-import { recomputePools } from '../skills';
 import type { SimState } from '../state';
 import { contextTarget } from './interact';
 import { madeItems } from '../ledger';
@@ -98,21 +97,9 @@ function nodes(state: SimState): void {
   }
 }
 
-/** The Fed buff ends on time. */
-function fed(state: SimState): void {
-  for (const who of query(state.entities, 'fed')) {
-    const f = getComp(state.entities, who, 'fed');
-    if (!f || state.tick < f.until) continue;
-    state.entities.comps.fed[who] = null;
-    recomputePools(state, who);
-    emit(state.events, { type: 'fedEnded', id: who, item: f.item });
-  }
-}
-
-/** Loot, pickups, gathering and buffs, once per tick. Runs before skills so XP sees gathers. */
+/** Loot, pickups and gathering, once per tick. Runs before skills so XP sees gathers. */
 export function itemsSystem(state: SimState): void {
   dropLoot(state);
   pickups(state);
   nodes(state);
-  fed(state);
 }

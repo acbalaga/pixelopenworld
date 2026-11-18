@@ -9,6 +9,8 @@ import { dirStep, SUBPX, type Vec } from '../kernel/fixed';
 import { int } from '../kernel/rng';
 import type { Ai, SimState } from '../state';
 import { nudge } from './movement';
+import { sightBlocked } from '../elements';
+import { applyMods, hasStatus, statusMods } from '../mods';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -36,7 +38,8 @@ function acquire(state: SimState, me: Vec, range: number): EntityId | null {
     const c = centerPx(state, id);
     if (!c) continue;
     const d = len({ x: c.x - me.x, y: c.y - me.y });
-    if (d <= bestD) {
+    // Steam hides whoever stands in or behind it.
+    if (d <= bestD && !sightBlocked(state, me, c)) {
       best = id;
       bestD = d;
     }
@@ -48,7 +51,8 @@ function acquire(state: SimState, me: Vec, range: number): EntityId | null {
 function walk(state: SimState, id: EntityId, dir: Vec, speed: number): void {
   const me = centerPx(state, id);
   const f = getComp(state.entities, id, 'fighter');
-  if (!me || !f || speed === 0) return;
+  if (!me || !f || speed === 0 || hasStatus(state, id, 'rooted')) return;
+  speed = applyMods(speed, 'moveSpeed', statusMods(state, id));
   let l = len(dir);
   if (l === 0) return;
   let x = dir.x / l;
