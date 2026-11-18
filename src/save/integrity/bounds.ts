@@ -202,6 +202,7 @@ export function saleCeiling(seconds: number, spentOnPurchases: number): number {
   const shops = Object.values(SHOPS);
   const start = shops.reduce((n, s) => n + s.purse.start, 0);
   const regens = Math.floor(seconds / (SHOP_BALANCE.purseRegenEvery / TPS)) + 1;
+  // The Fair Dealer Path (M3-08) doubles the top up. That ticket changes the factor here.
   return start + regens * SHOP_BALANCE.purseRegen * shops.length + spentOnPurchases;
 }
 

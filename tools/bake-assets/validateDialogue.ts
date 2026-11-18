@@ -1,3 +1,4 @@
+import { SHOP_BALANCE } from '../../src/content/balance/shop';
 import { CREATURES } from '../../src/content/creatures';
 import { DIALOGUES, NPCS, REQUESTS, SHOPS } from '../../src/content/dialogue';
 import type {
@@ -112,7 +113,14 @@ export function validateDialogue(
   for (const [key, s] of Object.entries(refs.shops)) {
     if (s.id !== key) errors.push(`shop ${key}: id ${s.id} does not match its key`);
     if (!refs.npcs[s.npc]) errors.push(`shop ${key}: no NPC ${s.npc}`);
-    for (const i of s.stock) if (!refs.items.has(i)) errors.push(`shop ${key}: unknown item ${i}`);
+    for (const i of s.stock) {
+      if (!refs.items.has(i.item)) errors.push(`shop ${key}: unknown item ${i.item}`);
+      if (!Number.isInteger(i.max) || i.max < 1) errors.push(`shop ${key}: ${i.item} max below 1`);
+    }
+    if (!(s.region in SHOP_BALANCE.regionPct))
+      errors.push(`shop ${key}: unknown region ${s.region}`);
+    if (s.buys.length === 0) errors.push(`shop ${key}: buys nothing`);
+    if (s.firmness < 0 || s.firmness > 60) errors.push(`shop ${key}: firmness outside 0 to 60`);
   }
   for (const [key, r] of Object.entries(refs.requests)) {
     const label = `request ${key}`;

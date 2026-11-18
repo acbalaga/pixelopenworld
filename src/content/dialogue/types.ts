@@ -1,4 +1,5 @@
 import type { DollSpec } from '../dolls/parts';
+import type { BagFilter } from '../items/types';
 
 /** A test the dialogue runs against the player's state. All conditions in a list must hold. */
 export type Cond =
@@ -59,10 +60,18 @@ export interface NpcDef {
 export interface ShopDef {
   id: string;
   npc: string;
-  /** Item ids on sale, in order. */
-  stock: readonly string[];
+  /** The region whose price table applies (`SHOP_BALANCE.regionPct`). */
+  region: string;
+  /** What is on sale, in order, and how many are on the shelf after each dawn restock. */
+  stock: readonly { item: string; max: number }[];
+  /** The Bag filters of the things this shop will buy. Anything with a value in them. */
+  buys: readonly BagFilter[];
   /** The shopkeeper's coin: what they hold at the start, and the most they will hold. */
   purse: { start: number; max: number };
+  /** How hard a bargain they drive, 0 to 60. Subtracts from the chance they accept an offer. */
+  firmness: number;
+  /** The shop mends gear for coin. */
+  repairs?: true;
 }
 
 export interface RequestDef {

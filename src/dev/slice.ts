@@ -9,7 +9,7 @@ import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { spawnCreature } from '../sim/combat/enemy';
 import type { Command } from '../sim/kernel/commands';
 import { addItem, countItem } from '../sim/items';
-import { madeItems } from '../sim/ledger';
+import { earnCoin, madeItems } from '../sim/ledger';
 import { getComp, type EntityId } from '../sim/kernel/entities';
 import { addXp, offerTrial, passTrial } from '../sim/skills';
 import type { SimState } from '../sim/state';
@@ -53,6 +53,8 @@ export interface PowDevApi {
   leftHanded(on: boolean): void;
   /** Offers or passes a Trial, for screenshots and checks of the Trials log. */
   trial(id: string, what: 'offer' | 'pass'): void;
+  /** Pays coin into the purse, as a seed (dev only). For screenshots of shops. */
+  giveCoin(n: number): void;
   /** Puts statuses on the avatar, as if applied by a spell. For screenshots of the status row. */
   statuses(ids: string[]): void;
   /** An element hits the world at a tile, as a bolt would. For screenshots of the set pieces. */
@@ -122,6 +124,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         offerTrial(state, who, id);
         passTrial(state, who, id);
       }
+    },
+    giveCoin(n) {
+      earnCoin(state, who, n, 'seed');
     },
     statuses(ids) {
       for (const id of ids) applyStatus(state, who, id as StatusId);

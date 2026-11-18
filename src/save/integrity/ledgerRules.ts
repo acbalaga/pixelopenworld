@@ -2,7 +2,8 @@ import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { REQUESTS } from '../../content/dialogue';
 import { RECIPES } from '../../content/items/recipes';
-import { buyPrice } from '../../sim/systems/npcs';
+import { ITEMS } from '../../content/items';
+import { buyPrice, lowestBuy } from '../../sim/economy';
 import { xpToNext } from '../../sim/skills';
 import { maxItemPerKill } from './bounds';
 import type { Reason } from './reasons';
@@ -112,11 +113,25 @@ export function ledgerRules(v: View): Reason[] {
       );
   }
 
-  // Purchases cost exactly what the items cost.
-  let cost = 0;
-  for (const [item, n] of Object.entries(ledger.itemsMade.shop ?? {})) cost += buyPrice(item) * n;
-  if ((ledger.coinSpent.purchase ?? 0) !== cost)
-    fail('PURCHASE_MISMATCH', `spent ${ledger.coinSpent.purchase ?? 0}, items cost ${cost}`);
+  // Purchases cost no more than the opening price and no less than the lowest price a full haggle
+  // and the Haggler Path can reach. Recipe scrolls are a sink of their own.
+  const range = { purchase: [0, 0], recipe: [0, 0] } as Record<string, [number, number]>;
+  for (const [item, n] of Object.entries(ledger.itemsMade.shop ?? {})) {
+    const r = range[ITEMS[item]?.teaches ? 'recipe' : 'purchase'] as [number, number];
+    r[0] += lowestBuy(item) * n;
+    r[1] += buyPrice(item) * n;
+  }
+  for (const sink of ['purchase', 'recipe'] as const) {
+    const spent = ledger.coinSpent[sink] ?? 0;
+    const [lo, hi] = range[sink] as [number, number];
+    if (spent < lo || spent > hi)
+      fail('PURCHASE_MISMATCH', `${sink} spent ${spent}, items cost between ${lo} and ${hi}`);
+  }
+
+  // Buyback can only return what was sold.
+  for (const [item, n] of Object.entries(ledger.itemsMade.buyback ?? {}))
+    if (n > (ledger.itemsSold[item] ?? 0))
+      fail('BUYBACK_EXCEEDS_SOLD', `${item} bought back ${n}, sold ${ledger.itemsSold[item] ?? 0}`);
 
   return out;
 }

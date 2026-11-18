@@ -20,6 +20,13 @@ export const MISC_ITEMS: readonly ItemDef[] = [
     bag: 'gear',
     equip: { slot: 'off' },
   }),
+  // A recipe scroll: read it to learn the recipe (M3-10). Sold by Brin.
+  item('item.scroll_sword_iron', 'misc', {
+    value: 40,
+    stack: 1,
+    teaches: 'recipe.sword_iron',
+    icon: 'icon.scroll_recipe',
+  }),
   item('item.whetstone', 'misc', { value: 8 }),
   item('item.thread_spool', 'misc', { value: 5 }),
   item('item.chalk_stub', 'misc', { value: 2 }),

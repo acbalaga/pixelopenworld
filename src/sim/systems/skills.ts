@@ -127,6 +127,10 @@ export function skillsSystem(state: SimState): void {
           tier: target?.tier ?? 0,
           subject: target?.kind ?? null,
         });
+      } else if (e.type === 'haggleWon' && e.who === who) {
+        practice(state, who, { on: 'haggle', tag: undefined, tier: 0, subject: e.shop });
+      } else if (e.type === 'sold' && e.who === who) {
+        practice(state, who, { on: 'sale', tag: undefined, tier: 0, subject: null });
       } else if (e.type === 'dodged' && e.dst === who) {
         const attacker = getComp(state.entities, e.src, 'combatant');
         practice(state, who, {

@@ -135,7 +135,16 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
       { id: 'skill.enchanting', name: 'Enchanting', family: 'crafting', sources: [] },
       { id: 'skill.tinkering', name: 'Tinkering', family: 'crafting', sources: [] },
       // Social.
-      { id: 'skill.bartering', name: 'Bartering', family: 'social', sources: [] },
+      {
+        id: 'skill.bartering',
+        name: 'Bartering',
+        family: 'social',
+        // Winning a haggle pays most, and the first win at each shop a lump. Every sale pays a little.
+        sources: [
+          { on: 'haggle', base: 14, firstTime: 60, scaled: false },
+          { on: 'sale', base: 3, scaled: false },
+        ],
+      },
       { id: 'skill.performance', name: 'Performance', family: 'social', sources: [] },
       { id: 'skill.leadership', name: 'Leadership', family: 'social', sources: [] },
       { id: 'skill.taming', name: 'Taming', family: 'social', sources: [] },
@@ -183,7 +192,6 @@ export const PENDING_SKILLS: string[] = [
   'skill.alchemy',
   'skill.enchanting',
   'skill.tinkering',
-  'skill.bartering',
   'skill.performance',
   'skill.stealth',
   // Late skills, M4 to M6.

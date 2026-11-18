@@ -230,6 +230,8 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.potion_health_m.desc': 'Sharp-tasting. It closes cuts fast.',
   'item.potion_stamina.name': 'Stamina Tonic',
   'item.potion_stamina.desc': 'Bitter and quick. Legs stop shaking.',
+  'item.scroll_sword_iron.name': 'Recipe: Iron Sword',
+  'item.scroll_sword_iron.desc': "A smith's notes on folding iron. Read it to learn the recipe.",
   'item.potion_focus.name': 'Focus Draught',
   'item.potion_focus.desc': 'Cold on the tongue. The mind sharpens.',
   'item.potion_swift.name': 'Swiftness Potion',

@@ -7,6 +7,8 @@ import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
 import { xpToNext } from '../sim/skills';
 import { NO_FIGHT } from '../sim/fight';
+import { dayIndex } from '../sim/time';
+import { newNpc } from '../sim/trade';
 import { deserializeState, serializeState } from '../sim/state';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
 
@@ -291,6 +293,35 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     comps.cloud = comps.pos.map(() => null);
     delete comps.fed;
     return { ...old, schema: 12, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 12 to 13 (M3-10): trade. A `trade` RNG stream seeded the way `createStreams` does, a
+   * `haggle` component (none open), the ledger's `itemsSold` tally, and shop state on every
+   * shopkeeper: a full shelf, no lost haggles, an empty buyback, and the save's own day as the
+   * restock day (a shop restocks at the first dawn after it, from the world clock).
+   */
+  12: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      seed: number;
+      tick: number;
+      rng: Record<string, unknown>;
+      ledger?: Record<string, unknown>;
+      entities: {
+        comps: { pos: unknown[]; haggle?: unknown[]; npc: ({ id: string } | null)[] };
+      };
+    };
+    raw.rng.trade = createStream(raw.seed, 'trade');
+    raw.entities.comps.haggle = raw.entities.comps.pos.map(() => null);
+    raw.entities.comps.npc = raw.entities.comps.npc.map((n) =>
+      n ? { ...n, ...newNpc(n.id, dayIndex(raw.tick)), purse: (n as { purse?: number }).purse } : n,
+    );
+    if (raw.ledger) raw.ledger.itemsSold = {};
+    return {
+      ...old,
+      schema: 13,
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
+      ledger: { ...old.ledger, itemsSold: {} },
+    };
   },
 };
 

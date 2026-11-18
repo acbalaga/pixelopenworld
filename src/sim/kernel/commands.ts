@@ -56,7 +56,20 @@ export type Command =
   | { type: 'hint'; id: string }
   | { type: 'buy'; shop: string; item: string; qty: number }
   /** Sell from bag slot `slot` to the shop in front of you. */
-  | { type: 'sell'; shop: string; slot: number; qty: number };
+  | { type: 'sell'; shop: string; slot: number; qty: number }
+  /** Buy back the stack at `index` of what this shop was sold, at the price it paid. */
+  | { type: 'buyback'; shop: string; index: number }
+  /** The repair service: mend a carried item (`bag`) or a worn one (`worn`, slot index of the equip slots). */
+  | { type: 'mend'; shop: string; from: 'bag' | 'worn'; slot: number }
+  /** One step of a haggle (M3-10). `start` needs `item` and `dir`, and `slot` for a sale. */
+  | {
+      type: 'haggle';
+      shop: string;
+      step: 'start' | 'low' | 'fair' | 'accept' | 'cancel';
+      item?: string;
+      dir?: 'buy' | 'sell';
+      slot?: number;
+    };
 
 /** Result of validating a raw command. */
 export type Validated = { ok: true; command: Command } | { ok: false; reason: string };
@@ -180,6 +193,44 @@ export function validateCommand(raw: unknown): Validated {
         ok: true,
         command: { type: 'sell', shop: r.shop, slot: r.slot as number, qty: r.qty as number },
       };
+    }
+    case 'buyback':
+    case 'mend':
+    case 'haggle': {
+      if (typeof r.shop !== 'string' || !/^shop\.[a-z0-9_]{1,40}$/.test(r.shop))
+        return { ok: false, reason: 'bad shop' };
+      const small = (n: unknown): n is number =>
+        Number.isInteger(n) && (n as number) >= 0 && (n as number) <= 255;
+      if (r.type === 'buyback') {
+        if (!small(r.index)) return { ok: false, reason: 'bad index' };
+        return { ok: true, command: { type: 'buyback', shop: r.shop, index: r.index } };
+      }
+      if (r.type === 'mend') {
+        if (r.from !== 'bag' && r.from !== 'worn') return { ok: false, reason: 'bad source' };
+        if (!small(r.slot)) return { ok: false, reason: 'bad slot' };
+        return { ok: true, command: { type: 'mend', shop: r.shop, from: r.from, slot: r.slot } };
+      }
+      const steps = ['start', 'low', 'fair', 'accept', 'cancel'];
+      if (typeof r.step !== 'string' || !steps.includes(r.step))
+        return { ok: false, reason: 'bad step' };
+      const cmd: Extract<Command, { type: 'haggle' }> = {
+        type: 'haggle',
+        shop: r.shop,
+        step: r.step as 'start',
+      };
+      if (r.step === 'start') {
+        if (r.dir !== 'buy' && r.dir !== 'sell') return { ok: false, reason: 'bad direction' };
+        cmd.dir = r.dir;
+        if (r.dir === 'buy') {
+          if (typeof r.item !== 'string' || !/^item\.[a-z0-9_]{1,40}$/.test(r.item))
+            return { ok: false, reason: 'bad item' };
+          cmd.item = r.item;
+        } else {
+          if (!small(r.slot)) return { ok: false, reason: 'bad slot' };
+          cmd.slot = r.slot;
+        }
+      }
+      return { ok: true, command: cmd };
     }
     default:
       return { ok: false, reason: 'unknown command type' };

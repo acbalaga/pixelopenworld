@@ -139,6 +139,17 @@ export function asSchema5(s: SimState): SimState {
   }
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
+  // Schema 13: trade. No trade stream, haggle component, itemsSold or shop state.
+  delete (s.rng as { trade?: unknown }).trade;
+  delete (s.entities.comps as { haggle?: unknown }).haggle;
+  if (s.ledger) delete (s.ledger as { itemsSold?: unknown }).itemsSold;
+  for (const n of s.entities.comps.npc) {
+    if (!n) continue;
+    delete (n as { stock?: unknown }).stock;
+    delete (n as { day?: unknown }).day;
+    delete (n as { locked?: unknown }).locked;
+    delete (n as { buyback?: unknown }).buyback;
+  }
   // Schema 12 moved Fed onto statuses. Every old fixture has no meal in progress.
   delete (s.entities.comps as { statuses?: unknown }).statuses;
   delete (s.entities.comps as { cloud?: unknown }).cloud;

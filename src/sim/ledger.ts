@@ -27,11 +27,13 @@ export interface Ledger {
   masterworks: Tally;
   /** Items crafted by the avatar and so carrying its maker's mark, by item id (M3-07). */
   marked: Tally;
+  /** Items sold to shops, by item id (M3-10). Buyback can only return what was sold. */
+  itemsSold: Tally;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
 export type CoinSource = 'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed';
-export type CoinSink = 'purchase' | 'echo';
+export type CoinSink = 'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe';
 export type ItemSource =
   | 'start'
   | 'loot'
@@ -42,6 +44,7 @@ export type ItemSource =
   | 'request'
   | 'dialogue'
   | 'shop'
+  | 'buyback'
   | 'seed';
 
 /** An empty ledger. */
@@ -55,6 +58,7 @@ export function newLedger(): Ledger {
     crafts: {},
     masterworks: {},
     marked: {},
+    itemsSold: {},
   };
 }
 
@@ -88,6 +92,11 @@ export function madeItems(state: SimState, source: ItemSource, item: string, qty
 /** Records XP earned in a skill. */
 export function earnedXp(state: SimState, skill: string, amount: number): void {
   if (amount > 0) bump(state.ledger.xpEarned, skill, amount);
+}
+
+/** Records items sold to a shop. */
+export function soldItems(state: SimState, item: string, qty: number): void {
+  if (qty > 0) bump(state.ledger.itemsSold, item, qty);
 }
 
 /** Records a creature killed. */

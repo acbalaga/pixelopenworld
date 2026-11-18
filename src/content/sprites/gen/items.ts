@@ -603,6 +603,15 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
     line(im, 5, 4, 8, 6, FIRE[2]);
     im.set(8, 6, FIRE[1]);
   }),
+  icon('scroll_recipe', (im) => {
+    im.rect(3, 2, 8, 9, CREAM[2]);
+    im.rect(3, 2, 8, 2, CREAM[3]);
+    im.rect(2, 1, 9, 2, CREAM[1]);
+    im.rect(2, 9, 9, 10, CREAM[1]);
+    line(im, 4, 4, 7, 4, FIRE[1]);
+    line(im, 4, 6, 7, 6, FIRE[1]);
+    im.rect(5, 8, 6, 8, FIRE[2]);
+  }),
   // ---- Tier 1 to 2 set (M3-05) ----
   sword('sword_bronze', BRONZE),
   sword('sword_steel', STEEL),

@@ -10,7 +10,8 @@ import type { SimState } from './state';
 import { newSkills } from './skills';
 import { interactFixture } from './systems/fixtures';
 import { hintSeen } from './systems/hints';
-import { buy, interactNpc, sell, talk } from './systems/npcs';
+import { interactNpc, talk } from './systems/npcs';
+import { buy, buyback, haggle, mend, sell } from './trade';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, newStorage, recomputeGear } from './items';
 import { madeItems } from './ledger';
@@ -75,6 +76,9 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   else if (c.type === 'talk') talk(state, who, c);
   else if (c.type === 'buy') buy(state, who, c);
   else if (c.type === 'sell') sell(state, who, c);
+  else if (c.type === 'buyback') buyback(state, who, c);
+  else if (c.type === 'mend') mend(state, who, c);
+  else if (c.type === 'haggle') haggle(state, who, c);
   applyFighterCommand(state, who, c);
 }
 

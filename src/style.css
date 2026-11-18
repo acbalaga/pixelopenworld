@@ -327,6 +327,14 @@ canvas {
   image-rendering: pixelated;
   flex: none;
 }
+.pow-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+}
 .pow-icon-big {
   width: calc(var(--px) * 18);
   height: calc(var(--px) * 18);
@@ -740,15 +748,46 @@ canvas {
   flex-direction: column;
   gap: calc(var(--px) * 1);
 }
+/* A row never shrinks below its content: the list scrolls instead. */
+.pow-shop > *:not(.pow-shop-list) {
+  flex-shrink: 0;
+}
 .pow-shop-row {
+  flex-shrink: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: calc(var(--px) * 2);
   min-height: 48px;
 }
+.pow-shop-row .pow-button {
+  white-space: nowrap;
+}
+.pow-shop-actions {
+  flex: 1 1 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: calc(var(--px) * 2);
+}
 .pow-shop-name {
-  flex: 1 1 auto;
+  flex: 1 1 8em;
   min-width: 0;
+}
+.pow-haggle {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-haggle-title {
+  margin: 0;
+}
+.pow-haggle-price {
+  margin: 0;
+  color: var(--pal-47);
+}
+.pow-haggle-says {
+  margin: 0;
+  min-height: 3em;
 }
 .pow-shop-price {
   color: var(--pal-47);

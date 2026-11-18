@@ -241,6 +241,31 @@ const rested = icon('ui.status_rested', (im) => {
   im.set(10, 10, GOLD[3]);
 });
 
+/** Buy: a coin purse, a round pouch cinched at the neck with a gold string and a coin on it. */
+const buy = icon('ui.icon_buy', (im) => {
+  im.rect(2, 0, 8, 1, WOOD);
+  im.rect(3, 2, 7, 3, WOOD);
+  im.rect(5, 0, 5, 0, METAL_DARK);
+  im.rect(2, 3, 8, 3, GOLD[3]);
+  disc(im, 5, 7, 4, WOOD);
+  im.rect(2, 5, 3, 6, GUARD);
+  im.rect(2, 10, 8, 10, METAL_DARK);
+  disc(im, 5, 7, 1, GOLD[2]);
+  im.set(5, 6, GOLD[3]);
+});
+
+/** Haggle: two arrows passing each other, an offer and a counter. */
+const haggle = icon('ui.icon_haggle', (im) => {
+  im.rect(0, 3, 8, 3, GOLD[3]);
+  im.rect(7, 1, 7, 5, GOLD[3]);
+  im.rect(8, 2, 8, 4, GOLD[3]);
+  im.rect(9, 3, 10, 3, GOLD[3]);
+  im.rect(3, 8, 11, 8, W);
+  im.rect(4, 6, 4, 10, W);
+  im.rect(3, 7, 3, 9, W);
+  im.rect(1, 8, 2, 8, W);
+});
+
 export const UI_ICONS: readonly SpriteDef[] = [
   attack,
   lunge,
@@ -261,6 +286,8 @@ export const UI_ICONS: readonly SpriteDef[] = [
   dazed,
   warded,
   rested,
+  buy,
+  haggle,
 ];
 
 /** Icon sprite id for each on-screen button. Technique buttons take their icon from the technique. */

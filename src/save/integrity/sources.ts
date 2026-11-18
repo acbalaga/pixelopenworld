@@ -7,6 +7,7 @@ import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { CREATURES } from '../../content/creatures';
+import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
 import { FIXTURES } from '../../content/world/fixtures';
 import type { ItemSource } from '../../sim/ledger';
@@ -33,7 +34,9 @@ function build(): Map<string, Set<ItemSource>> {
   for (const r of Object.values(REQUESTS)) for (const i of r.reward.items) add(i.item, 'request');
   for (const f of Object.values(FIXTURES))
     for (const i of f.loot?.items ?? []) add(i.item, 'chest');
-  for (const s of Object.values(SHOPS)) for (const i of s.stock) add(i, 'shop');
+  for (const s of Object.values(SHOPS)) for (const i of s.stock) add(i.item, 'shop');
+  // Anything with a value can be sold and bought back.
+  for (const i of Object.values(ITEMS)) if (i.value > 0) add(i.id, 'buyback');
   for (const d of Object.values(DIALOGUES)) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.do ?? []), ...(n.choices ?? []).flatMap((c) => c.do ?? [])];

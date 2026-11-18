@@ -26,7 +26,7 @@ import type { Reason } from './reasons';
 import type { View } from './view';
 
 const COIN_SOURCES = ['loot', 'chest', 'request', 'sale', 'echo', 'seed'];
-const COIN_SINKS = ['purchase', 'echo'];
+const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe'];
 const ITEM_SOURCES = [
   'start',
   'loot',
@@ -37,6 +37,7 @@ const ITEM_SOURCES = [
   'request',
   'dialogue',
   'shop',
+  'buyback',
   'seed',
 ];
 
@@ -199,6 +200,7 @@ export function consistency(v: View): Reason[] {
     [ledger.coinSpent, COIN_SINKS, null],
     [ledger.xpEarned, null, SKILLS],
     [ledger.kills, null, CREATURES],
+    [ledger.itemsSold, null, ITEMS],
     [ledger.crafts, null, RECIPES],
   ];
   for (const [t, names, content] of tallies)

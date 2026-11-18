@@ -78,6 +78,8 @@ export interface ItemDef {
   /** Affixes it can hold. Enchanting fills them (M3-14). Absent means 0. */
   affixSlots?: 0 | 1 | 2;
   tool?: { kind: ToolKind; tier: number };
+  /** Reading it (the Use button) teaches this recipe and uses it up. */
+  teaches?: string;
   /** Which Bag filter lists it. */
   bag: BagFilter;
 }
