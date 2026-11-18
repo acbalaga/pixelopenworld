@@ -41,7 +41,16 @@ import {
 } from '../platform/clock';
 import { worldTickAt } from '../sim/time';
 import { gatherSweep } from '../sim/gathering';
-import { drawCraftStep, stepRect } from '../render/craftStep';
+import { drawCraftStep } from '../render/craftStep';
+import {
+  drawGatherMeter,
+  faded,
+  meterRect,
+  stepPoint,
+  type Draws,
+  type MeterRect,
+} from '../render/actionMeter';
+import { UI_BALANCE } from '../content/balance/ui';
 import { STATIONS } from '../content/items/stations';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
@@ -583,6 +592,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const stepPtr = { down: false, x: 0, y: 0 };
   let stepGeom: { x: number; y: number; w: number; h: number; k: number } | null = null;
   let holdSent = false;
+  let lastMeter: { draw: (r: Draws) => void; until: number } | null = null;
   let kbCursor = { x: 500, y: 500 };
   const setPtr = (e: PointerEvent, down: boolean): void => {
     const css = canvas.getBoundingClientRect();
@@ -993,10 +1003,48 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     });
   }
 
+  /** What the avatar is working on, if anything: the animation, the thing's position and its box. */
+  const workOf = (): { anim: string; x: number; y: number; box: number[] } | null => {
+    const e = state.entities;
+    const g = e.comps.gather[who];
+    if (g) {
+      const n = e.comps.node[g.node];
+      const p = e.comps.pos[g.node];
+      const def = n ? NODES[n.kind] : undefined;
+      if (def && p) {
+        const x = Math.round(p.x / 256);
+        const y = Math.round(p.y / 256);
+        return { anim: def.workAnim, x, y, box: [x - 7, y - 11, 14, 14] };
+      }
+    }
+    const c = e.comps.craft[who];
+    const st = c ? STATIONS[c.station] : undefined;
+    const ap = e.comps.pos[who];
+    if (c && st && ap) {
+      let best: { x: number; y: number } | null = null;
+      let bestD = Infinity;
+      for (const id of e.comps.interactable.keys()) {
+        const it = e.comps.interactable[id];
+        const p = e.comps.pos[id];
+        if (it?.kind !== c.station || !p) continue;
+        const d = Math.hypot(p.x - ap.x, p.y - ap.y);
+        if (d < bestD) {
+          bestD = d;
+          best = { x: Math.round(p.x / 256), y: Math.round(p.y / 256) };
+        }
+      }
+      if (best) return { anim: st.workAnim, ...best, box: [best.x - 8, best.y - 12, 16, 14] };
+    }
+    return null;
+  };
+  /** Hit sparks at the thing being worked: render only, off under reduced motion. */
+  const sparks: { x: number; y: number; born: number }[] = [];
+
   const drawActor = (spriteId: string, id: number, now: number, x: number, y: number): void => {
     const f = state.entities.comps.fighter[id];
     const v = state.entities.comps.vel[id];
-    const facing = state.entities.comps.avatar[id]?.facing ?? (f ? cardinalOf(f.aim) : 4);
+    let facing = state.entities.comps.avatar[id]?.facing ?? (f ? cardinalOf(f.aim) : 4);
+    const working = id === who ? workOf() : null;
     let name = 'idle';
     let t = now;
     const last = lastDrawn.get(id);
@@ -1009,7 +1057,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       name = 'dodge';
       t = Math.min(Math.max(0, f.t) * (1000 / 30), 249);
     } else if (f?.state === 'hurt' || f?.state === 'stagger' || f?.state === 'dead') name = 'hurt';
-    else if ((v && (v.x !== 0 || v.y !== 0)) || (!state.entities.comps.avatar[id] && walking))
+    else if (id === who && working) {
+      name = working.anim;
+      // Face the thing being worked.
+      const wx = working.x - x;
+      const wy = working.y - y;
+      facing = Math.abs(wx) > Math.abs(wy) ? (wx > 0 ? 2 : 6) : wy > 0 ? 4 : 0;
+    } else if ((v && (v.x !== 0 || v.y !== 0)) || (!state.entities.comps.avatar[id] && walking))
       name = 'walk';
     const a = animOf(spriteId, name, facing);
     const dead = f?.state === 'dead';
@@ -1084,11 +1138,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             };
             const g = stepGeom;
             if (stepPtr.down)
-              pendingCommands.push({
-                type: 'craftPoint',
-                x: ((stepPtr.x * g.k - g.x) / g.w) * 1000,
-                y: ((stepPtr.y * g.k - g.y) / g.h) * 1000,
-              });
+              pendingCommands.push({ type: 'craftPoint', ...stepPoint(stepPtr, g, g.k) });
             else if (kb.x !== 0 || kb.y !== 0)
               pendingCommands.push({ type: 'craftPoint', x: kbCursor.x, y: kbCursor.y });
           } else if (st0.step === 'hold') {
@@ -1118,6 +1168,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
+        if (!settings.get().reducedMotion) {
+          const w = workOf();
+          if (w)
+            for (const e of state.events.list)
+              if (
+                (e.type === 'craftTap' && e.id === who) ||
+                ((e.type === 'gatherSwing' || e.type === 'gatherResolved') &&
+                  e.id === who &&
+                  e.sweet)
+              )
+                sparks.push({ x: w.x, y: w.y, born: now });
+        }
         skillFeed.ingest(state.events.list, who);
         for (const ev of state.events.list)
           if (ev.type === 'equipped' && ev.id === who)
@@ -1237,6 +1299,30 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       }
       drawTelegraphs(renderer, state);
       drawItemsWorld();
+      const worked = workOf();
+      if (worked) {
+        const [bx, by, bw, bh] = worked.box as [number, number, number, number];
+        renderer.drawRect(Layer.Overhead, bx, by, bw, 1, GOLD);
+        renderer.drawRect(Layer.Overhead, bx, by + bh - 1, bw, 1, GOLD);
+        renderer.drawRect(Layer.Overhead, bx, by + 1, 1, bh - 2, GOLD);
+        renderer.drawRect(Layer.Overhead, bx + bw - 1, by + 1, 1, bh - 2, GOLD);
+      }
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const sp = sparks[i] as (typeof sparks)[number];
+        const age = (now - sp.born) / UI_BALANCE.meter.sparkMs;
+        if (age >= 1) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const d = 2 + Math.round(5 * age);
+        for (const [sx, sy] of [
+          [-d, -d],
+          [d, -d],
+          [-d, d],
+          [d, d],
+        ] as const)
+          renderer.drawRect(Layer.Overhead, sp.x + sx - 1, sp.y - 6 + sy, 2, 2, GOLD, 1 - age);
+      }
       for (const id of state.entities.comps.ai.keys()) {
         const ai = state.entities.comps.ai[id];
         const p = state.entities.comps.pos[id];
@@ -1340,59 +1426,85 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       );
       // The pinned request is clear text in the DOM (design/09), drawn below the HUD.
       pinned.set(menuOpen || talkOpen ? null : pinnedLine(state, who));
-      // The gather timing sweep when working a node.
-      const gat = state.entities.comps.gather[who];
-      const gs = gat ? gatherSweep(state, who) : null;
-      if (gat && gs) {
-        const bal = ITEMS_BALANCE.gather;
-        // A sweep shows its sweet window. Fishing fills while it waits, then the bite window is gold.
-        const total = gs.def.fishing ? gat.wait + bal.fishBiteTicks : gs.sweep.ticks;
-        const from = gs.def.fishing ? gat.wait : gs.sweep.sweetFrom;
-        const to = gs.def.fishing ? total - 1 : gs.sweep.sweetTo;
-        const w = 40;
-        const gx = Math.floor(v.width / 2) - w / 2;
-        const gy = v.safe.y + v.safe.h - 40;
-        renderer.drawRect(Layer.Hud, gx - 1, gy - 1, w + 2, 7, DARK);
-        renderer.drawRect(Layer.Hud, gx, gy, w, 5, '#3a3f46');
-        const k = w / total;
-        renderer.drawRect(
-          Layer.Hud,
-          gx + Math.round(from * k),
-          gy,
-          Math.max(1, Math.round((to - from + 1) * k)),
-          5,
-          GOLD,
+      // The action meter (design/09): over the avatar while it works, faded out over fadeMs after.
+      {
+        const feetY = Math.round(pxY - camera.y - shake.y);
+        const anchor = {
+          x: Math.round(pxX - camera.x - shake.x),
+          headY: feetY - UI_BALANCE.meter.headDy,
+          feetY,
+        };
+        const cssBox = canvas.getBoundingClientRect();
+        const lay = computeLayout(
+          cssBox.width,
+          cssBox.height,
+          settings.get().handedness === 'left',
+          {
+            scheme: settings.get().controlScheme,
+            guard: shieldWorn,
+            hudScale: settings.get().hudScale,
+            buttonScale: settings.get().buttonScale,
+            insets: readSafeInsets(probe),
+          },
         );
-        renderer.drawRect(Layer.Hud, gx + Math.round(gat.t * k), gy - 1, 2, 7, INK);
-        // A tree takes several swings: one pip each, lit once done.
-        for (let i = 0; i < gs.sweep.swings && gs.sweep.swings > 1; i++)
-          renderer.drawRect(Layer.Hud, gx + i * 6, gy + 7, 4, 2, i < gat.swing ? GOLD : INK);
-      }
-      // The manual step of a craft.
-      const cs = state.entities.comps.craft[who];
-      if (cs) {
-        const st = STATIONS[cs.station];
-        if (st) {
-          const r = stepRect(v);
-          stepGeom = { ...r, k: v.dpr / v.scale };
+        const mvp = {
+          safe: v.safe,
+          topLimit: v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
+          zoneTop: Math.round(lay.stickZone.y * (v.dpr / v.scale)),
+        };
+        let draw: ((r: Draws) => void) | null = null;
+        const gat = state.entities.comps.gather[who];
+        const gs = gat ? gatherSweep(state, who) : null;
+        if (gat && gs) {
+          const bal = ITEMS_BALANCE.gather;
+          // A sweep shows its sweet window. Fishing fills while it waits, then the bite window is gold.
+          const total = gs.def.fishing ? gat.wait + bal.fishBiteTicks : gs.sweep.ticks;
+          const r = meterRect(anchor, mvp, 'track');
+          const view = {
+            total,
+            from: gs.def.fishing ? gat.wait : gs.sweep.sweetFrom,
+            to: gs.def.fishing ? total - 1 : gs.sweep.sweetTo,
+            t: gat.t,
+            swing: gat.swing,
+            swings: gs.sweep.swings,
+          };
+          draw = (rr) =>
+            drawGatherMeter(rr, r, view, { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46' });
         }
-        if (st)
-          drawCraftStep(
-            renderer,
-            v,
-            {
-              step: st.step,
-              t: state.tick - cs.start,
-              taps: cs.taps,
-              craft: st.craft,
-              samples: cs.samples ?? [],
-              held:
-                cs.holdFrom === undefined
-                  ? null
-                  : (cs.holdTo ?? state.tick - cs.start) - cs.holdFrom,
-            },
-            { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46', good: '#8a7a3a' },
+        const cs = state.entities.comps.craft[who];
+        const st = cs ? STATIONS[cs.station] : undefined;
+        if (cs && st) {
+          const r: MeterRect = meterRect(
+            anchor,
+            mvp,
+            st.step === 'trace' || st.step === 'hold' ? 'panel' : 'track',
           );
+          stepGeom = { ...r, h: r.w, k: v.dpr / v.scale };
+          const view = {
+            step: st.step,
+            t: state.tick - cs.start,
+            taps: cs.taps,
+            craft: st.craft,
+            samples: cs.samples ?? [],
+            held:
+              cs.holdFrom === undefined ? null : (cs.holdTo ?? state.tick - cs.start) - cs.holdFrom,
+          };
+          draw = (rr) =>
+            drawCraftStep(rr, r, view, {
+              ink: INK,
+              dark: DARK,
+              gold: GOLD,
+              track: '#3a3f46',
+              good: '#8a7a3a',
+            });
+        } else stepGeom = null;
+        if (draw) {
+          draw(renderer);
+          lastMeter = { draw, until: now + UI_BALANCE.meter.fadeMs };
+        } else if (lastMeter && now < lastMeter.until) {
+          const fade = Math.max(0, (lastMeter.until - now) / UI_BALANCE.meter.fadeMs);
+          lastMeter.draw(faded(renderer, fade));
+        } else lastMeter = null;
       }
       // Build id and time, bottom left, so a refreshed page can be told from a stale one.
       fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {

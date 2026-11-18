@@ -22,6 +22,11 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
       return e.owner === playerId ? null : 'sfx.spit';
     case 'damageDealt':
       return e.heavy || e.crit || e.bonus ? 'sfx.hit_heavy' : 'sfx.hit_light';
+    case 'gatherSwing':
+    case 'gatherResolved':
+      return e.id === playerId && e.sweet ? 'sfx.hit_light' : null;
+    case 'craftTap':
+      return e.id === playerId ? 'sfx.hit_light' : null;
     case 'perfectDodge':
     case 'parried':
       return 'sfx.chime';

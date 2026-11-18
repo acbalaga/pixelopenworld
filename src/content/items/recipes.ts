@@ -350,6 +350,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.herb_patch': {
     id: 'node.herb_patch',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 1,
     yields: [
       { item: 'item.sunwort', weight: 3 },
@@ -361,6 +362,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.berry_bush': {
     id: 'node.berry_bush',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 1,
     yields: [
       { item: 'item.berry_red', weight: 3 },
@@ -373,6 +375,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.copper_vein': {
     id: 'node.copper_vein',
     tag: 'mining',
+    workAnim: 'work_swing',
     tier: 1,
     tool: 'pick',
     yields: [
@@ -386,6 +389,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.iron_vein': {
     id: 'node.iron_vein',
     tag: 'mining',
+    workAnim: 'work_swing',
     tier: 2,
     tool: 'pick',
     yields: [
@@ -401,6 +405,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.oak_tree': {
     id: 'node.oak_tree',
     tag: 'logging',
+    workAnim: 'work_swing',
     tier: 1,
     tool: 'axe',
     yields: [{ item: 'item.oak_log', weight: 1 }],
@@ -411,6 +416,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.ash_tree': {
     id: 'node.ash_tree',
     tag: 'logging',
+    workAnim: 'work_swing',
     tier: 2,
     tool: 'axe',
     yields: [{ item: 'item.ash_log', weight: 1 }],
@@ -422,6 +428,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.fishing_spot': {
     id: 'node.fishing_spot',
     tag: 'fishing',
+    workAnim: 'work_cast',
     tier: 1,
     tool: 'rod',
     yields: [
@@ -438,6 +445,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.flax_patch': {
     id: 'node.flax_patch',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [{ item: 'item.flax_fiber', weight: 1 }],
     respawn: 4 * MIN,
@@ -446,6 +454,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.briar_tuft': {
     id: 'node.briar_tuft',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [{ item: 'item.wool_tuft', weight: 1 }],
     respawn: 4 * MIN,
@@ -454,6 +463,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.glowcap_cluster': {
     id: 'node.glowcap_cluster',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [{ item: 'item.glowcap', weight: 1 }],
     respawn: 5 * MIN,
@@ -462,6 +472,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.nightshade_bush': {
     id: 'node.nightshade_bush',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [{ item: 'item.nightshade', weight: 1 }],
     respawn: 5 * MIN,
@@ -470,6 +481,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.river_bank': {
     id: 'node.river_bank',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [
       { item: 'item.clay', weight: 3 },
@@ -481,6 +493,7 @@ export const NODES: Record<string, NodeDef> = {
   'node.silk_web': {
     id: 'node.silk_web',
     tag: 'foraging',
+    workAnim: 'work_reach',
     tier: 2,
     yields: [{ item: 'item.silk_cloth', weight: 1 }],
     respawn: 8 * MIN,

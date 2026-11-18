@@ -21,4 +21,26 @@ export const UI_BALANCE = {
     /** The Menu redraws from the sim at most this often while open. */
     refreshMs: 200,
   },
+  /** The action meter over the avatar while it works (design/09). Distances are logical px. */
+  meter: {
+    /** Space between the top of the meter and the avatar's head point. */
+    gapPx: 6,
+    /** Sweep, rhythm and timing track, at least 72 x 7. */
+    trackW: 80,
+    trackH: 7,
+    /** Trace and hold panel, at most this wide and tall. */
+    panelMax: 120,
+    /** A panel shrinks to fit between the status row and the thumb zone, down to this. */
+    panelMin: 56,
+    /** Space between the feet and a meter that flipped below the avatar. */
+    flipMarginPx: 4,
+    /** Room under the track or panel for pips and the time bar. */
+    tailPx: 10,
+    /** Head point above the feet: clears the sprite and the Path title. */
+    headDy: 30,
+    /** Fade out when the work ends. */
+    fadeMs: 150,
+    /** A spark on a hit. */
+    sparkMs: 220,
+  },
 } as const;
