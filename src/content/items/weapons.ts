@@ -54,7 +54,21 @@ const family2 = (
     equip: { slot: 'main', weapon, power, doll: { mainHand: weapon } },
   });
 
+/**
+ * The wooden dagger a new character wakes with (M4-14, playtest F4): Blades, the lowest power in
+ * the game, and less durability than any tier 1 blade. It can be made again at the workbench.
+ */
+const DAGGER_WOOD: ItemDef = item('item.dagger_wood', 'weapon', {
+  value: 1,
+  tier: 1,
+  quality: true,
+  durability: 40,
+  affixSlots: 1,
+  equip: { slot: 'main', weapon: 'sword', power: 5, doll: { mainHand: 'dagger' } },
+});
+
 export const WEAPON_ITEMS: readonly ItemDef[] = [
+  DAGGER_WOOD,
   family2('item.maul_iron', 80, 15, 'maul'),
   family2('item.bow_long', 85, 15, 'bow'),
   family2('item.wraps_leather', 40, 12, 'wraps'),

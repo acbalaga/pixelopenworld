@@ -20,7 +20,18 @@ const piece = (
     equip: { slot, defense, ...(doll ? { doll } : {}) },
   });
 
+/**
+ * Ragged clothes: what a new character wakes in (M4-14). No defense, no wear, worth nothing. The
+ * doll names no color, so it shows in the player's own two colors.
+ */
+const OUTFIT_RAGGED: ItemDef = item('item.outfit_ragged', 'armor', {
+  value: 0,
+  noWear: true,
+  equip: { slot: 'body', defense: 0, doll: { top: 'tunic' } },
+});
+
 export const ARMOR_ITEMS: readonly ItemDef[] = [
+  OUTFIT_RAGGED,
   // Shields.
   piece('item.shield_wood', 'off', 1, 3, 25, 70, { offHand: 'shield' }),
   piece('item.shield_buckler', 'off', 1, 2, 18, 60, { offHand: 'shield' }),

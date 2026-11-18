@@ -82,6 +82,8 @@ export interface ItemDef {
   quality?: true;
   /** Most durability. Gear and tools only. Absent means the item does not wear. */
   durability?: number;
+  /** Gear that never wears, so it needs no durability (the ragged clothes, M4-14). */
+  noWear?: true;
   /** Affixes it can hold. Enchanting fills them (M3-14). Absent means 0. */
   affixSlots?: 0 | 1 | 2;
   tool?: { kind: ToolKind; tier: number };

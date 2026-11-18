@@ -1,5 +1,9 @@
 /** Item names and descriptions, keyed by the item's `nameKey` and `descKey`. No em dashes. */
 export const ITEM_STRINGS: Readonly<Record<string, string>> = {
+  'item.dagger_wood.name': 'Wooden Dagger',
+  'item.dagger_wood.desc': 'Whittled from a branch. Better than bare hands, only just.',
+  'item.outfit_ragged.name': 'Ragged Clothes',
+  'item.outfit_ragged.desc': 'Patched more than once, and warm enough.',
   'item.sword_rusty.name': 'Rusty Sword',
   'item.sword_rusty.desc': 'A pitted blade. It still bites.',
   'item.sword_iron.name': 'Iron Sword',

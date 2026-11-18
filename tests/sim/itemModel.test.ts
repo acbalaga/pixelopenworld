@@ -133,7 +133,7 @@ describe('stack merging', () => {
     };
     equip(s, me, 0);
     expect(i.equipment.main).toMatchObject({ q: 2, dur: 30, mark: 1, affixes: ['affix.power_1'] });
-    expect(i.slots[0]).toMatchObject({ item: 'item.sword_rusty' });
+    expect(i.slots[0]).toMatchObject({ item: 'item.dagger_wood' });
     expect(s.entities.comps.combatant[me]!.power).toBe(
       gearStats(ITEMS['item.sword_steel']!, i.equipment.main!).power,
     );
@@ -158,7 +158,7 @@ describe('wear', () => {
       heavy: false,
       tag: 'blades',
     };
-    const max = ITEMS['item.sword_rusty']!.durability!;
+    const max = ITEMS['item.dagger_wood']!.durability!;
     for (let n = 0; n < B.wear.weaponHits - 1; n++) ev(s, hit);
     expect(inv(s, me).equipment.main!.dur).toBe(max);
     ev(s, hit);
@@ -183,12 +183,12 @@ describe('wear', () => {
   });
   it('every worn item loses deathPct of its maximum on death, and none is ever destroyed', () => {
     const { s, me } = world();
-    const max = ITEMS['item.sword_rusty']!.durability!;
+    const max = ITEMS['item.dagger_wood']!.durability!;
     for (let n = 0; n < 12; n++) ev(s, { type: 'died', id: me, team: 0 });
     const main = inv(s, me).equipment.main!;
     expect(main.dur).toBe(0);
     expect(isBroken(main)).toBe(true);
-    expect(main.item).toBe('item.sword_rusty');
+    expect(main.item).toBe('item.dagger_wood');
     ev(s, { type: 'died', id: me, team: 0 });
     expect(inv(s, me).equipment.main!.dur).toBe(0);
     expect(max).toBeGreaterThan(0);

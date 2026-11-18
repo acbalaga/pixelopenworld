@@ -412,7 +412,8 @@ function hands(b: BodyType, p: Pose): { main: [number, number]; off: [number, nu
   };
 }
 
-function swordLayer(b: BodyType, p: Pose): Img {
+/** A blade held in the main hand: `len` pixels long, with a metal or wooden edge. */
+function bladeLayer(b: BodyType, p: Pose, len: number, wood: boolean): Img {
   const im = new Img(24, 32);
   const [hx, hy] = hands(b, p).main;
   const side = p.dir === 'right';
@@ -420,19 +421,30 @@ function swordLayer(b: BodyType, p: Pose): Img {
   const up = p.stance === 'windup' || (p.stance === 'hurt' && !side);
   im.rect(cx - 1, hy, cx + 1, hy, 2);
   const blade = (x: number, y: number, last: boolean): void =>
-    im.set(x, y, last ? METAL.tip : METAL.blade);
+    im.set(x, y, wood ? (last ? WOOD.lit : WOOD.main) : last ? METAL.tip : METAL.blade);
+  const edge = wood ? WOOD.shade : METAL.edge;
   if (side && p.stance === 'strike') {
-    for (let i = 1; i <= 7; i++) blade(cx + i, hy, i === 7);
-    im.rect(cx + 1, hy + 1, cx + 6, hy + 1, METAL.edge);
+    for (let i = 1; i <= len; i++) blade(cx + i, hy, i === len);
+    im.rect(cx + 1, hy + 1, cx + len - 1, hy + 1, edge);
   } else if (side && p.stance === 'recover') {
-    for (let i = 1; i <= 5; i++) blade(cx + i, hy + i - 1, i === 5);
+    const n = Math.max(2, len - 2);
+    for (let i = 1; i <= n; i++) blade(cx + i, hy + i - 1, i === n);
   } else if (up) {
-    for (let i = 1; i <= 7; i++) blade(cx, hy - i, i === 7);
+    for (let i = 1; i <= len; i++) blade(cx, hy - i, i === len);
   } else {
-    for (let i = 1; i <= 7; i++) blade(cx, hy + i, i === 7);
-    im.rect(cx + 1, hy + 2, cx + 1, hy + 6, METAL.edge);
+    for (let i = 1; i <= len; i++) blade(cx, hy + i, i === len);
+    im.rect(cx + 1, hy + 2, cx + 1, hy + len - 1, edge);
   }
   return im;
+}
+
+function swordLayer(b: BodyType, p: Pose): Img {
+  return bladeLayer(b, p, 7, false);
+}
+
+/** A short wooden dagger: half the length of the sword, in wood colors. */
+function daggerLayer(b: BodyType, p: Pose): Img {
+  return bladeLayer(b, p, 3, true);
 }
 
 function staffLayer(b: BodyType, p: Pose): Img {
@@ -708,6 +720,7 @@ export function dollLayers(): SpriteDef[] {
     for (const k of ['tunic', 'vest', 'robe'] as const)
       out.push(layer(`doll.top_${k}_${b}`, (p) => topLayer(k, b, p)));
     out.push(layer(`doll.main_sword_${b}`, (p) => swordLayer(b, p), true));
+    out.push(layer(`doll.main_dagger_${b}`, (p) => daggerLayer(b, p), true));
     out.push(layer(`doll.main_staff_${b}`, (p) => staffLayer(b, p), true));
     out.push(layer(`doll.main_spear_${b}`, (p) => spearLayer(b, p), true));
     out.push(layer(`doll.main_maul_${b}`, (p) => maulLayer(b, p), true));

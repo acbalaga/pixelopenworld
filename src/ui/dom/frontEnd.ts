@@ -45,7 +45,8 @@ export interface FrontEndDeps {
   connectMs?: number;
 }
 
-export type FrontEndResult = { mode: 'continue' } | { mode: 'new'; handle: string; look: DollSpec };
+export type FrontEndResult =
+  { mode: 'continue' } | { mode: 'new'; handle: string; look: DollSpec; seed: number };
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -403,7 +404,9 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
           input.focus();
           return;
         }
-        finish({ mode: 'new', handle: input.value.trim(), look: { ...look } });
+        // The creation seed is drawn here, in the platform layer, never in the sim.
+        const seed = crypto.getRandomValues(new Uint32Array(1))[0] as number;
+        finish({ mode: 'new', handle: input.value.trim(), look: { ...look }, seed });
       });
 
       put(

@@ -1,4 +1,5 @@
 import { MOSSLING, Run } from '../../tests/support/bots';
+import { withRustySword } from '../../tests/support/oldKit';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
 import { requestState } from '../../src/sim/journal';
@@ -76,6 +77,10 @@ export const FIGHT: Policy = {
   label: 'Fight Mosslings with the sword, sell the loot',
   skill: 'skill.blades',
   seed: 11,
+  // The thresholds measure the loop with the base sword. A new character starts with a dagger.
+  setup(run) {
+    withRustySword(run.s, run.me);
+  },
   step(run, n) {
     run.fight(MOSSLING, { eatBelow: 40 });
     if (run.dead) run.recover();

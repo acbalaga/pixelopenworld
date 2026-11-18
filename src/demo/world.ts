@@ -126,6 +126,7 @@ import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
+import { chooseWake } from '../sim/world/wake';
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
 import { NODES } from '../content/items/recipes';
@@ -463,13 +464,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     spawnTile.x = at[0] as number;
     spawnTile.y = at[1] as number;
   }
-  const state = restored ?? createDemoState(1, 0);
+  // A new character has its own creation seed. Developer paths without one keep seed 1.
+  const state = restored ?? createDemoState(entry?.seed ?? 1, 0);
   state.world = world;
   state.worldTick = worldTickAt(clock.trustedNow(), worldEpoch);
+  // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
+  // developer `?at=` overrides that.
+  const wake = !restored && entry && !at ? chooseWake(state) : null;
+  if (wake) {
+    spawnTile.x = wake.x;
+    spawnTile.y = wake.y;
+  }
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = restored
     ? (findAvatar(restored) as number)
     : createAvatar(state, px(feet.x), px(feet.y), entry?.handle);
+  if (wake) {
+    const a = state.entities.comps.avatar[who];
+    if (a) a.facing = wake.facing as typeof a.facing;
+  }
   // `?at=` also moves a loaded avatar, for screenshots and tests.
   if (restored && at && at.length === 2 && at.every(Number.isFinite)) {
     const p = state.entities.comps.pos[who];
@@ -488,7 +501,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     spawners: !fly && params.get('foes') !== '0',
     onlyMissing: restored !== null,
   });
-  const bag = restored ? null : state.entities.comps.inventory[who];
+  // `?kit=dev` (dev builds only) adds a quick kit for screenshots and tests, recorded as seeded.
+  const bag =
+    restored || !import.meta.env.DEV || params.get('kit') !== 'dev'
+      ? null
+      : state.entities.comps.inventory[who];
   if (bag) {
     for (const [item, qty] of [
       ['item.sword_iron', 1],
@@ -497,7 +514,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       ['item.raw_meat', 2],
     ] as const) {
       addItem(bag, item, qty);
-      // Demo scaffolding, not the starter kit: recorded as seeded until M3 replaces it.
       madeItems(state, 'seed', item, qty);
     }
   }

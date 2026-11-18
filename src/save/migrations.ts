@@ -474,6 +474,33 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       ledger: { ...old.ledger, requestRewards: {} },
     };
   },
+  /**
+   * 17 to 18 (M4-14): the ledger records which starter kit the character began with. Every save
+   * before this began with kit 1 (a rusty sword and two bread), so that is what it gets. The one
+   * exception is a save whose `start` ledger already holds a kit 2 item (test states built from
+   * current code; no real save can), which is kit 2. Claiming kit 2 gains nothing: kit 2 is the
+   * smaller kit, and the check still rejects a rusty sword from `start`. The new `start` rng
+   * stream joins, seeded as it would have been for a new character.
+   */
+  17: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      seed: number;
+      rng: Record<string, unknown>;
+      ledger?: Record<string, unknown>;
+    };
+    const kit2 = Object.keys(old.ledger?.itemsMade?.start ?? {}).some(
+      (i) => i === 'item.dagger_wood' || i === 'item.outfit_ragged',
+    );
+    const startKit = kit2 ? 2 : 1;
+    if (raw.ledger) raw.ledger.startKit = startKit;
+    raw.rng.start ??= createStream(raw.seed, 'start');
+    return {
+      ...old,
+      schema: 18,
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
+      ledger: { ...old.ledger, startKit },
+    };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

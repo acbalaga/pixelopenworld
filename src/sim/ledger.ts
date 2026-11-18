@@ -34,6 +34,11 @@ export interface Ledger {
    * number finished, `coin`, and each item id by quantity. The validator bounds it by the board.
    */
   requestRewards: Tally;
+  /**
+   * The starter kit this character began with (M4-14): 1 for every save made before the bare kit,
+   * 2 for new characters. The integrity check reads the kit it names.
+   */
+  startKit: 1 | 2;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
@@ -65,6 +70,7 @@ export function newLedger(): Ledger {
     marked: {},
     itemsSold: {},
     requestRewards: {},
+    startKit: 2,
   };
 }
 

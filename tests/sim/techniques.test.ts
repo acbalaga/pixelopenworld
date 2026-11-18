@@ -36,7 +36,7 @@ describe('the lunge follows the weapon', () => {
     // The sword went back to the bag. Take the spear off: bare hands use the Palm.
     expect(unequip(s, me, 'main')).toBe(true);
     expect(slots(s, me)[0]).toBe('technique.unarmed_palm');
-    expect(equip(s, me, bagSlot(s, me, 'item.sword_rusty'))).toBe(true);
+    expect(equip(s, me, bagSlot(s, me, 'item.dagger_wood'))).toBe(true);
     expect(slots(s, me)[0]).toBe('technique.blades_lunge');
   });
   it('a learned technique in another slot survives a weapon change', () => {

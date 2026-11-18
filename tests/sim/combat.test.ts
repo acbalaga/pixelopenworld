@@ -10,6 +10,7 @@ import { createAvatar, feetAt } from '../../src/sim/avatar';
 import type { Command } from '../../src/sim/kernel/commands';
 import { Dir, px, type Direction } from '../../src/sim/kernel/fixed';
 import type { SimEvent } from '../../src/sim/kernel/events';
+import { withRustySword } from '../support/oldKit';
 import { createDemoState, hashState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 
@@ -31,6 +32,8 @@ function arena(scheme: 'flow' | 'classic' = 'flow'): Arena {
   s.world = OPEN;
   const f = feetAt(20, 20);
   const me = createAvatar(s, f.x, f.y);
+  // The combat balance is written against the base sword, not the starting dagger.
+  withRustySword(s, me);
   const events: SimEvent[] = [];
   const tick = (...cmds: Command[]): void => {
     stepWorld(s, me, { commands: cmds });

@@ -52,9 +52,10 @@ export function validateItems(
       }
     }
     if (d.tool && d.stack !== 1) errors.push(`${l}: tools must not stack`);
+    if (d.noWear && d.durability !== undefined) errors.push(`${l}: noWear gear has no durability`);
     if (d.durability !== undefined && !(d.equip || d.tool))
       errors.push(`${l}: only gear and tools have durability`);
-    if ((d.equip || d.tool) && (d.durability === undefined || d.durability < 1))
+    if ((d.equip || d.tool) && !d.noWear && (d.durability === undefined || d.durability < 1))
       errors.push(`${l}: gear and tools need durability`);
     if ((d.affixSlots ?? 0) > 0 && !d.equip) errors.push(`${l}: only gear has affix slots`);
     if (d.quality && d.category === 'currency') errors.push(`${l}: currency has no quality`);

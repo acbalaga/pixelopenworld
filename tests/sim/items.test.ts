@@ -119,15 +119,16 @@ describe('stacking and overflow', () => {
   it('capacity comes from balance data, and a new avatar has the starter kit', () => {
     const r = rig();
     expect(inv(r).slots).toHaveLength(B.inventory.slots);
-    expect(inv(r).equipment.main?.item).toBe('item.sword_rusty');
-    expect(countItem(inv(r), 'item.dish_bread')).toBe(2);
+    expect(inv(r).equipment.main?.item).toBe('item.dagger_wood');
+    expect(inv(r).equipment.body?.item).toBe('item.outfit_ragged');
+    expect(countItem(inv(r), 'item.dish_bread')).toBe(1);
   });
 });
 
 describe('equipment', () => {
-  it('a new avatar fights with the base sword stats', () => {
+  it('a new avatar fights with the wooden dagger and no defense', () => {
     const r = rig();
-    expect(cb(r)).toMatchObject({ weapon: 'sword', power: 10, defense: 0 });
+    expect(cb(r)).toMatchObject({ weapon: 'sword', power: 5, defense: 0 });
   });
   it('equipping a weapon changes power, and swaps the old one back into the slot', () => {
     const r = rig();
@@ -135,7 +136,7 @@ describe('equipment', () => {
     r.tick({ type: 'equip', slot });
     expect(cb(r).power).toBe(14);
     expect(inv(r).equipment.main?.item).toBe('item.sword_iron');
-    expect(inv(r).slots[slot]).toMatchObject({ item: 'item.sword_rusty', qty: 1 });
+    expect(inv(r).slots[slot]).toMatchObject({ item: 'item.dagger_wood', qty: 1 });
     expect(ofType(r.events, 'equipped')).toHaveLength(1);
   });
   it('a spear changes the weapon family as well as the power', () => {
@@ -160,10 +161,10 @@ describe('equipment', () => {
     const r = rig();
     r.tick({ type: 'unequip', slot: 'main' });
     expect(inv(r).equipment.main).toBeNull();
-    expect(countItem(inv(r), 'item.sword_rusty')).toBe(1);
+    expect(countItem(inv(r), 'item.dagger_wood')).toBe(1);
     expect(cb(r)).toMatchObject({ weapon: 'fists', power: WEAPONS.fists!.power });
-    r.tick({ type: 'equip', slot: inv(r).slots.findIndex((x) => x?.item === 'item.sword_rusty') });
-    expect(cb(r)).toMatchObject({ weapon: 'sword', power: 10 });
+    r.tick({ type: 'equip', slot: inv(r).slots.findIndex((x) => x?.item === 'item.dagger_wood') });
+    expect(cb(r)).toMatchObject({ weapon: 'sword', power: 5 });
   });
   it('bare hands hit enemies through the real combat loop and pay no weapon skill', () => {
     const r = rig();
