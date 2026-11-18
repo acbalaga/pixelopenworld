@@ -1,3 +1,4 @@
+import type { DayPhase, Season, Weather } from '../balance/time';
 import type { BottomStyle, ClothColor, MainHand, OffHand, TopStyle } from '../dolls/parts';
 
 export type ItemCategory =
@@ -88,15 +89,44 @@ export interface RecipeDef {
   tier: number;
 }
 
+/** One thing a node can give, and when. A missing condition means always. */
+export interface YieldDef {
+  item: string;
+  weight: number;
+  phases?: readonly DayPhase[];
+  seasons?: readonly Season[];
+  weather?: readonly Weather[];
+}
+
+/** The timing of one sweep. A node overrides any part of the default in `balance/items.ts`. */
+export interface SweepDef {
+  /** Ticks the sweep runs. */
+  ticks: number;
+  /** The sweet window, first and last tick. */
+  sweetFrom: number;
+  sweetTo: number;
+  baseMin: number;
+  baseMax: number;
+  /** Extra yield for each sweet hit. */
+  sweetBonus: number;
+  /** Sweeps to a node: a tree takes three. */
+  swings: number;
+}
+
 /** What a gathering node gives. Each work picks one yield by weight. */
 export interface NodeDef {
   id: string;
-  /** Skill XP tag sent with the gathered event. */
+  /** Skill XP tag sent with the gathered event, and the skill that rolls quality. */
   tag: string;
   tier: number;
-  yields: readonly { item: string; weight: number }[];
-  /** Ticks until the node can be worked again. */
+  /** The tool that helps. Without one the node needs none. */
+  tool?: ToolKind;
+  yields: readonly YieldDef[];
+  /** World ticks until the node can be worked again. */
   respawn: number;
+  sweep?: Partial<SweepDef>;
+  /** Fishing placeholder (M6-05 replaces it): cast, wait for a bite, tap inside the window. */
+  fishing?: true;
   /** Sprite ids for a ready and a spent node. */
   sprite: { ready: string; spent: string };
 }

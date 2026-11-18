@@ -70,8 +70,8 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 23 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(23);
+  it('list 20 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(20);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
     for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
@@ -97,6 +97,12 @@ describe('every skill that is not pending earns XP', () => {
     },
     'skill.foraging': (s, me) =>
       feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1 }),
+    'skill.mining': (s, me) =>
+      feed(s, { type: 'gathered', id: me, tag: 'mining', item: 'item.copper_ore', tier: 1 }),
+    'skill.logging': (s, me) =>
+      feed(s, { type: 'gathered', id: me, tag: 'logging', item: 'item.oak_log', tier: 1 }),
+    'skill.fishing': (s, me) =>
+      feed(s, { type: 'gathered', id: me, tag: 'fishing', item: 'item.fish_river', tier: 1 }),
     'skill.cooking': (s, me) =>
       feed(s, { type: 'cooked', id: me, tag: 'cooking', recipe: 'recipe.herb_tea', tier: 1 }),
     'skill.survival': (s, me) => feed(s, { type: 'eaten', id: me, item: 'item.berry_red' }),
@@ -132,8 +138,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 13 skills with a system after M3-04', () => {
-    expect(active).toHaveLength(13);
+  it('has 16 skills with a system after M3-06', () => {
+    expect(active).toHaveLength(16);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

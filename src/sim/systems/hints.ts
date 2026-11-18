@@ -39,7 +39,7 @@ function opportune(
     case 'nodeInReach': {
       const t = contextTarget(state, who);
       const n = t === null ? undefined : getComp(state.entities, t, 'node');
-      return !!n && !!NODES[n.kind] && state.tick >= n.readyAt;
+      return !!n && !!NODES[n.kind] && state.worldTick >= n.readyAt;
     }
     case 'potInReach': {
       const t = contextTarget(state, who);

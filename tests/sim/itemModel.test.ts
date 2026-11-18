@@ -293,7 +293,7 @@ describe('item set', () => {
     expect(all.length).toBeLessThanOrEqual(130);
     const n = (f: (i: (typeof all)[number]) => boolean) => all.filter(f).length;
     expect(n((i) => i.tool !== undefined)).toBe(10);
-    expect(n((i) => i.category === 'material')).toBe(36);
+    expect(n((i) => i.category === 'material')).toBe(38);
     expect(n((i) => i.category === 'consumable')).toBe(22);
     expect(n((i) => i.equip?.slot === 'accessory')).toBe(6);
     expect(n((i) => i.equip?.slot === 'off' && !!i.equip.doll?.offHand)).toBe(4);

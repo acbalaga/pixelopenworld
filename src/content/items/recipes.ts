@@ -65,4 +65,69 @@ export const NODES: Record<string, NodeDef> = {
     respawn: 4 * MIN,
     sprite: { ready: 'icon.berry_red', spent: 'icon.moss_tuft' },
   },
+  // Mining: one sweep, a narrow window and a big bonus. The pick sets the pace.
+  'node.copper_vein': {
+    id: 'node.copper_vein',
+    tag: 'mining',
+    tier: 1,
+    tool: 'pick',
+    yields: [
+      { item: 'item.copper_ore', weight: 5 },
+      { item: 'item.coal', weight: 2 },
+    ],
+    respawn: 5 * MIN,
+    sweep: { sweetFrom: 15, sweetTo: 17, sweetBonus: 2 },
+    sprite: { ready: 'icon.node_vein_copper', spent: 'icon.node_vein_spent' },
+  },
+  'node.iron_vein': {
+    id: 'node.iron_vein',
+    tag: 'mining',
+    tier: 2,
+    tool: 'pick',
+    yields: [
+      { item: 'item.iron_ore', weight: 5 },
+      { item: 'item.coal', weight: 2 },
+      { item: 'item.quartz', weight: 1 },
+    ],
+    respawn: 8 * MIN,
+    sweep: { sweetFrom: 15, sweetTo: 17, sweetBonus: 2 },
+    sprite: { ready: 'icon.node_vein_iron', spent: 'icon.node_vein_spent' },
+  },
+  // Logging: three swings to a tree, and each sweet hit adds a log.
+  'node.oak_tree': {
+    id: 'node.oak_tree',
+    tag: 'logging',
+    tier: 1,
+    tool: 'axe',
+    yields: [{ item: 'item.oak_log', weight: 1 }],
+    respawn: 4 * MIN,
+    sweep: { swings: 3, baseMin: 1, baseMax: 2 },
+    sprite: { ready: 'icon.node_oak', spent: 'icon.node_stump' },
+  },
+  'node.ash_tree': {
+    id: 'node.ash_tree',
+    tag: 'logging',
+    tier: 2,
+    tool: 'axe',
+    yields: [{ item: 'item.ash_log', weight: 1 }],
+    respawn: 8 * MIN,
+    sweep: { swings: 3, baseMin: 1, baseMax: 2 },
+    sprite: { ready: 'icon.node_ash', spent: 'icon.node_stump' },
+  },
+  // Fishing placeholder until M6-05: cast, wait, tap on the bite. A miss still lands the catch.
+  'node.fishing_spot': {
+    id: 'node.fishing_spot',
+    tag: 'fishing',
+    tier: 1,
+    tool: 'rod',
+    yields: [
+      { item: 'item.fish_river', weight: 5 },
+      // The silver ones rise at the edges of the day.
+      { item: 'item.fish_silver', weight: 2, phases: ['dawn', 'dusk'] },
+    ],
+    respawn: 3 * MIN,
+    fishing: true,
+    sweep: { baseMin: 1, baseMax: 1, sweetBonus: 1 },
+    sprite: { ready: 'icon.node_fish', spent: 'icon.node_fish_spent' },
+  },
 };

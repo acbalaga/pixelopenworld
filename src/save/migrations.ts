@@ -212,6 +212,30 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     }
     return { ...old, schema: 9, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 9 to 10 (M3-06): a node's `readyAt` is now in world ticks, so every node starts ready (one
+   * free respawn on upgrade is harmless). A gather in progress gains its sweep count, hits, the
+   * tool slot (none) and the fishing wait (none).
+   */
+  9: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: {
+        comps: {
+          node: ({ readyAt: number } | null)[];
+          gather: ({ swing?: number; hits?: number; tool?: number; wait?: number } | null)[];
+        };
+      };
+    };
+    for (const n of raw.entities.comps.node) if (n) n.readyAt = 0;
+    for (const g of raw.entities.comps.gather) {
+      if (!g) continue;
+      g.swing = 0;
+      g.hits = 0;
+      g.tool = -1;
+      g.wait = 0;
+    }
+    return { ...old, schema: 10, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

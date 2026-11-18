@@ -23,3 +23,12 @@ export const TIME = {
 } as const;
 
 export type DayPhase = (typeof TIME.phases)[number]['phase'];
+
+/** Seven days to a season, four seasons to a year (design/02). */
+export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
+export type Season = (typeof SEASONS)[number];
+export const DAYS_PER_SEASON = 7;
+
+/** Weather per region (design/02). Nothing but `clear` is produced until M4-09. */
+export const WEATHER = ['clear', 'rain', 'storm', 'fog', 'snow', 'heat', 'sandstorm'] as const;
+export type Weather = (typeof WEATHER)[number];

@@ -6,7 +6,8 @@ import { destroy, getComp, query } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import { int } from '../kernel/rng';
-import { canHold, collect, resolveGather, rollDrops, spawnPickup } from '../items';
+import { tickGather } from '../gathering';
+import { canHold, collect, rollDrops, spawnPickup } from '../items';
 import { recomputePools } from '../skills';
 import type { SimState } from '../state';
 import { contextTarget } from './interact';
@@ -88,13 +89,11 @@ function nodes(state: SimState): void {
       emit(state.events, { type: 'gatherCancelled', id: who, node: g.node });
       continue;
     }
-    g.t++;
-    // Running out the sweep still yields, with no bonus.
-    if (g.t >= B.gather.sweepTicks) resolveGather(state, who, false);
+    tickGather(state, who);
   }
   for (const id of query(state.entities, 'node')) {
     const n = getComp(state.entities, id, 'node');
-    if (n && NODES[n.kind] && n.readyAt === state.tick)
+    if (n && NODES[n.kind] && n.readyAt === state.worldTick)
       emit(state.events, { type: 'nodeReady', id });
   }
 }

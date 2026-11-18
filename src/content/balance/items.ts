@@ -54,6 +54,18 @@ export const ITEMS_BALANCE = {
     baseMin: 1,
     baseMax: 2,
     sweetBonus: 1,
+    /** Sweeps to a node. Trees ask for more (see `NodeDef.sweep`). */
+    swings: 1,
+    /** A tool below the node's tier, or none, makes the sweep this much longer, percent. */
+    toolSlowPct: 50,
+    /** Each tool tier above the node's widens the sweet window by this many ticks. */
+    toolWindowTicks: 1,
+    /** Chance of Fine on a sweet hit, percent per skill point. Rolled on the `loot` stream. */
+    finePctPerPoint: 1,
+    /** Fishing placeholder: a bite comes after this many ticks (2 to 6 seconds), and holds this long. */
+    fishWaitMin: 60,
+    fishWaitMax: 180,
+    fishBiteTicks: 15,
   },
   cook: {
     maxIngredients: 3,

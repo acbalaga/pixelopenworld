@@ -59,6 +59,10 @@ export type SimEvent =
   | { type: 'fedEnded'; id: number; item: string }
   | { type: 'gatherStarted'; id: number; node: number }
   | { type: 'gatherCancelled'; id: number; node: number }
+  /** One sweep of a node that takes several is done. */
+  | { type: 'gatherSwing'; id: number; node: number; sweet: boolean }
+  /** A fish took the bait: the window to tap opens. */
+  | { type: 'gatherBite'; id: number; node: number }
   | {
       type: 'gatherResolved';
       id: number;

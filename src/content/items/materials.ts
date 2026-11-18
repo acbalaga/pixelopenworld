@@ -29,6 +29,9 @@ export const MATERIAL_ITEMS: readonly ItemDef[] = [
   }),
   mat('item.nightshade', 8, 2),
   mat('item.glowcap', 10, 2),
+  // From the water (fishing).
+  mat('item.fish_river', 6),
+  mat('item.fish_silver', 14, 2),
   // Meat, hides and what creatures leave.
   mat('item.raw_meat', 5),
   mat('item.moss_tuft', 2, 1, false),
