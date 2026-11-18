@@ -94,7 +94,34 @@ Rules:
 - Every attack has a telegraph. Ground markers for area attacks, a flash and wind-up for melee. Minimum 350 ms at tier 1, tightening to 200 ms at tier 8.
 - No more than six active attackers engage at once. Others circle.
 - Enemies leash to their zone and reset if pulled too far.
-- Creatures have non-combat interactions. Many can be fed, soothed, tamed, sneaked past, or scared off. Some are never hostile unless provoked.
+- Creatures have non-combat interactions. Many can be fed, soothed, tamed, sneaked past, or scared off. Whether they attack first is their temperament (below).
+
+## Temperament
+
+Aggro follows a creature's nature (D20). Every creature has one temperament, set in its data, and the AI reads it before it ever chases.
+
+| Temperament | Attacks first?                                                               | Tell before it attacks                                           | Typical                                   |
+| ----------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| Hostile     | Yes, on notice                                                               | Notice sound and a "!" over its head                             | Predators, undead, things that guard loot |
+| Territorial | Only if the player stays inside its territory radius past a warning time     | A warning pose and sound at the territory edge, then a 2 s grace | Nesting animals, plants, boars            |
+| Defensive   | No. Fights back when hit, or when a packmate within range is hit             | None needed                                                      | Grazers, workers, most wildlife           |
+| Skittish    | No. Flees on notice, fights only when cornered or below its flee Health      | Ears up, then a run                                              | Rabbits, birds, small prey                |
+| Passive     | Never                                                                        | None                                                             | Livestock, dummies, ambient life          |
+| Curious     | No. Approaches to a set distance, follows a while, turns hostile only if hit | Head tilt                                                        | Mosslings by day, spirits, foxes          |
+
+Modifiers, all optional in data:
+
+- **Night.** A second temperament from dusk to dawn (a Mossling is curious by day and territorial at night).
+- **Pack.** A pack id. When one member is hit, members within the pack radius take the hit as provocation.
+- **Tier gap.** A creature at least two tiers above the region the player has "proven" (the highest tier where they have passed a rank 15 Trial or beaten a field boss) is one step more aggressive. Early is allowed, and it hurts (design/02).
+- **Hunger and weather** arrive with their systems (M6 husbandry, M4-09 weather) as data hooks, not new rules.
+
+Rules:
+
+- A creature that has not attacked first never starts a fight by itself. Defensive and curious creatures never chase farther than their leash after being hit.
+- Territorial warnings always telegraph with a sound, a pose and an edge marker on the ground, so a player can back off. The warning is long enough to read (at least 1 s at tier 1).
+- Hide halves notice for every temperament. The Pacifist Path and the Mossfriend gift turn "attacks first" off for the kinds they name.
+- The Bestiary lists a creature's temperament once the player has seen it act on it.
 
 ## Bosses
 

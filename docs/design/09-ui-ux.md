@@ -12,11 +12,13 @@ Portrait first. The game renders to a low-resolution logical canvas and scales b
 
 ```
 +--------------------------+
-| status row  | clock | map|   pools, statuses, time, minimap toggle
+| pools  [notice lane] map |   pools and statuses, clock and weather, minimap toggle
+| ticks    (banners)       |   skill ticks under pools, banners and notices under the clock
 |                          |
+|      [action meter]      |   above the avatar while it works (gather, craft, fish)
 |        WORLD VIEW        |   top ~62% of height
 |                          |
-| chat ticker (2 lines)    |
+| chat (2 lines)     [log] |   chat lane, left, above the thumb zone
 +--------------------------+
 |   [t1][t2]               |
 |        [t3][t4]  [ctx]   |   thumb zone, bottom ~38%
@@ -69,20 +71,48 @@ Minimal by default. Elements fade when unchanged for a few seconds, return on ch
 - Three pool bars, top left. Status icons under them.
 - Clock and weather glyph, top center. Tap for calendar.
 - Minimap toggle, top right. Tap for full map.
-- Chat ticker above the thumb zone.
+- Chat lane above the thumb zone (see Message lanes).
 - Four technique buttons, context button, menu, bag.
 - Target frame (name, health, stagger) when locked.
 - Party frames, left edge, when in a party.
 - No quest tracker by default. The player can pin one request, which shows as a single line of the asker's own words.
 
+## Action meter
+
+Every timed step the player performs (gather sweep, craft step, fishing bite, and any later minigame) is an **action meter** (D16).
+
+- **Where.** In the world view, centered above the avatar's head, 6 logical px above the name plate. If that would leave the upper world view (near the top edge, or under the status row) it flips below the avatar's feet. It never enters the thumb zone and never covers the thing being worked.
+- **Size.** At least 72 logical px wide and 7 tall for a sweep or rhythm track. A trace or hold step uses a panel up to 120 px square, anchored the same way, with the avatar still visible beside it. Widths are in `src/content/balance/ui.ts`.
+- **Work feedback.** The avatar plays the work animation of the skill (swing, chop, stir, hammer, cast) on each beat. The node or station being worked gets a 1 px highlight outline. A hit lands with a small spark and a sound on the node, not on the meter.
+- **Input.** Unchanged: one tap anywhere in the lower zone, or the context key, is a hit. Tapping the meter itself also counts.
+- **Leaving.** Moving off cancels a gather as today. The meter fades in 150 ms.
+- Reduced motion: no spark, no pulse, the marker still moves.
+
+## Message lanes
+
+Every transient message has one lane (D21). Lanes never overlap each other, the action meter, or the thumb zone. A **System log** keeps every message for review.
+
+| Lane        | Where                                           | What                                                                                   | Rules                                                                                                                                     |
+| ----------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Floaters    | Over the avatar, pixel text                     | Pickups ("+2 Moss"), XP pips, damage numbers                                           | Up to 24 characters. Repeats within 1.5 s merge ("+5 Moss"). Max 3 stacked.                                                               |
+| Skill ticks | Under the pool bars                             | Skill XP gains                                                                         | As today (M3). Fades when unchanged.                                                                                                      |
+| Notices     | Under the clock, clear text                     | Short system news: request updated, item cannot be carried, a Waystone attuned, a hint | Max 2 visible, newest on top. 2.6 s each, longer for longer text (40 ms per character, capped at 6 s). Merges duplicates. Tap to dismiss. |
+| Banners     | Under the clock, wide, one at a time            | Rank-ups, awakening, a Path earned, a Singular step, a world first                     | Queue, never stack. 3 s. Notices wait while a banner shows.                                                                               |
+| Chat        | Left, directly above the thumb zone, clear text | Traveler and system chat (M5 adds volume)                                              | 2 lines, newest at the bottom. Tap to open the chat sheet. A collapse button hides it to a one-glyph unread count.                        |
+| Hints       | Notices lane, with a hint glyph                 | First-time contextual hints                                                            | Same lane as notices, never a separate box over the clock.                                                                                |
+
+The chat sheet opens from the bottom, half height, with channel tabs (World, Local, Party, Guild, Whisper, System). The System tab is the System log: every notice, banner and pickup since login, newest at the bottom.
+
+While the Menu, a shop, dialogue or a craft panel is open, floaters and notices pause and queue. Banners queue too. Nothing is lost.
+
 ## The Menu
 
-Presented in-fiction as the game's system menu (the player is "in a VR game"). Opens with the menu button or a swipe up from the bottom edge. Full-height sheet in portrait with a tab bar at the bottom.
+Presented in-fiction as the game's system window (the player is "in a VR game"). Opens with the menu button or a swipe up from the bottom edge. Full-height sheet in portrait with a tab bar at the bottom. Rebuilt in M4 (D21) on a small set of shared parts so every tab behaves the same.
 
 | Tab       | Contents                                                                          |
 | --------- | --------------------------------------------------------------------------------- |
 | Character | Avatar, gear, worn Paths, Forms, pools, loadouts                                  |
-| Skills    | 36 skills by family, rank, next Trial hint, techniques                            |
+| Skills    | Awakened skills by family, rank, next Trial hint, techniques                      |
 | Bag       | Inventory grid, filters, quick-use slots                                          |
 | Map       | World map with fog, Waystones, player notes, rumor marks                          |
 | Chronicle | Completion by category, bestiary, recipes, fish, fragments as found, Theory Board |
@@ -90,9 +120,47 @@ Presented in-fiction as the game's system menu (the player is "in a VR game"). O
 | Routines  | Workers, assignments, offline cap, Tactics editor                                 |
 | System    | Settings, save status and export, calendar, help, **Log Out**                     |
 
+Tabs whose system does not exist yet are hidden, not greyed out. The tab bar shows a 16 px icon and a short label for each tab, and a badge dot when something new is inside.
+
 Log Out returns to the login screen. It always works. (It matters to the lore that it does.)
 
 The game does not pause when the Menu is open in the open world (it is an online game in-fiction), except: the game fully pauses when the tab or app loses focus, and the Menu is safe to open in hubs. An accessibility option makes the Menu pause the world.
+
+**Shared parts.** Every tab is built from these, so the look and the touch behavior are learned once:
+
+- **Header.** Tab title at left, one or two tab-level actions at right (sort, filter). Never more than two.
+- **Section.** A collapsible group with a title and a count ("Gathering, 3"). Remembers open or closed per player.
+- **Row.** Icon, name, one line of state at right (rank, quantity, price). Whole row is the touch target, at least 48 px tall. Tap opens the detail sheet. Long-press shows the same text as a tooltip.
+- **Grid cell.** For the bag and storage: icon, quantity corner, quality pip, broken mark. 48 px minimum.
+- **Detail sheet.** Slides up over the tab at about 60% height: large icon, name, description in clear text, numbers as a two-column list, and at most three action buttons at the bottom (the primary one on the thumb side). Back or a swipe down closes it.
+- **Empty state.** One sentence that says what fills this space and how ("Skills awaken the first time you use them."), never a blank panel.
+
+**Navigation rules.**
+
+- One level of depth below a tab: a detail sheet. No sheet opens another sheet. A confirm is a hold-to-confirm on the button (Touch rules).
+- Back (system back, Escape, or swipe down) closes the sheet first, then the Menu.
+- The Menu reopens on the last tab and scroll position.
+- Gear, technique and loadout changes made in the Menu show at once on the doll and the HUD behind the sheet.
+
+**Character tab layout.** The doll at the center, drawn at 2x, with its gear slots around it (head, body, legs, main, off, two trinkets later). Under it, the three pools with their numbers, then worn Paths as chips, then the two loadouts side by side.
+
+**Skills tab layout.** Awakened skills only, by family, each family a section. A row shows name, rank name and a progress bar. The detail sheet shows the XP to next point, the Trial hint or progress, and that skill's techniques with their source state ("Known", "Insight 18 of 30", "Someone in Hearthford teaches this"). Assigning a technique to a slot happens from the detail sheet.
+
+## Avatar setup
+
+Presented as the game's own character setup screen (D22). No class, no stats, no starting choice that changes power.
+
+- **Body:** two body types, three heights (short, middle, tall: the sprite is 1 px shorter or taller in the legs).
+- **Face:** eight eye shapes, six brow shapes, five mouths, face marks (none, freckles, a scar, a birthmark, war paint), each mark with its own color.
+- **Skin:** six tones.
+- **Hair:** twelve styles, eleven colors, an optional second color for tips or streaks. Facial hair: none, stubble, short, full.
+- **Clothes:** the starting rags are fixed, but their two colors are chosen. Those two colors are remembered as the character's "own" colors and offered as the default dye on crafted gear.
+- **Accessory:** none, headband, scarf, earring, eyepatch, flower.
+- **Origin (optional):** a short line of flavor with a pixel vignette. Each origin draws its wake point from a subset of the eight, and sets the first contextual line on waking. "Unremembered" is the default and draws from all eight. Origins give no item, stat, XP, technique or reputation. Six in Dawnmeadow: Unremembered, Farmhand, Road-weary, Hunter's ward, River-found, Pilgrim's child.
+- **Randomize** button re-rolls every look option at once. Each group also has its own small dice.
+- The preview turns with a drag and shows the avatar on a patch of the chosen origin's ground.
+
+Everything here is cosmetic and is changeable later at a mirror in the inn (M6 adds a barber and a tailor for paid changes; until then the mirror is free).
 
 ## Dialogue
 
@@ -102,7 +170,7 @@ Clear text in a bottom sheet with the speaker's pixel portrait. Tap to advance, 
 
 - Every tap answers within 100 ms (visual, plus haptic where supported).
 - Hit pause (2 to 4 frames) and a small screen shake on heavy hits. Both scale down with the reduced-motion setting.
-- Skill gains show as a small unobtrusive tick near the pool bars. Rank-ups get a banner.
+- Skill gains show as a small unobtrusive tick near the pool bars. Rank-ups and awakenings get a banner. Lanes are in Message lanes.
 - Rare discoveries get a distinct chime and a Chronicle badge on the menu button.
 
 ## Save status

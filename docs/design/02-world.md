@@ -42,6 +42,31 @@ Each region contains, as a budget (see 10-content-budget for totals):
 - 6 Waystones
 - 1 roaming field boss
 
+## Hub layout
+
+A hub is a town, not a square with everything in it (D18). Every hub is authored as districts joined by streets, so the player learns where things are by walking, and so a town reads as a place from the first screenshot.
+
+| District      | Holds                                                                                                                                             | Rule                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Square        | Waystone, request board, guild notice wall, a fountain or well, benches                                                                           | Civic things only. No crafting stations, no beds, no shop counters.                |
+| Craft row     | One workshop per craft family: smithy (anvil, forge), carpentry (workbench), tailor (loom), apothecary (alchemy table), tinker's shed, rune house | Each station sits inside or in front of its workshop, with the person who runs it. |
+| Inn           | Bed, storage chest, cook pot, the innkeeper                                                                                                       | Where the player sleeps, stores and cooks by default.                              |
+| Market street | Shop counters, the market terminal (M5), stalls that change by day                                                                                | Shopkeepers stand behind their counters.                                           |
+| Homes         | NPC homes, later the player's plot (M6)                                                                                                           | People go home at night. Doors are real.                                           |
+| Gates         | One per road, with a guard or a sign                                                                                                              | A gate is where the wild starts. Hostile spawns never sit inside the walls.        |
+
+Distances: the square to any district is under 15 seconds on foot. The whole hub fits in about 3 x 3 chunks. Streets are at least 3 tiles wide so a thumb-steered walk does not snag. Each district has one landmark prop (the smithy chimney, the inn sign, the market awning) that reads at the minimap scale.
+
+## Freedom of route
+
+The second inspiration principle (D23): the player decides the order. The map is the difficulty curve, not a gatekeeper.
+
+- **Every gate has more than one way past it.** A regional pass boss guards the easy road. Each region also has at least two harder ways out that skip it: a climb (Athletics), a hidden passage (Delving or Deciphering), a river or a pass that weather opens, a creature who carries you (Taming). They cost more time, more risk, or more skill. They never cost a key the player could not have.
+- **Early is allowed, and it hurts.** Nothing stops a fresh character walking into tier 3 land. Creatures there notice farther and hit harder, so the price is paid in deaths and Echoes, not in walls.
+- **Things above tier are visible from the start.** Each region places at least three sights the player cannot yet reach or survive: a ruin across a gorge, a named creature's den, a lit window on a cliff. They are reasons to come back, not markers.
+- **Unusual builds find unusual things.** At least a fifth of each region's secrets are reached by a skill that is not combat (a song that opens a door, a dish that calms a guardian, a map that reveals a path). A player with an odd mix of skills should find something a fighter would walk past.
+- **No route is the right one.** Requests, Trials and Singulars never say "first go to X". A request may name a place; it never orders the player's day.
+
 ## Travel
 
 - **On foot** by default. Stamina sprint.
@@ -69,6 +94,7 @@ Building blocks (framework in POW-M4-08): locked doors and keys, switches and pr
 
 Rules:
 
+- The first cave of every region is a real test for a character who has spent the first hour there (rank 5 to 10 in a weapon, crafted tier 1 gear). It is not a corridor. It has a loop, a choice of route and one room that punishes running in.
 - Every dungeon teaches one idea, twists it, then tests it at the boss.
 - Every dungeon has one secret that cannot be reached on a first visit with tier-appropriate skills. Reasons to return.
 - Leaving and re-entering keeps solved puzzles solved. Enemies respawn daily.
@@ -80,6 +106,7 @@ Rules:
 - **No objective markers** for anything the player has not personally found or been told about by a specific NPC or Traveler. Told locations appear as hand-drawn rumor marks with deliberate imprecision.
 - **Landmarks** are tall and visible from far away so navigation works by sight.
 - Every chunk on the Continent has at least one thing worth finding. The bake enforces this (POW-M4-11).
+- **Singulars** (design/03) start from places and actions, never from boards. A region holds a few. They are the rarest thing on its map.
 
 ## Authoring model
 

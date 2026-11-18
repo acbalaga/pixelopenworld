@@ -85,6 +85,37 @@ The manual step for each craft is in the ticket that builds it (POW-M3-07 and PO
 - Active techniques by the end of M3: 29 (Arms 13, Magic 12, Stealth 2, Performance 2). Three exist already (Blades Lunge, Polearms Lunge, Ember Bolt), so M3 adds 26.
 - Passives authored in M3: the band 0 and band 15 passives above that have an effect.
 
+## Sources (M4, D17)
+
+Every skill starts dormant. The first XP event awakens it (design/03, Awakening and sources). The band 0 passives that only say "can work tier 1" or "tier 1 recipes" come with awakening. Everything else below has a source. Insight counts are starting values in `src/content/balance/skills.ts` (`insight`). Band 15 entries all come from passing that skill's rank 15 Trial, so they are not listed again.
+
+| Skill       | Technique (band 0) | Source  | Detail                      | Second source                                       |
+| ----------- | ------------------ | ------- | --------------------------- | --------------------------------------------------- |
+| Blades      | Basic swing        | Innate  | Any blade held              |                                                     |
+| Blades      | Lunge              | Insight | 30 hits with a blade        | Manual "Notes on the Lunge" (Hearthford guardhouse) |
+| Heavy Arms  | Overhead           | Insight | 25 hits with a heavy weapon | Taught by Tobin (smith)                             |
+| Polearms    | Lunge              | Insight | 30 hits with a polearm      | Taught by Orla (gate guard)                         |
+| Archery     | Aimed Shot         | Insight | 25 hits with a bow or sling | Taught by Orla (gate guard)                         |
+| Unarmed     | Palm               | Insight | 30 unarmed hits             | Manual (a carved post in the Rootway)               |
+| Shieldcraft | Block, parry       | Innate  | Any shield held             |                                                     |
+| Shieldcraft | Bash               | Insight | 20 hits blocked             | Taught by Orla (gate guard)                         |
+| Evasion     | Light Feet         | Insight | 12 perfect dodges           | Manual (Old Mill loft)                              |
+| Ember       | Ember Bolt         | Taught  | Wren                        | Manual "Kindling" (a Dawnmeadow POI)                |
+| Tide        | Splash             | Taught  | Wren                        | Manual (the river shrine)                           |
+| Gale        | Gust               | Taught  | Wren                        | Manual (Windmill Hill)                              |
+| Stone       | Stone Fist         | Taught  | Wren                        | Manual (the quarry camp)                            |
+| Mending     | Mend               | Taught  | Wren                        | Manual (the wayside chapel)                         |
+| Hexing      | Hex                | Taught  | Wren                        | Singular "The Crow's Due" (POW-M4-20)               |
+| Performance | Hum of Courage     | Taught  | Hesper (innkeeper and cook) | Manual "Road Songs" (inn cellar)                    |
+| Stealth     | Hide               | Taught  | The Pilgrim                 | Manual (the Rootway's back passage)                 |
+
+Rules for this table:
+
+- A taught technique's teacher lives in Dawnmeadow, and its second source is reachable in Dawnmeadow without the teacher.
+- Teachers are the M3 people (Wren teaches all six band 0 spells, as today). Until POW-M4-04 and POW-M4-11 place the region, POW-M4-15 puts each manual at a stand-in spot on the slice map and lists it in the PR.
+- Insight counts only uses that pay XP (design/03). A training dummy counts toward insight until the skill reaches 5 points.
+- Names and places in the Detail and Second source columns are the ones in `docs/design/regions/01-dawnmeadow.md`. POW-M4-15 authors them as content.
+
 ## Paths authored in M3
 
 Sixteen Paths, as eight opposite pairs (design/03: every Path has a counterpart that plays opposite). Requirements use only skills and deeds that exist by the end of M3. Two are hidden: their requirement text never shows, and the Skills tab hint never points at them. Numbers are starting values in `src/content/balance/paths.ts`.
