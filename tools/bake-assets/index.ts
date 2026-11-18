@@ -80,7 +80,9 @@ if (mode === '--check') {
     const p = join(outDir, name);
     if (!existsSync(p) || !sameFile(name, readFileSync(p), bytes(v))) diffs.push(name);
   }
-  const have = existsSync(outDir) ? readdirSync(outDir).filter((n) => n !== '.gitkeep') : [];
+  const have = existsSync(outDir)
+    ? readdirSync(outDir).filter((n) => n !== '.gitkeep' && n !== 'world')
+    : [];
   for (const n of have) if (!files.has(n)) diffs.push(`${n} (stale)`);
   if (diffs.length > 0) {
     console.error(
@@ -91,7 +93,8 @@ if (mode === '--check') {
   console.log('bake: baked/ is up to date');
 } else {
   mkdirSync(outDir, { recursive: true });
-  for (const n of readdirSync(outDir)) if (n !== '.gitkeep') rmSync(join(outDir, n));
+  for (const n of readdirSync(outDir))
+    if (n !== '.gitkeep' && n !== 'world') rmSync(join(outDir, n));
   for (const [name, v] of files) writeFileSync(join(outDir, name), bytes(v));
   console.log(`bake: wrote ${files.size} files to baked/`);
   for (const [name, v] of bakePwa()) {

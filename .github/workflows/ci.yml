@@ -23,6 +23,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run validate
       - run: npm run bake:check
+      - run: npm run bake:world:check
       - run: npm run test
       # Fight simulator and sim bot, short versions. Fails past tools/balance-thresholds.json.
       - run: npm run balance:ci

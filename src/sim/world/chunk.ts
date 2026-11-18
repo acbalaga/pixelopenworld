@@ -24,6 +24,8 @@ export interface Chunk {
   object: Uint16Array;
   overhead: Uint16Array;
   collision: Uint8Array;
+  /** Elevation band per tile (0 to 9), from the region spec. Version 1 files decode as all 0. */
+  elevation: Uint8Array;
   objects: ChunkObject[];
 }
 
@@ -37,6 +39,7 @@ export function createChunk(cx: number, cy: number): Chunk {
     object: new Uint16Array(N),
     overhead: new Uint16Array(N),
     collision: new Uint8Array(N),
+    elevation: new Uint8Array(N),
     objects: [],
   };
 }
@@ -47,14 +50,16 @@ export function tileIndex(x: number, y: number): number {
 }
 
 const MAGIC = 0x434f5750; // "PWOC" little endian
-const VERSION = 1;
+/** Written by the encoder. Version 1 (no elevation layer) still decodes. */
+const VERSION = 2;
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
 /**
  * Binary format, little endian: magic u32, version u8, cx i16, cy i16, then the four u16 layers
  * (ground, detail, object, overhead) of 1024 entries each, the collision grid of 1024 u8, then
- * object count u16 and per object x u8, y u8, kind length u8, kind utf8.
+ * object count u16 and per object x u8, y u8, kind length u8, kind utf8. Version 2 appends the
+ * elevation grid of 1024 u8 after the objects. Version 1 ends after the objects.
  */
 export function encodeChunk(c: Chunk): Uint8Array {
   const kinds = c.objects.map((o) => enc.encode(o.kind));
@@ -67,7 +72,8 @@ export function encodeChunk(c: Chunk): Uint8Array {
     4 * N * 2 +
     N +
     2 +
-    c.objects.reduce((s, _o, i) => s + 3 + (kinds[i] as Uint8Array).length, 0);
+    c.objects.reduce((s, _o, i) => s + 3 + (kinds[i] as Uint8Array).length, 0) +
+    N;
   const out = new Uint8Array(size);
   const v = new DataView(out.buffer);
   let p = 0;
@@ -96,6 +102,7 @@ export function encodeChunk(c: Chunk): Uint8Array {
     out.set(k, p);
     p += k.length;
   });
+  out.set(c.elevation, p);
   return out;
 }
 
@@ -103,7 +110,8 @@ export function encodeChunk(c: Chunk): Uint8Array {
 export function decodeChunk(bytes: Uint8Array): Chunk {
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (bytes.length < 11 || v.getUint32(0, true) !== MAGIC) throw new Error('not a chunk file');
-  if (v.getUint8(4) !== VERSION) throw new Error(`unsupported chunk version ${v.getUint8(4)}`);
+  const version = v.getUint8(4);
+  if (version !== 1 && version !== 2) throw new Error(`unsupported chunk version ${version}`);
   let p = 5;
   const c = createChunk(v.getInt16(p, true), v.getInt16(p + 2, true));
   p += 4;
@@ -127,6 +135,10 @@ export function decodeChunk(bytes: Uint8Array): Chunk {
     if (p + len > bytes.length) throw new Error('chunk file truncated');
     c.objects.push({ x, y, kind: dec.decode(bytes.subarray(p, p + len)) });
     p += len;
+  }
+  if (version === 2) {
+    if (p + N > bytes.length) throw new Error('chunk file truncated');
+    c.elevation.set(bytes.subarray(p, p + N));
   }
   return c;
 }

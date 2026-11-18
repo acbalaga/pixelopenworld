@@ -17,6 +17,8 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:dev && npm run check:seal && npm run check:pwa && npm run check:prod && npm run check:deps",
     "bake": "tsx tools/bake-assets/index.ts",
     "bake:check": "tsx tools/bake-assets/index.ts --check",
+    "bake:world": "tsx tools/bake-world/index.ts",
+    "bake:world:check": "tsx tools/bake-world/index.ts --check",
     "e2e": "npm run build && playwright test",
     "validate": "tsx tools/bake-assets/index.ts --validate",
     "check:dev": "tsx tools/check-dev-absent.ts",
