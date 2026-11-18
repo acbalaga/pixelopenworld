@@ -64,3 +64,8 @@ export function droppedBy(item: string): string[] {
     .filter((c) => c.drops.some((d) => d.item === item))
     .map((c) => c.id);
 }
+
+/** Every source `item` can come from, as the ledger names them. Empty when nothing makes it. */
+export function sourcesOf(item: string): ItemSource[] {
+  return [...(SOURCES.get(item) ?? [])];
+}
