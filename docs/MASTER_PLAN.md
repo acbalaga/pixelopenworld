@@ -37,6 +37,14 @@ Decisions made with the owner on 2026-11-16. Changing one needs a planning PR.
 | D13 | Default controls  | Decided at Gate G1 (2026-11-17): Flow in portrait, Classic in landscape and on gamepad or keyboard. Flow dodges with the dodge button; flick dodge is removed.                                                                                                      |
 | D14 | Gate G2           | Passed 2026-11-17 with the multi-day offline step still running. M3 starts in parallel; the residual risk is recorded in `docs/ops/security-review.md`.                                                                                                             |
 | D15 | M3 scope          | M3 builds the engines with a proving set of content on the slice map. The remaining rank 15 Trials and the Hearthford requests move to M4-12. Skills with no system yet are defined but earn no XP until their milestone (`PENDING_SKILLS`).                        |
+| D16 | Action meter      | Owner playtest 2026-11-18 (docs/ops/playtest-m3.md). Every timed step (gather, craft, fish) is drawn above the avatar in the world view, never in the thumb zone. The avatar shows a work animation.                                                                |
+| D17 | Skill awakening   | Skills are dormant and invisible until first real use. Band 0 techniques have a source (innate, taught, manual, insight). A new character knows only the basic swing of the weapon held. Existing characters keep what they know.                                   |
+| D18 | Hub layout        | Hubs are districts joined by streets. The square holds civic things only. Each crafting station lives in its own workshop.                                                                                                                                          |
+| D19 | Fresh start       | A new character wakes at one of eight wake points outside Hearthford, chosen by its own seed, with one bread, a wooden dagger and ragged clothes. Replaces "appear at the Waystone in the square".                                                                  |
+| D20 | Temperament       | Every creature has a temperament (hostile, territorial, defensive, skittish, passive, curious) that decides whether and when it attacks.                                                                                                                            |
+| D21 | Messages and Menu | One message layout with fixed lanes. The Menu is rebuilt on shared panel components. Both before M5 adds chat volume.                                                                                                                                               |
+| D22 | Avatar setup      | Deeper cosmetic options plus an origin that only narrows the wake points and sets the first line. No stat, item or XP effect.                                                                                                                                       |
+| D23 | Inspirations      | Two principles from the owner's reference anime, never their content: Singulars (rare hidden questlines started by odd actions) and freedom of route (every gate has more than one way past it). Playtest fixes run first in M4, then the region work.              |
 
 Decisions made by the design authority (owner may overrule):
 
@@ -54,19 +62,20 @@ Decisions made by the design authority (owner may overrule):
 
 **Design**
 
-| Doc                                              | Covers                                                            |
-| ------------------------------------------------ | ----------------------------------------------------------------- |
-| [01-experience](design/01-experience.md)         | Player fantasy, core loops, first hour, session shapes            |
-| [02-world](design/02-world.md)                   | Regions, structure, travel, time, weather, dungeons, the frontier |
-| [03-progression](design/03-progression.md)       | Skills, mastery, attributes, Paths, Forms                         |
-| [04-combat](design/04-combat.md)                 | Controls, weapons, magic, enemies, bosses, death                  |
-| [05-life-systems](design/05-life-systems.md)     | Gathering, crafting, farming, housing, economy, relationships     |
-| [06-automation](design/06-automation.md)         | Routines, Tactics, Patrol, offline gains                          |
-| [07-simulated-mmo](design/07-simulated-mmo.md)   | Travelers, chat, parties, guilds, rankings, market, events        |
-| [08-lore-SPOILERS](design/08-lore-SPOILERS.md)   | The hidden layer. Spoils everything.                              |
-| [09-ui-ux](design/09-ui-ux.md)                   | Screen layout, text rules, menus, accessibility                   |
-| [10-content-budget](design/10-content-budget.md) | Counts, playtime model, 100% definition                           |
-| [11-skill-table](design/11-skill-table.md)       | The 36 skills: XP sources, band 0 and 15 grants, the M3 Paths     |
+| Doc                                                      | Covers                                                                 |
+| -------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [01-experience](design/01-experience.md)                 | Player fantasy, core loops, first hour, session shapes                 |
+| [02-world](design/02-world.md)                           | Regions, structure, travel, time, weather, dungeons, the frontier      |
+| [03-progression](design/03-progression.md)               | Skills, mastery, attributes, Paths, Forms                              |
+| [04-combat](design/04-combat.md)                         | Controls, weapons, magic, enemies, bosses, death                       |
+| [05-life-systems](design/05-life-systems.md)             | Gathering, crafting, farming, housing, economy, relationships          |
+| [06-automation](design/06-automation.md)                 | Routines, Tactics, Patrol, offline gains                               |
+| [07-simulated-mmo](design/07-simulated-mmo.md)           | Travelers, chat, parties, guilds, rankings, market, events             |
+| [08-lore-SPOILERS](design/08-lore-SPOILERS.md)           | The hidden layer. Spoils everything.                                   |
+| [09-ui-ux](design/09-ui-ux.md)                           | Screen layout, text rules, menus, accessibility                        |
+| [10-content-budget](design/10-content-budget.md)         | Counts, playtime model, 100% definition                                |
+| [11-skill-table](design/11-skill-table.md)               | The 36 skills: XP sources, band 0 and 15 grants, sources, the M3 Paths |
+| [regions/01-dawnmeadow](design/regions/01-dawnmeadow.md) | Region 1 in full. The pattern for every region doc.                    |
 
 **Tech**
 
@@ -79,25 +88,27 @@ Decisions made by the design authority (owner may overrule):
 
 **Tickets:** [docs/tickets/README.md](tickets/README.md)
 
+**Playtests:** [docs/ops/playtest-m3.md](ops/playtest-m3.md) (owner, after M3, the source of D16 to D23)
+
 ## 5. Roadmap
 
-Thirteen milestones. Each ends with a playable build on the Cloudflare preview URL and an owner review. Milestones M0 to M3 are fully specified and READY. Later milestones are specified at ticket level and marked DRAFT. Each opens with a refinement ticket that turns DRAFT into READY using what the earlier milestones taught us.
+Thirteen milestones. Each ends with a playable build on the Cloudflare preview URL and an owner review. Milestones M0 to M4 are fully specified and READY. Later milestones are specified at ticket level and marked DRAFT. Each opens with a refinement ticket that turns DRAFT into READY using what the earlier milestones taught us.
 
-| M   | Name             | Player-visible result                                                                 | Tickets |
-| --- | ---------------- | ------------------------------------------------------------------------------------- | ------- |
-| M0  | Foundation       | A character-less test map renders and scrolls on a phone, deployed.                   | 11      |
-| M1  | First Login      | A 20 minute slice: create an avatar, fight, forage, cook, talk, save.                 | 11      |
-| M2  | Trust            | Encrypted saves, integrity checks, sealed export and import, installable offline PWA. | 6       |
-| M3  | Core RPG         | All 36 skills, gear, crafting, shops, requests, Paths.                                | 14      |
-| M4  | World I          | Chunk streaming, the full first region, map, dungeons, bosses, weather.               | 12      |
-| M5  | The Crowd        | Travelers, chat, parties, guilds, rankings, market, world events.                     | 12      |
-| M6  | A Second Life    | Farming, housing, cooking, fishing, taming, relationships, festivals, shops.          | 11      |
-| M7  | Automation       | Routines, Tactics, Patrol, offline gains.                                             | 9       |
-| M8  | World II         | Regions 2 to 4.                                                                       | 10      |
-| M9  | World III        | Regions 5 to 8 and the Undercroft.                                                    | 11      |
-| M10 | The Hidden Layer | Lore fragments, cipher, Chronicle, anomalies, the Truths, Forms.                      | 10      |
-| M11 | The Unwritten    | Endless procedural frontier and postgame.                                             | 8       |
-| M12 | Release          | Accessibility, performance, balance, device QA, 1.0.                                  | 10      |
+| M   | Name             | Player-visible result                                                                   | Tickets |
+| --- | ---------------- | --------------------------------------------------------------------------------------- | ------- |
+| M0  | Foundation       | A character-less test map renders and scrolls on a phone, deployed.                     | 11      |
+| M1  | First Login      | A 20 minute slice: create an avatar, fight, forage, cook, talk, save.                   | 11      |
+| M2  | Trust            | Encrypted saves, integrity checks, sealed export and import, installable offline PWA.   | 6       |
+| M3  | Core RPG         | All 36 skills, gear, crafting, shops, requests, Paths.                                  | 14      |
+| M4  | World I          | Playtest fixes, chunk streaming, the full first region, map, dungeons, bosses, weather. | 21      |
+| M5  | The Crowd        | Travelers, chat, parties, guilds, rankings, market, world events.                       | 12      |
+| M6  | A Second Life    | Farming, housing, cooking, fishing, taming, relationships, festivals, shops.            | 11      |
+| M7  | Automation       | Routines, Tactics, Patrol, offline gains.                                               | 9       |
+| M8  | World II         | Regions 2 to 4.                                                                         | 10      |
+| M9  | World III        | Regions 5 to 8 and the Undercroft.                                                      | 11      |
+| M10 | The Hidden Layer | Lore fragments, cipher, Chronicle, anomalies, the Truths, Forms.                        | 10      |
+| M11 | The Unwritten    | Endless procedural frontier and postgame.                                               | 8       |
+| M12 | Release          | Accessibility, performance, balance, device QA, 1.0.                                    | 10      |
 
 Sequencing logic: M0 to M2 remove the technical risks (render performance on phones, control feel, save trust). M3 to M7 build every system against one region, so systems are proven before content is multiplied. M8 and M9 are content production against stable systems. M10 lands the mystery once the world it hides in exists. M11 and M12 extend and finish.
 
@@ -110,7 +121,7 @@ A milestone does not close until its gate passes. Gates are owner decisions, mad
 | G0 (end M0)   | Does the test map hold 60 fps on a mid-range phone?                                                         | Fix renderer before any gameplay.                                               |
 | G1 (end M1)   | Is one-thumb combat fun for 20 minutes?                                                                     | Iterate controls. This gate matters most. Nothing downstream survives bad feel. |
 | G2 (end M2)   | Can a save be opened or edited by hand? Does offline play survive a week?                                   | Fix before systems multiply save complexity.                                    |
-| G4 (end M4)   | Does one region deliver its hours budget (see content budget)?                                              | Re-plan region counts before M8.                                                |
+| G4 (end M4)   | Does one region deliver its hours budget (see content budget)? Are the M3 playtest findings resolved?       | Re-plan region counts before M8.                                                |
 | G7 (end M7)   | Does automation feel earned, and does it leave the game worth playing by hand?                              | Retune gates and caps.                                                          |
 | G10 (end M10) | Can a blind playtester find the first Truth with no prompts? Can they ignore it and still have a full game? | Adjust clue density.                                                            |
 

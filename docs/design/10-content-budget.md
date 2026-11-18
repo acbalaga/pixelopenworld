@@ -30,7 +30,7 @@ The Chronicle tracks ten categories. 100% is all ten complete. The Unwritten is 
 | 9   | Paths     | 48 standard                                         | All earned. The 12 hidden Paths and 6 Forms are beyond 100%. |
 | 10  | Lore      | 144 fragments, 8 Truths                             | All found and linked                                         |
 
-Skills at 75 and standard Paths only are deliberate. The last stretch of any completion list should not be the worst part of the game. Grandmaster ranks, hidden Paths, Forms, rankings first place, and legendary fish are "beyond 100%" and marked with a separate star.
+Skills at 75 and standard Paths only are deliberate. The last stretch of any completion list should not be the worst part of the game. Grandmaster ranks, hidden Paths, Forms, Singulars (design/03), rankings first place, and legendary fish are "beyond 100%" and marked with a separate star. Their `estMinutes` still count toward a region's hours in the pacing ledger, because players do find them.
 
 ## Hours model
 

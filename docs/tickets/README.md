@@ -2,21 +2,21 @@
 
 One file per milestone. Each ticket is one PR.
 
-| File                                       | Milestone                    | Status |
-| ------------------------------------------ | ---------------------------- | ------ |
-| [M0-foundation.md](M0-foundation.md)       | Foundation                   | READY  |
-| [M1-first-login.md](M1-first-login.md)     | First Login (vertical slice) | READY  |
-| [M2-trust.md](M2-trust.md)                 | Save security and PWA        | READY  |
-| [M3-core-rpg.md](M3-core-rpg.md)           | Core RPG systems             | READY  |
-| [M4-world-1.md](M4-world-1.md)             | World tech and region 1      | DRAFT  |
-| [M5-the-crowd.md](M5-the-crowd.md)         | Simulated MMO                | DRAFT  |
-| [M6-second-life.md](M6-second-life.md)     | Life systems                 | DRAFT  |
-| [M7-automation.md](M7-automation.md)       | Automation                   | DRAFT  |
-| [M8-world-2.md](M8-world-2.md)             | Regions 2 to 4               | DRAFT  |
-| [M9-world-3.md](M9-world-3.md)             | Regions 5 to 8, Undercroft   | DRAFT  |
-| [M10-hidden-layer.md](M10-hidden-layer.md) | Lore and completion          | DRAFT  |
-| [M11-unwritten.md](M11-unwritten.md)       | Frontier                     | DRAFT  |
-| [M12-release.md](M12-release.md)           | Polish and release           | DRAFT  |
+| File                                       | Milestone                               | Status |
+| ------------------------------------------ | --------------------------------------- | ------ |
+| [M0-foundation.md](M0-foundation.md)       | Foundation                              | READY  |
+| [M1-first-login.md](M1-first-login.md)     | First Login (vertical slice)            | READY  |
+| [M2-trust.md](M2-trust.md)                 | Save security and PWA                   | READY  |
+| [M3-core-rpg.md](M3-core-rpg.md)           | Core RPG systems                        | READY  |
+| [M4-world-1.md](M4-world-1.md)             | Playtest fixes, world tech and region 1 | READY  |
+| [M5-the-crowd.md](M5-the-crowd.md)         | Simulated MMO                           | DRAFT  |
+| [M6-second-life.md](M6-second-life.md)     | Life systems                            | DRAFT  |
+| [M7-automation.md](M7-automation.md)       | Automation                              | DRAFT  |
+| [M8-world-2.md](M8-world-2.md)             | Regions 2 to 4                          | DRAFT  |
+| [M9-world-3.md](M9-world-3.md)             | Regions 5 to 8, Undercroft              | DRAFT  |
+| [M10-hidden-layer.md](M10-hidden-layer.md) | Lore and completion                     | DRAFT  |
+| [M11-unwritten.md](M11-unwritten.md)       | Frontier                                | DRAFT  |
+| [M12-release.md](M12-release.md)           | Polish and release                      | DRAFT  |
 
 ## Ticket format
 

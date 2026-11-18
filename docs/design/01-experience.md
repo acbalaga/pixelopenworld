@@ -35,17 +35,20 @@ A soft spine exists for players who want one: each region has a Waystone network
 
 Target experience, minute by minute. Ticket POW-M1-10 and POW-M12-05 implement and polish it.
 
-| Minute   | Beat                                                                                                                                                                                      |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0        | Title screen is a login screen. One button: Log In.                                                                                                                                       |
-| 0 to 2   | Avatar setup, presented as the game's own setup screen. Name, body, hair, colors. No class, no stats.                                                                                     |
-| 2        | You appear at a Waystone in Hearthford square at whatever time of day it is. World chat is already scrolling. Two Travelers run past.                                                     |
-| 2 to 5   | No tutorial pop-ups. A Traveler nearby is hitting a training dummy. Controls are learned from one-line contextual hints that appear the first time an action is possible and never again. |
-| 5 to 15  | The request board has three starter jobs (gather, deliver, clear pests). Doing any of them teaches gathering, combat, and the cook pot by use.                                            |
-| 15 to 30 | First skill rank-ups. First piece of crafted gear. A Traveler sends a friend request after you fight near them.                                                                           |
-| 30 to 60 | First cave. First miniboss. First odd thing: a tablet you cannot read, and a line in chat that does not fit.                                                                              |
+| Minute   | Beat                                                                                                                                                                                                                                                             |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0        | Title screen is a login screen. One button: Log In.                                                                                                                                                                                                              |
+| 0 to 2   | Avatar setup, presented as the game's own setup screen. Name, body, face, hair, colors, an optional origin (flavor only). No class, no stats.                                                                                                                    |
+| 2        | You wake outside Hearthford at one of eight wake points (a hayfield, a ditch by the east road, under the old bridge, a hunter's lean-to, and so on), at whatever time of day it is. One bread, a wooden dagger, ragged clothes. World chat is already scrolling. |
+| 2 to 5   | The town is in sight: mill sails, chimney smoke, the Waystone's light at night. No arrow points at it. Controls are learned from one-line contextual hints that appear the first time an action is possible and never again.                                     |
+| 5 to 10  | The walk in is the first lesson. A berry bush awakens Foraging. A Mossling patch warns before it bites. Something on the way is worth picking up.                                                                                                                |
+| 10 to 15 | Through the gate. The square has the Waystone, the request board and the notice wall. Workshops, the inn and the market are up the streets. Touching the Waystone or sleeping at the inn moves your respawn there.                                               |
+| 15 to 30 | Starter requests teach gathering, combat and the cook pot by use. First skills awaken and rank up. A teacher in town offers a first technique. First crafted gear replaces the rags.                                                                             |
+| 30 to 60 | First cave, the Rootway, which is hard on rags and a dagger and fair with what the first half hour gave you. First miniboss. First odd thing: a tablet you cannot read, and a line in chat that does not fit.                                                    |
 
 Rule: in the first hour the player is never stopped by a modal they did not open.
+
+Rule: the first hour starts poor on purpose (D19). The rags, the dagger and the single bread are the baseline every upgrade is measured against. Nothing in the first hour needs more than the town can give a player who walks in with nothing.
 
 ## Session shapes the design must serve
 
