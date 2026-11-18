@@ -19,6 +19,7 @@ import { SUBPX } from './kernel/fixed';
 import { nextU32 } from './kernel/rng';
 import { earnCoin, madeItems, soldItems, spendCoin, type CoinSink } from './ledger';
 import { dayIndex } from './time';
+import { activeMods, applyMods, modPct } from './mods';
 import type { Haggle, Npc, SimState } from './state';
 
 /** A shopkeeper's starting state: a full shelf and their opening purse. Non shopkeepers hold nothing. */
@@ -87,6 +88,12 @@ export function openSell(shopId: string, item: string, q: Quality = 0): number {
 const barteringPoints = (state: SimState, who: EntityId): number =>
   getComp(state.entities, who, 'skills')?.points['skill.bartering'] ?? 0;
 
+/** What a buy price comes to for `who`: the Haggler Path takes its share off, never below 1. */
+export function payable(state: SimState, who: EntityId, price: number): number {
+  const pct = modPct(activeMods(state, who), 'buyPct');
+  return pct === 0 ? price : Math.max(1, Math.ceil((price * (100 + pct)) / 100));
+}
+
 /** Buys `qty` at `each` coin. The caller has checked range. Emits `bought` or a denial. */
 function completeBuy(
   state: SimState,
@@ -105,6 +112,8 @@ function completeBuy(
     deny(state, who, 'stock');
     return false;
   }
+  // Haggler: the Path takes a share off whatever the price came to.
+  each = payable(state, who, each);
   const cost = each * qty;
   if (a.coin < cost) {
     deny(state, who, 'coin');
@@ -146,6 +155,7 @@ function completeSell(
   slot: number,
   qty: number,
   each: number,
+  haggled = false,
 ): boolean {
   const a = getComp(state.entities, who, 'avatar');
   const inv = getComp(state.entities, who, 'inventory');
@@ -171,7 +181,7 @@ function completeSell(
   // The last stacks sold stay behind the counter until the next restock.
   k.npc.buyback.push({ stack: sold, price: each });
   while (k.npc.buyback.length > B.buybackSlots) k.npc.buyback.shift();
-  emit(state.events, { type: 'sold', who, item, qty, coin: each * qty });
+  emit(state.events, { type: 'sold', who, item, qty, coin: each * qty, haggled });
   return true;
 }
 
@@ -349,7 +359,7 @@ export function haggle(
     const done =
       h.dir === 'buy'
         ? completeBuy(state, who, h.shop, h.item, 1, h.cur)
-        : completeSell(state, who, h.shop, h.slot, 1, h.cur);
+        : completeSell(state, who, h.shop, h.slot, 1, h.cur, true);
     state.entities.comps.haggle[who] = null;
     emit(state.events, {
       type: 'haggleEnded',
@@ -441,8 +451,14 @@ export function tradeSystem(state: SimState): void {
     const n = getComp(state.entities, id, 'npc');
     const shop = n ? Object.values(SHOPS).find((s) => s.npc === n.id) : undefined;
     if (!n || !shop) continue;
-    if (regen && n.purse < shop.purse.start)
-      n.purse = Math.min(shop.purse.start, n.purse + B.purseRegen);
+    // Fair Dealer: shopkeepers refill faster for an avatar who wears the Path.
+    const who = query(state.entities, 'avatar')[0];
+    const step = applyMods(
+      B.purseRegen,
+      'purseRegenPct',
+      who === undefined ? [] : activeMods(state, who),
+    );
+    if (regen && n.purse < shop.purse.start) n.purse = Math.min(shop.purse.start, n.purse + step);
     if (day > n.day) {
       n.day = day;
       for (const s of shop.stock) n.stock[s.item] = s.max;

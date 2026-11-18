@@ -2,6 +2,9 @@ import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { STATUS_BALANCE as SBAL } from '../../content/balance/status';
 import { STATUSES, type StatusId } from '../../content/combat/statuses';
 import { TECHNIQUES } from '../../content/combat/techniques';
+import { PATHS } from '../../content/paths';
+import { PATHS_BALANCE } from '../../content/balance/paths';
+import { requirementsMet } from '../../sim/systems/deeds';
 import { knows } from '../../sim/combat/techniques';
 import { HINTS } from '../../content/hints';
 import { REQUESTS } from '../../content/dialogue';
@@ -193,6 +196,24 @@ export function consistency(v: View): Reason[] {
       if (id === null) continue;
       const t = TECHNIQUES[id];
       if (!t || !knows(sim, v.who, t)) fail('TECHNIQUE_UNKNOWN', id);
+    }
+  }
+
+  // Paths: every earned Path's requirements hold, and only earned ones are worn, three at most.
+  // (Days since a reset depend on the world clock, which a save does not carry, so they are not checked.)
+  {
+    const paths = sim.entities.comps.paths[v.who];
+    if (paths) {
+      for (const id of paths.earned) {
+        const p = PATHS[id];
+        if (!p || !requirementsMet(sim, v.who, p, false)) fail('PATH_UNEARNED', id);
+      }
+      if (
+        paths.worn.length > PATHS_BALANCE.maxWorn ||
+        paths.worn.some((id) => !paths.earned.includes(id)) ||
+        (paths.shown !== null && !paths.worn.includes(paths.shown))
+      )
+        fail('WORN_NOT_EARNED', paths.worn.join(','));
     }
   }
 

@@ -1,3 +1,4 @@
+import { PATHS } from '../../src/content/paths';
 import { SHOP_BALANCE } from '../../src/content/balance/shop';
 import { CREATURES } from '../../src/content/creatures';
 import { DIALOGUES, NPCS, REQUESTS, SHOPS } from '../../src/content/dialogue';
@@ -57,6 +58,9 @@ export function validateDialogue(
     if ('item' in c && !refs.items.has(c.item)) errors.push(`${where}: unknown item ${c.item}`);
     if ('skill' in c && !refs.skills.has(c.skill))
       errors.push(`${where}: unknown skill ${c.skill}`);
+    if ('pathWorn' in c && !PATHS[c.pathWorn]) errors.push(`${where}: unknown path ${c.pathWorn}`);
+    if ('pathEarned' in c && !PATHS[c.pathEarned])
+      errors.push(`${where}: unknown path ${c.pathEarned}`);
     if ('trial' in c && !refs.trials.has(c.trial))
       errors.push(`${where}: unknown trial ${c.trial}`);
     if ('request' in c && !refs.requests[c.request])

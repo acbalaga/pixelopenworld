@@ -7,7 +7,9 @@ export type Cond =
   | { item: string; atLeast: number }
   | { skill: string; atLeast: number }
   | { request: string; is: 'none' | 'active' | 'ready' | 'done' }
-  | { trial: string; is: 'offered' | 'passed'; not?: boolean };
+  | { trial: string; is: 'offered' | 'passed'; not?: boolean }
+  | { pathWorn: string; not?: boolean }
+  | { pathEarned: string; not?: boolean };
 
 /** Something a node or a choice does. The sim applies it, so the client cannot invent one. */
 export type Effect =

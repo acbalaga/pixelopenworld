@@ -37,6 +37,16 @@ export function holds(state: SimState, who: EntityId, conds: readonly Cond[] | u
             : false;
       return (on === true) !== (c.not === true);
     }
+    if ('pathWorn' in c)
+      return (
+        (getComp(state.entities, who, 'paths')?.worn.includes(c.pathWorn) === true) !==
+        (c.not === true)
+      );
+    if ('pathEarned' in c)
+      return (
+        (getComp(state.entities, who, 'paths')?.earned.includes(c.pathEarned) === true) !==
+        (c.not === true)
+      );
     return requestState(j, c.request) === c.is;
   });
 }

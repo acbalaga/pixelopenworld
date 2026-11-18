@@ -20,6 +20,7 @@ import {
   itemDetail,
   skillsView,
   techniquesView,
+  type PathRowView,
   trialLog,
   type BagFilterId,
   type BagSortId,
@@ -349,6 +350,29 @@ export class MenuSheet {
       gear.appendChild(li);
     }
     put(this.body, top, this.heading(S.gear), gear, el('p', 'pow-coin', `${S.coin}: ${v.coin}`));
+    this.renderPaths(v.paths);
+  }
+
+  /** The Paths section of the Character tab. Hidden Paths are not in the model until earned. */
+  private renderPaths(paths: readonly PathRowView[]): void {
+    const sec = el('section', 'pow-paths');
+    sec.appendChild(this.heading(S.pathsTitle));
+    if (paths.length === 0) sec.appendChild(el('p', 'pow-hint', S.pathsNone));
+    const ul = el('ul', 'pow-skills');
+    for (const r of paths) {
+      const li = el('li', 'pow-path');
+      const head = el('div', 'pow-tech-head');
+      put(head, el('span', 'pow-skill-name', r.name));
+      if (r.worn)
+        head.appendChild(
+          el('span', 'pow-skill-rank', r.shown ? `${S.pathsWorn}, ${S.pathsShown}` : S.pathsWorn),
+        );
+      li.appendChild(head);
+      li.appendChild(el('p', 'pow-hint', r.earned ? r.gift : `${S.pathsHintLabel} ${r.hint}`));
+      ul.appendChild(li);
+    }
+    sec.appendChild(ul);
+    this.body.appendChild(sec);
   }
 
   // ---- Skills ----

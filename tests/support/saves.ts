@@ -139,6 +139,9 @@ export function asSchema5(s: SimState): SimState {
   }
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
+  // Schema 16: deeds and paths.
+  delete (s.entities.comps as { deeds?: unknown }).deeds;
+  delete (s.entities.comps as { paths?: unknown }).paths;
   // Schema 14: loadouts, channels and the learned flags of taught techniques.
   delete (s.entities.comps as { loadouts?: unknown }).loadouts;
   delete (s.entities.comps as { channel?: unknown }).channel;

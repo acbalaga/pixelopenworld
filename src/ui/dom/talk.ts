@@ -3,6 +3,9 @@ import type { DialogueNode } from '../../content/dialogue/types';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS } from '../../content/items';
 import { AFFIXES } from '../../content/items/affixes';
+import { PATHS } from '../../content/paths';
+import { PATHS_BALANCE } from '../../content/balance/paths';
+import { PATH_STRINGS } from '../../content/strings/paths';
 import { RECIPES, expand } from '../../content/items/recipes';
 import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
@@ -10,13 +13,22 @@ import { ITEM_STRINGS } from '../../content/strings/items';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { holds, startNode } from '../../sim/journal';
+import { addressOf } from '../../sim/systems/deeds';
 import type { Command } from '../../sim/kernel/commands';
 import type { SimEvent } from '../../sim/kernel/events';
 import type { Haggle, SimState } from '../../sim/state';
 import { acceptChance } from '../../sim/economy';
 import { countItem } from '../../sim/items';
 import { EQUIP_SLOTS } from '../../content/items/types';
-import { haggleOf, mendCost, openBuy, openSell, shopPurse, shopTakes } from '../../sim/trade';
+import {
+  haggleOf,
+  mendCost,
+  openBuy,
+  openSell,
+  payable,
+  shopPurse,
+  shopTakes,
+} from '../../sim/trade';
 
 export interface TalkDeps {
   read: () => { state: SimState; who: number };
@@ -69,6 +81,8 @@ export class TalkSheet {
   private haggleNote = '';
   private ready = false;
   private storageOpen = false;
+  private restOpen = false;
+  private restMsg = '';
   private stationKind: string | null = null;
   private lastStation: string | null = null;
   private stationMsg = '';
@@ -99,6 +113,7 @@ export class TalkSheet {
     this.actions = null;
     this.shopId = null;
     this.storageOpen = false;
+    this.restOpen = false;
     this.stationKind = null;
     this.deps.onOpenChange(false);
   }
@@ -160,9 +175,13 @@ export class TalkSheet {
     if (!node || !this.actions) return this.close();
     this.node = node;
     this.deps.send({ type: 'talk', npc: this.npc, node: id, choice: -1 });
-    this.addLine('npc', DIALOGUE_STRINGS[node.text] ?? node.text);
-    this.actions.textContent = '';
     const { state, who } = this.deps.read();
+    // `{address}` is how the shown Path (or else the handle) is said.
+    this.addLine(
+      'npc',
+      (DIALOGUE_STRINGS[node.text] ?? node.text).split('{address}').join(addressOf(state, who)),
+    );
+    this.actions.textContent = '';
     const choices = (node.choices ?? [])
       .map((c, i) => ({ c, i }))
       .filter(({ c }) => holds(state, who, c.if));
@@ -194,6 +213,11 @@ export class TalkSheet {
     else if (e.type === 'shopOpened') this.openShop(e.shop);
     else if (e.type === 'storageOpened') this.openStorage();
     else if (e.type === 'stationOpened') this.openStation(e.station);
+    else if (e.type === 'bedOpened') this.openRest();
+    else if (this.restOpen && e.type === 'slept') {
+      this.restMsg = S.rest.slept;
+      this.renderRest();
+    } else if (this.restOpen && e.type === 'pathWorn') this.renderRest();
     else if (e.type === 'craftStarted') this.close();
     else if (e.type === 'crafted' || e.type === 'craftFailed') this.afterCraft(e);
     else if (e.type === 'repaired' && this.stationKind) {
@@ -348,7 +372,7 @@ export class TalkSheet {
         const locked = k?.locked.includes(item) ?? false;
         row(
           item,
-          openBuy(shop.id, item),
+          payable(state, who, openBuy(shop.id, item)),
           left > 0 ? S.shop.buyOne : S.shop.soldOut,
           ` ${fill(S.shop.left, { n: String(left) })}`,
           left > 0 ? () => this.deps.send({ type: 'buy', shop: shop.id, item, qty: 1 }) : null,
@@ -427,6 +451,72 @@ export class TalkSheet {
     return c;
   }
 
+  /** The Rest panel on a bedroll: sleep, wear and take off Paths, choose the title shown. */
+  openRest(): void {
+    this.mount('pow-shop pow-rest', S.rest.title);
+    this.restOpen = true;
+    this.restMsg = '';
+    this.renderRest();
+  }
+
+  private renderRest(): void {
+    const s = this.sheet;
+    if (!s || !this.restOpen) return;
+    const { state, who } = this.deps.read();
+    const paths = state.entities.comps.paths[who];
+    s.textContent = '';
+    const head = el('header', 'pow-shop-head');
+    put(head, el('h2', 'pow-talk-name', S.rest.title));
+    const close = el('button', 'pow-button pow-close', S.rest.close);
+    close.type = 'button';
+    close.addEventListener('click', () => this.close());
+    head.appendChild(close);
+    const msg = el('p', 'pow-shop-msg', this.restMsg);
+    msg.setAttribute('role', 'status');
+    const sleep = el('button', 'pow-button pow-choice', S.rest.sleep);
+    sleep.type = 'button';
+    sleep.addEventListener('click', () => this.deps.send({ type: 'sleep' }));
+    put(
+      s,
+      head,
+      msg,
+      sleep,
+      el('h3', 'pow-heading', fill(S.rest.paths, { max: String(PATHS_BALANCE.maxWorn) })),
+    );
+    const list = el('ul', 'pow-shop-list');
+    for (const id of paths?.earned ?? []) {
+      const def = PATHS[id];
+      if (!def) continue;
+      const worn = paths?.worn.includes(id) === true;
+      const li = el('li', 'pow-shop-row');
+      const name = PATH_STRINGS[def.nameKey] ?? id;
+      const mark = paths?.shown === id ? ` (${S.pathsShown})` : worn ? ` (${S.pathsWorn})` : '';
+      const b = el('button', 'pow-button', worn ? S.rest.takeOff : S.rest.wear);
+      b.type = 'button';
+      b.setAttribute('aria-label', `${worn ? S.rest.takeOff : S.rest.wear} ${name}`);
+      b.addEventListener('click', () => this.deps.send({ type: 'wearPath', path: id, on: !worn }));
+      put(li, el('span', 'pow-shop-name', `${name}${mark}`), b);
+      if (worn && paths?.shown !== id) {
+        const sb = el('button', 'pow-button', S.rest.show);
+        sb.type = 'button';
+        sb.setAttribute('aria-label', `${S.rest.show}: ${name}`);
+        sb.addEventListener('click', () => this.deps.send({ type: 'showPath', path: id }));
+        li.appendChild(sb);
+      }
+      list.appendChild(li);
+      list.appendChild(el('li', 'pow-hint', PATH_STRINGS[def.giftKey] ?? ''));
+    }
+    if ((paths?.earned.length ?? 0) === 0) list.appendChild(el('li', 'pow-hint', S.rest.noPaths));
+    s.appendChild(list);
+    this.ready = true;
+  }
+
+  /** What the price standing comes to for the avatar: the Haggler Path takes its share off a buy. */
+  private pay(h: Haggle): number {
+    const { state, who } = this.deps.read();
+    return h.dir === 'buy' ? payable(state, who, h.cur) : h.cur;
+  }
+
   /** The haggle panel: the price standing, the exchanges left, and the four choices. */
   private renderHaggle(h: Haggle, firmness: number): HTMLElement {
     const box = el('section', 'pow-haggle');
@@ -440,7 +530,7 @@ export class TalkSheet {
           item: nameOf(h.item),
         }),
       ),
-      el('p', 'pow-haggle-price', fill(S.shop.haggle.standing, { n: String(h.cur) })),
+      el('p', 'pow-haggle-price', fill(S.shop.haggle.standing, { n: String(this.pay(h)) })),
       el(
         'p',
         'pow-hint',
@@ -468,7 +558,7 @@ export class TalkSheet {
         fill(S.shop.haggle.chance, { n: String(acceptChance('fair', pts, firmness)) }),
       );
     }
-    btn(fill(S.shop.haggle.accept, { n: String(h.cur) }), 'accept');
+    btn(fill(S.shop.haggle.accept, { n: String(this.pay(h)) }), 'accept');
     btn(S.shop.haggle.walk, 'cancel');
     return box;
   }

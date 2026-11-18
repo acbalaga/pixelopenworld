@@ -7,6 +7,7 @@ import { emit } from './kernel/events';
 import { int, weighted } from './kernel/rng';
 import { give, useTool } from './items';
 import { pointsOf } from './skills';
+import { activeMods, modAdd } from './mods';
 import type { Inventory, SimState } from './state';
 import { currentWeather, dayPhase, seasonOf } from './time';
 
@@ -170,7 +171,11 @@ export function resolveGather(state: SimState, who: EntityId, hits: number): voi
     yieldsFor(def, state).map((y) => [y.item, y.weight] as const),
   );
   const base = Math.max(1, int(state.rng.loot, sweep.baseMin, sweep.baseMax) - penalty);
-  const qty = base + hits * sweep.sweetBonus;
+  // Forager: a sweet hit gives more at its nodes. The mod's `arg` is the node's tag.
+  const qty =
+    base +
+    hits * sweep.sweetBonus +
+    (hits > 0 ? modAdd(activeMods(state, who), 'gatherYield', def.tag) : 0);
   // A sweet hit can lift the catch to Fine, more often with skill.
   let q: 0 | 1 = 0;
   if (hits > 0 && ITEMS[item]?.quality) {
@@ -180,6 +185,6 @@ export function resolveGather(state: SimState, who: EntityId, hits: number): voi
   node.readyAt = state.worldTick + def.respawn;
   emit(state.events, { type: 'gatherResolved', id: who, node: g.node, sweet: hits > 0, item, qty });
   give(state, who, item, qty, 'gather', q ? { q } : {});
-  if (g.tool >= 0) useTool(state, who, g.tool);
+  if (g.tool >= 0) useTool(state, who, g.tool, def.tag);
   emit(state.events, { type: 'gathered', id: who, tag: def.tag, item, tier: def.tier });
 }

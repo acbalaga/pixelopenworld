@@ -46,6 +46,8 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
       return 'sfx.step';
     case 'waystoneSet':
       return 'sfx.chime';
+    case 'pathEarned':
+      return e.who === playerId ? 'sfx.chime' : null;
     default:
       return null;
   }

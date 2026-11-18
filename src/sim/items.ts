@@ -15,7 +15,7 @@ import { recomputePools } from './skills';
 import { applyStatus, clearStatus, statusesOf } from './statuses';
 import { useGadget } from './gadgets';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
-import { applyMods, stackMods } from './mods';
+import { activeMods, applyMods, modPct, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
 import { pressGather, startGather } from './gathering';
 import { crafting, holdStep, repair, startCraft, tapStep, tracePoint } from './crafting';
@@ -363,10 +363,13 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   const item = stack.item;
   stack.qty--;
   if (stack.qty === 0) inv.slots[slot] = null;
-  pools.hp = Math.min(pools.hpMax, pools.hp + food.hp);
-  pools.sta = Math.min(pools.staMax, pools.sta + food.sta);
-  pools.foc = Math.min(pools.focMax, pools.foc + food.foc);
-  emit(state.events, { type: 'eaten', id: who, item });
+  // Wild Eater: raw forage restores more.
+  const gift = activeMods(state, who);
+  const more = (n: number): number => (food.raw ? applyMods(n, 'rawFoodPct', gift) : n);
+  pools.hp = Math.min(pools.hpMax, pools.hp + more(food.hp));
+  pools.sta = Math.min(pools.staMax, pools.sta + more(food.sta));
+  pools.foc = Math.min(pools.focMax, pools.foc + more(food.foc));
+  emit(state.events, { type: 'eaten', id: who, item, raw: food.raw === true });
   // Remedies clear statuses and some leave one.
   const cure = ITEMS[item]?.status;
   for (const id of cure?.clear ?? []) clearStatus(state, who, id as StatusId);
@@ -376,7 +379,10 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
     // One Fed at a time: a new meal replaces the old one, and the pool bonuses come from its mods.
     const old = statusesOf(state, who).find((s) => s.id === 'fed');
     const replaced = old?.item ?? null;
-    applyStatus(state, who, 'fed', -1, { ticks: food.fed.ticks, item });
+    applyStatus(state, who, 'fed', -1, {
+      ticks: applyMods(food.fed.ticks, 'fedTicksPct', gift),
+      item,
+    });
     emit(state.events, { type: 'fedStarted', id: who, item, replaced });
   }
   return true;
@@ -580,11 +586,16 @@ export function wearSystem(state: SimState): void {
  * One gather made with a tool counts toward its wear: 1 durability per `toolUses` uses. M3-06
  * calls this for the tool it picked. Returns true if the tool lost a point.
  */
-export function useTool(state: SimState, who: EntityId, slot: number): boolean {
+export function useTool(state: SimState, who: EntityId, slot: number, tag?: string): boolean {
   const inv = getComp(state.entities, who, 'inventory');
   const stack = inv?.slots[slot];
   if (!inv || !stack || ITEMS[stack.item]?.tool === undefined) return false;
-  if (++inv.wear.uses < B.wear.toolUses) return false;
+  // Prospector: a pick wears more slowly on veins, so it takes more uses to lose a point.
+  const uses = Math.ceil(
+    (B.wear.toolUses * 100) /
+      Math.max(10, 100 + modPct(activeMods(state, who), 'durabilityLossPct', tag)),
+  );
+  if (++inv.wear.uses < uses) return false;
   inv.wear.uses = 0;
   loseDurability(stack, 1);
   return true;

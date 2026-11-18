@@ -18,11 +18,28 @@ export type ModStat =
   /** Stamina cost of a dodge, percent (Tailwind). */
   | 'dodgeCost'
   /** Ticks added to the perfect dodge window (Light Feet). */
-  | 'perfectWindow';
+  | 'perfectWindow'
+  // Path gifts (M3-08). Percent stats are `pct`, tick counts and flags `add`.
+  | 'blockStaPct'
+  | 'fedTicksPct'
+  | 'rawFoodPct'
+  | 'buyPct'
+  | 'purseRegenPct'
+  | 'songTicksPct'
+  | 'hideSpeedPct'
+  | 'wetTicksPct'
+  | 'emberFocPct'
+  | 'durabilityLossPct'
+  | 'repairMaterialFree'
+  | 'noAggroCreature'
+  | 'tierDamagePct'
+  | 'dodgeRecoverTicks';
 
 /** One change to a stat: a flat `add`, a `pct` of the base, or both. Stamina and Focus in tenths. */
 export interface Mod {
   stat: ModStat;
+  /** Narrows the mod: a node tag, a creature kind, a creature tier. Absent means everywhere. */
+  arg?: string;
   add?: number;
   pct?: number;
 }

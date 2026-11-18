@@ -22,6 +22,7 @@ import { craftSystem } from './crafting';
 import { elementsSystem } from './elements';
 import { tradeSystem } from './trade';
 import { snareSystem } from './gadgets';
+import { deedsSystem, pathsSystem } from './systems/deeds';
 import { channelSystem } from './combat/techniques';
 import { statusSystem } from './statuses';
 import type { EntityId } from './kernel/entities';
@@ -66,6 +67,8 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   wearSystem,
   trialsSystem,
   skillsSystem,
+  deedsSystem,
+  pathsSystem,
 ];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */

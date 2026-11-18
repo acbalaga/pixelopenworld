@@ -61,6 +61,10 @@ export type Command =
   | { type: 'buy'; shop: string; item: string; qty: number }
   /** Sell from bag slot `slot` to the shop in front of you. */
   | { type: 'sell'; shop: string; slot: number; qty: number }
+  /** At a bed: sleep, wear or take off a Path, choose the title shown. */
+  | { type: 'sleep' }
+  | { type: 'wearPath'; path: string; on: boolean }
+  | { type: 'showPath'; path: string | null }
   /** Swap to the other loadout (the HUD swap button). */
   | { type: 'loadout' }
   /** Put a known technique in slot 1, 2 or 3 (the second to fourth button), or empty it. */
@@ -218,6 +222,20 @@ export function validateCommand(raw: unknown): Validated {
     }
     case 'loadout':
       return { ok: true, command: { type: 'loadout' } };
+    case 'sleep':
+      return { ok: true, command: { type: 'sleep' } };
+    case 'wearPath':
+      if (
+        typeof r.path !== 'string' ||
+        !/^path\.[a-z_]{1,24}$/.test(r.path) ||
+        typeof r.on !== 'boolean'
+      )
+        return { ok: false, reason: 'bad path' };
+      return { ok: true, command: { type: 'wearPath', path: r.path, on: r.on } };
+    case 'showPath':
+      if (r.path !== null && (typeof r.path !== 'string' || !/^path\.[a-z_]{1,24}$/.test(r.path)))
+        return { ok: false, reason: 'bad path' };
+      return { ok: true, command: { type: 'showPath', path: r.path as string | null } };
     case 'assign':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 1 || (r.slot as number) > 3)
         return { ok: false, reason: 'bad slot' };

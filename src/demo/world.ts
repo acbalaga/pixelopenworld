@@ -58,6 +58,9 @@ import { FIXTURES } from '../content/world/fixtures';
 import { roomAt, OUTDOORS } from '../content/world/rooms';
 import { spawnFixture } from '../sim/systems/fixtures';
 import { UI_STRINGS } from '../content/strings/ui';
+import { PATHS } from '../content/paths';
+import { PATH_STRINGS } from '../content/strings/paths';
+import { chooseTextRenderer } from '../ui/text/rule';
 import { DIALOGUE_STRINGS } from '../content/strings/dialogue';
 import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
@@ -1116,7 +1119,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 : W_STR.chestEmpty,
             );
           } else if (e.type === 'shortcutOpened') notices.toast(W_STR.shortcut);
-          else if (e.type === 'techniqueLearned' && e.who === who)
+          else if (e.type === 'pathEarned' && e.who === who) {
+            const def = PATHS[e.path];
+            notices.toast(
+              `${fill(UI_STRINGS.rest.banner, { name: PATH_STRINGS[def?.nameKey ?? ''] ?? e.path })}. ${PATH_STRINGS[def?.giftKey ?? ''] ?? ''}`,
+            );
+          } else if (e.type === 'techniqueLearned' && e.who === who)
             notices.toast(
               W_STR.learned.replace('{name}', W_STR.techniques[e.technique] ?? e.technique),
             );
@@ -1259,6 +1267,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
       // Screen space: bars, lock frame, controls.
       const v = vp.current;
+      // The shown Path's title, above the avatar's head. Pixel text only where the text rule allows it.
+      const shownPath = state.entities.comps.paths[who]?.shown;
+      const titleKey = shownPath ? PATHS[shownPath]?.titleKey : undefined;
+      const title = titleKey ? PATH_STRINGS[titleKey] : undefined;
+      if (
+        title &&
+        chooseTextRenderer({ text: title, lines: 1, physicalMmPerLogicalPx: v.mmPerLogicalPx })
+          .renderer === 'pixel'
+      )
+        fonts.small.draw(
+          renderer,
+          title,
+          Math.round(pxX - camera.x - shake.x),
+          Math.round(pxY - camera.y - shake.y) - 40,
+          GOLD,
+          { align: 'center', outline: DARK },
+        );
       hud.draw({
         r: renderer,
         fonts,

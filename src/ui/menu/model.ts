@@ -12,6 +12,9 @@ import {
 import { SKILLS, TRIALS, trialCount, type SkillFamily } from '../../content/skills';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { UI_STRINGS } from '../../content/strings/ui';
+import { PATH_LIST } from '../../content/paths';
+import { PATH_STRINGS } from '../../content/strings/paths';
+import { anyRequirementMet } from '../../sim/systems/deeds';
 import { TECHNIQUE_LIST } from '../../content/combat/techniques';
 import { TECHNIQUE_STRINGS } from '../../content/strings/techniques';
 import { knows } from '../../sim/combat/techniques';
@@ -47,10 +50,60 @@ export interface GearSlotView {
   icon: string | null;
 }
 
+export interface PathRowView {
+  id: string;
+  name: string;
+  /** The gift line for an earned Path. Empty for a hint. */
+  gift: string;
+  /** For a Path not earned yet: the line that points at it, with no numbers. */
+  hint: string;
+  earned: boolean;
+  worn: boolean;
+  shown: boolean;
+}
+
 export interface CharacterView {
   pools: PoolView[];
   gear: GearSlotView[];
   coin: number;
+  /** Earned Paths first, then hints for standard Paths that have begun. Hidden ones only once earned. */
+  paths: PathRowView[];
+}
+
+/**
+ * The Paths section. An earned Path shows its gift and whether it is worn. A standard Path not
+ * earned shows only its hint, and only once one of its requirements is met. A hidden Path shows
+ * nothing at all until it is earned.
+ */
+export function pathsView(state: SimState, who: number): PathRowView[] {
+  const p = state.entities.comps.paths[who];
+  if (!p) return [];
+  const earned: PathRowView[] = [];
+  const hints: PathRowView[] = [];
+  for (const def of PATH_LIST) {
+    const name = PATH_STRINGS[def.nameKey] ?? def.id;
+    if (p.earned.includes(def.id))
+      earned.push({
+        id: def.id,
+        name,
+        gift: PATH_STRINGS[def.giftKey] ?? '',
+        hint: '',
+        earned: true,
+        worn: p.worn.includes(def.id),
+        shown: p.shown === def.id,
+      });
+    else if (!def.hidden && anyRequirementMet(state, who, def))
+      hints.push({
+        id: def.id,
+        name,
+        gift: '',
+        hint: PATH_STRINGS[def.hintKey] ?? '',
+        earned: false,
+        worn: false,
+        shown: false,
+      });
+  }
+  return [...earned, ...hints];
 }
 
 export interface SkillRowView {
@@ -185,7 +238,7 @@ export function characterView(state: SimState, who: number): CharacterView {
       icon: item ? (ITEMS[item]?.icon ?? null) : null,
     };
   });
-  return { pools, gear, coin: a?.coin ?? 0 };
+  return { pools, gear, coin: a?.coin ?? 0, paths: pathsView(state, who) };
 }
 
 /** The Skills tab line for the Trial at a threshold: its authored hint, or "no one can test this yet". */

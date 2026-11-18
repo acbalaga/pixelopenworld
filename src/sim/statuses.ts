@@ -4,7 +4,7 @@ import { kill } from './combat/fighter';
 import { getComp, query, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import type { SimState, StatusEntry } from './state';
-import { hasStatus, statusesOf } from './mods';
+import { activeMods, applyMods, hasStatus, statusesOf } from './mods';
 import { recomputePools } from './skills';
 
 /**
@@ -35,6 +35,9 @@ export function applyStatus(
   const def = STATUSES[id];
   if (!def || !alive(state, who)) return false;
   let ticks = opts.ticks ?? def.ticks;
+  // Tidecaller: Wet put on others lasts longer.
+  if (id === 'wet' && src >= 0 && src !== who)
+    ticks = applyMods(ticks, 'wetTicksPct', activeMods(state, src));
   if (id !== 'hexed' && hasStatus(state, who, 'hexed'))
     ticks = Math.floor((ticks * (100 + B.hexedExtendPct)) / 100);
   let list = getComp(state.entities, who, 'statuses');

@@ -1,3 +1,4 @@
+import { RECIPES } from '../../content/items/recipes';
 import { SKILLS } from '../../content/skills';
 import {
   CHEST_COIN_TOTAL,
@@ -47,6 +48,30 @@ export function plausibility(v: View): Reason[] {
   const gathered = sum(ledger.itemsMade.gather ?? {});
   if (gathered > GATHER_ITEMS_PER_SECOND * seconds + COUNT_SLACK)
     fail('GATHER_RATE', `${gathered} items gathered in ${seconds} s`);
+
+  // Deeds that mirror the ledger never run past it: nothing is counted that was not also recorded.
+  const deeds = v.sim.entities.comps.deeds[v.who];
+  if (deeds) {
+    const crafted = (craft: string): number =>
+      Object.entries(ledger.crafts).reduce(
+        (n, [rid, c]) => n + (RECIPES[rid]?.craft === craft ? c : 0),
+        0,
+      );
+    const cap: [string, number][] = [
+      ['deed.mossling_kills', ledger.kills['creature.mossling'] ?? 0],
+      ['deed.kills_onehand', sum(ledger.kills)],
+      ['deed.metal_crafted', crafted('smithing')],
+      ['deed.cloth_crafted', crafted('tailoring')],
+      ['deed.dishes', crafted('cooking')],
+    ];
+    const gathered = sum(ledger.itemsMade.gather ?? {});
+    cap.push(['deed.forage', gathered], ['deed.ore', gathered]);
+    if ((deeds.counts['deed.forage'] ?? 0) + (deeds.counts['deed.ore'] ?? 0) > gathered)
+      fail('DEED_EXCEEDS_LEDGER', `forage and ore past ${gathered} gathered`);
+    for (const [id, max] of cap)
+      if ((deeds.counts[id] ?? 0) > max)
+        fail('DEED_EXCEEDS_LEDGER', `${id} ${deeds.counts[id]} past ${max}`);
+  }
 
   // Coin, source by source.
   // Coin the player paid shopkeepers refills their purses, so it raises what they can pay out.

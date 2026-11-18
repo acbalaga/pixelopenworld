@@ -229,6 +229,27 @@ export interface Channel {
   until: number;
 }
 
+/**
+ * What the avatar has done (M3-08): deed counts, sets of names for `distinct` deeds, when a
+ * `countSinceReset` deed was last zeroed (a world tick), the fight in progress, and the creatures
+ * close enough now to count as met.
+ */
+export interface Deeds {
+  counts: Record<string, number>;
+  distinct: Record<string, string[]>;
+  resetAt: Record<string, number>;
+  /** The fight on: whether it has begun, kills made, and whether the avatar was hurt. */
+  fight: { live: boolean; kills: number; hurt: boolean };
+  near: number[];
+}
+
+/** The Paths the avatar has earned, the (at most three) it wears, and the one whose title shows. */
+export interface Paths {
+  earned: string[];
+  worn: string[];
+  shown: string | null;
+}
+
 /** A lingering cloud (steam): hurts and hides what stands in it until `until`. */
 export interface Cloud {
   kind: string;
@@ -421,6 +442,8 @@ export interface Components {
   craft: CraftSession;
   haggle: Haggle;
   loadouts: Loadouts;
+  deeds: Deeds;
+  paths: Paths;
   channel: Channel;
   statuses: StatusEntry[];
   cloud: Cloud;
@@ -471,6 +494,8 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'craft',
   'haggle',
   'loadouts',
+  'deeds',
+  'paths',
   'channel',
   'statuses',
   'cloud',

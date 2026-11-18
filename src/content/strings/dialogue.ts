@@ -23,7 +23,7 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.pilgrim.c_athletics': 'Test my legs.',
 
   'dlg.brin.greet': 'Welcome to the counter. Looking, buying, or selling?',
-  'dlg.brin.again': 'Back again. What will it be?',
+  'dlg.brin.again': 'Back again, {address}. What will it be?',
   'dlg.brin.c_shop': 'Show me what you have.',
   'dlg.brin.c_test': 'I want to be tested at the anvil.',
   'dlg.hesper.c_cook': 'I want to be tested at the pot.',

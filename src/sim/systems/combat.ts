@@ -1,4 +1,7 @@
 import { COMBAT as C } from '../../content/balance/combat';
+import { ITEMS } from '../../content/items';
+import { EQUIP_SLOTS } from '../../content/items/types';
+import { activeMods, modAdd } from '../mods';
 import { ATTACKS, WEAPONS } from '../../content/combat/attacks';
 import { startComboStep } from '../combat/commands';
 import {
@@ -19,6 +22,20 @@ import { nudge } from './movement';
 import { launchProjectile } from './projectile';
 import { elementHitsWorld } from '../elements';
 import { earnCoin, spendCoin } from '../ledger';
+
+/**
+ * Ticks a dodge ends early: Quick Needle, while at least one worn piece of armor carries the
+ * wearer's maker's mark.
+ */
+function dodgeRecover(state: SimState, id: EntityId): number {
+  const inv = getComp(state.entities, id, 'inventory');
+  if (!inv) return 0;
+  const made = EQUIP_SLOTS.some((s) => {
+    const w = inv.equipment[s];
+    return !!w && w.mark === 1 && ITEMS[w.item]?.category === 'armor';
+  });
+  return made ? modAdd(activeMods(state, id), 'dodgeRecoverTicks') : 0;
+}
 
 /** The state machine for every fighter, run once per tick after commands. Ascending id order. */
 export function combatSystem(state: SimState): void {
@@ -48,7 +65,7 @@ export function combatSystem(state: SimState): void {
         advanceAttack(state, id);
         break;
       case 'dodge':
-        if (f.t >= C.dodge.ticks) {
+        if (f.t >= C.dodge.ticks - dodgeRecover(state, id)) {
           f.state = 'idle';
           f.t = 0;
           f.dv = { x: 0, y: 0 };
