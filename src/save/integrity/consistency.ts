@@ -2,12 +2,17 @@ import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { STATUS_BALANCE as SBAL } from '../../content/balance/status';
 import { STATUSES, type StatusId } from '../../content/combat/statuses';
 import { TECHNIQUES } from '../../content/combat/techniques';
+import { DIALOGUES } from '../../content/dialogue';
+import type { RequestDef } from '../../content/requests/types';
 import { PATHS } from '../../content/paths';
 import { PATHS_BALANCE } from '../../content/balance/paths';
 import { requirementsMet } from '../../sim/systems/deeds';
 import { knows } from '../../sim/combat/techniques';
 import { HINTS } from '../../content/hints';
-import { REQUESTS } from '../../content/dialogue';
+import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
+import { REQUESTS } from '../../content/requests';
+import { MAX_STANDING_COIN } from '../../sim/requestGen';
+import { solutionMax, stepWeight } from '../../sim/systems/requests';
 import { CREATURES } from '../../content/creatures';
 import { validAffix } from '../../content/items/affixes';
 import { ITEMS } from '../../content/items';
@@ -45,6 +50,46 @@ const ITEM_SOURCES = [
   'buyback',
   'seed',
 ];
+
+/** Renown dialogue can give: each effect once, since each sits on a choice that sets a flag. */
+const DIALOGUE_RENOWN = Object.values(DIALOGUES).reduce(
+  (n, d) =>
+    n +
+    Object.values(d.nodes).reduce(
+      (m, node) =>
+        m +
+        [...(node.do ?? []), ...(node.choices ?? []).flatMap((c) => c.do ?? [])].reduce(
+          (k, e) => k + ('renown' in e ? e.renown : 0),
+          0,
+        ),
+      0,
+    ),
+  0,
+);
+
+/** A standing request as the generator makes it: one solution of one step, inside its caps. */
+function standingLooksRight(def: RequestDef, id: string): boolean {
+  const step = def.solutions[0]?.steps[0];
+  const caps = RB.standing;
+  return (
+    def.kind === 'standing' &&
+    def.id === id &&
+    id.startsWith('standing.') &&
+    def.solutions.length === 1 &&
+    def.solutions[0]?.steps.length === 1 &&
+    def.reward.items.length === 0 &&
+    (def.reward.techniques ?? []).length === 0 &&
+    def.reward.renown <= RB.renown.standing &&
+    def.reward.coin <= MAX_STANDING_COIN &&
+    (step?.kind === 'gather'
+      ? step.count <= caps.gather.maxQty
+      : step?.kind === 'deliver'
+        ? step.qty <= caps.deliver.maxQty
+        : step?.kind === 'defeat'
+          ? step.count <= caps.defeat.maxQty
+          : false)
+  );
+}
 
 const isCount = (n: unknown): n is number => typeof n === 'number' && Number.isInteger(n) && n >= 0;
 
@@ -152,20 +197,60 @@ export function consistency(v: View): Reason[] {
   }
   for (const h of journal.hints) if (!HINTS.some((d) => d.id === h)) fail('UNKNOWN_ID', h);
 
-  // Requests.
+  // Requests: each is known (or a standing one that looks like something the generator makes),
+  // and its steps and counts are ones its solutions can have.
   for (const [id, r] of Object.entries(journal.requests)) {
-    const def = REQUESTS[id];
+    const def = REQUESTS[id] ?? r.gen;
     if (!def) {
       fail('UNKNOWN_ID', id);
       continue;
     }
-    const n = def.goal.count;
-    const ok =
-      r.state === 'active'
-        ? isCount(r.progress) && r.progress < n
-        : (r.state === 'ready' || r.state === 'done') && r.progress === n;
-    if (!ok) fail('REQUEST_STATE', `${id} ${r.state} ${r.progress}/${n}`);
+    if (r.gen && (REQUESTS[id] || !standingLooksRight(r.gen, id)))
+      fail('REQUEST_STATE', `${id} carries a definition the generator does not make`);
+    const where = `${id} ${r.state}`;
+    if (!isCount(r.progress)) fail('REQUEST_STATE', `${where} progress ${r.progress}`);
+    for (const sol of def.solutions) {
+      const pr = r.prog[sol.id];
+      if (!pr || !isCount(pr.step) || pr.step > sol.steps.length || !isCount(pr.p.n)) {
+        fail('REQUEST_STATE', `${where} ${sol.id} step`);
+        continue;
+      }
+      const cur = sol.steps[pr.step];
+      if (cur && pr.p.n > stepWeight(cur)) fail('REQUEST_STATE', `${where} ${sol.id} count`);
+      if (!cur && pr.p.n !== 0) fail('REQUEST_STATE', `${where} ${sol.id} count past the end`);
+    }
+    if (Object.keys(r.prog).some((k) => !def.solutions.some((s) => s.id === k)))
+      fail('REQUEST_STATE', `${where} unknown solution`);
+    if (r.state === 'active') {
+      if (r.solution !== null) fail('REQUEST_STATE', `${where} has a solution`);
+      const done = def.solutions.some((s) => r.prog[s.id]?.step === s.steps.length);
+      if (done) fail('REQUEST_STATE', `${where} has every step done`);
+    } else {
+      const sol = def.solutions.find((s) => s.id === r.solution);
+      if (!sol || r.prog[sol.id]?.step !== sol.steps.length)
+        fail('REQUEST_STATE', `${where} without a finished solution`);
+      else if (r.progress !== solutionMax(def, sol.id))
+        fail('REQUEST_STATE', `${where} progress ${r.progress}`);
+    }
   }
+  if (journal.pinned !== null && !journal.requests[journal.pinned])
+    fail('REQUEST_STATE', `pinned ${journal.pinned} is not held`);
+
+  // Renown: whole numbers, in a known region, and no more than requests, Trials, trade and
+  // dialogue could have given.
+  const standingPaid = ledger.requestRewards?.n ?? 0;
+  let renownMax = standingPaid * RB.renown.standing + skills.passed.length * RB.renown.perTrial;
+  for (const [id, r] of Object.entries(journal.requests))
+    if (r.state === 'done' && REQUESTS[id]) renownMax += REQUESTS[id].reward.renown;
+  for (const [region, n] of Object.entries(journal.renown)) {
+    const trade = Math.floor((journal.tradeCoin[region] ?? 0) / RB.renown.tradeCoin);
+    if (!isCount(n) || n > RB.renown.max || region !== RB.homeRegion)
+      fail('RENOWN_RANGE', `${region} ${n}`);
+    else if (n > renownMax + trade + DIALOGUE_RENOWN)
+      fail('RENOWN_RANGE', `${region} ${n} exceeds ${renownMax + trade + DIALOGUE_RENOWN}`);
+  }
+  for (const [region, n] of Object.entries(journal.tradeCoin))
+    if (!isCount(n) || region !== RB.homeRegion) fail('RENOWN_RANGE', `trade ${region} ${n}`);
 
   // Statuses: known ids, one of each on a unit, and no longer than the longest a meal or a spell gives.
   const longest = Math.max(

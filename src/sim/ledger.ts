@@ -29,6 +29,11 @@ export interface Ledger {
   marked: Tally;
   /** Items sold to shops, by item id (M3-10). Buyback can only return what was sold. */
   itemsSold: Tally;
+  /**
+   * What standing requests (generated, so not in the content tables) have paid (M3-11): `n` the
+   * number finished, `coin`, and each item id by quantity. The validator bounds it by the board.
+   */
+  requestRewards: Tally;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
@@ -59,6 +64,7 @@ export function newLedger(): Ledger {
     masterworks: {},
     marked: {},
     itemsSold: {},
+    requestRewards: {},
   };
 }
 

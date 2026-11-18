@@ -13,6 +13,8 @@ export interface TouchOutput {
   dodge: { dir: Direction | null } | null;
   targetTap: ScreenPoint | null;
   longPress: ScreenPoint | null;
+  /** The thumb is past the sprint radius: a deliberate push, not a walking drag. */
+  far: boolean;
 }
 
 interface Pointer {
@@ -161,9 +163,13 @@ export class TouchController {
     }
 
     let move = { x: 0, y: 0 };
+    let far = false;
     if (this.stickPointer !== null) {
       const p = this.pointers.get(this.stickPointer);
-      if (p) move = this.stickVector(p);
+      if (p) {
+        move = this.stickVector(p);
+        far = Math.hypot(p.x - p.startX, p.y - p.startY) >= this.tun.stickSprintRadiusPx;
+      }
     } else if (this.coastVec && now < this.coastUntil) {
       move = this.coastVec;
     } else {
@@ -172,6 +178,7 @@ export class TouchController {
 
     const out: TouchOutput = {
       move,
+      far,
       buttonsPressed: this.pressed,
       buttonsHeld: held,
       buttonsDown: down,

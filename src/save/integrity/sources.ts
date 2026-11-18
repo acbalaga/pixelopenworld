@@ -3,7 +3,8 @@
  * game: creature drop tables, gathering nodes, recipes, request rewards, chests, shop stock and
  * dialogue gifts. The ledger records the source of every item the sim creates; a rule compares.
  */
-import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
+import { DIALOGUES, SHOPS } from '../../content/dialogue';
+import { REQUESTS } from '../../content/requests';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { CREATURES } from '../../content/creatures';

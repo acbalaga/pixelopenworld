@@ -13,7 +13,9 @@ import {
 } from '../../platform/settings';
 import type { SettingsStore } from '../../platform/settings';
 import type { Command } from '../../sim/kernel/commands';
+import { requestLog, type RequestView } from '../../sim/requestLog';
 import type { SimState } from '../../sim/state';
+import { REQUEST_STRINGS as RS } from '../../content/strings/requests';
 import {
   bagView,
   characterView,
@@ -239,7 +241,7 @@ export class MenuSheet {
     const { state, who } = this.deps.read();
     switch (this.tab) {
       case 'character':
-        return JSON.stringify(characterView(state, who));
+        return JSON.stringify([characterView(state, who), requestLog(state, who)]);
       case 'skills':
         return JSON.stringify([skillsView(state, who), techniquesView(state, who)]);
       case 'bag':
@@ -352,7 +354,67 @@ export class MenuSheet {
       gear.appendChild(li);
     }
     put(this.body, top, this.heading(S.gear), gear, el('p', 'pow-coin', `${S.coin}: ${v.coin}`));
+    this.renderRequests(requestLog(state, who));
     this.renderPaths(v.paths);
+  }
+
+  /**
+   * The Requests section of the Character tab (M3-11): what each one asked, in the asker's words,
+   * and per way of finishing it which steps are done. It never shows a place. One can be pinned.
+   */
+  private renderRequests(rows: readonly RequestView[]): void {
+    const sec = el('section', 'pow-requests');
+    sec.dataset.key = 'requests';
+    sec.appendChild(this.heading(RS['request.log.heading'] as string));
+    if (rows.length === 0) sec.appendChild(el('p', 'pow-hint', RS['request.log.none'] as string));
+    const ul = el('ul', 'pow-skills');
+    for (const r of rows) {
+      const li = el('li', `pow-request pow-request-${r.state}`);
+      li.dataset.request = r.id;
+      const head = el('div', 'pow-tech-head');
+      put(head, el('span', 'pow-skill-name', r.title));
+      const tag =
+        r.state === 'ready'
+          ? RS['request.log.ready']
+          : r.state === 'done'
+            ? RS['request.log.done']
+            : '';
+      if (tag) head.appendChild(el('span', 'pow-skill-rank', tag));
+      li.appendChild(head);
+      li.appendChild(el('p', 'pow-request-ask', r.ask));
+      if (r.state !== 'done') {
+        if (r.ways.length > 1) li.appendChild(el('p', 'pow-hint', RS['request.log.any'] as string));
+        for (const w of r.ways) {
+          const way = el('ul', 'pow-request-way');
+          way.setAttribute('aria-label', w.label);
+          for (const st of w.steps) {
+            const row = el(
+              'li',
+              st.status === RS['request.step.done'] ? 'pow-step pow-step-done' : 'pow-step',
+            );
+            row.textContent = st.status ? `${st.text} (${st.status})` : st.text;
+            way.appendChild(row);
+          }
+          li.appendChild(way);
+        }
+        li.appendChild(el('p', 'pow-hint', r.reward));
+        const pin = el(
+          'button',
+          'pow-button',
+          r.pinned ? (RS['request.log.unpin'] as string) : (RS['request.log.pin'] as string),
+        );
+        pin.type = 'button';
+        pin.dataset.key = `pin-${r.id}`;
+        pin.setAttribute('aria-pressed', String(r.pinned));
+        pin.addEventListener('click', () =>
+          this.deps.send({ type: 'pinRequest', id: r.pinned ? null : r.id }),
+        );
+        li.appendChild(pin);
+      }
+      ul.appendChild(li);
+    }
+    sec.appendChild(ul);
+    this.body.appendChild(sec);
   }
 
   /** The Paths section of the Character tab. Hidden Paths are not in the model until earned. */

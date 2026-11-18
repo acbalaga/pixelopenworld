@@ -65,6 +65,12 @@ export type Command =
   | { type: 'sleep' }
   | { type: 'wearPath'; path: string; on: boolean }
   | { type: 'showPath'; path: string | null }
+  /** Take a request posted on the board in front of the avatar. */
+  | { type: 'takeRequest'; board: string; id: string }
+  /** Turn in a finished request that a board gave, at that board. */
+  | { type: 'turnInRequest'; id: string }
+  /** Pin a request to the HUD, or clear the pin. */
+  | { type: 'pinRequest'; id: string | null }
   /** Swap to the other loadout (the HUD swap button). */
   | { type: 'loadout' }
   /** Put a known technique in slot 1, 2 or 3 (the second to fourth button), or empty it. */
@@ -224,6 +230,20 @@ export function validateCommand(raw: unknown): Validated {
       return { ok: true, command: { type: 'loadout' } };
     case 'sleep':
       return { ok: true, command: { type: 'sleep' } };
+    case 'takeRequest':
+      if (typeof r.board !== 'string' || !/^board\.[a-z0-9_]{1,40}$/.test(r.board))
+        return { ok: false, reason: 'bad board' };
+      if (typeof r.id !== 'string' || !/^[a-z0-9_.]{1,80}$/.test(r.id))
+        return { ok: false, reason: 'bad request' };
+      return { ok: true, command: { type: 'takeRequest', board: r.board, id: r.id } };
+    case 'turnInRequest':
+      if (typeof r.id !== 'string' || !/^[a-z0-9_.]{1,80}$/.test(r.id))
+        return { ok: false, reason: 'bad request' };
+      return { ok: true, command: { type: 'turnInRequest', id: r.id } };
+    case 'pinRequest':
+      if (r.id !== null && (typeof r.id !== 'string' || !/^[a-z0-9_.]{1,80}$/.test(r.id)))
+        return { ok: false, reason: 'bad request' };
+      return { ok: true, command: { type: 'pinRequest', id: r.id as string | null } };
     case 'wearPath':
       if (
         typeof r.path !== 'string' ||

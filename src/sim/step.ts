@@ -12,7 +12,8 @@ import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
 import { hintsSystem } from './systems/hints';
-import { requestsSystem } from './systems/npcs';
+import { boardsSystem } from './systems/boards';
+import { requestsSystem } from './systems/requests';
 import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
 import { wearSystem } from './items';
@@ -60,6 +61,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   itemsSystem,
   craftSystem,
   requestsSystem,
+  boardsSystem,
   tradeSystem,
   hintsSystem,
   // Last, so they see every event the other systems sent this tick. Trials run before skills,

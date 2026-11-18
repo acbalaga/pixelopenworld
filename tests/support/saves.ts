@@ -1,4 +1,5 @@
 import { RECIPES } from '../../src/content/items/recipes';
+import { REQUESTS } from '../../src/content/requests';
 import type { DollSpec } from '../../src/content/dolls/parts';
 import { deriveSummary, findAvatar } from '../../src/shared/summary';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
@@ -6,6 +7,7 @@ import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { addItem, give, removeItem } from '../../src/sim/items';
 import { earnCoin, madeItems, recordCraft, recordKill, spendCoin } from '../../src/sim/ledger';
 import { addXp } from '../../src/sim/skills';
+import { solutionMax } from '../../src/sim/systems/requests';
 import { buyPrice, sellPrice } from '../../src/sim/systems/npcs';
 import {
   createDemoState,
@@ -26,6 +28,21 @@ export const LOOK: DollSpec = {
   mainHand: 'sword',
   offHand: 'none',
 };
+
+/** Marks an authored request done under one of its solutions (the first by default). */
+export function finishRequest(s: SimState, me: number, id: string, solution?: string): void {
+  const def = REQUESTS[id]!;
+  const sol = def.solutions.find((x) => x.id === solution) ?? def.solutions[0]!;
+  const prog: Record<string, { step: number; p: { n: number; t0: number } }> = {};
+  for (const x of def.solutions)
+    prog[x.id] = { step: x.id === sol.id ? x.steps.length : 0, p: { n: 0, t0: 0 } };
+  s.entities.comps.journal[me]!.requests[id] = {
+    state: 'done',
+    solution: sol.id,
+    prog,
+    progress: solutionMax(def, sol.id),
+  };
+}
 
 /** Wall clock ms the honest save below was first written. */
 export const T0 = 1_700_000_000_000;
@@ -87,7 +104,7 @@ export function honestState(): SimState {
   removeItem(inv, 'item.moss_tuft', 2);
   earnCoin(s, me, sellPrice('item.moss_tuft') * 2, 'sale');
   // The guard's request, finished and paid.
-  s.entities.comps.journal[me]!.requests['request.clear_pests'] = { state: 'done', progress: 4 };
+  finishRequest(s, me, 'request.clear_pests');
   earnCoin(s, me, 50, 'request');
   give(s, me, 'item.ring_copper', 1, 'request');
   addXp(s, me, 'skill.blades', 400);
@@ -139,6 +156,21 @@ export function asSchema5(s: SimState): SimState {
   }
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
+  // Schema 17: requests v2. The old request record is a state and a count, Renown and the pin
+  // are new, and so are the board component, its stream and the standing-reward tally.
+  delete (s.rng as { requests?: unknown }).requests;
+  delete (s.entities.comps as { board?: unknown }).board;
+  if (s.ledger) delete (s.ledger as { requestRewards?: unknown }).requestRewards;
+  for (const j of s.entities.comps.journal) {
+    if (!j) continue;
+    delete (j as { renown?: unknown }).renown;
+    delete (j as { tradeCoin?: unknown }).tradeCoin;
+    delete (j as { pinned?: unknown }).pinned;
+    for (const r of Object.values(j.requests)) {
+      delete (r as { solution?: unknown }).solution;
+      delete (r as { prog?: unknown }).prog;
+    }
+  }
   // Schema 16: deeds and paths.
   delete (s.entities.comps as { deeds?: unknown }).deeds;
   delete (s.entities.comps as { paths?: unknown }).paths;

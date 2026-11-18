@@ -22,6 +22,7 @@ export type FixtureType =
   | 'tablet'
   | 'waystone'
   | 'storage'
+  | 'board'
   | 'station'
   | 'bed'
   | 'element'
@@ -56,6 +57,10 @@ export interface FixtureDef {
   regrows?: boolean;
   /** Not drawn and not solid until revealed. */
   hidden?: boolean;
+  /** Board: the id of the request board it is (M3-11). */
+  board?: string;
+  /** Chest: opening it sets this journal flag (a request step can ask for it). */
+  setsFlag?: string;
   /** Chest: what is inside. `coin` is carried coin. */
   loot?: { items: readonly { item: string; qty: number }[]; coin?: number };
 }
@@ -148,6 +153,17 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.tablet', type: 'tablet', sprite: 'prop.tablet', size: 12 },
   // The storage chest by the square Waystone: 40 slots held on the avatar (M3-05).
   { kind: 'fixture.storage', type: 'storage', sprite: 'prop.chest', size: 12 },
+  // The request board in the square (M3-11). Posts a few jobs at each dawn.
+  { kind: 'fixture.board', type: 'board', sprite: 'prop.board', size: 14, board: 'board.square' },
+  // A satchel a patrol dropped in the first cave room. Taking it is one way to finish the boar request.
+  {
+    kind: 'fixture.satchel',
+    type: 'chest',
+    sprite: 'prop.satchel',
+    size: 10,
+    loot: { items: [] },
+    setsFlag: 'flag.satchel_taken',
+  },
   // Crafting stations in the square (M3-07). The camp pot is a prop with its own kind.
   { kind: 'fixture.anvil', type: 'station', sprite: 'prop.anvil', size: 12 },
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },

@@ -1321,3 +1321,49 @@ canvas {
   background: var(--pal-47);
   color: var(--pal-0);
 }
+
+/* The request board and the request log (M3-11). Clear text. */
+.pow-board {
+  max-height: 80%;
+  overflow-y: auto;
+}
+.pow-board-row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+  padding: calc(var(--px) * 2) 0;
+  border-top: 1px solid var(--pal-18);
+}
+.pow-request-ask {
+  margin: 0;
+  font-size: calc(0.95rem * var(--text-scale, 1));
+  color: var(--pal-3);
+}
+.pow-request-way {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: calc(0.9rem * var(--text-scale, 1));
+  color: var(--pal-3);
+}
+.pow-step-done {
+  color: var(--pal-14);
+}
+.pow-request-ready .pow-skill-name {
+  color: var(--pal-47);
+}
+.pow-pin-line {
+  position: fixed;
+  left: calc(env(safe-area-inset-left, 0px) + 6px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+  max-width: min(64vw, 22em);
+  margin: 0;
+  padding: 0.25em 0.6em;
+  font-size: calc(0.8rem * var(--text-scale, 1));
+  color: var(--pal-3);
+  background: rgba(26, 22, 20, 0.78);
+  border-left: 2px solid var(--pal-14);
+  pointer-events: none;
+}
+.pow-pin-ready {
+  border-left-color: var(--pal-47);
+}

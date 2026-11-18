@@ -231,6 +231,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 47, 39, 'spawn.player', objects);
   object(g, 47, 37, 'fixture.waystone', objects);
   object(g, 49, 37, 'fixture.storage', objects);
+  // The request board, between the stalls and the Waystone.
+  object(g, 43, 36, 'fixture.board', objects);
   object(g, 42, 40, 'prop.camp_pot', objects);
   object(g, 36, 37, 'fixture.anvil', objects);
   object(g, 39, 38, 'fixture.workbench', objects);
@@ -345,6 +347,8 @@ function cave(g: Grid, objects: Obj[]): void {
     fixture(x0 + 9, y0, 'fixture.arrival_a_shortcut');
     object(g, x0 + 5, y0 + 6, 'spawner.mossling', objects);
     object(g, x0 + 3, y0 + 3, 'node.copper_vein', objects);
+    // A satchel a patrol dropped (the boar request can be finished by fetching it).
+    fixture(x0 + 14, y0 + 4, 'fixture.satchel');
   });
   carve('room.b', (x0, y0) => {
     portal(x0, y0 + 10, 'fixture.portal_b_west');

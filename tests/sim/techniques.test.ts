@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { REQUESTS } from '../../src/content/dialogue';
+import { REQUESTS } from '../../src/content/requests';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { give, equip, unequip } from '../../src/sim/items';
 import { getComp, spawn, setComp } from '../../src/sim/kernel/entities';
@@ -57,7 +57,12 @@ describe("Wren's mission teaches the Ember bolt", () => {
     const j = getComp(s.entities, me, 'journal')!;
     const id = 'request.ember_pods';
     expect(REQUESTS[id]?.reward.techniques).toEqual(['technique.ember_bolt']);
-    j.requests[id] = { state: 'ready', progress: 2 };
+    j.requests[id] = {
+      state: 'ready',
+      solution: 'defeat',
+      prog: { defeat: { step: 1, p: { n: 0, t0: 0 } } },
+      progress: 2,
+    };
     void f;
     stepWorld(s, me, {
       commands: [{ type: 'talk', npc: 'npc.scholar', node: 'report', choice: -1 }],

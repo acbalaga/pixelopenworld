@@ -1,12 +1,16 @@
-import { DIALOGUES, REQUESTS, SHOPS } from '../../content/dialogue';
+import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
+import { DIALOGUES, SHOPS } from '../../content/dialogue';
+import { REQUESTS } from '../../content/requests';
 import type { Effect } from '../../content/dialogue/types';
-import { give, learnRecipe } from '../items';
+import { countItem, give, learnRecipe, removeItem } from '../items';
 import { learnTechnique } from '../combat/techniques';
-import { holds, requestState } from '../journal';
+import { holds } from '../journal';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { px } from '../kernel/fixed';
 import { offerTrial } from '../skills';
+import { addRenown } from '../renown';
+import { onTalk, startRequest, turnIn } from './requests';
 import { deliverTrials } from './trials';
 import type { SimState } from '../state';
 import { contextTarget } from './interact';
@@ -16,7 +20,6 @@ import { near, newNpc } from '../trade';
 export { learnTechnique } from '../combat/techniques';
 export { buy, buyback, haggle, mend, sell, shopPurse, tradeSystem } from '../trade';
 export { buyPrice, sellPrice } from '../economy';
-import { earnCoin } from '../ledger';
 
 const TILE = 16;
 
@@ -37,11 +40,12 @@ export function interactNpc(state: SimState, who: EntityId): void {
   const n = t === null ? undefined : getComp(state.entities, t, 'npc');
   if (n) {
     deliverTrials(state, who, n.id);
+    onTalk(state, who, n.id);
     emit(state.events, { type: 'talkStarted', who, npc: n.id });
   }
 }
 
-function applyEffect(state: SimState, who: EntityId, e: Effect): void {
+export function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   const j = getComp(state.entities, who, 'journal');
   if (!j) return;
   if ('setFlag' in e) {
@@ -50,27 +54,17 @@ function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   else if ('learnRecipe' in e) learnRecipe(state, who, e.learnRecipe);
   else if ('offerTrial' in e) offerTrial(state, who, e.offerTrial);
   else if ('startRequest' in e) {
-    if (REQUESTS[e.startRequest] && requestState(j, e.startRequest) === 'none') {
-      j.requests[e.startRequest] = { state: 'active', progress: 0 };
-      emit(state.events, { type: 'requestStarted', who, request: e.startRequest });
-    }
+    const def = REQUESTS[e.startRequest];
+    if (def) startRequest(state, who, def);
   } else if ('turnIn' in e) turnIn(state, who, e.turnIn);
   else if ('learnTechnique' in e) learnTechnique(state, who, e.learnTechnique);
   else if ('openShop' in e && SHOPS[e.openShop])
     emit(state.events, { type: 'shopOpened', who, shop: e.openShop });
-}
-
-/** Pays a finished request, once. */
-function turnIn(state: SimState, who: EntityId, requestId: string): void {
-  const j = getComp(state.entities, who, 'journal');
-  const a = getComp(state.entities, who, 'avatar');
-  const def = REQUESTS[requestId];
-  if (!j || !a || !def || requestState(j, requestId) !== 'ready') return;
-  j.requests[requestId] = { state: 'done', progress: def.goal.count };
-  earnCoin(state, who, def.reward.coin, 'request');
-  for (const r of def.reward.items) give(state, who, r.item, r.qty, 'request');
-  for (const t of def.reward.techniques ?? []) learnTechnique(state, who, t);
-  emit(state.events, { type: 'requestCompleted', who, request: requestId });
+  else if ('renown' in e) addRenown(state, who, RB.homeRegion, e.renown);
+  else if ('takeItem' in e) {
+    const inv = getComp(state.entities, who, 'inventory');
+    if (inv && countItem(inv, e.takeItem) >= e.qty) removeItem(inv, e.takeItem, e.qty);
+  }
 }
 
 /** A talk command. Only real nodes and real, currently allowed choices do anything. */
@@ -89,33 +83,6 @@ export function talk(
   const choice = node.choices?.[c.choice];
   if (!choice || !holds(state, who, choice.if)) return;
   for (const e of choice.do ?? []) applyEffect(state, who, e);
-}
-
-/** Counts kills toward active requests and marks them ready. Runs after combat. */
-export function requestsSystem(state: SimState): void {
-  for (const who of query(state.entities, 'avatar', 'journal')) {
-    const j = getComp(state.entities, who, 'journal');
-    if (!j) continue;
-    for (const ev of state.events.list) {
-      if (ev.type !== 'died' || ev.team !== 1) continue;
-      // Credit a kill when the avatar landed a blow on it this tick.
-      const hit = state.events.list.some(
-        (x) => x.type === 'damageDealt' && x.dst === ev.id && x.src === who,
-      );
-      const kind = getComp(state.entities, ev.id, 'combatant')?.kind;
-      if (!hit || !kind) continue;
-      for (const [rid, r] of Object.entries(j.requests)) {
-        const def = REQUESTS[rid];
-        if (!def || r.state !== 'active' || def.goal.kill !== kind) continue;
-        r.progress = Math.min(def.goal.count, r.progress + 1);
-        emit(state.events, { type: 'requestProgress', who, request: rid, progress: r.progress });
-        if (r.progress >= def.goal.count) {
-          r.state = 'ready';
-          emit(state.events, { type: 'requestReady', who, request: rid });
-        }
-      }
-    }
-  }
 }
 
 /** Removes every NPC. For reloading a map. */

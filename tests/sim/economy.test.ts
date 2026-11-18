@@ -29,6 +29,7 @@ import {
   type SimState,
 } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { renownIn } from '../../src/sim/renown';
 import { spawnNpc } from '../../src/sim/systems/npcs';
 import { onShelf, tradeSystem } from '../../src/sim/trade';
 import { TIME } from '../../src/content/balance/time';
@@ -501,5 +502,30 @@ describe('content', () => {
     }
     for (const item of Object.values(ITEMS))
       if (item.teaches) expect(RECIPES[item.teaches], item.id).toBeDefined();
+  });
+});
+
+describe('trade and Renown (M3-11)', () => {
+  const trade = (r: Rig): number =>
+    r.s.entities.comps.journal[r.me]!.tradeCoin[SHOPS[BRIN]!.region] ?? 0;
+
+  it('sales add to the running net, a buyback takes it off, and every 200 coin is 1 Renown', () => {
+    const r = rig();
+    addItem(inv(r), 'item.moss_tuft', 3);
+    const slot = inv(r).slots.findIndex((x) => x?.item === 'item.moss_tuft');
+    r.tick({ type: 'sell', shop: BRIN, slot, qty: 3 });
+    const earned = r.s.ledger.coinEarned.sale ?? 0;
+    expect(earned).toBeGreaterThan(0);
+    expect(trade(r)).toBe(earned);
+    // Selling it back and buying it again earns nothing: the net is what counts.
+    r.tick({ type: 'buyback', shop: BRIN, index: 0 });
+    expect(trade(r)).toBe(0);
+    const j = r.s.entities.comps.journal[r.me]!;
+    j.tradeCoin[SHOPS[BRIN]!.region] = 199;
+    expect(renownIn(r.s, r.me, SHOPS[BRIN]!.region)).toBe(0);
+    j.tradeCoin[SHOPS[BRIN]!.region] = 200;
+    expect(renownIn(r.s, r.me, SHOPS[BRIN]!.region)).toBe(1);
+    j.tradeCoin[SHOPS[BRIN]!.region] = 650;
+    expect(renownIn(r.s, r.me, SHOPS[BRIN]!.region)).toBe(3);
   });
 });

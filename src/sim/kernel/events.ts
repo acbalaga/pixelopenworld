@@ -140,6 +140,7 @@ export type SimEvent =
   | { type: 'chestOpened'; id: number; who: number }
   | { type: 'tabletRead'; id: number; who: number }
   | { type: 'storageOpened'; id: number; who: number }
+  | { type: 'boardOpened'; id: number; who: number; board: string }
   | { type: 'storageMoved'; who: number; item: string; qty: number; dir: 'in' | 'out' }
   | { type: 'waystoneSet'; id: number; who: number }
   /** The avatar took a portal. Render fades and snaps the camera. */

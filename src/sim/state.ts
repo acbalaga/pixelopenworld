@@ -4,6 +4,7 @@ import { createStreams, int, type RngStreams } from './kernel/rng';
 import { px, type Direction, type Vec } from './kernel/fixed';
 import type { CollisionGrid } from './systems/collision';
 import type { EquipSlot, Quality } from '../content/items/types';
+import type { RequestDef } from '../content/requests/types';
 import { newLedger, type Ledger } from './ledger';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
@@ -383,7 +384,35 @@ export interface Journal {
   hints: string[];
   /** The hint on screen now, with where and when it appeared, or null. */
   hint: { id: string; at: number; x: number; y: number } | null;
-  requests: Record<string, { state: 'active' | 'ready' | 'done'; progress: number }>;
+  requests: Record<string, RequestRecord>;
+  /** Renown by region id (M3-11). Raised by requests, Trials and trade. */
+  renown: Record<string, number>;
+  /** Coin of sales by region, so every `renownTradeCoin` of it gives 1 Renown. */
+  tradeCoin: Record<string, number>;
+  /** The request shown on the HUD, or null for the first one under way. */
+  pinned: string | null;
+}
+
+/** One request the avatar has taken (M3-11). */
+export interface RequestRecord {
+  state: 'active' | 'ready' | 'done';
+  /** The solution that finished it. Null until it is ready. */
+  solution: string | null;
+  /** For each solution: the steps done, and the progress of the step in hand. */
+  prog: Record<string, { step: number; p: TrialProgress }>;
+  /** Count so far in the leading solution, for the log and the HUD. */
+  progress: number;
+  /** A standing request carries its own definition, since it is made at the board. */
+  gen?: RequestDef;
+  /** The in-game day it was finished, for a repeat's cooldown. */
+  doneDay?: number;
+}
+
+/** A request board (M3-11): what is posted on it now, and the day it was posted. */
+export interface Board {
+  id: string;
+  day: number;
+  posted: RequestDef[];
 }
 
 /** A person standing in the world. Text and looks come from `content/dialogue`. */
@@ -450,6 +479,7 @@ export interface Components {
   fixture: Fixture;
   journal: Journal;
   npc: Npc;
+  board: Board;
 }
 
 /** Everything that is saved. Plain, serializable data. */
@@ -502,6 +532,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'fixture',
   'journal',
   'npc',
+  'board',
 ];
 
 /** Demo box size in sub-pixel units. */

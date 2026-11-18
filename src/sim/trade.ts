@@ -18,6 +18,7 @@ import { emit } from './kernel/events';
 import { SUBPX } from './kernel/fixed';
 import { nextU32 } from './kernel/rng';
 import { earnCoin, madeItems, soldItems, spendCoin, type CoinSink } from './ledger';
+import { noteBuyback, noteSale } from './renown';
 import { dayIndex } from './time';
 import { activeMods, applyMods, modPct } from './mods';
 import type { Haggle, Npc, SimState } from './state';
@@ -177,6 +178,7 @@ function completeSell(
   if (stack.qty === 0) inv.slots[slot] = null;
   k.npc.purse -= each * qty;
   earnCoin(state, who, each * qty, 'sale');
+  noteSale(state, who, SHOPS[shopId]?.region ?? '', each * qty);
   soldItems(state, item, qty);
   // The last stacks sold stay behind the counter until the next restock.
   k.npc.buyback.push({ stack: sold, price: each });
@@ -213,6 +215,7 @@ export function buyback(state: SimState, who: EntityId, c: { shop: string; index
   if (!inv.slots.some((s) => s === null) && !canHold(inv, entry.stack.item, entry.stack.qty))
     return deny(state, who, 'bag');
   spendCoin(state, who, cost, 'buyback');
+  noteBuyback(state, who, shop.region, cost);
   k.npc.purse = Math.min(k.max, k.npc.purse + cost);
   k.npc.buyback.splice(c.index, 1);
   addStack(inv.slots, { ...entry.stack });

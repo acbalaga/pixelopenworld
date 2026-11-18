@@ -9,6 +9,7 @@ export const STREAM_NAMES = [
   'misc',
   'craft',
   'trade',
+  'requests',
 ] as const;
 /** A stream name. */
 export type StreamName = (typeof STREAM_NAMES)[number];
