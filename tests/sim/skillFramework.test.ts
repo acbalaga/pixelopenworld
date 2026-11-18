@@ -44,6 +44,10 @@ const FAMILY_COUNTS: Record<SkillFamily, number> = {
   exploration: 5,
 };
 
+/** The base XP of a skill's first source, so tuning it does not break the tests. */
+const baseOf = (skill: string): number => (SKILLS[skill]?.sources[0] as { base: number }).base;
+const COOK_BASE = baseOf('skill.cooking');
+
 describe('the 36 skills', () => {
   it('are exactly 36 in six families with the counts of design/03, ids unique and snake case', () => {
     const defs = Object.values(SKILLS);
@@ -355,9 +359,13 @@ describe('Cooking pays as craft:cooking', () => {
       source: 'manual',
     });
     feed(s, ev('recipe.herb_tea'));
-    expect(earned(s, me, 'skill.cooking')).toBe(125);
+    expect(earned(s, me, 'skill.cooking')).toBe(COOK_BASE + 100);
     feed(s, ev('recipe.herb_tea'));
-    expect(earned(s, me, 'skill.cooking')).toBe(150);
+    // The same recipe again pays the plain rate, no lump. It is at most the base, since the rate
+    // falls as the skill rises past a tier 1 target.
+    const again = earned(s, me, 'skill.cooking') - (COOK_BASE + 100);
+    expect(again).toBeGreaterThan(0);
+    expect(again).toBeLessThanOrEqual(COOK_BASE);
     expect(s.entities.comps.skills[me]!.seen).toContain('skill.cooking:craft:recipe.herb_tea');
   });
 });

@@ -47,7 +47,7 @@ export const WEAPON_ITEMS: readonly ItemDef[] = [
   blade('item.sword_bronze', 28, 1, 11, 'sword'),
   blade('item.sword_iron', 60, 2, 14, 'sword'),
   blade('item.sword_steel', 110, 2, 16, 'sword'),
-  blade('item.spear_ash', 40, 1, 11, 'spear'),
+  blade('item.spear_ash', 40, 1, 10, 'spear'),
   blade('item.spear_hunter', 55, 1, 12, 'spear'),
   blade('item.spear_iron', 90, 2, 15, 'spear'),
   blade('item.spear_steel', 130, 2, 17, 'spear'),
