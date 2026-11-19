@@ -1,0 +1,970 @@
+{
+  "version": 1,
+  "region": "dawnmeadow",
+  "hash": "0ff640101453cd47",
+  "seed": 20260101,
+  "chunks": {
+    "w": 12,
+    "h": 12
+  },
+  "bridgeTiles": 26,
+  "files": [
+    {
+      "file": "chunk-0-0.bin",
+      "cx": 0,
+      "cy": 0,
+      "hash": "08c3de81766538e0"
+    },
+    {
+      "file": "chunk-1-0.bin",
+      "cx": 1,
+      "cy": 0,
+      "hash": "ad51988aa51f3475"
+    },
+    {
+      "file": "chunk-2-0.bin",
+      "cx": 2,
+      "cy": 0,
+      "hash": "e331ecc1fe124319"
+    },
+    {
+      "file": "chunk-3-0.bin",
+      "cx": 3,
+      "cy": 0,
+      "hash": "04b38e06c0e2c818"
+    },
+    {
+      "file": "chunk-4-0.bin",
+      "cx": 4,
+      "cy": 0,
+      "hash": "2d4c39404dc58556"
+    },
+    {
+      "file": "chunk-5-0.bin",
+      "cx": 5,
+      "cy": 0,
+      "hash": "13a59d2251b548c5"
+    },
+    {
+      "file": "chunk-6-0.bin",
+      "cx": 6,
+      "cy": 0,
+      "hash": "32dff00bc0a46851"
+    },
+    {
+      "file": "chunk-7-0.bin",
+      "cx": 7,
+      "cy": 0,
+      "hash": "ab4dd881ebb94436"
+    },
+    {
+      "file": "chunk-8-0.bin",
+      "cx": 8,
+      "cy": 0,
+      "hash": "03a356542e66cca8"
+    },
+    {
+      "file": "chunk-9-0.bin",
+      "cx": 9,
+      "cy": 0,
+      "hash": "77df8d831d87ade7"
+    },
+    {
+      "file": "chunk-10-0.bin",
+      "cx": 10,
+      "cy": 0,
+      "hash": "79e4ad6a4b84aaa7"
+    },
+    {
+      "file": "chunk-11-0.bin",
+      "cx": 11,
+      "cy": 0,
+      "hash": "1b6a5f02914c1281"
+    },
+    {
+      "file": "chunk-0-1.bin",
+      "cx": 0,
+      "cy": 1,
+      "hash": "1d91f1830b283516"
+    },
+    {
+      "file": "chunk-1-1.bin",
+      "cx": 1,
+      "cy": 1,
+      "hash": "4c8f5893de6bad37"
+    },
+    {
+      "file": "chunk-2-1.bin",
+      "cx": 2,
+      "cy": 1,
+      "hash": "48ec32b1365a1052"
+    },
+    {
+      "file": "chunk-3-1.bin",
+      "cx": 3,
+      "cy": 1,
+      "hash": "03183613e2e9948d"
+    },
+    {
+      "file": "chunk-4-1.bin",
+      "cx": 4,
+      "cy": 1,
+      "hash": "485eedbe6a9b905f"
+    },
+    {
+      "file": "chunk-5-1.bin",
+      "cx": 5,
+      "cy": 1,
+      "hash": "0f0c45c12d280142"
+    },
+    {
+      "file": "chunk-6-1.bin",
+      "cx": 6,
+      "cy": 1,
+      "hash": "b56234176f65cb0b"
+    },
+    {
+      "file": "chunk-7-1.bin",
+      "cx": 7,
+      "cy": 1,
+      "hash": "5e94dc9e99a73759"
+    },
+    {
+      "file": "chunk-8-1.bin",
+      "cx": 8,
+      "cy": 1,
+      "hash": "6236120f4be0bd45"
+    },
+    {
+      "file": "chunk-9-1.bin",
+      "cx": 9,
+      "cy": 1,
+      "hash": "2eea7c3511348127"
+    },
+    {
+      "file": "chunk-10-1.bin",
+      "cx": 10,
+      "cy": 1,
+      "hash": "578609331406171b"
+    },
+    {
+      "file": "chunk-11-1.bin",
+      "cx": 11,
+      "cy": 1,
+      "hash": "bb2dacb5bc812c31"
+    },
+    {
+      "file": "chunk-0-2.bin",
+      "cx": 0,
+      "cy": 2,
+      "hash": "65cd88bd9677ad83"
+    },
+    {
+      "file": "chunk-1-2.bin",
+      "cx": 1,
+      "cy": 2,
+      "hash": "18389f710da91572"
+    },
+    {
+      "file": "chunk-2-2.bin",
+      "cx": 2,
+      "cy": 2,
+      "hash": "048a1849a7704a74"
+    },
+    {
+      "file": "chunk-3-2.bin",
+      "cx": 3,
+      "cy": 2,
+      "hash": "8b71cca2bc41c274"
+    },
+    {
+      "file": "chunk-4-2.bin",
+      "cx": 4,
+      "cy": 2,
+      "hash": "187ca7cb27948262"
+    },
+    {
+      "file": "chunk-5-2.bin",
+      "cx": 5,
+      "cy": 2,
+      "hash": "283ec5385dd48ec0"
+    },
+    {
+      "file": "chunk-6-2.bin",
+      "cx": 6,
+      "cy": 2,
+      "hash": "6fcb5c326ae17d79"
+    },
+    {
+      "file": "chunk-7-2.bin",
+      "cx": 7,
+      "cy": 2,
+      "hash": "9d2e57e6e1046378"
+    },
+    {
+      "file": "chunk-8-2.bin",
+      "cx": 8,
+      "cy": 2,
+      "hash": "87aaaa3d5d4e58a4"
+    },
+    {
+      "file": "chunk-9-2.bin",
+      "cx": 9,
+      "cy": 2,
+      "hash": "b09c6fda2fc9dd71"
+    },
+    {
+      "file": "chunk-10-2.bin",
+      "cx": 10,
+      "cy": 2,
+      "hash": "6bef35667f592747"
+    },
+    {
+      "file": "chunk-11-2.bin",
+      "cx": 11,
+      "cy": 2,
+      "hash": "faeb5349c316055b"
+    },
+    {
+      "file": "chunk-0-3.bin",
+      "cx": 0,
+      "cy": 3,
+      "hash": "c67d974f5f630eff"
+    },
+    {
+      "file": "chunk-1-3.bin",
+      "cx": 1,
+      "cy": 3,
+      "hash": "9351e4b52f9fddab"
+    },
+    {
+      "file": "chunk-2-3.bin",
+      "cx": 2,
+      "cy": 3,
+      "hash": "9dd73f98ee1216f6"
+    },
+    {
+      "file": "chunk-3-3.bin",
+      "cx": 3,
+      "cy": 3,
+      "hash": "7db41e24bbd248d6"
+    },
+    {
+      "file": "chunk-4-3.bin",
+      "cx": 4,
+      "cy": 3,
+      "hash": "9efaeb58ef2fabd1"
+    },
+    {
+      "file": "chunk-5-3.bin",
+      "cx": 5,
+      "cy": 3,
+      "hash": "8b03fd1d7da7074a"
+    },
+    {
+      "file": "chunk-6-3.bin",
+      "cx": 6,
+      "cy": 3,
+      "hash": "7fea7f2188be1c45"
+    },
+    {
+      "file": "chunk-7-3.bin",
+      "cx": 7,
+      "cy": 3,
+      "hash": "2741dc2446986d20"
+    },
+    {
+      "file": "chunk-8-3.bin",
+      "cx": 8,
+      "cy": 3,
+      "hash": "36f8bbb10de24747"
+    },
+    {
+      "file": "chunk-9-3.bin",
+      "cx": 9,
+      "cy": 3,
+      "hash": "bf2e071914e40c7c"
+    },
+    {
+      "file": "chunk-10-3.bin",
+      "cx": 10,
+      "cy": 3,
+      "hash": "cdeb8cd1b69c62c0"
+    },
+    {
+      "file": "chunk-11-3.bin",
+      "cx": 11,
+      "cy": 3,
+      "hash": "0ab2c1f664838b72"
+    },
+    {
+      "file": "chunk-0-4.bin",
+      "cx": 0,
+      "cy": 4,
+      "hash": "68a34d51881579ca"
+    },
+    {
+      "file": "chunk-1-4.bin",
+      "cx": 1,
+      "cy": 4,
+      "hash": "07bb4992dbfecb9e"
+    },
+    {
+      "file": "chunk-2-4.bin",
+      "cx": 2,
+      "cy": 4,
+      "hash": "e828e6819350bac8"
+    },
+    {
+      "file": "chunk-3-4.bin",
+      "cx": 3,
+      "cy": 4,
+      "hash": "ddeed9938b18f6f8"
+    },
+    {
+      "file": "chunk-4-4.bin",
+      "cx": 4,
+      "cy": 4,
+      "hash": "7140d84d95af2166"
+    },
+    {
+      "file": "chunk-5-4.bin",
+      "cx": 5,
+      "cy": 4,
+      "hash": "b402ea26bdf62a58"
+    },
+    {
+      "file": "chunk-6-4.bin",
+      "cx": 6,
+      "cy": 4,
+      "hash": "39aa41f9713a2bcc"
+    },
+    {
+      "file": "chunk-7-4.bin",
+      "cx": 7,
+      "cy": 4,
+      "hash": "af3e641f1767b1b5"
+    },
+    {
+      "file": "chunk-8-4.bin",
+      "cx": 8,
+      "cy": 4,
+      "hash": "264cb8a360ba1a5d"
+    },
+    {
+      "file": "chunk-9-4.bin",
+      "cx": 9,
+      "cy": 4,
+      "hash": "c9add778d76aafcc"
+    },
+    {
+      "file": "chunk-10-4.bin",
+      "cx": 10,
+      "cy": 4,
+      "hash": "3ee1834ff34d4d4a"
+    },
+    {
+      "file": "chunk-11-4.bin",
+      "cx": 11,
+      "cy": 4,
+      "hash": "491459d40c0b9389"
+    },
+    {
+      "file": "chunk-0-5.bin",
+      "cx": 0,
+      "cy": 5,
+      "hash": "6acbe8331ec0be9c"
+    },
+    {
+      "file": "chunk-1-5.bin",
+      "cx": 1,
+      "cy": 5,
+      "hash": "a41c8b32879c242f"
+    },
+    {
+      "file": "chunk-2-5.bin",
+      "cx": 2,
+      "cy": 5,
+      "hash": "23963f513a8152d3"
+    },
+    {
+      "file": "chunk-3-5.bin",
+      "cx": 3,
+      "cy": 5,
+      "hash": "15fb7c1a41f05821"
+    },
+    {
+      "file": "chunk-4-5.bin",
+      "cx": 4,
+      "cy": 5,
+      "hash": "e7a763c6a4da9c46"
+    },
+    {
+      "file": "chunk-5-5.bin",
+      "cx": 5,
+      "cy": 5,
+      "hash": "d14de913302b0acb"
+    },
+    {
+      "file": "chunk-6-5.bin",
+      "cx": 6,
+      "cy": 5,
+      "hash": "7c31b47c24a3c78a"
+    },
+    {
+      "file": "chunk-7-5.bin",
+      "cx": 7,
+      "cy": 5,
+      "hash": "60345259ba2f7cc7"
+    },
+    {
+      "file": "chunk-8-5.bin",
+      "cx": 8,
+      "cy": 5,
+      "hash": "a9de70019dc75dc3"
+    },
+    {
+      "file": "chunk-9-5.bin",
+      "cx": 9,
+      "cy": 5,
+      "hash": "1ca7434f051c39e0"
+    },
+    {
+      "file": "chunk-10-5.bin",
+      "cx": 10,
+      "cy": 5,
+      "hash": "f4d5a3e1b5f7d2d5"
+    },
+    {
+      "file": "chunk-11-5.bin",
+      "cx": 11,
+      "cy": 5,
+      "hash": "9a87c7e7c7331c80"
+    },
+    {
+      "file": "chunk-0-6.bin",
+      "cx": 0,
+      "cy": 6,
+      "hash": "a5a0af57d35480b5"
+    },
+    {
+      "file": "chunk-1-6.bin",
+      "cx": 1,
+      "cy": 6,
+      "hash": "725c73de08bd148c"
+    },
+    {
+      "file": "chunk-2-6.bin",
+      "cx": 2,
+      "cy": 6,
+      "hash": "4157312762f81fdc"
+    },
+    {
+      "file": "chunk-3-6.bin",
+      "cx": 3,
+      "cy": 6,
+      "hash": "cd612bad09150e26"
+    },
+    {
+      "file": "chunk-4-6.bin",
+      "cx": 4,
+      "cy": 6,
+      "hash": "ac63cb0c1f287c2b"
+    },
+    {
+      "file": "chunk-5-6.bin",
+      "cx": 5,
+      "cy": 6,
+      "hash": "66968fc77b26ca28"
+    },
+    {
+      "file": "chunk-6-6.bin",
+      "cx": 6,
+      "cy": 6,
+      "hash": "0e2524386fee411b"
+    },
+    {
+      "file": "chunk-7-6.bin",
+      "cx": 7,
+      "cy": 6,
+      "hash": "f53b9aa76abf3d5b"
+    },
+    {
+      "file": "chunk-8-6.bin",
+      "cx": 8,
+      "cy": 6,
+      "hash": "7ce3e41efdf6dfba"
+    },
+    {
+      "file": "chunk-9-6.bin",
+      "cx": 9,
+      "cy": 6,
+      "hash": "a4af016b29877df0"
+    },
+    {
+      "file": "chunk-10-6.bin",
+      "cx": 10,
+      "cy": 6,
+      "hash": "df2429719f85b257"
+    },
+    {
+      "file": "chunk-11-6.bin",
+      "cx": 11,
+      "cy": 6,
+      "hash": "b702ad7c34c0480d"
+    },
+    {
+      "file": "chunk-0-7.bin",
+      "cx": 0,
+      "cy": 7,
+      "hash": "9461f21135fdebee"
+    },
+    {
+      "file": "chunk-1-7.bin",
+      "cx": 1,
+      "cy": 7,
+      "hash": "53b8010701701aff"
+    },
+    {
+      "file": "chunk-2-7.bin",
+      "cx": 2,
+      "cy": 7,
+      "hash": "519be17ff44fff03"
+    },
+    {
+      "file": "chunk-3-7.bin",
+      "cx": 3,
+      "cy": 7,
+      "hash": "7e545d821d348a57"
+    },
+    {
+      "file": "chunk-4-7.bin",
+      "cx": 4,
+      "cy": 7,
+      "hash": "499bc274d0152b47"
+    },
+    {
+      "file": "chunk-5-7.bin",
+      "cx": 5,
+      "cy": 7,
+      "hash": "25f0e9dacbfba5a6"
+    },
+    {
+      "file": "chunk-6-7.bin",
+      "cx": 6,
+      "cy": 7,
+      "hash": "3f5c36de06e0681d"
+    },
+    {
+      "file": "chunk-7-7.bin",
+      "cx": 7,
+      "cy": 7,
+      "hash": "58ba02a48c85a1ff"
+    },
+    {
+      "file": "chunk-8-7.bin",
+      "cx": 8,
+      "cy": 7,
+      "hash": "e8380ea147fbeec0"
+    },
+    {
+      "file": "chunk-9-7.bin",
+      "cx": 9,
+      "cy": 7,
+      "hash": "b18312b957bd7d83"
+    },
+    {
+      "file": "chunk-10-7.bin",
+      "cx": 10,
+      "cy": 7,
+      "hash": "271d5ff843a7fcc8"
+    },
+    {
+      "file": "chunk-11-7.bin",
+      "cx": 11,
+      "cy": 7,
+      "hash": "54932b9456b7b230"
+    },
+    {
+      "file": "chunk-0-8.bin",
+      "cx": 0,
+      "cy": 8,
+      "hash": "1f89a9a6bbb97b89"
+    },
+    {
+      "file": "chunk-1-8.bin",
+      "cx": 1,
+      "cy": 8,
+      "hash": "7bf1bb48176f9e46"
+    },
+    {
+      "file": "chunk-2-8.bin",
+      "cx": 2,
+      "cy": 8,
+      "hash": "bb9a2a1e5b99285f"
+    },
+    {
+      "file": "chunk-3-8.bin",
+      "cx": 3,
+      "cy": 8,
+      "hash": "ced5be16ede1aabb"
+    },
+    {
+      "file": "chunk-4-8.bin",
+      "cx": 4,
+      "cy": 8,
+      "hash": "f9d3043aa74494de"
+    },
+    {
+      "file": "chunk-5-8.bin",
+      "cx": 5,
+      "cy": 8,
+      "hash": "f5f28998a55a5d92"
+    },
+    {
+      "file": "chunk-6-8.bin",
+      "cx": 6,
+      "cy": 8,
+      "hash": "930ae10cd74322a1"
+    },
+    {
+      "file": "chunk-7-8.bin",
+      "cx": 7,
+      "cy": 8,
+      "hash": "0493c009556b2f10"
+    },
+    {
+      "file": "chunk-8-8.bin",
+      "cx": 8,
+      "cy": 8,
+      "hash": "2611812cd7c00ef1"
+    },
+    {
+      "file": "chunk-9-8.bin",
+      "cx": 9,
+      "cy": 8,
+      "hash": "f568ef5e4e0512c6"
+    },
+    {
+      "file": "chunk-10-8.bin",
+      "cx": 10,
+      "cy": 8,
+      "hash": "9c84bda48794f12c"
+    },
+    {
+      "file": "chunk-11-8.bin",
+      "cx": 11,
+      "cy": 8,
+      "hash": "c457c2da41d4f8ce"
+    },
+    {
+      "file": "chunk-0-9.bin",
+      "cx": 0,
+      "cy": 9,
+      "hash": "cec24a23a50d9436"
+    },
+    {
+      "file": "chunk-1-9.bin",
+      "cx": 1,
+      "cy": 9,
+      "hash": "7ad56ef63f0ba8c5"
+    },
+    {
+      "file": "chunk-2-9.bin",
+      "cx": 2,
+      "cy": 9,
+      "hash": "34ac4675a0257193"
+    },
+    {
+      "file": "chunk-3-9.bin",
+      "cx": 3,
+      "cy": 9,
+      "hash": "4a5383fb66d7d580"
+    },
+    {
+      "file": "chunk-4-9.bin",
+      "cx": 4,
+      "cy": 9,
+      "hash": "7b15545826cdc02f"
+    },
+    {
+      "file": "chunk-5-9.bin",
+      "cx": 5,
+      "cy": 9,
+      "hash": "0401580eef92de6e"
+    },
+    {
+      "file": "chunk-6-9.bin",
+      "cx": 6,
+      "cy": 9,
+      "hash": "16c6a9ee6e09a89f"
+    },
+    {
+      "file": "chunk-7-9.bin",
+      "cx": 7,
+      "cy": 9,
+      "hash": "c52c721c3d1e9874"
+    },
+    {
+      "file": "chunk-8-9.bin",
+      "cx": 8,
+      "cy": 9,
+      "hash": "2f41ea2282f2dbb3"
+    },
+    {
+      "file": "chunk-9-9.bin",
+      "cx": 9,
+      "cy": 9,
+      "hash": "5396872727cf72c3"
+    },
+    {
+      "file": "chunk-10-9.bin",
+      "cx": 10,
+      "cy": 9,
+      "hash": "168bb04c7103ddec"
+    },
+    {
+      "file": "chunk-11-9.bin",
+      "cx": 11,
+      "cy": 9,
+      "hash": "6a1ff809e61a43fd"
+    },
+    {
+      "file": "chunk-0-10.bin",
+      "cx": 0,
+      "cy": 10,
+      "hash": "5ab055b2b1aed5c1"
+    },
+    {
+      "file": "chunk-1-10.bin",
+      "cx": 1,
+      "cy": 10,
+      "hash": "ea1eb2640506312f"
+    },
+    {
+      "file": "chunk-2-10.bin",
+      "cx": 2,
+      "cy": 10,
+      "hash": "75bb0325508e905f"
+    },
+    {
+      "file": "chunk-3-10.bin",
+      "cx": 3,
+      "cy": 10,
+      "hash": "42f967b5c923fc13"
+    },
+    {
+      "file": "chunk-4-10.bin",
+      "cx": 4,
+      "cy": 10,
+      "hash": "5f7d18706a01c712"
+    },
+    {
+      "file": "chunk-5-10.bin",
+      "cx": 5,
+      "cy": 10,
+      "hash": "747d371dd2c108b9"
+    },
+    {
+      "file": "chunk-6-10.bin",
+      "cx": 6,
+      "cy": 10,
+      "hash": "7d1512cb028d2d90"
+    },
+    {
+      "file": "chunk-7-10.bin",
+      "cx": 7,
+      "cy": 10,
+      "hash": "b4a724b532a78863"
+    },
+    {
+      "file": "chunk-8-10.bin",
+      "cx": 8,
+      "cy": 10,
+      "hash": "9e1288eddab37e9a"
+    },
+    {
+      "file": "chunk-9-10.bin",
+      "cx": 9,
+      "cy": 10,
+      "hash": "c8ca66d5bdefa7b5"
+    },
+    {
+      "file": "chunk-10-10.bin",
+      "cx": 10,
+      "cy": 10,
+      "hash": "819b86419225cb3b"
+    },
+    {
+      "file": "chunk-11-10.bin",
+      "cx": 11,
+      "cy": 10,
+      "hash": "f940d08e542a5c53"
+    },
+    {
+      "file": "chunk-0-11.bin",
+      "cx": 0,
+      "cy": 11,
+      "hash": "edc3a5d721da2680"
+    },
+    {
+      "file": "chunk-1-11.bin",
+      "cx": 1,
+      "cy": 11,
+      "hash": "bfea70d47c4dab12"
+    },
+    {
+      "file": "chunk-2-11.bin",
+      "cx": 2,
+      "cy": 11,
+      "hash": "469570dcbbfec408"
+    },
+    {
+      "file": "chunk-3-11.bin",
+      "cx": 3,
+      "cy": 11,
+      "hash": "4e6aed02f0e4b6da"
+    },
+    {
+      "file": "chunk-4-11.bin",
+      "cx": 4,
+      "cy": 11,
+      "hash": "787b5c2ee894200d"
+    },
+    {
+      "file": "chunk-5-11.bin",
+      "cx": 5,
+      "cy": 11,
+      "hash": "6983cd0f263eb00c"
+    },
+    {
+      "file": "chunk-6-11.bin",
+      "cx": 6,
+      "cy": 11,
+      "hash": "0d4fed6771d3c2c0"
+    },
+    {
+      "file": "chunk-7-11.bin",
+      "cx": 7,
+      "cy": 11,
+      "hash": "7d73fbf533dbf8db"
+    },
+    {
+      "file": "chunk-8-11.bin",
+      "cx": 8,
+      "cy": 11,
+      "hash": "430f0e08ec4a3a6c"
+    },
+    {
+      "file": "chunk-9-11.bin",
+      "cx": 9,
+      "cy": 11,
+      "hash": "598d8c3184e2efde"
+    },
+    {
+      "file": "chunk-10-11.bin",
+      "cx": 10,
+      "cy": 11,
+      "hash": "42cd093a7b30e28e"
+    },
+    {
+      "file": "chunk-11-11.bin",
+      "cx": 11,
+      "cy": 11,
+      "hash": "f3bf816b16c07afb"
+    }
+  ],
+  "interiors": [],
+  "landmarks": [
+    {
+      "id": "mill_sails",
+      "x": 277,
+      "y": 99
+    },
+    {
+      "id": "bell_tower",
+      "x": 185,
+      "y": 166
+    },
+    {
+      "id": "quarry_crane",
+      "x": 184,
+      "y": 37
+    }
+  ],
+  "wakePoints": [
+    {
+      "id": "w1",
+      "x": 284,
+      "y": 127
+    },
+    {
+      "id": "w2",
+      "x": 258,
+      "y": 168
+    },
+    {
+      "id": "w3",
+      "x": 236,
+      "y": 198
+    },
+    {
+      "id": "w4",
+      "x": 78,
+      "y": 178
+    },
+    {
+      "id": "w5",
+      "x": 176,
+      "y": 270
+    },
+    {
+      "id": "w6",
+      "x": 292,
+      "y": 246
+    },
+    {
+      "id": "w7",
+      "x": 112,
+      "y": 238
+    },
+    {
+      "id": "w8",
+      "x": 190,
+      "y": 104
+    }
+  ],
+  "waystones": [
+    {
+      "id": "hearthford",
+      "x": 185,
+      "y": 189
+    },
+    {
+      "id": "millbrook",
+      "x": 292,
+      "y": 113
+    },
+    {
+      "id": "reedmouth",
+      "x": 308,
+      "y": 251
+    },
+    {
+      "id": "stonecrop",
+      "x": 186,
+      "y": 51
+    },
+    {
+      "id": "fernside",
+      "x": 96,
+      "y": 172
+    },
+    {
+      "id": "cairnmoor",
+      "x": 49,
+      "y": 49
+    }
+  ],
+  "zones": []
+}

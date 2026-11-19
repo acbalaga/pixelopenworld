@@ -37,6 +37,55 @@ const flower = (name: string, weight: number): ScatterEntry => ({
 });
 
 export const FILL_BIOMES: Readonly<Record<string, FillBiome>> = {
+  // Dawnmeadow (M4-04). Open downs: grass, a few bushes and rocks, wide views.
+  downs: {
+    id: 'downs',
+    ground: Terrain.Grass,
+    detailRate: 0.05,
+    details: [flower('white', 3), flower('ochre', 2), flower('violet', 1)],
+    objectRate: 0.012,
+    objects: [
+      { object: 'tile.bush_green_0', weight: 3 },
+      { object: 'tile.rock', weight: 2 },
+      tree('oak_0', 1),
+    ],
+  },
+  // A rocky rise: bare earth, rock, dry scrub.
+  rise: {
+    id: 'rise',
+    ground: Terrain.Dirt,
+    detailRate: 0.005,
+    details: [flower('ochre', 1)],
+    objectRate: 0.06,
+    objects: [
+      { object: 'tile.rock', weight: 5 },
+      { object: 'tile.bush_dry_0', weight: 2 },
+    ],
+  },
+  // Moor: dirt, dry bush, dead trees.
+  moor: {
+    id: 'moor',
+    ground: Terrain.Dirt,
+    detailRate: 0.03,
+    details: [flower('violet', 2), flower('rose', 1)],
+    objectRate: 0.045,
+    objects: [
+      { object: 'tile.bush_dry_0', weight: 4 },
+      tree('dead_0', 2),
+      { object: 'tile.rock', weight: 2 },
+    ],
+  },
+  // Marsh: wet grass, reeds as green bushes.
+  marsh: {
+    id: 'marsh',
+    ground: Terrain.Grass,
+    detailRate: 0.04,
+    details: [flower('white', 2), flower('violet', 1)],
+    objectRate: 0.07,
+    objects: [{ object: 'tile.bush_green_0', weight: 5 }, tree('birch_0', 1)],
+  },
+  // Open water.
+  sea: { id: 'sea', ground: Terrain.Water, detailRate: 0, details: [], objectRate: 0, objects: [] },
   meadow: {
     id: 'meadow',
     ground: Terrain.Grass,

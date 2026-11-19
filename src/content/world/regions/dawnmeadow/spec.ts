@@ -1,0 +1,277 @@
+import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
+import type { District, Placement, RegionSpec } from '../types';
+
+/*
+ * Dawnmeadow (POW-M4-04, regions/01-dawnmeadow). 12 x 12 chunks. This file is authoritative for
+ * coordinates; the region doc is authoritative for intent, names and counts.
+ */
+
+/** The map sketch: one letter per chunk (regions/01 section 2). */
+const CHUNKS = [
+  '^^^^^^^^^^^^',
+  'CCCssSssr^^^',
+  'CCcsssssrm^^',
+  'FFcdddsrMmm~',
+  'TFFddhhrmmmE',
+  'TFFdhHHrmmmE',
+  'TFddhHHrmmRE',
+  'FFdddhhrrRRE',
+  'FdddddddrRR~',
+  '~ddddddrRR~~',
+  '~~dd~~~RR~~~',
+  '~~~~~~~~~~~~',
+];
+
+/** Biome by sketch letter. */
+const BIOME_OF: Record<string, string> = {
+  '^': 'r',
+  C: 'o',
+  c: 'o',
+  s: 'r',
+  S: 'r',
+  F: 'w',
+  T: 'p',
+  d: 'd',
+  h: 'm',
+  H: 'm',
+  r: 'm',
+  m: 'm',
+  M: 'm',
+  R: 'a',
+  E: 'm',
+  '~': 'x',
+};
+
+/** Elevation by sketch letter. The Crown is a true wall; the rises and the moor step up. */
+const HEIGHT_OF: Record<string, string> = { '^': '3', C: '1', c: '1', s: '1', S: '1', T: '1' };
+
+/** A small stable hash, for the ragged edges between chunks. */
+function hash(a: number, b: number, c: number, d: number): number {
+  let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263) + Math.imul(c, 2147483647) + d) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
+/**
+ * Expands the chunk sketch to the 48 x 48 mask the baker wants (4 x 4 cells a chunk). A cell on a
+ * chunk's edge takes the neighbor's letter about a third of the time, so borders are ragged and
+ * not ruled.
+ */
+function masks(): { biomes: string[]; elevation: string[] } {
+  const letter = (cx: number, cy: number): string =>
+    (CHUNKS[Math.max(0, Math.min(11, cy))] as string)[Math.max(0, Math.min(11, cx))] as string;
+  const biomes: string[] = [];
+  const elevation: string[] = [];
+  for (let y = 0; y < 48; y++) {
+    let b = '';
+    let e = '';
+    for (let x = 0; x < 48; x++) {
+      const cx = Math.floor(x / 4);
+      const cy = Math.floor(y / 4);
+      let l = letter(cx, cy);
+      const ix = x % 4;
+      const iy = y % 4;
+      const nx = ix === 0 ? -1 : ix === 3 ? 1 : 0;
+      const ny = iy === 0 ? -1 : iy === 3 ? 1 : 0;
+      const pick = (dx: number, dy: number, salt: number): void => {
+        if ((dx !== 0 || dy !== 0) && hash(x, y, salt, 91) % 100 < 34) l = letter(cx + dx, cy + dy);
+      };
+      pick(nx, 0, 1);
+      pick(0, ny, 2);
+      b += BIOME_OF[l] ?? 'm';
+      e += HEIGHT_OF[l] ?? '0';
+    }
+    biomes.push(b);
+    elevation.push(e);
+  }
+  return { biomes, elevation };
+}
+
+/** Hearthford's top left, so its center is (192, 192) and the four gates face the four roads. */
+export const TOWN_ORIGIN = { x: 164, y: 164 } as const;
+
+const districts: District[] = TOWN_PARTS.map((p) => ({
+  id: p.id,
+  kind: p.kind,
+  x: TOWN_ORIGIN.x + p.rect.x,
+  y: TOWN_ORIGIN.y + p.rect.y,
+  w: p.rect.w,
+  h: p.rect.h,
+}));
+
+/** Stamps at their top left corner. */
+const stamp = (id: string, x: number, y: number): Placement => ({ kind: id, stamp: id, x, y });
+/** One object on one tile. */
+const at = (kind: string, x: number, y: number): Placement => ({ kind, x, y });
+
+const placements: Placement[] = [
+  stamp('hearthford', TOWN_ORIGIN.x, TOWN_ORIGIN.y),
+  stamp('millbrook', 272, 96),
+  stamp('reedmouth', 296, 236),
+  stamp('stonecrop', 164, 36),
+  stamp('fernside_arch', 90, 168),
+  stamp('cairn_ring', 44, 44),
+  stamp('chapel', 171, 262),
+  stamp('lean_to', 76, 176),
+  stamp('shepherd_hut', 108, 232),
+  stamp('milestone', 188, 98),
+  stamp('great_oak', 118, 244),
+  stamp('fernside_climb', 46, 100),
+  // Above-tier sights (regions/01 section 7).
+  stamp('floating_stones', 100, 2),
+  stamp('cliff_window', 56, 22),
+  stamp('far_den', 330, 262),
+
+  // The practice field outside the north gate: the M3 element set pieces, moved from the square.
+  at('fixture.brush_wall', 176, 146),
+  at('fixture.fire_barrier', 180, 146),
+  at('fixture.windmill_gate', 184, 146),
+  at('fixture.stone_gap', 202, 146),
+  at('fixture.withered_vine', 206, 146),
+  at('fixture.hidden_niche', 210, 146),
+
+  // The manual chests, stand-ins until POW-M4-11 and POW-M4-21 place each in its own spot.
+  at('fixture.chest_manual_lunge', 140, 215),
+  at('fixture.chest_manual_palm', 160, 230),
+  at('fixture.chest_manual_light_feet', 125, 200),
+  at('fixture.chest_manual_kindling', 230, 235),
+  at('fixture.chest_manual_splash', 205, 240),
+  at('fixture.chest_manual_gust', 140, 150),
+  at('fixture.chest_manual_stone_fist', 230, 200),
+  at('fixture.chest_manual_mend', 178, 150),
+  at('fixture.chest_manual_road_songs', 150, 175),
+  at('fixture.chest_manual_hide', 212, 150),
+
+  // Gathering nodes round the Commons and the rises.
+  at('node.oak_tree', 150, 160),
+  at('node.oak_tree', 145, 185),
+  at('node.oak_tree', 170, 205),
+  at('node.oak_tree', 215, 215),
+  at('node.ash_tree', 135, 170),
+  at('node.berry_bush', 152, 150),
+  at('node.berry_bush', 182, 138),
+  at('node.herb_patch', 200, 135),
+  at('node.herb_patch', 208, 232),
+  at('node.herb_patch', 150, 225),
+  at('node.copper_vein', 175, 80),
+  at('node.copper_vein', 180, 70),
+  at('node.copper_vein', 165, 90),
+  at('node.iron_vein', 185, 75),
+  at('node.fishing_spot', 238, 170),
+];
+
+const { biomes, elevation } = masks();
+
+export const DAWNMEADOW: RegionSpec = {
+  id: 'dawnmeadow',
+  seed: 20260101,
+  chunks: { w: 12, h: 12 },
+  biomeLegend: {
+    m: 'meadow',
+    d: 'downs',
+    r: 'rise',
+    o: 'moor',
+    w: 'woodland',
+    p: 'pinewood',
+    a: 'marsh',
+    x: 'sea',
+  },
+  biomes,
+  elevation,
+  roads: {
+    nodes: {
+      hearth_n: { x: 192, y: 163 },
+      hearth_s: { x: 192, y: 220 },
+      hearth_w: { x: 163, y: 192 },
+      hearth_e: { x: 220, y: 192 },
+      wlink: { x: 126, y: 190 },
+      fernside: { x: 88, y: 172 },
+      thornwall: { x: 24, y: 150 },
+      lark_bridge: { x: 240, y: 192 },
+      east_mid: { x: 262, y: 160 },
+      millbrook_s: { x: 276, y: 126 },
+      coast1: { x: 330, y: 126 },
+      coast2: { x: 368, y: 150 },
+      coast3: { x: 376, y: 205 },
+      coast4: { x: 378, y: 252 },
+      cart1: { x: 272, y: 200 },
+      cart2: { x: 286, y: 230 },
+      reed: { x: 294, y: 244 },
+      n1: { x: 194, y: 110 },
+      n2: { x: 190, y: 62 },
+      stonecrop: { x: 178, y: 59 },
+      s1: { x: 190, y: 250 },
+      chapel: { x: 190, y: 266 },
+      s2: { x: 190, y: 292 },
+    },
+    edges: [
+      { a: 'hearth_w', b: 'wlink', width: 3, surface: 'dirt' },
+      { a: 'wlink', b: 'fernside', width: 3, surface: 'dirt' },
+      { a: 'fernside', b: 'thornwall', width: 3, surface: 'dirt' },
+      { a: 'hearth_e', b: 'lark_bridge', width: 3, surface: 'cobble' },
+      { a: 'lark_bridge', b: 'east_mid', width: 3, surface: 'cobble' },
+      { a: 'east_mid', b: 'millbrook_s', width: 3, surface: 'cobble' },
+      { a: 'millbrook_s', b: 'coast1', width: 3, surface: 'cobble' },
+      { a: 'coast1', b: 'coast2', width: 3, surface: 'cobble' },
+      { a: 'coast2', b: 'coast3', width: 3, surface: 'cobble' },
+      { a: 'coast3', b: 'coast4', width: 3, surface: 'cobble' },
+      { a: 'east_mid', b: 'cart1', width: 2, surface: 'dirt' },
+      { a: 'cart1', b: 'cart2', width: 2, surface: 'dirt' },
+      { a: 'cart2', b: 'reed', width: 2, surface: 'dirt' },
+      { a: 'hearth_n', b: 'n1', width: 3, surface: 'dirt' },
+      { a: 'n1', b: 'n2', width: 3, surface: 'dirt' },
+      { a: 'n2', b: 'stonecrop', width: 3, surface: 'dirt' },
+      { a: 'hearth_s', b: 's1', width: 3, surface: 'dirt' },
+      { a: 's1', b: 'chapel', width: 3, surface: 'dirt' },
+      { a: 'chapel', b: 's2', width: 3, surface: 'dirt' },
+    ],
+  },
+  rivers: [
+    {
+      id: 'lark',
+      width: 4,
+      points: [
+        { x: 272, y: 36 },
+        { x: 270, y: 70 },
+        { x: 262, y: 100 },
+        { x: 252, y: 130 },
+        { x: 244, y: 160 },
+        { x: 240, y: 192 },
+        { x: 240, y: 230 },
+        { x: 246, y: 262 },
+        { x: 262, y: 282 },
+        { x: 282, y: 300 },
+      ],
+    },
+  ],
+  placements,
+  zones: [],
+  interiors: [],
+  landmarks: [
+    { id: 'mill_sails', x: 277, y: 99 },
+    { id: 'bell_tower', x: 185, y: 166 },
+    { id: 'quarry_crane', x: 184, y: 37 },
+  ],
+  wakePoints: [
+    { id: 'w1', x: 284, y: 127 },
+    { id: 'w2', x: 258, y: 168 },
+    { id: 'w3', x: 236, y: 198 },
+    { id: 'w4', x: 78, y: 178 },
+    { id: 'w5', x: 176, y: 270 },
+    { id: 'w6', x: 292, y: 246 },
+    { id: 'w7', x: 112, y: 238 },
+    { id: 'w8', x: 190, y: 104 },
+  ],
+  waystones: [
+    { id: 'hearthford', x: TOWN_ORIGIN.x + 21, y: TOWN_ORIGIN.y + 25 },
+    { id: 'millbrook', x: 292, y: 113 },
+    { id: 'reedmouth', x: 308, y: 251 },
+    { id: 'stonecrop', x: 186, y: 51 },
+    { id: 'fernside', x: 96, y: 172 },
+    { id: 'cairnmoor', x: 49, y: 49 },
+  ],
+  districts,
+  landmarkHeights: { mill_sails: 16, bell_tower: 10, quarry_crane: 14 },
+};
+
+export const TOWN_SIZE = HEARTHFORD_SIZE;

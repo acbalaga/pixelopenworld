@@ -41,7 +41,9 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'plate' ||
     def.type === 'snare' ||
     def.type === 'torch' ||
-    def.type === 'arena'
+    def.type === 'arena' ||
+    def.type === 'ledge' ||
+    def.type === 'rest'
   )
     return id;
   const size = px(def.size ?? TILE);

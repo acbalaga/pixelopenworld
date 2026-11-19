@@ -18,6 +18,7 @@ import { bakeRegion, type WorldFiles } from './bake';
 import { bakeSliceRegion } from './slice';
 import { DUNGEONS } from '../../src/content/world/dungeons';
 import { validateDungeon } from './validateDungeon';
+import { validateRegion } from './validateRegion';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'baked', 'world');
@@ -30,8 +31,14 @@ export function bakeAllRegions(): WorldFiles {
     if (problems.length > 0) throw new BakeError(d.id, 'dungeon', problems.join('; '));
   }
   const all: WorldFiles = new Map();
-  for (const spec of Object.values(REGION_SPECS))
-    for (const [name, v] of bakeRegion(spec, STAMPS)) all.set(name, v);
+  for (const spec of Object.values(REGION_SPECS)) {
+    const files = bakeRegion(spec, STAMPS);
+    // The region checks (Waystones, wake points, districts, landmarks) fail the bake too.
+    const problems = validateRegion(spec, files);
+    if (problems.length > 0)
+      throw new BakeError(`region ${spec.id}`, 'checks', problems.join('; '));
+    for (const [name, v] of files) all.set(name, v);
+  }
   for (const [name, v] of bakeSliceRegion()) all.set(name, v);
   return all;
 }

@@ -55,6 +55,31 @@ const specSchema = z
     landmarks: z.array(named),
     wakePoints: z.array(named),
     waystones: z.array(named),
+    districts: z
+      .array(
+        z
+          .object({
+            id,
+            kind: z.enum([
+              'square',
+              'street',
+              'craft_row',
+              'rune_house',
+              'inn',
+              'guard_yard',
+              'market',
+              'home',
+              'gate',
+            ]),
+            x: z.number().int(),
+            y: z.number().int(),
+            w: z.number().int().min(1),
+            h: z.number().int().min(1),
+          })
+          .strict(),
+      )
+      .optional(),
+    landmarkHeights: z.record(id, z.number().int().min(1)).optional(),
   })
   .strict();
 

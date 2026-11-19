@@ -33,7 +33,9 @@ export type FixtureType =
   | 'switch'
   | 'breakable'
   | 'torch'
-  | 'arena';
+  | 'arena'
+  | 'ledge'
+  | 'rest';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -357,6 +359,10 @@ const LIST: readonly FixtureDef[] = [
       ],
     },
   },
+  // The Fernside climb (M4-04): a stamina ledge and a rest point along a cliff route. Placed now
+  // as data. The climbing rules (Athletics, stamina) arrive with the system that reads them.
+  { kind: 'fixture.ledge', type: 'ledge', sprite: 'prop.block', size: 12 },
+  { kind: 'fixture.rest_point', type: 'rest', sprite: 'prop.bedroll', size: 12 },
   // Element set pieces (M3-09). One for each school, none on a route the slice needs.
   // A wall of dry brush: Ember burns it to ash, and it grows back.
   {
