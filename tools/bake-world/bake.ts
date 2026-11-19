@@ -168,9 +168,19 @@ export function bakeRegion(rawSpec: unknown, stamps: StampLibrary): WorldFiles {
     };
   });
 
+  // One hash for the whole region, so a cache can tell a new bake from the old with one compare.
+  const hash = createHash('sha256')
+    .update(
+      [...chunkList, ...interiors.flatMap((i) => i.chunks)]
+        .map((c) => `${c.file}:${c.hash}`)
+        .join('\n'),
+    )
+    .digest('hex')
+    .slice(0, 16);
   const manifest = {
     version: 1,
     region: spec.id,
+    hash,
     seed: spec.seed,
     chunks: { w: spec.chunks.w, h: spec.chunks.h },
     bridgeTiles,

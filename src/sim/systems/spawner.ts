@@ -5,6 +5,7 @@ import { emit } from '../kernel/events';
 import { px, SUBPX } from '../kernel/fixed';
 import { int } from '../kernel/rng';
 import type { SimState } from '../state';
+import { frozenAt } from '../world/stream';
 
 /** Places a spawner at a position in whole px. It fills to its cap on the first tick. */
 export function createSpawner(state: SimState, kind: string, xPx: number, yPx: number): EntityId {
@@ -25,7 +26,7 @@ export function spawnerSystem(state: SimState): void {
     const sp = getComp(state.entities, id, 'spawner');
     const p = getComp(state.entities, id, 'pos');
     const def = sp ? SPAWNERS[sp.kind] : undefined;
-    if (!sp || !p || !def) continue;
+    if (!sp || !p || !def || frozenAt(state, p.x, p.y)) continue;
     sp.members = sp.members.filter((m) => state.entities.alive[m] === true);
     if (sp.members.length >= def.cap) {
       sp.timer = 0;

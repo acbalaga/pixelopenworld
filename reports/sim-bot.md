@@ -9,41 +9,41 @@ Made by `npm run sim-bot` (POW-M3-12). Do not edit by hand. Four v1 policies dri
 
 "Time to 15" is when the skill has 14 points and a full bar: the next point waits on a Trial (design/03). The target is derived from the curve: `4 h * xpTo(15) / xpTo(50)`, about 27 minutes. The band is 20 to 40 minutes (M3-02) for combat. Foraging and Cooking are slower on purpose, 35 to 70 minutes: on the first map they are paced by how fast the nodes come back, and the slow pace pays in kind (a large first-time bonus for every new herb and dish, and a sale price for what is made).
 
-| Loop | Skill | Minutes to 15 | Band | In band |
-| --- | --- | --- | --- | --- |
-| Forage the herb patches and berry bushes, sell what is gathered | Foraging | 51.7 | 35 to 70 | yes |
-| Fight Mosslings with the sword, sell the loot | Blades | 29.6 | 20 to 40 | yes |
-| Forage, cook at the camp pot, sell the dishes | Cooking | 41.9 | 35 to 70 | yes |
+| Loop                                                            | Skill    | Minutes to 15 | Band     | In band |
+| --------------------------------------------------------------- | -------- | ------------- | -------- | ------- |
+| Forage the herb patches and berry bushes, sell what is gathered | Foraging | 51.7          | 35 to 70 | yes     |
+| Fight Mosslings with the sword, sell the loot                   | Blades   | 29.6          | 20 to 40 | yes     |
+| Forage, cook at the camp pot, sell the dishes                   | Cooking  | 41.9          | 35 to 70 | yes     |
 
 ## XP per hour, top four skills of each policy
 
-| Policy | Skill | XP per hour |
-| --- | --- | --- |
-| gather | Foraging | 4650 |
-| gather | Survival | 150 |
-| gather | Bartering | 111 |
-| fight | Blades | 6316 |
-| fight | Evasion | 3937 |
-| fight | Survival | 120 |
-| fight | Bartering | 21 |
-| craft | Cooking | 5115 |
-| craft | Foraging | 4659 |
-| craft | Survival | 150 |
-| craft | Bartering | 60 |
-| request | Foraging | 4650 |
-| request | Blades | 421 |
-| request | Survival | 150 |
+| Policy  | Skill     | XP per hour |
+| ------- | --------- | ----------- |
+| gather  | Foraging  | 4650        |
+| gather  | Survival  | 150         |
+| gather  | Bartering | 111         |
+| fight   | Blades    | 6316        |
+| fight   | Evasion   | 3937        |
+| fight   | Survival  | 120         |
+| fight   | Bartering | 21          |
+| craft   | Cooking   | 5115        |
+| craft   | Foraging  | 4659        |
+| craft   | Survival  | 150         |
+| craft   | Bartering | 60          |
+| request | Foraging  | 4650        |
+| request | Blades    | 421         |
+| request | Survival  | 150         |
 
 ## Coin per hour, by activity
 
 Coin per hour is the coin held at the end plus the coin spent, over the window. By source is coin earned.
 
-| Policy | Coin per hour | By source | Deaths | Requests done |
-| --- | --- | --- | --- | --- |
-| gather | 224 | sale 224 | 0 | 0 |
-| fight | 457 | loot 137, echo 218, sale 102 | 4 | 0 |
-| craft | 225 | sale 225 | 0 | 0 |
-| request | 149 | loot 4, request 145 | 0 | 4 |
+| Policy  | Coin per hour | By source                    | Deaths | Requests done |
+| ------- | ------------- | ---------------------------- | ------ | ------------- |
+| gather  | 224           | sale 224                     | 0      | 0             |
+| fight   | 457           | loot 137, echo 218, sale 102 | 4      | 0             |
+| craft   | 225           | sale 225                     | 0      | 0             |
+| request | 149           | loot 4, request 145          | 0      | 4             |
 
 ## Save summaries
 

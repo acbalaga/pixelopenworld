@@ -35,7 +35,12 @@ const TILE = 16;
 export function populateMap(
   state: SimState,
   objects: readonly MapObject[],
-  opts: { spawners: boolean; onlyMissing: boolean },
+  opts: {
+    spawners: boolean;
+    onlyMissing: boolean;
+    /** Called with each fixture or node entity added, so chunk deltas can be applied to it. */
+    onSpawn?: (id: number, o: MapObject) => void;
+  },
 ): number {
   const have = opts.onlyMissing ? existing(state) : null;
   let added = 0;
@@ -57,12 +62,14 @@ export function populateMap(
     const { kind, tx, ty } = o;
     if (kind.startsWith('fixture.') && FIXTURES[kind]) {
       if (!wanted(`fixture:${kind}@${px(tx * TILE + 8)},${px(ty * TILE + TILE)}`)) continue;
-      spawnFixture(state, kind, tx, ty);
+      const id = spawnFixture(state, kind, tx, ty);
+      opts.onSpawn?.(id, o);
     } else if (kind.startsWith('node.') && NODES[kind]) {
       const x = tx * TILE + 8;
       const y = ty * TILE + 14;
       if (!wanted(`node:${kind}@${px(x)},${px(y)}`)) continue;
-      spawnNode(state, kind, x, y);
+      const id = spawnNode(state, kind, x, y);
+      opts.onSpawn?.(id, o);
     } else if (kind.startsWith('npc.') && NPCS[kind]) {
       if (!wanted(`npc:${kind}`, true)) continue;
       spawnNpc(state, kind, tx, ty);

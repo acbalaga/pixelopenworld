@@ -8,6 +8,7 @@ import { applyAvatarCommand } from './avatar';
 import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
 import { spawnerSystem } from './systems/spawner';
+import { streamSystem } from './world/stream';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
@@ -46,6 +47,7 @@ export function step(state: SimState, input: TickInput): number {
 
 /** Systems for a world with an avatar, in run order. */
 export const WORLD_SYSTEMS: readonly System<SimState>[] = [
+  streamSystem,
   spawnerSystem,
   aiSystem,
   combatSystem,

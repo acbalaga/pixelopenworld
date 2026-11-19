@@ -23,6 +23,16 @@ export class TileWorld {
     this.chunks.set(chunkKey(c.cx, c.cy), c);
   }
 
+  /** Drops a chunk from the loaded set. */
+  remove(cx: number, cy: number): void {
+    this.chunks.delete(chunkKey(cx, cy));
+  }
+
+  /** Number of loaded chunks. */
+  get size(): number {
+    return this.chunks.size;
+  }
+
   chunk(cx: number, cy: number): Chunk | undefined {
     return this.chunks.get(chunkKey(cx, cy));
   }

@@ -15,6 +15,7 @@ import { REGION_SPECS } from '../../src/content/world/regions/index';
 import { STAMPS } from '../../src/content/world/stamps/index';
 import { BakeError } from '../../src/sim/world/bakeError';
 import { bakeRegion, type WorldFiles } from './bake';
+import { bakeSliceRegion } from './slice';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'baked', 'world');
@@ -24,6 +25,7 @@ export function bakeAllRegions(): WorldFiles {
   const all: WorldFiles = new Map();
   for (const spec of Object.values(REGION_SPECS))
     for (const [name, v] of bakeRegion(spec, STAMPS)) all.set(name, v);
+  for (const [name, v] of bakeSliceRegion()) all.set(name, v);
   return all;
 }
 

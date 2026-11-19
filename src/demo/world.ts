@@ -3,6 +3,7 @@
 // Keys: WASD move, J attack (Classic), Space dodge, 1 and 2 techniques (hold to aim), T scheme.
 //   ?fly=1   no collision, fast, no creatures (for crossing all nine chunks)
 //   ?auto=1  fly a fixed loop through all nine chunks without input (for the frame-rate check)
+//   ?region= stream another baked region (default slice). Dev regions start with `dev_`.
 //   ?foes=N  number of practice creatures (default 3)
 //   ?at=x,y  start at a world tile (for screenshots)
 import manifest from '../../baked/manifest.json';
@@ -80,7 +81,6 @@ import { MessageRouter } from '../ui/messages/router';
 import { MessageView } from '../ui/messages/view';
 import { confirmRetire } from '../ui/dom/retire';
 import { BoardSheet } from '../ui/dom/board';
-import { populateMap } from '../sim/world/populate';
 import { runFrontEnd, type FrontEndResult } from '../ui/dom/frontEnd';
 import {
   AutoSaver,
@@ -151,14 +151,12 @@ import { px } from '../sim/kernel/fixed';
 import { createDemoState, deserializeState, hashState, type SimState } from '../sim/state';
 import { stepWorld } from '../sim/step';
 import { contextTarget } from '../sim/systems/interact';
-import { decodeChunk } from '../sim/world/chunk';
 import { TileWorld } from '../sim/world/world';
-
-const chunkUrls = import.meta.glob('../../baked/chunk-slice-*.bin', {
-  query: '?url',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>;
+import { browserLoader, type ChunkLoader } from '../platform/world/loader';
+import { ChunkStreamer } from '../platform/world/streamer';
+import { newStream } from '../sim/world/stream';
+import { chunkOfPx } from '../sim/world/window';
+import { CHUNK_TILES } from '../sim/world/chunk';
 
 /** Auto flight: a loop through the nine chunks, in world px, one waypoint per entry. */
 const LOOP: readonly [number, number][] = [
@@ -271,21 +269,30 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     tiles: Record<string, { sprite: string; frame: string; offset?: [number, number] }>;
   };
   const atlas = await loadAtlas(m, { core: coreUrl, ui: uiUrl });
-  const chunks = await Promise.all(
-    Object.values(chunkUrls).map(async (url) =>
-      decodeChunk(new Uint8Array(await (await fetch(url)).arrayBuffer())),
-    ),
-  );
-  const world = new TileWorld(chunks);
-  const bounds = world.bounds();
-  if (!bounds) throw new Error('no chunks loaded');
-  const worldW = (bounds.x1 - bounds.x0) * TILE_PX;
-  const worldH = (bounds.y1 - bounds.y0) * TILE_PX;
+  // The world streams in around the avatar (M4-03). `?region=` picks another baked region, for
+  // tools and tests (dev regions are served by the dev server and the preview only).
+  const regionId = /^[a-z][a-z0-9_]*$/.test(params.get('region') ?? '')
+    ? (params.get('region') as string)
+    : 'slice';
+  const loader: ChunkLoader = await browserLoader();
+  const regionManifest = await loader.manifest(regionId);
+  // The world loads after the title, so a first launch starts the region download now, while the
+  // player is at the title screen. Without it a first start that goes offline before login has no
+  // chunks. Later launches find the region cached and this returns at once.
+  void loader.status(regionManifest).then((st) => {
+    if (!st.complete) void loader.prefetch(regionManifest).catch(() => {});
+  });
+  const world = new TileWorld();
+  const streamer = new ChunkStreamer(loader, regionManifest, world);
+  const worldW = regionManifest.chunks.w * CHUNK_TILES * TILE_PX;
+  const worldH = regionManifest.chunks.h * CHUNK_TILES * TILE_PX;
 
   const renderer = new Canvas2DRenderer(canvas);
   renderer.setAtlas(atlas);
   const camera = new Camera(worldW, worldH);
   const chunkRenderer = new ChunkRenderer(atlas, world, m.tiles);
+  chunkRenderer.beyondEdge = streamer.beyondEdge;
+  streamer.onDrop = (cx, cy) => chunkRenderer.drop(cx, cy);
 
   const startGear0 = { ...newInventory().equipment };
   const rand = ((): (() => number) => {
@@ -473,6 +480,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     applyPixelScale(root, v.scale / v.dpr);
     camera.setView(v.width, v.height, v.portrait);
   };
+  // Region download (M4-03): after the start window is in, fetch the rest of the region in the
+  // background so it plays with no network. A pinned region is also marked, and kept.
+  let cacheMode = '';
+  const syncRegionCache = (): void => {
+    const st = settings.get();
+    const pinned = st.pinnedRegions.includes(regionId);
+    const mode = `${st.prefetchRegions}|${pinned}`;
+    if (mode === cacheMode) return;
+    cacheMode = mode;
+    void loader.pin(regionId, pinned).catch(() => {});
+    if (st.prefetchRegions || pinned) void loader.prefetch(regionManifest).catch(() => {});
+  };
+  settings.subscribe(syncRegionCache);
+  setTimeout(syncRegionCache, 1500);
   const vp = watchViewport(probe, fit);
   fit(vp.current);
   // Whether a shield is worn, so the Guard button exists. Kept current by the tick.
@@ -491,27 +512,55 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let talkOpen = false;
 
   // The avatar lives in the sim. Feet position is the bottom center of its 10 x 8 box.
-  const spawnTile = chunks.flatMap((c) =>
-    c.objects
-      .filter((o) => o.kind === 'spawn.player')
-      .map((o) => ({ x: c.cx * 32 + o.x, y: c.cy * 32 + o.y })),
-  )[0] ?? { x: 48, y: 48 };
   const at = params.get('at')?.split(',').map(Number);
-  if (at && at.length === 2 && at.every(Number.isFinite)) {
-    spawnTile.x = at[0] as number;
-    spawnTile.y = at[1] as number;
-  }
+  const hasAt = !!at && at.length === 2 && at.every(Number.isFinite);
   // A new character has its own creation seed. Developer paths without one keep seed 1.
   const state = restored ?? createDemoState(entry?.seed ?? 1, 0);
-  state.world = world;
   state.worldTick = worldTickAt(clock.trustedNow(), worldEpoch);
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
-  // developer `?at=` overrides that.
-  const wake = !restored && entry && !at ? chooseWake(state, wakesFor(entry.origin)) : null;
-  if (wake) {
-    spawnTile.x = wake.x;
-    spawnTile.y = wake.y;
+  // developer `?at=` overrides that. Other regions start at their first wake point.
+  const wake =
+    !restored && entry && !hasAt && regionId === 'slice'
+      ? chooseWake(state, wakesFor(entry.origin))
+      : null;
+  const savedPos = restored ? restored.entities.comps.pos[findAvatar(restored) as number] : null;
+  const regionWake = regionManifest.wakePoints?.[0];
+  const spawnTile = hasAt
+    ? { x: (at as number[])[0] as number, y: (at as number[])[1] as number }
+    : wake
+      ? { x: wake.x, y: wake.y }
+      : savedPos
+        ? {
+            x: Math.floor(savedPos.x / 256 / TILE_PX),
+            y: Math.floor((savedPos.y / 256 - 1) / TILE_PX),
+          }
+        : regionWake
+          ? { x: regionWake.x, y: regionWake.y }
+          : { x: 48, y: 48 };
+  // Stream in the window around the start before the first frame, so there is never a loading
+  // screen after this point. The slice's default start is an object in the map, found once its
+  // chunks are in.
+  const settleAt = async (tx: number, ty: number): Promise<void> => {
+    streamer.update(Math.floor(tx / CHUNK_TILES), Math.floor(ty / CHUNK_TILES));
+    await streamer.whenReady();
+  };
+  await settleAt(spawnTile.x, spawnTile.y);
+  if (!restored && !hasAt && !wake && !regionWake) {
+    for (const k of [...Array(regionManifest.chunks.w * regionManifest.chunks.h).keys()]) {
+      const c = world.chunk(k % regionManifest.chunks.w, Math.floor(k / regionManifest.chunks.w));
+      const o = c?.objects.find((ob) => ob.kind === 'spawn.player');
+      if (c && o) {
+        spawnTile.x = c.cx * CHUNK_TILES + o.x;
+        spawnTile.y = c.cy * CHUNK_TILES + o.y;
+        await settleAt(spawnTile.x, spawnTile.y);
+        break;
+      }
+    }
   }
+  state.world = world;
+  // Map objects become entities as their chunks enter the window, and fold into the save's chunk
+  // deltas as they leave it. `?foes=0` turns spawners off.
+  state.stream = newStream(world, !fly && params.get('foes') !== '0');
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = restored
     ? (findAvatar(restored) as number)
@@ -521,23 +570,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     if (a) a.facing = wake.facing as typeof a.facing;
   }
   // `?at=` also moves a loaded avatar, for screenshots and tests.
-  if (restored && at && at.length === 2 && at.every(Number.isFinite)) {
+  if (restored && hasAt) {
     const p = state.entities.comps.pos[who];
     if (p) {
       p.x = px(feet.x);
       p.y = px(feet.y);
     }
   }
-  // A new game gets every map object. A loaded save already holds the ones it was started with, so
-  // it only gains what a newer build added (a person, a chest, a node), and nothing is moved or
-  // removed. `?foes=0` turns spawners off.
-  const mapObjects = chunks.flatMap((c) =>
-    c.objects.map((o) => ({ kind: o.kind, tx: c.cx * 32 + o.x, ty: c.cy * 32 + o.y })),
-  );
-  populateMap(state, mapObjects, {
-    spawners: !fly && params.get('foes') !== '0',
-    onlyMissing: restored !== null,
-  });
   // `?kit=dev` (dev builds only) adds a quick kit for screenshots and tests, recorded as seeded.
   const bag =
     restored || !import.meta.env.DEV || params.get('kit') !== 'dev'
@@ -810,6 +849,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     );
   };
   const menu = new MenuSheet(root, {
+    region: regionId,
     read: () => ({ state, who }),
     send: (c) => pendingCommands.push(c),
     settings,
@@ -1071,7 +1111,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         logicalWidth: renderer.width,
         logicalHeight: renderer.height,
         scale: vp.current.scale,
-        extra: `chunks ${chunks.length} built ${chunkRenderer.chunksBuilt} | terrain blits ${renderer.terrainBlits}`,
+        extra: `chunks ${world.size} built ${chunkRenderer.chunksBuilt} stalls ${chunkRenderer.stalls} | terrain blits ${renderer.terrainBlits}`,
       }));
     });
   }
@@ -1157,7 +1197,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     );
   };
 
+  // Auto flight: the slice's fixed loop, or a back and forth sweep across any other region.
+  const loopPath: readonly [number, number][] =
+    regionId === 'slice'
+      ? LOOP
+      : [
+          [200, worldH / 2],
+          [worldW - 200, worldH / 2],
+          [worldW - 200, worldH / 3],
+          [200, worldH / 3],
+        ];
   let lastFrame = performance.now();
+  let lastWorked = 0;
   startBrowserLoop({
     tick: () => {
       meter?.tickBegin(performance.now());
@@ -1167,11 +1218,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         let mx = 0;
         let my = 0;
         if (auto) {
-          const target = LOOP[waypoint] as readonly [number, number];
+          const target = loopPath[waypoint] as readonly [number, number];
           const dx = target[0] - apos.x / 256;
           const dy = target[1] - (apos.y / 256 - 14);
           const d = Math.hypot(dx, dy);
-          if (d < 12) waypoint = (waypoint + 1) % LOOP.length;
+          if (d < 12) waypoint = (waypoint + 1) % loopPath.length;
           else {
             mx = dx / d;
             my = dy / d;
@@ -1365,6 +1416,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           fadeAt = now;
         }
       }
+      streamer.update(chunkOfPx(pxX), chunkOfPx(pxY));
       camera.follow(pxX, pxY - 14, dt);
       const shake = feedback.shake(now);
       renderer.begin(camera.x + shake.x, camera.y + shake.y);
@@ -1707,6 +1759,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       renderer.end();
       // Input, the Menu and the first frame are all live. Tests and tools wait for this.
       if (canvas.dataset.ready !== 'true') canvas.dataset.ready = 'true';
+      // The larger of this and the last frame's work, so one heavy frame holds painting back for two.
+      const frameWork = performance.now() - now;
+      chunkRenderer.lastFrameMs = Math.max(frameWork, lastWorked);
+      lastWorked = frameWork;
       meter?.frameEnd(performance.now());
     },
   });

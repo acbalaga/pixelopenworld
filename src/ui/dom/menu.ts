@@ -67,6 +67,8 @@ export interface MenuDeps {
   /** Writes the game before an update restarts it. */
   beforeUpdate?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
+  /** The region being played, so System can offer to keep it for offline play. */
+  region?: string;
 }
 
 let uid = 0;
@@ -1102,6 +1104,23 @@ export class MenuSheet {
       () => st.get().muted,
       (v) => st.set({ muted: v }),
     );
+    toggle(
+      sys.prefetchRegions,
+      () => st.get().prefetchRegions,
+      (v) => st.set({ prefetchRegions: v }),
+    );
+    const region = this.deps.region;
+    if (region)
+      toggle(
+        sys.pinRegion,
+        () => st.get().pinnedRegions.includes(region),
+        (v) =>
+          st.set({
+            pinnedRegions: v
+              ? [...st.get().pinnedRegions, region]
+              : st.get().pinnedRegions.filter((r) => r !== region),
+          }),
+      );
 
     const privacy = el('div', 'pow-help');
     privacy.dataset.key = 'privacy-note';

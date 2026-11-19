@@ -27,8 +27,9 @@ async function controlled(page: Page): Promise<void> {
     .toBe(true);
 }
 
+/** The app shell caches, one per version. The world cache (chunk files) outlives versions and is not counted. */
 const cacheKeys = (page: Page): Promise<string[]> =>
-  page.evaluate(async () => (await caches.keys()).sort());
+  page.evaluate(async () => (await caches.keys()).filter((k) => k !== 'pow-world').sort());
 
 test('installability: manifest, icons and a worker with a fetch handler', async ({
   page,
@@ -81,7 +82,8 @@ test('repeat visits serve chunks and atlases from the cache', async ({ page }) =
   await controlled(page);
   const served: { url: string; sw: boolean }[] = [];
   page.on('response', (r) => {
-    if (new URL(r.url()).pathname.startsWith('/assets/'))
+    const path = new URL(r.url()).pathname;
+    if (path.startsWith('/assets/') || path.startsWith('/world/'))
       served.push({ url: r.url(), sw: r.fromServiceWorker() });
   });
   await page.reload();
@@ -89,7 +91,9 @@ test('repeat visits serve chunks and atlases from the cache', async ({ page }) =
   expect(served.length).toBeGreaterThan(5);
   expect(served.filter((s) => !s.sw).map((s) => s.url)).toEqual([]);
   expect(served.some((s) => s.url.includes('atlas-core'))).toBe(true);
-  expect(served.some((s) => s.url.includes('chunk-slice'))).toBe(true);
+  // The region manifest is asked for on every start (network first, answered by the worker). Chunk
+  // files come from IndexedDB, so the page makes no network request for them at all.
+  expect(served.some((s) => s.url.includes('/world/slice/manifest.json'))).toBe(true);
 });
 
 /** Serves dist/client on its own origin, with a worker file whose version the test can change. */

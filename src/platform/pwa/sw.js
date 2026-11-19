@@ -10,10 +10,16 @@
  *   session. It takes over the next time the game is opened with no old window left, or sooner
  *   only when the player chooses Update now in System (a `skip-waiting` message). No clients.claim.
  * - Navigations get the cached shell. Hashed assets are cache-first. /api/* is never touched.
+ * - /world/* (chunk files) is not precached. Chunks are cache-first in their own cache, and the
+ *   manifest is network-first, pruning chunks it no longer names.
  */
 const VERSION = '__VERSION__';
 const PRECACHE = /* __PRECACHE__ */ [];
 const CACHE = 'pow-' + VERSION;
+// The baked world (M4-03) is kept apart from the app shell, so an app update never throws away
+// regions the player has downloaded. Chunk URLs carry their bake hash (`?h=`), so a new bake is a
+// new entry. The manifest is network first, and when it shows a new bake the old entries go.
+const WORLD = 'pow-world';
 // The page is cached as `/`: the host redirects /index.html to it, and a redirected response
 // cannot be used to answer a navigation.
 const SHELL = '/';
@@ -33,7 +39,9 @@ self.addEventListener('activate', (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k.startsWith('pow-') && k !== CACHE).map((k) => caches.delete(k)),
+          keys
+            .filter((k) => k.startsWith('pow-') && k !== CACHE && k !== WORLD)
+            .map((k) => caches.delete(k)),
         ),
       ),
   );
@@ -47,6 +55,50 @@ async function cacheFirst(request) {
   const res = await fetch(request);
   if (res.ok && new URL(request.url).pathname.startsWith('/assets/'))
     await cache.put(request, res.clone());
+  return res;
+}
+
+/** Drops cached chunk files of a region that its fresh manifest no longer names. */
+async function pruneWorld(cache, region, manifest) {
+  const keep = new Set(manifest.files.map((f) => `/world/${region}/${f.file}?h=${f.hash}`));
+  keep.add(`/world/${region}/manifest.json`);
+  for (const req of await cache.keys()) {
+    const u = new URL(req.url);
+    if (u.pathname.startsWith(`/world/${region}/`) && !keep.has(u.pathname + u.search))
+      await cache.delete(req);
+  }
+}
+
+/** A region manifest: the network when it answers, the kept copy when it does not. */
+async function worldManifest(request) {
+  const cache = await caches.open(WORLD);
+  try {
+    const res = await fetch(request);
+    if (res.ok) {
+      const copy = res.clone();
+      await cache.put(request, copy.clone());
+      try {
+        const m = await copy.json();
+        await pruneWorld(cache, new URL(request.url).pathname.split('/')[2], m);
+      } catch {
+        // A manifest that does not parse is the game's problem, not the cache's.
+      }
+    }
+    return res;
+  } catch (e) {
+    const hit = await cache.match(request);
+    if (hit) return hit;
+    throw e;
+  }
+}
+
+/** A chunk file: cache first, kept when fetched. */
+async function worldChunk(request) {
+  const cache = await caches.open(WORLD);
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  const res = await fetch(request);
+  if (res.ok) await cache.put(request, res.clone());
   return res;
 }
 
@@ -66,6 +118,8 @@ function route(request) {
   if (url.pathname.startsWith('/api/')) return null;
   if (url.pathname === '/sw.js') return null;
   if (request.mode === 'navigate') return shell(request);
+  if (url.pathname.startsWith('/world/'))
+    return url.pathname.endsWith('/manifest.json') ? worldManifest(request) : worldChunk(request);
   return cacheFirst(request);
 }
 
