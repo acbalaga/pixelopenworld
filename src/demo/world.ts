@@ -276,6 +276,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     : 'slice';
   const loader: ChunkLoader = await browserLoader();
   const regionManifest = await loader.manifest(regionId);
+  // The world loads after the title, so a first launch starts the region download now, while the
+  // player is at the title screen. Without it a first start that goes offline before login has no
+  // chunks. Later launches find the region cached and this returns at once.
+  void loader.status(regionManifest).then((st) => {
+    if (!st.complete) void loader.prefetch(regionManifest).catch(() => {});
+  });
   const world = new TileWorld();
   const streamer = new ChunkStreamer(loader, regionManifest, world);
   const worldW = regionManifest.chunks.w * CHUNK_TILES * TILE_PX;
