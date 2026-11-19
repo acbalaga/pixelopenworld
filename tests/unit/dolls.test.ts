@@ -177,6 +177,8 @@ describe('randomDoll', () => {
     const r = rng(3);
     for (let i = 0; i < 300; i++) {
       for (const layer of layersFor(randomDoll(r))) {
+        // Stamps (faces, beards, new hairstyles, accessories) are drawn at compose time.
+        if (layer.stamp) continue;
         const def = defs.get(layer.id);
         expect(def, layer.id).toBeDefined();
         for (const f of DOLL_FRAMES) expect(def!.frames[f], `${layer.id} ${f}`).toBeDefined();

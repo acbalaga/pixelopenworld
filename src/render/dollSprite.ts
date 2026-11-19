@@ -9,7 +9,7 @@ import {
 import { PALETTE } from '../content/sprites/palette';
 import { TRANSPARENT } from '../content/sprites/grid';
 import { Atlas, type Manifest } from './atlas';
-import { composeFrame } from './doll';
+import { composeFrame, heightShift } from './doll';
 
 const [W, H] = DOLL_SIZE;
 const COLS = 8;
@@ -100,11 +100,13 @@ export class DollFactory {
     });
 
     const draw = (s: DollSpec): void => {
+      // A taller figure stands one row lower in its frame, so the origin moves with the feet.
+      this.atlas.setOriginY(id, DOLL_ORIGIN[1] + heightShift(s.height ?? 'mid'));
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const layers = layersFor(s);
       const img = ctx.createImageData(W, H);
       DOLL_FRAMES.forEach((name, i) => {
-        const px = composeFrame(this.layerFrame, layers, name);
+        const px = composeFrame(this.layerFrame, layers, name, s.height ?? 'mid');
         for (let j = 0; j < px.length; j++) {
           const v = px[j] as number;
           const hex = v === TRANSPARENT ? null : (PALETTE[v] as string);

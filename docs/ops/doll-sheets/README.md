@@ -1,0 +1,67 @@
+# Doll part contact sheets
+
+Made by `npm run doll-sheet`. Each row is a variant. Left to right: body a short, mid, tall, then body b short, mid, tall.
+
+- eyes row 1: eyes 0
+- eyes row 2: eyes 1
+- eyes row 3: eyes 2
+- eyes row 4: eyes 3
+- eyes row 5: eyes 4
+- eyes row 6: eyes 5
+- eyes row 7: eyes 6
+- eyes row 8: eyes 7
+- brows row 1: brows 0
+- brows row 2: brows 1
+- brows row 3: brows 2
+- brows row 4: brows 3
+- brows row 5: brows 4
+- brows row 6: brows 5
+- mouths row 1: mouth 0
+- mouths row 2: mouth 1
+- mouths row 3: mouth 2
+- mouths row 4: mouth 3
+- mouths row 5: mouth 4
+- marks row 1: mark 0
+- marks row 2: mark 1
+- marks row 3: mark 2
+- marks row 4: mark 3
+- marks row 5: mark 4
+- facial-hair row 1: facial 0
+- facial-hair row 2: facial 1
+- facial-hair row 3: facial 2
+- facial-hair row 4: facial 3
+- accessories row 1: none
+- accessories row 2: headband
+- accessories row 3: scarf
+- accessories row 4: earring
+- accessories row 5: eyepatch
+- accessories row 6: flower
+- hair-styles row 1: short
+- hair-styles row 2: long
+- hair-styles row 3: ponytail
+- hair-styles row 4: curly
+- hair-styles row 5: bun
+- hair-styles row 6: mohawk
+- hair-styles row 7: pigtails
+- hair-styles row 8: braid
+- hair-styles row 9: afro
+- hair-styles row 10: shaggy
+- hair-styles row 11: topknot
+- colors row 1: skin pale
+- colors row 2: skin light
+- colors row 3: skin deep
+- colors row 4: skin peach
+- colors row 5: skin bronze
+- colors row 6: skin umber
+- colors row 7: hair black
+- colors row 8: hair brown
+- colors row 9: hair auburn
+- colors row 10: hair blond
+- colors row 11: hair grey
+- colors row 12: hair blue
+- colors row 13: hair violet
+- colors row 14: hair rose
+- colors row 15: hair green
+- colors row 16: hair white
+- colors row 17: hair ginger
+- colors row 18: tips

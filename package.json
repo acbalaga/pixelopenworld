@@ -31,6 +31,7 @@
     "map:png": "tsx tools/render-map.ts",
     "xp-report": "tsx tools/xp-report.ts",
     "fight-sim": "tsx tools/fight-sim/index.ts",
+    "doll-sheet": "tsx tools/doll-sheet/index.ts",
     "sim-bot": "tsx tools/sim-bot/index.ts",
     "balance:ci": "tsx tools/fight-sim/index.ts --seeds 20 --check --no-write && tsx tools/sim-bot/index.ts --minutes 20 --cap 120 --check --no-write"
   },

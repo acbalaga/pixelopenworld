@@ -61,6 +61,12 @@ export class Atlas {
     this.register(id, entry, slot);
   }
 
+  /** Moves the origin of every frame of a sprite, for a doll whose height changed. */
+  setOriginY(id: string, oy: number): void {
+    const prefix = `${id}#`;
+    for (const [key, handle] of this.frameIndex) if (key.startsWith(prefix)) this.oy[handle] = oy;
+  }
+
   private register(id: string, s: Manifest['sprites'][string], slot: number): void {
     for (const f of Object.keys(s.frames).sort()) {
       const r = s.frames[f];
