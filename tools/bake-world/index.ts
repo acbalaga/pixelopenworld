@@ -16,12 +16,19 @@ import { STAMPS } from '../../src/content/world/stamps/index';
 import { BakeError } from '../../src/sim/world/bakeError';
 import { bakeRegion, type WorldFiles } from './bake';
 import { bakeSliceRegion } from './slice';
+import { DUNGEONS } from '../../src/content/world/dungeons';
+import { validateDungeon } from './validateDungeon';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'baked', 'world');
 
 /** Bakes every region. */
 export function bakeAllRegions(): WorldFiles {
+  // A dungeon that can be soft locked, or cannot be finished, fails the bake.
+  for (const d of Object.values(DUNGEONS)) {
+    const problems = validateDungeon(d);
+    if (problems.length > 0) throw new BakeError(d.id, 'dungeon', problems.join('; '));
+  }
   const all: WorldFiles = new Map();
   for (const spec of Object.values(REGION_SPECS))
     for (const [name, v] of bakeRegion(spec, STAMPS)) all.set(name, v);

@@ -214,7 +214,17 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         // First reading of a tablet kind only. A tablet read again pays nothing.
         sources: [{ on: 'tabletRead', base: 0, scaled: false, firstTime: 100 }],
       },
-      { id: 'skill.delving', name: 'Delving', family: 'exploration', sources: [] },
+      {
+        id: 'skill.delving',
+        name: 'Delving',
+        family: 'exploration',
+        // First entry of a dungeon room, a block puzzle solved, a dungeon cleared. Each pays once.
+        sources: [
+          { on: 'delveRoom', base: 0, scaled: false, firstTime: 40 },
+          { on: 'delveBlock', base: 0, scaled: false, firstTime: 60 },
+          { on: 'delveClear', base: 0, scaled: false, firstTime: 400 },
+        ],
+      },
     ] satisfies SkillDef[]
   ).map((d) => [d.id, d]),
 );
@@ -231,7 +241,6 @@ export const PENDING_SKILLS: string[] = [
   'skill.leadership',
   'skill.taming',
   'skill.cartography',
-  'skill.delving',
 ];
 
 /**

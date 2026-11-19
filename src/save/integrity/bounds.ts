@@ -133,6 +133,10 @@ const RATES: Record<XpSource['on'], number> = {
   eatRaw: COOK_EVENTS_PER_SECOND,
   /** A tablet pays only the first-time lump, which is counted below. */
   tabletRead: 0,
+  /** Delving pays only first-time lumps (room, plate, dungeon), counted below. */
+  delveRoom: 0,
+  delveBlock: 0,
+  delveClear: 0,
   block: BLOCK_EVENTS_PER_SECOND,
   parry: BLOCK_EVENTS_PER_SECOND,
   heal: 2,

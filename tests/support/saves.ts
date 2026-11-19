@@ -158,6 +158,7 @@ export function asSchema5(s: SimState): SimState {
   delete (s.rng as { craft?: unknown }).craft;
   delete (s.entities.comps as { craft?: unknown }).craft;
   delete (s as { deltas?: unknown }).deltas;
+  delete (s.entities.comps as { boss?: unknown }).boss;
   // Schema 17: requests v2. The old request record is a state and a count, Renown and the pin
   // are new, and so are the board component, its stream and the standing-reward tally.
   delete (s.rng as { requests?: unknown }).requests;

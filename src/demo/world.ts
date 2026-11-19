@@ -65,6 +65,7 @@ import { loadAtlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
 import { FIXTURES } from '../content/world/fixtures';
+import { litFor } from '../sim/systems/dungeon';
 import { roomAt, OUTDOORS } from '../content/world/rooms';
 import { UI_STRINGS } from '../content/strings/ui';
 import { PATHS } from '../content/paths';
@@ -745,8 +746,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       let frame: string;
       // A hidden niche is drawn only once Hexing has revealed it.
       if (def.hidden && !f.revealed) continue;
-      if (def.type === 'plate') frame = f.open ? 'down' : 'up';
-      else if (def.type === 'element') frame = f.open ? 'open' : 'closed';
+      if (def.type === 'plate' || def.type === 'switch') frame = f.open ? 'down' : 'up';
+      else if (def.type === 'element' || def.type === 'breakable')
+        frame = f.open ? 'open' : 'closed';
       // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
       else if (def.type === 'storage') frame = 'closed';
       else if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
@@ -1420,20 +1422,27 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       camera.follow(pxX, pxY - 14, dt);
       const shake = feedback.shake(now);
       renderer.begin(camera.x + shake.x, camera.y + shake.y);
-      chunkRenderer.drawVisible(
-        renderer,
-        camera.x,
-        camera.y,
-        renderer.width,
-        renderer.height,
-        Math.floor(now / 500),
-        { x: pxX, y: pxY },
-        dt,
-      );
-      drawFixtures(now);
-      drawClouds(now);
+      // A dark room shows nothing but telegraphs, and the avatar, until a torch is lit or a
+      // lantern is held (M4-08). The world is not drawn at all, so nothing leaks through.
+      const dark = !fly && !litFor(state, who);
+      if (dark) {
+        renderer.drawRect(Layer.Ground, camera.x, camera.y, renderer.width, renderer.height, DARK);
+      } else {
+        chunkRenderer.drawVisible(
+          renderer,
+          camera.x,
+          camera.y,
+          renderer.width,
+          renderer.height,
+          Math.floor(now / 500),
+          { x: pxX, y: pxY },
+          dt,
+        );
+        drawFixtures(now);
+        drawClouds(now);
+      }
       // People: they stand still and turn to face you when you are close.
-      for (const id of state.entities.comps.npc.keys()) {
+      for (const id of dark ? [] : state.entities.comps.npc.keys()) {
         const n = state.entities.comps.npc[id];
         const np = state.entities.comps.pos[id];
         const def = n ? NPCS[n.id] : undefined;
@@ -1462,7 +1471,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       drawTelegraphs(renderer, state);
       drawWarnings(renderer, state);
       drawCommitMarks(renderer, state);
-      drawItemsWorld();
+      if (!dark) drawItemsWorld();
       const worked = workOf();
       if (worked) {
         const [bx, by, bw, bh] = worked.box as [number, number, number, number];
@@ -1487,7 +1496,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         ] as const)
           renderer.drawRect(Layer.Overhead, sp.x + sx - 1, sp.y - 6 + sy, 2, 2, GOLD, 1 - age);
       }
-      for (const id of state.entities.comps.ai.keys()) {
+      for (const id of dark ? [] : state.entities.comps.ai.keys()) {
         const ai = state.entities.comps.ai[id];
         const p = state.entities.comps.pos[id];
         const def = ai ? CREATURES[ai.creature] : undefined;

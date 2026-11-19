@@ -382,6 +382,8 @@ export interface Spawner {
   /** Ticks since a member was last missing. */
   timer: number;
   members: number[];
+  /** Daily spawners (dungeons): the in-game day their last member fell. They fill again on a later day (M4-08). */
+  clearedDay?: number;
 }
 
 /** Something the context button can use. `kind` names it in content. */
@@ -404,6 +406,32 @@ export interface Fixture {
   revealed?: boolean;
   /** A fixture made by a technique: it is removed when `until` passes (Earth Wall). */
   temp?: true;
+  /** Arena trigger: idle, live (waves running) or done. `foes` are the creatures of the wave in play (M4-08). */
+  arena?: { state: 'idle' | 'live' | 'done'; wave: number; foes: number[] };
+}
+
+/**
+ * A boss encounter in progress (M4-08). The data is in `content/creatures/bosses`: this is only
+ * where the fight stands.
+ */
+export interface Boss {
+  /** Boss id in content. */
+  id: string;
+  /** Index of the phase in play. */
+  phase: number;
+  /** Position in the phase's attack pattern, and ticks to wait before the next step. */
+  step: number;
+  wait: number;
+  /** The tick the phase began, so hazards cycle from it. */
+  phaseTick: number;
+  /** The avatar was already hurt by this activation of a hazard. */
+  hazardHit: boolean;
+  /** Events seen so far (fixture kinds that switched on), which release gates and start phases. */
+  events: string[];
+  /** Objective steps done. */
+  done: string[];
+  /** How the encounter ended, once it has. */
+  resolved?: 'fight' | 'objective';
 }
 
 /** What the avatar has done with people: flags set by dialogue, and requests taken. */
@@ -508,6 +536,7 @@ export interface Components {
   statuses: StatusEntry[];
   cloud: Cloud;
   fixture: Fixture;
+  boss: Boss;
   journal: Journal;
   npc: Npc;
   board: Board;
@@ -565,6 +594,7 @@ export const COMPONENT_KEYS: readonly (keyof Components)[] = [
   'statuses',
   'cloud',
   'fixture',
+  'boss',
   'journal',
   'npc',
   'board',

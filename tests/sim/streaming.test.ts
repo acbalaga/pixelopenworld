@@ -16,6 +16,10 @@ import { TileWorld } from '../../src/sim/world/world';
 import { aiSystem } from '../../src/sim/systems/ai';
 import { spawnCreature } from '../../src/sim/combat/enemy';
 import { findAvatar } from '../../src/shared/summary';
+import { SPAWNERS } from '../../src/content/creatures';
+import { kill } from '../../src/sim/combat/fighter';
+import { spawnerSystem } from '../../src/sim/systems/spawner';
+import { dayIndex } from '../../src/sim/time';
 
 /** A strip of chunks along x, each with a chest and a herb patch at known tiles. */
 function strip(n: number): TileWorld {
@@ -164,5 +168,55 @@ describe('entity streaming', () => {
     aiSystem(s);
     expect(getComp(s.entities, far, 'ai')!.t).toBe(0);
     expect(hashState(s)).not.toBe(before);
+  });
+});
+
+describe('daily spawners across a chunk leaving and returning', () => {
+  it('a crew cleared today stays cleared, and a new day brings it back', () => {
+    (SPAWNERS as Record<string, unknown>)['spawner.test_daily2'] = {
+      kind: 'spawner.test_daily2',
+      creature: 'creature.mossling',
+      cap: 1,
+      respawn: 1,
+      radius: 0,
+      daily: true,
+    };
+    const chunks: Chunk[] = [];
+    for (let cx = 0; cx < 12; cx++) {
+      const c = createChunk(cx, 0);
+      if (cx === 0) c.objects.push({ x: 8, y: 8, kind: 'spawner.test_daily2' });
+      chunks.push(c);
+    }
+    const s = createDemoState(7, 0);
+    const w = new TileWorld(chunks);
+    s.world = w;
+    s.stream = newStream(w, true);
+    createAvatar(s, px(100), px(100));
+    s.worldTick = 5;
+    streamSystem(s);
+    const sp = query(s.entities, 'spawner')[0]!;
+    spawnerSystem(s);
+    spawnerSystem(s);
+    const sc = getComp(s.entities, sp, 'spawner')!;
+    kill(s, sc.members[0] as number);
+    spawnerSystem(s);
+    expect(sc.clearedDay).toBe(dayIndex(5));
+    // Walk away so the chunk unloads, then come back the same day: still cleared.
+    moveTo(s as ReturnType<typeof game>, 9);
+    streamSystem(s);
+    expect(query(s.entities, 'spawner')).toHaveLength(0);
+    moveTo(s as ReturnType<typeof game>, 0);
+    streamSystem(s);
+    const back = query(s.entities, 'spawner')[0]!;
+    spawnerSystem(s);
+    spawnerSystem(s);
+    expect(getComp(s.entities, back, 'spawner')!.members).toHaveLength(0);
+    // The next day it fills.
+    let t = 5;
+    while (dayIndex(t) === dayIndex(5)) t += 50;
+    s.worldTick = t;
+    spawnerSystem(s);
+    spawnerSystem(s);
+    expect(getComp(s.entities, back, 'spawner')!.members).toHaveLength(1);
   });
 });

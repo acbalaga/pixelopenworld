@@ -101,4 +101,6 @@ export interface SpawnerDef {
   respawn: number;
   /** Spawns within this many px of the spawner. */
   radius: number;
+  /** Dungeon enemies: once all are down they return on the next in-game day, at dawn, not on a timer (M4-08). */
+  daily?: boolean;
 }

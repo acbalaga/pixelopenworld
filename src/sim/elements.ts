@@ -9,6 +9,7 @@ import { emit } from './kernel/events';
 import { SUBPX, type Vec } from './kernel/fixed';
 import { applyStatus, clearStatus, drain, hasStatus } from './statuses';
 import type { SimState } from './state';
+import { hitFixtures } from './systems/dungeon';
 
 /**
  * Elements (M3-09): what a school's hit does to a unit that already carries a status (the
@@ -115,6 +116,8 @@ function act(state: SimState, id: EntityId, action: ElementAction, element: Elem
 export function elementHitsWorld(state: SimState, element: string, at: Vec): number {
   if (!isElement(element)) return 0;
   let n = 0;
+  // Breakable walls answer to Stone and Ember hits.
+  if (element === 'stone' || element === 'ember') n += hitFixtures(state, element, at);
   for (const id of query(state.entities, 'fixture', 'pos')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;

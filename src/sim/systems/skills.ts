@@ -191,6 +191,18 @@ export function skillsSystem(state: SimState): void {
         practice(state, who, { on: 'repair', tag: undefined, tier: e.tier, subject: null });
       } else if (e.type === 'eaten' && e.id === who && ITEMS[e.item]?.food?.raw) {
         practice(state, who, { on: 'eatRaw', tag: undefined, tier: 0, subject: null });
+      } else if (e.type === 'delved' && e.who === who) {
+        practice(state, who, { on: 'delveRoom', tag: undefined, tier: 0, subject: e.room });
+      } else if (e.type === 'blockSolved') {
+        const f = getComp(state.entities, e.id, 'fixture');
+        practice(state, who, {
+          on: 'delveBlock',
+          tag: undefined,
+          tier: 0,
+          subject: f ? `${f.kind}@${f.home.x},${f.home.y}` : null,
+        });
+      } else if (e.type === 'dungeonCleared' && e.who === who) {
+        practice(state, who, { on: 'delveClear', tag: undefined, tier: 0, subject: e.dungeon });
       } else if (e.type === 'tabletRead' && e.who === who) {
         const kind = getComp(state.entities, e.id, 'fixture')?.kind ?? null;
         practice(state, who, { on: 'tabletRead', tag: undefined, tier: 0, subject: kind });

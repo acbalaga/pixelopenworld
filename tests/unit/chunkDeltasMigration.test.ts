@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { JsonCodec } from '../../src/save/codec';
-import { migrate } from '../../src/save/migrations';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
 import { getComp } from '../../src/sim/kernel/entities';
 import { px } from '../../src/sim/kernel/fixed';
@@ -19,14 +19,16 @@ describe('schema 20 to 21 migration (chunk deltas)', () => {
     ) as { plain: SavePlain; expectedHash: string; chest: boolean; block: boolean; node: number };
     expect(f.plain.schema).toBe(20);
     const decoded = await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(f.plain)));
-    const now = migrate(decoded);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
-    const s = deserializeState(now.sim);
+    const at21 = migrate(decoded, MIGRATIONS, 21);
+    expect(at21.schema).toBe(21);
+    const s = deserializeState(at21.sim);
     expect(s.deltas).toEqual({});
     // Nothing else changed: with the deltas field removed the old hash comes back.
     delete (s as { deltas?: unknown }).deltas;
     expect(hashState(s)).toBe(f.expectedHash);
     // Streaming adopts the old entities and folds the ones far from the avatar into deltas.
+    const now = migrate(decoded);
+    expect(now.schema).toBe(CURRENT_SCHEMA);
     const full = deserializeState(now.sim);
     const grid = new TileWorld(); // no chunks: every old entity is outside the window
     full.world = grid;
@@ -40,5 +42,24 @@ describe('schema 20 to 21 migration (chunk deltas)', () => {
     expect(kinds.some((k) => k.startsWith('fixture.chest'))).toBe(true);
     expect(kinds.some((k) => k.startsWith('node.'))).toBe(true);
     expect(kinds.some((k) => k.startsWith('fixture.block'))).toBe(true);
+  });
+});
+
+describe('schema 21 to 22 migration (dungeons and bosses)', () => {
+  it('loads the previous fixture, keeps its deltas, and gains an empty boss component', async () => {
+    const f = JSON.parse(
+      readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-21.json'), 'utf8'),
+    ) as { plain: SavePlain; expectedHash: string; deltaChunks: number };
+    expect(f.plain.schema).toBe(21);
+    expect(f.deltaChunks).toBeGreaterThan(0);
+    const decoded = await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(f.plain)));
+    const now = migrate(decoded);
+    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const s = deserializeState(now.sim);
+    expect(Object.keys(s.deltas)).toHaveLength(f.deltaChunks);
+    expect(s.entities.comps.boss.every((b) => b === null)).toBe(true);
+    // Nothing else changed: without the new component the old hash comes back.
+    delete (s.entities.comps as { boss?: unknown }).boss;
+    expect(hashState(s)).toBe(f.expectedHash);
   });
 });

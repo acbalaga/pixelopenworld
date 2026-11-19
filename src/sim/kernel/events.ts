@@ -143,6 +143,23 @@ export type SimEvent =
   | { type: 'plateChanged'; id: number; pressed: boolean }
   | { type: 'blockPushed'; id: number }
   | { type: 'blockReset'; id: number }
+  /** A block pressed a plate for the first time (M4-08). `id` is the plate. */
+  | { type: 'blockSolved'; id: number; block: number }
+  | { type: 'switchChanged'; id: number; on: boolean }
+  | { type: 'wallBroken'; id: number; kind: string }
+  | { type: 'torchLit'; id: number }
+  | { type: 'arenaStarted'; id: number; wave: number }
+  | { type: 'arenaCleared'; id: number }
+  | { type: 'shortcutWrongSide'; id: number; who: number }
+  /** The avatar fell through a drop. */
+  | { type: 'fell'; who: number; amount: number }
+  /** The avatar entered a dungeon room (any entry; XP pays the first). */
+  | { type: 'delved'; who: number; dungeon: string; room: string }
+  /** The dungeon's boss fell or was passed another way. */
+  | { type: 'dungeonCleared'; who: number; dungeon: string }
+  | { type: 'bossPhase'; id: number; boss: string; phase: number }
+  | { type: 'bossObjective'; id: number; boss: string; step: string }
+  | { type: 'bossResolved'; id: number; boss: string; how: 'fight' | 'objective' }
   | { type: 'chestOpened'; id: number; who: number }
   | { type: 'tabletRead'; id: number; who: number }
   | { type: 'storageOpened'; id: number; who: number }

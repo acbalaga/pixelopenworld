@@ -585,6 +585,19 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     schema: 21,
     sim: serializeState(deserializeState(old.sim)),
   }),
+  /**
+   * 21 to 22 (M4-08): the entity store gains a `boss` component (none placed: bosses are spawned
+   * with their dungeon). Fixtures gain an optional arena record and spawners an optional
+   * `clearedDay`, both absent until used, so nothing else changes.
+   */
+  21: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { pos: unknown[]; boss?: unknown[] } };
+    };
+    const c = raw.entities.comps;
+    c.boss = c.pos.map(() => null);
+    return { ...old, schema: 22, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

@@ -6,6 +6,7 @@ import { px, SUBPX } from '../kernel/fixed';
 import { int } from '../kernel/rng';
 import type { SimState } from '../state';
 import { frozenAt } from '../world/stream';
+import { dayIndex } from '../time';
 
 /** Places a spawner at a position in whole px. It fills to its cap on the first tick. */
 export function createSpawner(state: SimState, kind: string, xPx: number, yPx: number): EntityId {
@@ -27,7 +28,16 @@ export function spawnerSystem(state: SimState): void {
     const p = getComp(state.entities, id, 'pos');
     const def = sp ? SPAWNERS[sp.kind] : undefined;
     if (!sp || !p || !def || frozenAt(state, p.x, p.y)) continue;
+    const had = sp.members.length;
     sp.members = sp.members.filter((m) => state.entities.alive[m] === true);
+    if (def.daily) {
+      // A fallen creature counts as gone at once, so the day it died on is the day it is marked.
+      sp.members = sp.members.filter((m) => state.entities.comps.fighter[m]?.state !== 'dead');
+      // A daily spawner's crew is gone for the rest of the day it fell on.
+      const today = dayIndex(state.worldTick);
+      if (had > 0 && sp.members.length === 0 && sp.clearedDay === undefined) sp.clearedDay = today;
+      if (sp.clearedDay !== undefined && today <= sp.clearedDay) continue;
+    }
     if (sp.members.length >= def.cap) {
       sp.timer = 0;
       continue;
@@ -46,6 +56,7 @@ export function spawnerSystem(state: SimState): void {
       const c = spawnCreature(state, def.creature, x, y, id);
       sp.members.push(c);
       sp.timer = 0;
+      delete sp.clearedDay;
       emit(state.events, { type: 'spawned', id: c, creature: def.creature });
       break;
     }

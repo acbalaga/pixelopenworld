@@ -25,6 +25,7 @@ import {
   type DeltaKind,
 } from './deltas';
 import { populateMap, type MapObject } from './populate';
+import { dayIndex } from '../time';
 import {
   ACTIVE_RADIUS,
   LOADED_RADIUS,
@@ -120,8 +121,16 @@ function dematerialize(state: SimState, keys: ReadonlySet<string>): void {
         captureDelta(state, e.id, e.type, e.kind, e.tx, e.ty),
       );
       destroy(state.entities, e.id);
-    } else if (e.type === 'spawner') removeSpawner(state, e.id);
-    else destroy(state.entities, e.id);
+    } else if (e.type === 'spawner') {
+      // A daily spawner that was cleared today stays cleared while its chunk is away.
+      const sp = getComp(state.entities, e.id, 'spawner');
+      const cleared =
+        sp?.clearedDay !== undefined && dayIndex(state.worldTick) <= sp.clearedDay
+          ? { spawner: { kind: sp.kind, timer: 0, members: [], clearedDay: sp.clearedDay } }
+          : null;
+      storeDelta(state.deltas, key, objectKey(e.kind, e.tx, e.ty), cleared);
+      removeSpawner(state, e.id);
+    } else destroy(state.entities, e.id);
   }
   for (const id of tempFixtures(state)) {
     const p = getComp(state.entities, id, 'pos');
