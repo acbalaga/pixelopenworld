@@ -91,7 +91,8 @@ test('pilgrim: two lines that read as chat messages', async ({ page }) => {
   await talk.getByRole('button', { name: 'Continue' }).click();
   await expect(talk.locator('.pow-line-npc')).toHaveCount(2);
   await shot(page, 'talk-chat');
-  await talk.getByRole('button', { name: 'Done' }).click();
+  // After the two lines the Pilgrim offers choices. Saying goodbye ends it.
+  await talk.getByRole('button', { name: 'Goodbye.' }).click();
   await expect(talk).toHaveCount(0);
 });
 

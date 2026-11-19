@@ -275,6 +275,27 @@ function boardProp(): SpriteDef {
   return toSprite('prop.board', 'core', ORIGIN_FEET, { base: outlined(boardImg()) });
 }
 
+/** The inn mirror (M4-19): a tall oval of glass in a wooden frame, on two small feet. */
+function mirrorProp(): SpriteDef {
+  const im = new Img(16, 16);
+  // Frame, then glass with a diagonal glint.
+  for (let y = 1; y <= 13; y++) {
+    const half = y <= 2 || y >= 12 ? 3 : y <= 4 || y >= 10 ? 4 : 5;
+    im.rect(8 - half, y, 7 + half, y, WOOD[1]);
+    im.rect(9 - half, y, 6 + half, y, WOOD[2]);
+  }
+  for (let y = 2; y <= 12; y++) {
+    const half = y <= 3 || y >= 11 ? 2 : y <= 4 || y >= 10 ? 3 : 4;
+    im.rect(8 - half, y, 7 + half, y, 15);
+  }
+  im.rect(5, 4, 5, 5, 3);
+  im.rect(6, 6, 6, 6, 3);
+  im.rect(10, 9, 10, 10, 14);
+  im.rect(5, 14, 6, 15, WOOD[0]);
+  im.rect(9, 14, 10, 15, WOOD[0]);
+  return toSprite('prop.mirror', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** A satchel a patrol dropped: a leather bag with a flap and a buckle. Closed, ajar, and open. */
 function satchel(): SpriteDef {
   const body = (im: Img): void => {
@@ -782,6 +803,7 @@ export function worldSprites(): SpriteDef[] {
     signpost(),
     board(),
     boardProp(),
+    mirrorProp(),
     satchel(),
     waystone(),
     lockedDoor(),

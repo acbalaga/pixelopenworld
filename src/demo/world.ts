@@ -134,6 +134,9 @@ import { createAvatar } from '../sim/avatar';
 import { SKILLS } from '../content/skills';
 import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
+import { ORIGINS, wakesFor } from '../content/world/origins';
+import { ORIGIN_STRINGS } from '../content/strings/origins';
+import { MirrorPanel } from '../ui/dom/mirror';
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
 import { ITEM_STRINGS } from '../content/strings/items';
@@ -301,13 +304,45 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   applyPaletteVars(document.documentElement);
   applyPanelImages(document.documentElement, panelBase, panelPressed);
 
+  /** Paints the setup preview (24 x 32) facing `dir` from the preview doll's idle frame. */
+  const paintPreview = (canvas: HTMLCanvasElement, dir: 'down' | 'right' | 'up' | 'left'): void => {
+    const a = atlas.anim('char.setup', `idle_${dir}`);
+    const h = atlas.animFrame(a, 0);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    // The left view is the right one mirrored.
+    if (atlas.animFlip(a)) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(
+      atlas.image(h),
+      atlas.srcX(h),
+      atlas.srcY(h),
+      atlas.width(h),
+      atlas.height(h),
+      0,
+      0,
+      atlas.width(h),
+      atlas.height(h),
+    );
+    ctx.restore();
+  };
+
   // The front end: title, then setup for a new character or a short connecting beat for a saved
   // one. Developer parameters (`?at=`, `?foes=`, `?nosave=`, `?fly=`, `?skip=1`) go straight in.
   const direct = fly || ['at', 'foes', 'nosave', 'skip'].some((k) => params.has(k));
   let entry: Extract<FrontEndResult, { mode: 'new' }> | null = null;
+  let previewDolls: ReturnType<typeof dolls.create> | null = null;
+  /** The preview doll, made on first use (setup makes it; a loaded game makes it for the mirror). */
+  const previewDolls0 = (): NonNullable<typeof previewDolls> =>
+    (previewDolls ??= dolls.create('char.setup', randomDoll(rand)));
   if (!direct) {
     const savedAvatar = restored ? state0Avatar(restored) : null;
-    const previewDolls = dolls.create('char.setup', randomDoll(rand));
+    previewDolls = dolls.create('char.setup', randomDoll(rand));
     const result = await runFrontEnd({
       root,
       updated,
@@ -346,24 +381,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               trust: loaded.plain.trust,
             }
           : null,
-      drawPreview: (canvas, look) => {
-        previewDolls.draw(dollWithGear(look, startGear0));
-        const h = atlas.animFrame(atlas.anim('char.setup', 'idle_down'), 0);
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.imageSmoothingEnabled = false;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(
-          atlas.image(h),
-          atlas.srcX(h),
-          atlas.srcY(h),
-          atlas.width(h),
-          atlas.height(h),
-          0,
-          0,
-          atlas.width(h),
-          atlas.height(h),
-        );
+      drawPreview: (canvas, look, dir = 'down') => {
+        previewDolls0().draw(dollWithGear(look, startGear0));
+        paintPreview(canvas, dir);
       },
       rand,
     });
@@ -441,6 +461,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const router = new MessageRouter();
   const notices = new Notices(root, router);
   const messageView = new MessageView(root, router, settings);
+  // The first line on waking is the origin's, in the notice lane (M4-19). It describes the moment.
+  if (entry) {
+    const first = ORIGIN_STRINGS[ORIGINS[entry.origin]?.firstLineKey ?? ''];
+    if (first) router.post({ lane: 'notice', text: first, key: 'origin.first' });
+  }
   // The hint on show, so it is posted once and retracted when the sim drops it.
   let shownHint: string | null = null;
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
@@ -458,10 +483,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     guard: () => shieldWorn,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
-    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen,
+    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
+  let mirrorOpen = false;
   let talkOpen = false;
 
   // The avatar lives in the sim. Feet position is the bottom center of its 10 x 8 box.
@@ -481,7 +507,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   state.worldTick = worldTickAt(clock.trustedNow(), worldEpoch);
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
   // developer `?at=` overrides that.
-  const wake = !restored && entry && !at ? chooseWake(state) : null;
+  const wake = !restored && entry && !at ? chooseWake(state, wakesFor(entry.origin)) : null;
   if (wake) {
     spawnTile.x = wake.x;
     spawnTile.y = wake.y;
@@ -489,7 +515,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const feet = { x: spawnTile.x * TILE_PX + 8, y: spawnTile.y * TILE_PX + 14 };
   const who = restored
     ? (findAvatar(restored) as number)
-    : createAvatar(state, px(feet.x), px(feet.y), entry?.handle);
+    : createAvatar(state, px(feet.x), px(feet.y), entry?.handle, entry?.origin);
   if (wake) {
     const a = state.entities.comps.avatar[who];
     if (a) a.facing = wake.facing as typeof a.facing;
@@ -548,6 +574,26 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   const lastDrawn = new Map<number, { x: number; y: number }>();
 
+  // The inn mirror (M4-19): the setup editor again, minus the origin. Free.
+  const mirror = new MirrorPanel(root, {
+    current: () => baseDoll,
+    drawPreview: (canvas, look, dir) => {
+      const inv = state.entities.comps.inventory[who];
+      previewDolls0().draw(dollWithGear(look, inv ? inv.equipment : startGear));
+      paintPreview(canvas, dir);
+    },
+    rand,
+    apply: (look) => {
+      baseDoll = look;
+      const inv = state.entities.comps.inventory[who];
+      player.draw(dollWithGear(baseDoll, inv ? inv.equipment : startGear));
+      requestSave('manual');
+    },
+    onOpenChange: (open) => {
+      mirrorOpen = open;
+      if (open) input.sampler.keyboard.reset();
+    },
+  });
   // Item icons, looked up once.
   const iconCache = new Map<string, number>();
   const iconOf = (id: string): number => {
@@ -1287,6 +1333,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             openedAt.set(e.id, performance.now());
             notices.toast(W_STR.gate);
           } else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);
+          else if (e.type === 'mirrorOpened') mirror.open();
           else if (e.type === 'tabletRead') {
             input.sampler.keyboard.reset();
             notices.openTablet();
@@ -1497,7 +1544,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const panelStep = !!stepNow && (stepNow.step === 'trace' || stepNow.step === 'hold');
       router.update(
         now,
-        menuOpen || talkOpen || notices.tabletOpen || messageView.open || panelStep,
+        menuOpen || talkOpen || mirrorOpen || notices.tabletOpen || messageView.open || panelStep,
       );
       messageView.setBusy(panelStep);
       messageView.layout(lanes, cssBox.height * (1 - UI_BALANCE.messages.sheetFraction));

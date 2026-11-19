@@ -1,5 +1,8 @@
 /** Paper doll parts. Data only. Layers are authored once and recolored through ramps. */
 import type { AnimDef } from '../sprites/types';
+import { ACCESSORIES, BROWS, EYES, FACIAL, HAIR_STAMPS, MARKS, MOUTHS, type Stamp } from './stamps';
+
+export { ACCESSORIES, BROWS, EYES, FACIAL, HAIR_STAMPS, MARKS, MOUTHS, type Stamp };
 
 /** Four palette indices, dark to light. */
 export type Ramp4 = readonly [number, number, number, number];
@@ -12,6 +15,10 @@ export const SKIN_TONES = {
   pale: [36, 37, 38, 39],
   light: [4, 5, 6, 7],
   deep: [32, 33, 34, 35],
+  // M4-19: three more tones, a warmer light one and two darker than `deep`.
+  peach: [36, 36, 37, 38],
+  bronze: [32, 32, 33, 34],
+  umber: [0, 0, 32, 33],
 } as const satisfies Record<string, Ramp4>;
 export type SkinTone = keyof typeof SKIN_TONES;
 
@@ -25,6 +32,9 @@ export const HAIR_COLORS = {
   violet: [24, 25, 26, 27],
   rose: [40, 41, 42, 43],
   green: [8, 9, 10, 11],
+  // M4-19: two more, white and ginger.
+  white: [2, 3, 3, 3],
+  ginger: [21, 22, 23, 23],
 } as const satisfies Record<string, Ramp4>;
 export type HairColor = keyof typeof HAIR_COLORS;
 
@@ -40,8 +50,44 @@ export const CLOTH_COLORS = {
 } as const satisfies Record<string, Ramp4>;
 export type ClothColor = keyof typeof CLOTH_COLORS;
 
-export const HAIR_STYLES = ['none', 'short', 'long', 'ponytail', 'curly', 'bun'] as const;
+export const HAIR_STYLES = [
+  'none',
+  'short',
+  'long',
+  'ponytail',
+  'curly',
+  'bun',
+  // M4-19: six more. These are drawn from stamps, so they add nothing to the atlas.
+  'mohawk',
+  'pigtails',
+  'braid',
+  'afro',
+  'shaggy',
+  'topknot',
+] as const;
 export type HairStyle = (typeof HAIR_STYLES)[number];
+/** The hairstyles that have a baked layer. The others are stamps. */
+export const BAKED_HAIR: readonly HairStyle[] = ['short', 'long', 'ponytail', 'curly', 'bun'];
+
+/** Height changes the legs by one pixel either way. The body box in the sim does not change. */
+export const HEIGHTS = ['short', 'mid', 'tall'] as const;
+export type Height = (typeof HEIGHTS)[number];
+export const FACIALS = ['none', 'stubble', 'short', 'full'] as const;
+export type Facial = (typeof FACIALS)[number];
+export const ACCESSORY_IDS = [
+  'none',
+  'headband',
+  'scarf',
+  'earring',
+  'eyepatch',
+  'flower',
+] as const;
+export type Accessory = (typeof ACCESSORY_IDS)[number];
+/** Counts of the face parts, by index. Index 0 of each is the neutral entry old saves get. */
+export const EYE_COUNT = EYES.length;
+export const BROW_COUNT = BROWS.length;
+export const MOUTH_COUNT = MOUTHS.length;
+export const MARK_COUNT = MARKS.length;
 export const TOP_STYLES = ['tunic', 'vest', 'robe'] as const;
 export type TopStyle = (typeof TOP_STYLES)[number];
 export const BOTTOM_STYLES = ['trousers', 'skirt'] as const;
@@ -76,6 +122,53 @@ export interface DollSpec {
   bottomColor: ClothColor;
   mainHand: MainHand;
   offHand: OffHand;
+  // ---- M4-19. Every one is optional, and absent means the neutral entry, so a look saved before
+  // this existed draws exactly as it did. `normalizeDoll` fills them in. ----
+  height?: Height;
+  /** Eye shape, brow shape, mouth and mark, as an index into the stamp tables. 0 is the default. */
+  eyes?: number;
+  brows?: number;
+  mouth?: number;
+  mark?: number;
+  markColor?: ClothColor;
+  /** A second hair color for tips or streaks. */
+  hairStyle2Color?: HairColor;
+  facial?: Facial;
+  accessory?: Accessory;
+  /** The two clothing colors chosen at setup, offered as the default dye on crafted gear. */
+  ownColors?: readonly [ClothColor, ClothColor];
+}
+
+/** A look with every M4-19 field present. Absent fields take their neutral entry. */
+export function normalizeDoll(
+  spec: DollSpec,
+): DollSpec &
+  Required<
+    Pick<
+      DollSpec,
+      | 'height'
+      | 'eyes'
+      | 'brows'
+      | 'mouth'
+      | 'mark'
+      | 'markColor'
+      | 'facial'
+      | 'accessory'
+      | 'ownColors'
+    >
+  > {
+  return {
+    ...spec,
+    height: spec.height ?? 'mid',
+    eyes: spec.eyes ?? 0,
+    brows: spec.brows ?? 0,
+    mouth: spec.mouth ?? 0,
+    mark: spec.mark ?? 0,
+    markColor: spec.markColor ?? 'brown',
+    facial: spec.facial ?? 'none',
+    accessory: spec.accessory ?? 'none',
+    ownColors: spec.ownColors ?? [spec.topColor, spec.bottomColor],
+  };
 }
 
 /** A layer to draw, with the ramp its recolorable slots map to. Drawn first to last. */
@@ -83,15 +176,23 @@ export interface DollLayerRef {
   id: string;
   ramp: Ramp4;
   /** Slots 4 to 7 are recolored. Skin layers keep their own light/shade logic in the art. */
-  kind: 'body' | 'bottom' | 'top' | 'hair' | 'main' | 'off';
+  kind: 'body' | 'bottom' | 'top' | 'hair' | 'main' | 'off' | 'stamp';
+  /** A pattern drawn on the head at compose time instead of a baked layer (M4-19). */
+  stamp?: Stamp;
+  /** Hair only: the ramp the lit and highlight steps use, for tips and streaks. */
+  tip?: Ramp4;
 }
 
 const ITEM_RAMP: Ramp4 = [28, 29, 30, 31];
 
 /** The ordered layers for a spec. */
-export function layersFor(spec: DollSpec): DollLayerRef[] {
+export function layersFor(input: DollSpec): DollLayerRef[] {
+  const spec = normalizeDoll(input);
+  const skin = SKIN_TONES[spec.skin];
+  const hairRamp = HAIR_COLORS[spec.hairColor];
+  const tip = spec.hairStyle2Color ? HAIR_COLORS[spec.hairStyle2Color] : undefined;
   const out: DollLayerRef[] = [
-    { id: `doll.body_${spec.body}`, ramp: SKIN_TONES[spec.skin], kind: 'body' },
+    { id: `doll.body_${spec.body}`, ramp: skin, kind: 'body' },
     {
       id: `doll.bottom_${spec.bottom}_${spec.body}`,
       ramp: CLOTH_COLORS[spec.bottomColor],
@@ -99,8 +200,44 @@ export function layersFor(spec: DollSpec): DollLayerRef[] {
     },
     { id: `doll.top_${spec.top}_${spec.body}`, ramp: CLOTH_COLORS[spec.topColor], kind: 'top' },
   ];
-  if (spec.hair !== 'none')
-    out.push({ id: `doll.hair_${spec.hair}`, ramp: HAIR_COLORS[spec.hairColor], kind: 'hair' });
+  const stamp = (id: string, st: Stamp | undefined, ramp: Ramp4): void => {
+    // The neutral entry of each table is empty and adds no layer.
+    if (st && st.down.length + st.up.length + st.right.length > 0)
+      out.push({ id, ramp, kind: 'stamp', stamp: st });
+  };
+  if (spec.hair !== 'none') {
+    const baked = BAKED_HAIR.includes(spec.hair);
+    if (baked)
+      out.push({
+        id: `doll.hair_${spec.hair}`,
+        ramp: hairRamp,
+        kind: 'hair',
+        ...(tip ? { tip } : {}),
+      });
+    else {
+      const st = HAIR_STAMPS[spec.hair];
+      if (st)
+        out.push({
+          id: `stamp.hair_${spec.hair}`,
+          ramp: hairRamp,
+          kind: 'stamp',
+          stamp: st,
+          ...(tip ? { tip } : {}),
+        });
+    }
+  }
+  // The face, then what is worn over it. Each is a stamp, so none costs atlas space.
+  stamp('stamp.eyes', EYES[spec.eyes], skin);
+  stamp('stamp.mouth', MOUTHS[spec.mouth], skin);
+  stamp('stamp.facial', FACIAL[FACIALS.indexOf(spec.facial)], hairRamp);
+  stamp('stamp.brows', BROWS[spec.brows], hairRamp);
+  stamp('stamp.mark', MARKS[spec.mark], CLOTH_COLORS[spec.markColor]);
+  if (spec.accessory !== 'none')
+    stamp(
+      `stamp.acc_${spec.accessory}`,
+      ACCESSORIES[spec.accessory],
+      CLOTH_COLORS[spec.ownColors[1]],
+    );
   // Items use fixed colors; the ramp is unused but keeps the layer shape uniform.
   if (spec.offHand !== 'none')
     out.push({ id: `doll.off_${spec.offHand}_${spec.body}`, ramp: ITEM_RAMP, kind: 'off' });
@@ -137,6 +274,38 @@ export function randomDoll(rand: () => number): DollSpec {
     // A new look starts with something a fresh character could hold. The rest come from gear.
     mainHand: pickOf(rand, START_HANDS),
     offHand: pickOf(rand, OFF_HANDS),
+    ...randomFace(rand),
+  };
+}
+
+/** The M4-19 look fields, drawn after the rest so a seed's older choices keep their order. */
+export function randomFace(
+  rand: () => number,
+): Pick<
+  DollSpec,
+  | 'height'
+  | 'eyes'
+  | 'brows'
+  | 'mouth'
+  | 'mark'
+  | 'markColor'
+  | 'facial'
+  | 'accessory'
+  | 'hairStyle2Color'
+> {
+  const colors = Object.keys(HAIR_COLORS) as HairColor[];
+  const cloth = Object.keys(CLOTH_COLORS) as ClothColor[];
+  return {
+    height: pickOf(rand, HEIGHTS),
+    eyes: Math.floor(rand() * EYE_COUNT),
+    brows: Math.floor(rand() * BROW_COUNT),
+    mouth: Math.floor(rand() * MOUTH_COUNT),
+    // Most looks have no mark, beard or accessory: a quarter do.
+    mark: rand() < 0.25 ? 1 + Math.floor(rand() * (MARK_COUNT - 1)) : 0,
+    markColor: pickOf(rand, cloth),
+    facial: rand() < 0.25 ? pickOf(rand, FACIALS.slice(1)) : 'none',
+    accessory: rand() < 0.3 ? pickOf(rand, ACCESSORY_IDS.slice(1)) : 'none',
+    ...(rand() < 0.2 ? { hairStyle2Color: pickOf(rand, colors) } : {}),
   };
 }
 

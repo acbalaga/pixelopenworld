@@ -34,6 +34,11 @@ export interface Avatar {
   winded: boolean;
   /** The name the player chose at setup. Shown to other players, so it is validated (shared/handle). */
   handle: string;
+  /**
+   * The origin chosen at creation (M4-19). Flavor only: it narrowed where the avatar woke and set
+   * its first line. Nothing else reads it, and the integrity checks do not trust it.
+   */
+  origin: string;
 }
 
 /** Health, Stamina and Focus. Health in points, Stamina and Focus in tenths. */

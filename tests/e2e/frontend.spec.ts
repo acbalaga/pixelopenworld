@@ -36,7 +36,7 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
     .isVisible()
     .catch(() => undefined);
   // Choose a look, then randomize and choose again so the look is known.
-  await page.getByRole('button', { name: 'Randomize' }).click();
+  await page.getByRole('button', { name: 'Randomize', exact: true }).click();
   await page.getByRole('button', { name: 'Slim', exact: true }).click();
   await page.getByRole('button', { name: 'Deep', exact: true }).click();
   await page.getByRole('button', { name: 'Curly', exact: true }).click();

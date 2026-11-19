@@ -61,7 +61,8 @@ test('slice: a locked door says so', async ({ page }) => {
   await page.waitForTimeout(250);
   await page.keyboard.up('KeyD');
   await page.keyboard.press('KeyE');
-  await expect(page.locator('.pow-notice')).toContainText('Locked');
+  // The first hint may share the lane, so look for the notice that says it.
+  await expect(page.locator('.pow-notice', { hasText: 'Locked' })).toBeVisible();
   expect(problems.pageErrors).toEqual([]);
 });
 

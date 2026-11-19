@@ -175,6 +175,8 @@ export function asSchema5(s: SimState): SimState {
       return !t || t.source === 'taught';
     });
   }
+  // Schema 20: the avatar's origin.
+  for (const a of s.entities.comps.avatar) if (a) delete (a as { origin?: unknown }).origin;
   // Schema 18: the `start` stream and the ledger's start kit.
   delete (s.rng as { start?: unknown }).start;
   if (s.ledger) delete (s.ledger as { startKit?: unknown }).startKit;

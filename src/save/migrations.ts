@@ -16,6 +16,8 @@ import { solutionMax } from '../sim/systems/requests';
 import { newDeeds } from '../sim/systems/deeds';
 import { newNpc } from '../sim/trade';
 import { deserializeState, serializeState } from '../sim/state';
+import { DEFAULT_ORIGIN } from '../content/world/origins';
+import { normalizeDoll } from '../content/dolls/parts';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
 
 /**
@@ -551,6 +553,24 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       schema: 19,
       sim: serializeState(deserializeState(JSON.stringify(raw))),
       ...(old.summary ? { summary: { ...old.summary, flags } } : {}),
+    };
+  },
+  /**
+   * 19 to 20 (M4-19): the look gains height, eyes, brows, mouth, mark, facial hair, accessory and
+   * the two own colors, each at its neutral entry so the character looks exactly as before. The
+   * avatar gains an origin, `origin.unremembered`: it only ever narrowed where a new character
+   * woke, and no old character chose one.
+   */
+  19: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { avatar: ({ origin?: string } | null)[] } };
+    };
+    for (const a of raw.entities.comps.avatar) if (a) a.origin = DEFAULT_ORIGIN;
+    return {
+      ...old,
+      schema: 20,
+      look: normalizeDoll(old.look),
+      sim: serializeState(deserializeState(JSON.stringify(raw))),
     };
   },
 };

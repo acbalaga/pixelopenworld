@@ -30,12 +30,11 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
   await page.keyboard.up('KeyW');
   await page.keyboard.press('KeyE');
   await page.getByRole('button', { name: 'Show me what you have.' }).click();
-  // Sell the iron sword, then buy bread: an item and coin change.
+  // Sell the starting bread: an item and coin change. (A new character holds only a wooden dagger
+  // worn and one bread, and Brin pays less for bread than he asks, so it cannot be bought back.)
   await page.getByRole('tab', { name: 'Sell' }).click();
-  await page.getByRole('button', { name: /^Sell Iron Sword/ }).click();
-  await page.getByRole('tab', { name: 'Buy' }).click();
-  await page.getByRole('button', { name: /^Buy Bread/ }).click();
-  await expect(page.locator('.pow-shop-msg')).toContainText('Bought');
+  await page.getByRole('button', { name: /^Sell Bread/ }).click();
+  await expect(page.locator('.pow-shop-msg')).toContainText('Sold');
   await page.keyboard.press('Escape');
   // Write it down before leaving the page, so the next page starts from it.
   const seq0 = Number((await attr(page, 'data-saved-seq')) ?? '0');
@@ -79,12 +78,13 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
   await ready(page);
   expect(await attr(page, 'data-loaded-seq')).toBe(savedSeq);
   expect(await attr(page, 'data-loaded-hash')).toBe(savedHash);
-  // What was done is still there: the sword is gone, the bread was bought, a skill has ranked up.
+  // What was done is still there: the bread is gone, a skill has ranked up.
   await page.keyboard.press('KeyB');
-  await expect(page.getByRole('button', { name: /^Iron Sword/ })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /^Bread, 3/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Bread/ })).toHaveCount(0);
   await page.locator('[data-tab="skills"]').click();
-  await expect(page.locator('.pow-menu-body')).not.toContainText('Nothing here yet');
+  await expect(page.locator('.pow-menu-body')).not.toContainText(
+    'Skills awaken the first time you use them.',
+  );
   await shot(page, 'save-after-reload');
   expect(problems.pageErrors).toEqual([]);
   expect(problems.csp).toEqual([]);

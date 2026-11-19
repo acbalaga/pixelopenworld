@@ -1,4 +1,5 @@
 import { asSchema5 } from '../support/saves';
+import { normalizeDoll } from '../../src/content/dolls/parts';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -218,7 +219,8 @@ describe('migrations', () => {
     const now = migrate(decoded);
     expect(now.schema).toBe(CURRENT_SCHEMA);
     expect(now.saveId).toBe(fixture.plain.saveId);
-    expect(now.look).toEqual(fixture.plain.look);
+    // The look is kept as it was, with the newer parts at their neutral entry.
+    expect(now.look).toEqual(normalizeDoll(fixture.plain.look));
     const s = deserializeState(now.sim);
     const me = findAvatar(s)!;
     // The upgrade adds a handle, and marks every hint as seen: an old save is not a new player.
@@ -260,7 +262,7 @@ describe('migrations', () => {
     delete (s as { ledger?: unknown }).ledger;
     expect(hashState(asSchema5(s))).toBe(f2.expectedHash);
     expect(now.playSeconds).toBe(f2.plain.playSeconds);
-    expect(now.look).toEqual(f2.plain.look);
+    expect(now.look).toEqual(normalizeDoll(f2.plain.look));
   });
 
   it('the fixture also loads through the manager, from storage', async () => {

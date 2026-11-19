@@ -18,9 +18,16 @@ import { bedNear, sleep } from './systems/fixtures';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, newStorage, recomputeGear } from './items';
 import { madeItems } from './ledger';
+import { DEFAULT_ORIGIN } from '../content/world/origins';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
-export function createAvatar(state: SimState, x: number, y: number, handle = 'Traveler'): EntityId {
+export function createAvatar(
+  state: SimState,
+  x: number,
+  y: number,
+  handle = 'Traveler',
+  origin = DEFAULT_ORIGIN,
+): EntityId {
   const id = spawn(state.entities);
   setComp(state.entities, id, 'pos', { x, y });
   setComp(state.entities, id, 'vel', { x: 0, y: 0 });
@@ -39,6 +46,7 @@ export function createAvatar(state: SimState, x: number, y: number, handle = 'Tr
     respawn: { x, y },
     winded: false,
     handle,
+    origin,
   });
   setComp(state.entities, id, 'pools', newPools(state.tick));
   const fighter = newFighter(0, [null]);
