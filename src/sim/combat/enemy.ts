@@ -21,7 +21,12 @@ export function spawnCreature(
   const id = spawn(state.entities);
   setComp(state.entities, id, 'pos', { x: px(xPx), y: px(yPx) });
   setComp(state.entities, id, 'vel', { x: 0, y: 0 });
-  setComp(state.entities, id, 'body', { w: px(def.bodyW), h: px(def.bodyH), solid: true });
+  setComp(state.entities, id, 'body', {
+    w: px(def.bodyW),
+    h: px(def.bodyH),
+    solid: true,
+    ...(def.archetype === 'flyer' ? { pass: true } : {}),
+  });
   setComp(state.entities, id, 'pools', {
     hp: def.hp,
     hpMax: def.hp,

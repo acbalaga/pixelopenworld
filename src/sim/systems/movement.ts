@@ -30,6 +30,9 @@ export function facingFor(dir: Direction, current: Direction): Direction {
   return current === horizontal || current === vertical ? current : horizontal;
 }
 
+/** A grid with nothing in it, for bodies that pass over or under the tiles. */
+const NO_TILES = { solidAt: (): number => 0 };
+
 /** Solid bodies other than `self`, as boxes in sub-pixel units. */
 function solidBoxes(state: SimState, self: number): Box[] {
   const out: Box[] = [];
@@ -57,7 +60,8 @@ export function nudge(
   const b = getComp(state.entities, id, 'body');
   if (!p || !b || (dx === 0 && dy === 0)) return { x: 0, y: 0 };
   const from: Box = { x: p.x - (b.w >> 1), y: p.y - b.h, w: b.w, h: b.h };
-  const grid = state.world;
+  // Bodies that pass (flyers, a burrower underground) ignore tiles but still push on bodies.
+  const grid = b.pass ? NO_TILES : state.world;
   const to = grid
     ? moveBoxSolid(grid, from, dx, dy, solidBoxes(state, id))
     : { ...from, x: from.x + dx, y: from.y + dy };

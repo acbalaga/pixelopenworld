@@ -59,6 +59,12 @@ export function validateCreatures(
       errors.push(`${label}: needs at least one attack`);
     if (c.archetype === 'dummy' && c.attacks.length > 0)
       errors.push(`${label}: a dummy does not attack`);
+    if (c.archetype === 'guard' && !c.tether) errors.push(`${label}: a guard needs a tether`);
+    if (c.tether !== undefined && c.archetype !== 'guard')
+      errors.push(`${label}: only a guard has a tether`);
+    if (c.archetype === 'guard' && c.tether !== undefined && c.tether > c.leash)
+      errors.push(`${label}: tether ${c.tether} is longer than leash ${c.leash}`);
+    if (c.archetype === 'swarm' && !c.pack) errors.push(`${label}: a swarm needs a pack`);
     if (c.archetype === 'shooter' && !c.keepRange)
       errors.push(`${label}: a shooter needs keepRange`);
     for (const d of c.drops)

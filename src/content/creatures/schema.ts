@@ -16,7 +16,17 @@ const temperament = z.enum([
 export const creatureSchema = z.object({
   id,
   name: z.string().min(1).max(24),
-  archetype: z.enum(['chaser', 'shooter', 'charger', 'dummy']),
+  archetype: z.enum([
+    'chaser',
+    'shooter',
+    'charger',
+    'dummy',
+    'skirmisher',
+    'guard',
+    'swarm',
+    'flyer',
+    'burrower',
+  ]),
   tier: z.number().int().min(1).max(8),
   hp: z.number().int().positive(),
   defense: pos,
@@ -32,6 +42,7 @@ export const creatureSchema = z.object({
     .object({ radius: z.number().int().positive(), warnTicks: z.number().int().positive() })
     .optional(),
   approach: z.number().int().positive().optional(),
+  tether: z.number().int().positive().optional(),
   fleeHpPct: z.number().int().min(1).max(50).optional(),
   keepRange: z.object({ min: pos, max: z.number().int().positive() }).optional(),
   wander: z.boolean(),
