@@ -114,3 +114,31 @@ body.dev-page canvas#game {
   border: 1px solid #888;
   border-radius: 4px;
 }
+.dev-map-canvas {
+  max-width: 100%;
+  border: 1px solid #44405a;
+  background: #14121f;
+  touch-action: none;
+  image-rendering: pixelated;
+}
+.dev-check {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.dev-info {
+  margin: 6px 0;
+  font-size: 13px;
+}
+.dev-link {
+  color: #ffd96a;
+}
+.stamp-char.on {
+  outline: 2px solid #ffd96a;
+}
+.dev-main textarea {
+  width: 100%;
+  font: 12px monospace;
+  background: #14121f;
+  color: #e8e4f0;
+}

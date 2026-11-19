@@ -74,3 +74,75 @@ test('the dev server sends the policy, and the dev reporter sees no violation', 
   expect(problems.console.filter((m) => m.includes('[csp]'))).toEqual([]);
   expect(problems.pageErrors).toEqual([]);
 });
+
+test('/dev/map: pan, toggle layers and overlays, pick a tile, teleport link', async ({ page }) => {
+  const problems = await watchProblems(page);
+  await page.goto('/dev/map');
+  await expect(page.locator('#pow-dev-map-canvas')).toBeVisible();
+  await page.locator('[data-key="region"]').selectOption('sample');
+  await page.waitForTimeout(800);
+  const canvas = page.locator('#pow-dev-map-canvas');
+  const sum = async (): Promise<number> =>
+    canvas.evaluate((c: HTMLCanvasElement) => {
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 0; i < d.length; i += 4)
+        n = (n + d[i]! * 3 + d[i + 1]! * 5 + d[i + 2]!) % 1000003;
+      return n;
+    });
+  const base = await sum();
+  await shot(page, '13-dev-map-sample');
+  // Hiding the ground changes the picture, and so does the collision overlay.
+  await page.locator('[data-key="show-ground"]').uncheck();
+  await page.waitForTimeout(150);
+  expect(await sum()).not.toBe(base);
+  await page.locator('[data-key="show-ground"]').check();
+  await page.locator('[data-key="show-collision"]').check();
+  await page.waitForTimeout(150);
+  expect(await sum()).not.toBe(base);
+  await shot(page, '14-dev-map-collision');
+  // Pan by dragging.
+  const box = (await canvas.boundingBox())!;
+  const before = await sum();
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.5, { steps: 6 });
+  await page.mouse.up();
+  await page.waitForTimeout(150);
+  expect(await sum()).not.toBe(before);
+  // Pick a tile: the info line names it, and the teleport link goes to the game on that tile.
+  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
+  await expect(page.locator('[data-key="info"]')).toContainText(/^Tile -?\d+, -?\d+: /);
+  const tele = page.locator('[data-key="teleport"]');
+  await expect(tele).toBeVisible();
+  expect(await tele.getAttribute('href')).toMatch(/^\/\?region=sample&at=\d+,\d+&nosave=1/);
+  // An interior opens as its own space.
+  await page.locator('[data-key="space"]').selectOption({ index: 1 });
+  await page.waitForTimeout(500);
+  await shot(page, '15-dev-map-interior');
+  expect(problems.pageErrors).toEqual([]);
+});
+
+test('/dev/map stamp editor: paint a tile, export the layers', async ({ page }) => {
+  const problems = await watchProblems(page);
+  await page.goto('/dev/map');
+  await expect(page.locator('#pow-dev-stamp-canvas')).toBeVisible();
+  await page.locator('[data-key="stamp"]').selectOption('sample_house');
+  await page.locator('[data-key="stamp-layer"]').selectOption('object');
+  await page.locator('[data-key="palette"] [data-char="W"]').click();
+  const c = page.locator('#pow-dev-stamp-canvas');
+  await c.scrollIntoViewIfNeeded();
+  const box = (await c.boundingBox())!;
+  // Tile (4, 4) of an 8 by 5 stamp.
+  await page.mouse.click(box.x + (box.width * 4.5) / 8, box.y + (box.height * 4.5) / 5);
+  await page.locator('[data-key="export"]').click();
+  const text = await page.locator('[data-key="export-text"]').inputValue();
+  expect(text).toContain('layers: {');
+  expect(text).toContain("'    W   ',");
+  await shot(page, '16-dev-stamp-editor');
+  // Undo puts it back.
+  await page.locator('[data-key="undo"]').click();
+  await page.locator('[data-key="export"]').click();
+  expect(await page.locator('[data-key="export-text"]').inputValue()).not.toContain("'    W   ',");
+  expect(problems.pageErrors).toEqual([]);
+});

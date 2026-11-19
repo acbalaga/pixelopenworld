@@ -13,6 +13,10 @@ function start(): void {
       void import('./dev/sprites').then((m) => m.startSpritesPage());
       return;
     }
+    if (path === '/dev/map') {
+      void import('./dev/map').then((m) => m.startMapPage());
+      return;
+    }
     if (path === '/dev/audio') {
       void import('./dev/audio').then((m) => m.startAudioPage());
       return;
