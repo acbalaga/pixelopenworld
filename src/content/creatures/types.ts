@@ -1,7 +1,25 @@
 /** Creature data types. Pure types, so the client never pulls in zod (the schema is build-time). */
 
-/** The behavior archetypes built so far. The full set of 12 arrives with later milestones. */
-export type Archetype = 'chaser' | 'shooter' | 'charger' | 'dummy';
+/**
+ * The behavior archetypes built so far. The full set of 12 arrives with later milestones.
+ *
+ * - chaser: runs at its target and strikes.
+ * - skirmisher: strikes, then backs off before coming in again.
+ * - guard: holds ground within its `tether` of home and never follows past it.
+ * - swarm: small and many. One that notices alerts every packmate within its pack radius.
+ * - flyer: crosses water, cliffs and walls.
+ * - burrower: tunnels toward its target unhurtable, rises to strike, sinks again.
+ */
+export type Archetype =
+  | 'chaser'
+  | 'shooter'
+  | 'charger'
+  | 'dummy'
+  | 'skirmisher'
+  | 'guard'
+  | 'swarm'
+  | 'flyer'
+  | 'burrower';
 
 /** One attack a creature can use, with when it will choose it. */
 export interface CreatureAttack {
@@ -72,6 +90,8 @@ export interface CreatureDef {
   territory?: { radius: number; warnTicks: number };
   /** Curious: stops this many px from its target and follows from there. */
   approach?: number;
+  /** Guard: the farthest, px, from home it will follow a target. Beyond that it lets go. */
+  tether?: number;
   /** Runs away below this Health percent, if set. Skittish: fights below it instead. */
   fleeHpPct?: number;
   /** Shooters keep within this band of distance, px. */

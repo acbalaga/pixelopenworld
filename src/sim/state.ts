@@ -15,6 +15,8 @@ export interface Body {
   h: number;
   /** Blocks other bodies. Avatars and creatures check against solid bodies. */
   solid: boolean;
+  /** Passes over or under tiles: flyers, and burrowers while they tunnel. */
+  pass?: boolean;
 }
 
 /** State of the player-controlled avatar. */
@@ -349,7 +351,13 @@ export type AiState =
   /** Territorial: a target is inside the territory and the warning is running. */
   | 'warn'
   /** Curious: following a target at its approach distance. */
-  | 'follow';
+  | 'follow'
+  /** Skirmisher: backing off after a strike. */
+  | 'retreat'
+  /** Burrower: tunnelling toward its target, unhurtable. */
+  | 'burrow'
+  /** Burrower: risen from the ground, striking and open to hits. */
+  | 'surface';
 
 /** Creature brain. Attacking is the fighter's state machine; this decides when to start. */
 export interface Ai {
@@ -374,6 +382,8 @@ export interface Ai {
    * means false, so saves from before M4-16 load as they are.
    */
   provoked?: boolean;
+  /** Skirmisher: it struck, and backs off once the strike is done. */
+  skirm?: boolean;
 }
 
 /** Keeps `cap` of a creature alive near its position. */

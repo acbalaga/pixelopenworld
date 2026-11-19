@@ -34,16 +34,23 @@ function millbrook(): StampV2 {
   b.rect(10, 19, 14, 2, Terrain.Dirt);
   b.rect(2, 19, 8, 2, Terrain.Dirt);
   // The barn, and three farms with fenced fields.
-  b.building(3, 22, 9, 6, { roof: 'slate', door: 4, label: 'barn' });
-  b.building(18, 1, 7, 5, { roof: 'red', door: 3, label: 'farm one' });
-  b.rect(16, 7, 11, 5, Terrain.Dirt);
+  b.building(3, 22, 9, 6, { roof: 'thatch', door: 4, label: 'barn' });
+  b.building(18, 1, 7, 5, { roof: 'thatch', door: 3, label: 'farm one' });
+  b.field(16, 7, 11, 5);
   b.fence(16, 7, 26, 7);
   b.fence(16, 11, 26, 11);
-  b.building(18, 22, 7, 5, { roof: 'red', door: 3, label: 'farm two' });
-  b.rect(1, 1, 10, 5, Terrain.Dirt);
+  b.building(18, 22, 7, 5, { roof: 'thatch', door: 3, label: 'farm two' });
+  b.field(1, 1, 10, 5);
+  // Hay by the barn.
+  for (const [x, y] of [
+    [1, 24],
+    [1, 26],
+    [12, 27],
+  ] as const)
+    b.object(x, y, 'tile.hay_bale');
   b.fence(1, 1, 10, 1);
   b.fence(1, 5, 10, 5);
-  b.building(13, 22, 4, 4, { roof: 'slate', door: 1, label: 'farm three shed' });
+  b.building(13, 22, 4, 4, { roof: 'thatch', door: 1, label: 'farm three shed' });
   return b.toStamp('millbrook');
 }
 
@@ -52,10 +59,12 @@ function reedmouth(): StampV2 {
   const b = new StampBuilder(24, 18);
   b.rect(0, 9, 24, 9, Terrain.Water);
   b.rect(1, 2, 22, 6, Terrain.Planks);
-  b.building(2, 3, 6, 4, { roof: 'slate', door: 2, label: 'hut one' });
-  b.building(10, 3, 6, 4, { roof: 'red', door: 2, label: 'hut two' });
-  b.building(18, 3, 5, 4, { roof: 'slate', door: 2, label: 'hut three' });
+  b.building(2, 3, 6, 4, { roof: 'thatch', door: 2, label: 'hut one' });
+  b.building(10, 3, 6, 4, { roof: 'thatch', door: 2, label: 'hut two' });
+  b.building(18, 3, 5, 4, { roof: 'thatch', door: 2, label: 'hut three' });
   for (const x of [3, 4, 5, 11, 12, 13]) b.object(x, 8, 'tile.fence_h');
+  // Reeds along the shore.
+  [1, 6, 9, 17, 20, 22].forEach((x, i) => b.object(x, 7, `tile.reeds_${i % 2}`));
   // The jetty runs out into the water.
   b.rect(11, 8, 3, 9, Terrain.Planks);
   b.place('fixture.waystone', 12, 15);
@@ -127,7 +136,7 @@ function leanTo(): StampV2 {
 }
 function shepherdHut(): StampV2 {
   const b = new StampBuilder(14, 8);
-  b.building(1, 1, 5, 3, { roof: 'red', door: 2, label: 'shepherd hut' });
+  b.building(1, 1, 5, 3, { roof: 'thatch', door: 2, label: 'shepherd hut' });
   b.fence(7, 1, 13, 1);
   b.fence(7, 6, 13, 6);
   b.fence(7, 1, 7, 6);

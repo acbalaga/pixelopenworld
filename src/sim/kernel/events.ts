@@ -68,6 +68,9 @@ export type SimEvent =
   /** A creature acted on its temperament in front of `target`. The Bestiary stores the first (M4-05). */
   | { type: 'temperamentSeen'; id: number; target: number; kind: string; temperament: string }
   | { type: 'leashReset'; id: number }
+  /** A burrower went under, or rose to strike. */
+  | { type: 'burrowed'; id: number }
+  | { type: 'surfaced'; id: number }
   | { type: 'phaseChanged'; id: number; phase: number }
   | { type: 'spawned'; id: number; creature: string }
   /** A gathering node was worked. Sent by the gathering system, read by skills. */

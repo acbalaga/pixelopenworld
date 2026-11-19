@@ -7,6 +7,7 @@ import { creatureSprites } from './gen/creatures';
 import { dollLayers } from './gen/dolls';
 import { ITEM_ICONS } from './gen/items';
 import { natureSprites } from './gen/nature';
+import { dawnmeadowSprites } from './gen/dawnmeadow';
 import { worldSprites } from './gen/world';
 import { UI_ICONS } from './ui/icons';
 import { uiPanel } from './ui/panel';
@@ -24,6 +25,7 @@ export const SPRITES: readonly SpriteDef[] = [
   autotileSprite({ id: 'auto.water', source: tileWater, frames: ['flow_0', 'flow_1'], rim: 12 }),
   ...natureSprites(),
   ...worldSprites(),
+  ...dawnmeadowSprites(),
   ...dollLayers(),
   ...creatureSprites(),
   uiPanel,

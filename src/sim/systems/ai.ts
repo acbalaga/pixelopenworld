@@ -17,6 +17,7 @@ import { provenTierOf, temperamentNow, territoryOf } from '../combat/temperament
 import { frozenAt } from '../world/stream';
 import { patternDriven } from './boss';
 import { noticePct } from '../weatherEffects';
+import { ARCHETYPE as AR } from '../../content/balance/archetypes';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -115,6 +116,8 @@ function react(
   target: EntityId,
   homePx: Vec,
 ): void {
+  // A guard lets go of anything that stands beyond its tether, so it never starts that chase.
+  if (def.archetype === 'guard' && beyondTether(state, def, target, homePx)) return;
   const base = temperamentNow(def, state.worldTick, provenTierOf(state, target));
   const t = ai.provoked && base !== 'passive' ? 'hostile' : base;
   switch (t) {
@@ -148,6 +151,99 @@ function react(
     default:
       break;
   }
+  if (def.archetype === 'swarm' && ai.state === 'notice') alertSwarm(state, id, def, target);
+}
+
+/** True if a guard's target stands farther than the tether from the guard's home. */
+function beyondTether(state: SimState, def: CreatureDef, target: EntityId, homePx: Vec): boolean {
+  const at = centerPx(state, target);
+  return !!at && len({ x: at.x - homePx.x, y: at.y - homePx.y }) > (def.tether ?? def.leash);
+}
+
+/** A swarm member noticed: every packmate within the pack radius that is not busy turns on the same target. */
+function alertSwarm(state: SimState, id: EntityId, def: CreatureDef, target: EntityId): void {
+  const me = centerPx(state, id);
+  if (!me || !def.pack) return;
+  for (const other of query(state.entities, 'ai', 'pos')) {
+    if (other === id) continue;
+    const oai = getComp(state.entities, other, 'ai');
+    const odef = oai ? CREATURES[oai.creature] : undefined;
+    const o = centerPx(state, other);
+    if (!oai || !odef || !o || odef.pack?.id !== def.pack.id) continue;
+    if (oai.state !== 'idle' && oai.state !== 'wander') continue;
+    if (getComp(state.entities, other, 'fighter')?.state === 'dead') continue;
+    if (len({ x: o.x - me.x, y: o.y - me.y }) > def.pack.radius) continue;
+    oai.target = target;
+    enter(oai, 'notice');
+    emit(state.events, { type: 'noticed', id: other, target });
+  }
+}
+
+/**
+ * Starts the best attack that reaches and is ready. Returns true if a strike began. A skirmisher
+ * marks that it should back off once the strike is done.
+ */
+function tryAttack(
+  state: SimState,
+  id: EntityId,
+  ai: Ai,
+  def: CreatureDef,
+  tpos: Vec,
+  tdist: number,
+): boolean {
+  const pick = pickAttack(def, ai, tdist);
+  if (pick < 0) return false;
+  const a = def.attacks[pick] as { attack: string; cooldown: number };
+  if (!startAttack(state, id, a.attack, tpos)) return false;
+  ai.cooldowns[pick] = a.cooldown + (ATTACKS[a.attack]?.recover ?? 0);
+  if (def.archetype === 'skirmisher') ai.skirm = true;
+  return true;
+}
+
+/** A burrower goes under: unhurtable and passing under the tiles. */
+function dive(state: SimState, id: EntityId, ai: Ai): void {
+  const body = getComp(state.entities, id, 'body');
+  const f = getComp(state.entities, id, 'fighter');
+  if (body) {
+    body.pass = true;
+    body.solid = false;
+  }
+  if (f) f.invuln = Math.max(f.invuln, 2);
+  enter(ai, 'burrow');
+  emit(state.events, { type: 'burrowed', id });
+}
+
+/** Puts a burrower's body back on the ground: solid, tiles count again, open to hits. */
+function surfaceBody(state: SimState, id: EntityId): void {
+  const body = getComp(state.entities, id, 'body');
+  const f = getComp(state.entities, id, 'fighter');
+  if (body) {
+    delete body.pass;
+    body.solid = true;
+  }
+  if (f) f.invuln = 0;
+}
+
+/** True if the whole body stands on open ground, so a burrower can rise there without being pushed. */
+function openGround(state: SimState, id: EntityId): boolean {
+  const p = getComp(state.entities, id, 'pos');
+  const body = getComp(state.entities, id, 'body');
+  if (!p || !body || !state.world) return true;
+  const half = body.w / 2;
+  for (const dx of [-half, 0, half])
+    for (const dy of [-1, -body.h + 1]) {
+      const tx = Math.floor((p.x + dx) / SUBPX / 16);
+      const ty = Math.floor((p.y + dy) / SUBPX / 16);
+      if (state.world.solidAt(tx, ty) !== 0) return false;
+    }
+  return true;
+}
+
+/** A burrower rises to strike. */
+function rise(state: SimState, id: EntityId, ai: Ai): void {
+  surfaceBody(state, id);
+  enter(ai, 'surface');
+  emit(state.events, { type: 'surfaced', id });
 }
 
 /** The attack to use at `dist`: the shortest-ranged one that reaches and is ready. */
@@ -216,8 +312,15 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
   }
   for (let i = 0; i < ai.cooldowns.length; i++)
     if ((ai.cooldowns[i] ?? 0) > 0) (ai.cooldowns[i] as number)--;
+  // A burrower under ground cannot be hurt, whatever else is going on.
+  if (ai.state === 'burrow') f.invuln = Math.max(f.invuln, 2);
   if (f.hitstop > 0 || f.state !== 'idle') return;
   ai.t++;
+  // A skirmisher whose strike is done backs off.
+  if (ai.skirm && ai.state === 'approach') {
+    ai.skirm = false;
+    enter(ai, 'retreat');
+  }
 
   // Phases only add: a threshold crossed once stays crossed.
   const ph = def.phases ?? [];
@@ -234,6 +337,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
 
   const toHome = len({ x: homePx.x - me.x, y: homePx.y - me.y });
   if (ai.state !== 'leash' && toHome > def.leash) {
+    if (ai.state === 'burrow') surfaceBody(state, id);
     enter(ai, 'leash');
     ai.target = null;
   }
@@ -366,17 +470,22 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
       }
       const d = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
       f.aim = d;
+      // A guard lets go of a target that has drawn it past its tether, and walks home.
+      if (def.archetype === 'guard' && beyondTether(state, def, ai.target as number, homePx)) {
+        ai.target = null;
+        enter(ai, 'leash');
+        break;
+      }
+      // A burrower goes under to close the gap, and rises when it is on top of the target.
+      if (def.archetype === 'burrower' && tdist > AR.burrower.surfaceDist) {
+        dive(state, id, ai);
+        break;
+      }
       const reach = Math.min(...def.attacks.map((a) => a.range));
       // A boss on a scripted pattern attacks when the pattern says (systems/boss.ts), not here.
       if (mayAttack && !patternDriven(state, id)) {
-        const pick = pickAttack(def, ai, tdist);
-        if (pick >= 0) {
-          const a = def.attacks[pick] as { attack: string; cooldown: number };
-          if (startAttack(state, id, a.attack, tpos)) {
-            ai.cooldowns[pick] = a.cooldown + (ATTACKS[a.attack]?.recover ?? 0);
-          }
-          break;
-        }
+        if (tryAttack(state, id, ai, def, tpos as Vec, tdist)) break;
+        if (pickAttack(def, ai, tdist) >= 0) break;
       }
       if (def.archetype === 'shooter') break;
       if (!mayAttack && tdist < RING + 12) {
@@ -390,6 +499,53 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
           speed,
         );
       } else if (tdist > reach * 0.85) walk(state, id, d, speed);
+      break;
+    }
+    case 'retreat': {
+      if (!targetOk) {
+        ai.target = null;
+        enter(ai, 'leash');
+        break;
+      }
+      const away = { x: me.x - (tpos as Vec).x, y: me.y - (tpos as Vec).y };
+      f.aim = { x: -away.x, y: -away.y };
+      walk(state, id, away, Math.round((speed * AR.skirmisher.retreatSpeedPct) / 100));
+      if (ai.t >= AR.skirmisher.retreatTicks) enter(ai, 'approach');
+      break;
+    }
+    case 'burrow': {
+      if (!targetOk) {
+        surfaceBody(state, id);
+        ai.target = null;
+        enter(ai, 'leash');
+        break;
+      }
+      const d = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
+      f.aim = d;
+      if (tdist > AR.burrower.surfaceDist) {
+        walk(state, id, d, Math.round((speed * AR.burrower.tunnelSpeedPct) / 100));
+        ai.t = 0;
+      } else if (ai.t >= AR.burrower.digTicks && openGround(state, id)) rise(state, id, ai);
+      else if (ai.t >= AR.burrower.digTicks) walk(state, id, d, Math.round(speed / 2));
+      break;
+    }
+    case 'surface': {
+      if (!targetOk) {
+        ai.target = null;
+        enter(ai, 'leash');
+        break;
+      }
+      const d = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
+      f.aim = d;
+      // A risen burrower is not held to the six attacker cap: it came up to strike.
+      if (tryAttack(state, id, ai, def, tpos as Vec, tdist)) {
+        ai.skirm = false;
+        // After the strike, sink again once it is done: the exposed clock restarts.
+        ai.t = 0;
+        break;
+      }
+      const reach = Math.max(...def.attacks.map((a) => a.range));
+      if (ai.t >= AR.burrower.exposedTicks || tdist > reach * 2) dive(state, id, ai);
       break;
     }
     case 'leash': {

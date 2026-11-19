@@ -2,7 +2,7 @@
   "version": 1,
   "atlases": {
     "core": {
-      "height": 1405,
+      "height": 1413,
       "image": "atlas-core.png",
       "width": 2048
     },
@@ -33733,7 +33733,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1,
+          "x": 290,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33753,7 +33753,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 10,
+          "x": 299,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33773,7 +33773,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 19,
+          "x": 308,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33793,7 +33793,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 28,
+          "x": 317,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33813,7 +33813,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 37,
+          "x": 326,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33833,7 +33833,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 46,
+          "x": 335,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33853,7 +33853,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 55,
+          "x": 344,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -33873,7 +33873,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 64,
+          "x": 353,
           "y": 1396,
           "w": 8,
           "h": 8
@@ -35223,7 +35223,7 @@
         16
       ]
     },
-    "tile.dirt": {
+    "tile.crop_barley_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -35235,15 +35235,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.fence_h": {
+    "tile.crop_barley_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -35263,7 +35263,7 @@
         16
       ]
     },
-    "tile.fence_post": {
+    "tile.dirt": {
       "anims": {},
       "frames": {
         "base": {
@@ -35275,15 +35275,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.fence_v": {
+    "tile.fence_h": {
       "anims": {},
       "frames": {
         "base": {
@@ -35303,7 +35303,7 @@
         16
       ]
     },
-    "tile.grass_0": {
+    "tile.fence_post": {
       "anims": {},
       "frames": {
         "base": {
@@ -35315,15 +35315,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.grass_1": {
+    "tile.fence_v": {
       "anims": {},
       "frames": {
         "base": {
@@ -35335,15 +35335,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.grass_2": {
+    "tile.grass_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -35363,7 +35363,7 @@
         16
       ]
     },
-    "tile.planks_0": {
+    "tile.grass_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -35383,7 +35383,7 @@
         16
       ]
     },
-    "tile.roof_red_0l": {
+    "tile.grass_2": {
       "anims": {},
       "frames": {
         "base": {
@@ -35395,15 +35395,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_0m": {
+    "tile.hay_bale": {
       "anims": {},
       "frames": {
         "base": {
@@ -35423,7 +35423,7 @@
         16
       ]
     },
-    "tile.roof_red_0r": {
+    "tile.planks_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -35435,15 +35435,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_1l": {
+    "tile.reeds_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -35463,7 +35463,7 @@
         16
       ]
     },
-    "tile.roof_red_1m": {
+    "tile.reeds_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -35483,7 +35483,7 @@
         16
       ]
     },
-    "tile.roof_red_1r": {
+    "tile.roof_red_0l": {
       "anims": {},
       "frames": {
         "base": {
@@ -35503,7 +35503,7 @@
         16
       ]
     },
-    "tile.roof_slate_0l": {
+    "tile.roof_red_0m": {
       "anims": {},
       "frames": {
         "base": {
@@ -35523,7 +35523,7 @@
         16
       ]
     },
-    "tile.roof_slate_0m": {
+    "tile.roof_red_0r": {
       "anims": {},
       "frames": {
         "base": {
@@ -35543,7 +35543,7 @@
         16
       ]
     },
-    "tile.roof_slate_0r": {
+    "tile.roof_red_1l": {
       "anims": {},
       "frames": {
         "base": {
@@ -35563,7 +35563,7 @@
         16
       ]
     },
-    "tile.roof_slate_1l": {
+    "tile.roof_red_1m": {
       "anims": {},
       "frames": {
         "base": {
@@ -35583,7 +35583,7 @@
         16
       ]
     },
-    "tile.roof_slate_1m": {
+    "tile.roof_red_1r": {
       "anims": {},
       "frames": {
         "base": {
@@ -35603,7 +35603,7 @@
         16
       ]
     },
-    "tile.roof_slate_1r": {
+    "tile.roof_slate_0l": {
       "anims": {},
       "frames": {
         "base": {
@@ -35623,12 +35623,232 @@
         16
       ]
     },
-    "tile.sign_post": {
+    "tile.roof_slate_0m": {
       "anims": {},
       "frames": {
         "base": {
           "x": 1888,
           "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_slate_0r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1905,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_slate_1l": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1922,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_slate_1m": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1939,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_slate_1r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1956,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_0l": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1973,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_0m": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1990,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_0r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 2007,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1l": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 2024,
+          "y": 1379,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1m": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 18,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.sign_post": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 35,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35655,14 +35875,14 @@
       },
       "frames": {
         "flame_0": {
-          "x": 1905,
-          "y": 1379,
+          "x": 52,
+          "y": 1396,
           "w": 16,
           "h": 16
         },
         "flame_1": {
-          "x": 1922,
-          "y": 1379,
+          "x": 69,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35681,8 +35901,8 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1939,
-          "y": 1379,
+          "x": 86,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35701,8 +35921,8 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1956,
-          "y": 1379,
+          "x": 103,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35721,8 +35941,128 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1973,
-          "y": 1379,
+          "x": 120,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_stone_h": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 137,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_stone_post": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 154,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_stone_v": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 171,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_timber": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 188,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_timber_door": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 205,
+          "y": 1396,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.wall_timber_window": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 222,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35741,8 +36081,8 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1990,
-          "y": 1379,
+          "x": 239,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -35769,14 +36109,14 @@
       },
       "frames": {
         "flow_0": {
-          "x": 2007,
-          "y": 1379,
+          "x": 256,
+          "y": 1396,
           "w": 16,
           "h": 16
         },
         "flow_1": {
-          "x": 2024,
-          "y": 1379,
+          "x": 273,
+          "y": 1396,
           "w": 16,
           "h": 16
         }
@@ -41023,6 +41363,26 @@
         "flammable"
       ]
     },
+    "tile.crop_barley_0": {
+      "id": "tile.crop_barley_0",
+      "sprite": "tile.crop_barley_0",
+      "frame": "base",
+      "layer": "detail",
+      "collision": "none",
+      "tags": [
+        "flammable"
+      ]
+    },
+    "tile.crop_barley_1": {
+      "id": "tile.crop_barley_1",
+      "sprite": "tile.crop_barley_1",
+      "frame": "base",
+      "layer": "detail",
+      "collision": "none",
+      "tags": [
+        "flammable"
+      ]
+    },
     "tile.dirt": {
       "layer": "ground",
       "collision": "none",
@@ -41170,6 +41530,16 @@
       "sprite": "tile.grass_2",
       "frame": "base"
     },
+    "tile.hay_bale": {
+      "id": "tile.hay_bale",
+      "sprite": "tile.hay_bale",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": [
+        "flammable"
+      ]
+    },
     "tile.planks_0": {
       "layer": "ground",
       "collision": "none",
@@ -41177,6 +41547,26 @@
       "id": "tile.planks_0",
       "sprite": "tile.planks_0",
       "frame": "base"
+    },
+    "tile.reeds_0": {
+      "id": "tile.reeds_0",
+      "sprite": "tile.reeds_0",
+      "frame": "base",
+      "layer": "object",
+      "collision": "none",
+      "tags": [
+        "flammable"
+      ]
+    },
+    "tile.reeds_1": {
+      "id": "tile.reeds_1",
+      "sprite": "tile.reeds_1",
+      "frame": "base",
+      "layer": "object",
+      "collision": "none",
+      "tags": [
+        "flammable"
+      ]
     },
     "tile.rock": {
       "id": "tile.rock",
@@ -41277,6 +41667,54 @@
     "tile.roof_slate_1r": {
       "id": "tile.roof_slate_1r",
       "sprite": "tile.roof_slate_1r",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_0l": {
+      "id": "tile.roof_thatch_0l",
+      "sprite": "tile.roof_thatch_0l",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_0m": {
+      "id": "tile.roof_thatch_0m",
+      "sprite": "tile.roof_thatch_0m",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_0r": {
+      "id": "tile.roof_thatch_0r",
+      "sprite": "tile.roof_thatch_0r",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_1l": {
+      "id": "tile.roof_thatch_1l",
+      "sprite": "tile.roof_thatch_1l",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_1m": {
+      "id": "tile.roof_thatch_1m",
+      "sprite": "tile.roof_thatch_1m",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.roof_thatch_1r": {
+      "id": "tile.roof_thatch_1r",
+      "sprite": "tile.roof_thatch_1r",
       "frame": "base",
       "layer": "object",
       "collision": "full",
@@ -41752,6 +42190,54 @@
     "tile.wall_shop": {
       "id": "tile.wall_shop",
       "sprite": "tile.wall_shop",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_stone_h": {
+      "id": "tile.wall_stone_h",
+      "sprite": "tile.wall_stone_h",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_stone_post": {
+      "id": "tile.wall_stone_post",
+      "sprite": "tile.wall_stone_post",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_stone_v": {
+      "id": "tile.wall_stone_v",
+      "sprite": "tile.wall_stone_v",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_timber": {
+      "id": "tile.wall_timber",
+      "sprite": "tile.wall_timber",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_timber_door": {
+      "id": "tile.wall_timber_door",
+      "sprite": "tile.wall_timber_door",
+      "frame": "base",
+      "layer": "object",
+      "collision": "full",
+      "tags": []
+    },
+    "tile.wall_timber_window": {
+      "id": "tile.wall_timber_window",
+      "sprite": "tile.wall_timber_window",
       "frame": "base",
       "layer": "object",
       "collision": "full",

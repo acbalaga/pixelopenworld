@@ -112,21 +112,24 @@ export class StampBuilder {
     y: number,
     w: number,
     h: number,
-    o: { roof: 'red' | 'slate'; door: number; shop?: boolean; label: string },
+    o: { roof: 'red' | 'slate' | 'thatch'; door: number; shop?: boolean; label: string },
   ): this {
     this.claim(x, y, w, h, o.label);
+    // Thatch goes with timber framing, tile and slate with plaster.
+    const k = o.roof === 'thatch' ? 'timber' : 'plaster';
+    const plain = k === 'timber' ? 'tile.wall_timber' : 'tile.wall_plaster';
     for (let j = 0; j < h; j++)
       for (let i = 0; i < w; i++) {
         const front = j === h - 1;
         const wall = !front
-          ? 'tile.wall_plaster'
+          ? plain
           : i === o.door
             ? o.shop
               ? 'tile.wall_shop'
-              : 'tile.wall_door'
+              : `tile.wall_${k === 'timber' ? 'timber_door' : 'door'}`
             : i % 2 === 1 && i !== o.door
-              ? 'tile.wall_window'
-              : 'tile.wall_plaster';
+              ? `tile.wall_${k === 'timber' ? 'timber_window' : 'window'}`
+              : plain;
         this.ground(x + i, y + j, Terrain.Cobble);
         this.object(x + i, y + j, wall);
         if (j < 2) {
@@ -148,6 +151,32 @@ export class StampBuilder {
       const post = k === 0 || k === n || gaps.includes(k - 1) || gaps.includes(k + 1);
       this.object(x, y, post ? 'tile.fence_post' : horizontal ? 'tile.fence_h' : 'tile.fence_v');
     }
+    return this;
+  }
+
+  /** A low stone wall along a line, with piers at the ends and either side of a gap. */
+  wall(x0: number, y0: number, x1: number, y1: number, gaps: readonly number[] = []): this {
+    const horizontal = y0 === y1;
+    const n = horizontal ? x1 - x0 : y1 - y0;
+    for (let k = 0; k <= n; k++) {
+      if (gaps.includes(k)) continue;
+      const x = horizontal ? x0 + k : x0;
+      const y = horizontal ? y0 : y0 + k;
+      const pier = k === 0 || k === n || gaps.includes(k - 1) || gaps.includes(k + 1);
+      this.object(
+        x,
+        y,
+        pier ? 'tile.wall_stone_post' : `tile.wall_stone_${horizontal ? 'h' : 'v'}`,
+      );
+    }
+    return this;
+  }
+
+  /** A field: tilled earth with barley standing on it. Walkable. */
+  field(x: number, y: number, w: number, h: number): this {
+    this.rect(x, y, w, h, Terrain.Dirt);
+    for (let j = 0; j < h; j++)
+      for (let i = 0; i < w; i++) this.detail(x + i, y + j, `tile.crop_barley_${(i + j) % 2}`);
     return this;
   }
 
