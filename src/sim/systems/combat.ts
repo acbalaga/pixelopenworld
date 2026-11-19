@@ -21,6 +21,7 @@ import type { SimState } from '../state';
 import { nudge } from './movement';
 import { launchProjectile } from './projectile';
 import { elementHitsWorld } from '../elements';
+import { hitFixtures } from './dungeon';
 import { earnCoin, spendCoin } from '../ledger';
 
 /**
@@ -156,6 +157,17 @@ function advanceAttack(state: SimState, id: EntityId): void {
       f.dv = { x: Math.round((f.aim.x / l) * per), y: Math.round((f.aim.y / l) * per) };
     }
     if (f.t === activeFrom && def.projectile) launchProjectile(state, id, def, def.projectile);
+    // A heavy weapon's swing breaks heavy walls at the end of its reach.
+    if (f.t === activeFrom && f.team === 0 && def.shape.kind !== 'circle') {
+      const wf = WEAPONS[getComp(state.entities, id, 'combatant')?.weapon ?? '']?.family;
+      const me = centerPx(state, id);
+      const l = len(f.aim);
+      if (wf === 'heavy' && me && l > 0)
+        hitFixtures(state, 'heavy', {
+          x: me.x + (f.aim.x / l) * def.shape.reach,
+          y: me.y + (f.aim.y / l) * def.shape.reach,
+        });
+    }
     // A melee swing that carries an element touches the world at the end of its reach.
     if (f.t === activeFrom && def.element) {
       const me = centerPx(state, id);

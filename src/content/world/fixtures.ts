@@ -29,7 +29,26 @@ export type FixtureType =
   | 'mirror'
   | 'element'
   | 'wall'
-  | 'snare';
+  | 'snare'
+  | 'switch'
+  | 'breakable'
+  | 'torch'
+  | 'arena';
+
+/** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
+export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
+
+/** Kinds of hit that break a wall: a heavy weapon swing, a Stone hit, an Ember hit. */
+export type HitKind = 'heavy' | 'stone' | 'ember';
+
+/** A side of a door, for a shortcut that opens from one side only. */
+export type Side = 'N' | 'E' | 'S' | 'W';
+
+/** One wave of an arena: how many of a creature kind stand against the avatar. */
+export interface ArenaWave {
+  creature: string;
+  count: number;
+}
 
 export interface FixtureDef {
   kind: string;
@@ -63,6 +82,27 @@ export interface FixtureDef {
   board?: string;
   /** Chest: opening it sets this journal flag (a request step can ask for it). */
   setsFlag?: string;
+  /** Plate: what presses it. Defaults to blocks only. */
+  holds?: readonly PlateHolder[];
+  /**
+   * Switch: the avatar uses it to turn it on or off. `latch` keeps it on once on. A gate or a door
+   * names a switch kind in `plate`, exactly as it names a plate kind.
+   */
+  latch?: boolean;
+  /** Gate: after it is triggered it stays open this many ticks, then closes. Without it a gate stays open for good. */
+  holdTicks?: number;
+  /** Breakable wall: broken by these kinds of hit. */
+  breaksBy?: readonly HitKind[];
+  /** Torch: lit by an Ember hit, and it lights its room. `litAtStart` places it burning. */
+  litAtStart?: boolean;
+  /** Door: opens, with no key, only for an avatar standing on this side of it. A shortcut. */
+  opensFrom?: Side;
+  /** Portal: arriving costs this percent of maximum Health (never the last point). A drop. */
+  fall?: number;
+  /** Gate: an arena door. It stands open until the arena starts, shuts while it is live, opens when cleared. */
+  arenaDoor?: boolean;
+  /** Arena trigger: the avatar this close (px) starts it. The doors are the gate kinds named. */
+  arena?: { radius: number; doors: readonly string[]; waves: readonly ArenaWave[] };
   /** Chest: what is inside. `coin` is carried coin. */
   loot?: { items: readonly { item: string; qty: number }[]; coin?: number };
 }
@@ -209,6 +249,114 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.mirror', type: 'mirror', sprite: 'prop.mirror', size: 12 },
   // Raised by the Earth Wall technique (M3-13). It blocks bodies and bolts and does not last.
   { kind: 'fixture.earth_wall', type: 'wall', sprite: 'prop.earth_wall', size: 16 },
+  // Dungeon building blocks (M4-08). Generic kinds that every dungeon reuses.
+  // A floor switch the avatar turns on and off, and a latching one that stays on.
+  { kind: 'fixture.switch', type: 'switch', sprite: 'prop.plate', size: 12 },
+  { kind: 'fixture.switch_latch', type: 'switch', sprite: 'prop.plate', size: 12, latch: true },
+  // A plate that anything heavy enough presses: the avatar, a creature, a block or a Stone wall.
+  {
+    kind: 'fixture.plate_any',
+    type: 'plate',
+    sprite: 'prop.plate',
+    holds: ['avatar', 'creature', 'block', 'wall'],
+  },
+  // A plate only a living thing presses, so it is held by standing on it.
+  {
+    kind: 'fixture.plate_step',
+    type: 'plate',
+    sprite: 'prop.plate',
+    holds: ['avatar', 'creature'],
+  },
+  // Gates opened by the switch and plate kinds above. The timed one closes again.
+  {
+    kind: 'fixture.gate_switch',
+    type: 'gate',
+    sprite: 'prop.gate',
+    size: 16,
+    plate: 'fixture.switch',
+  },
+  {
+    kind: 'fixture.gate_timed',
+    type: 'gate',
+    sprite: 'prop.gate',
+    size: 16,
+    plate: 'fixture.plate_step',
+    holdTicks: 150,
+  },
+  {
+    kind: 'fixture.gate_any',
+    type: 'gate',
+    sprite: 'prop.gate',
+    size: 16,
+    plate: 'fixture.plate_any',
+  },
+  // Walls that break to one kind of hit each.
+  {
+    kind: 'fixture.wall_heavy',
+    type: 'breakable',
+    sprite: 'prop.brush_wall',
+    size: 16,
+    breaksBy: ['heavy'],
+  },
+  {
+    kind: 'fixture.wall_stone',
+    type: 'breakable',
+    sprite: 'prop.stone_gap',
+    size: 16,
+    breaksBy: ['stone'],
+  },
+  {
+    kind: 'fixture.wall_ember',
+    type: 'breakable',
+    sprite: 'prop.brush_wall',
+    size: 16,
+    breaksBy: ['ember'],
+  },
+  // A torch. Ember lights it, and a lit one lights a dark room.
+  {
+    kind: 'fixture.torch',
+    type: 'torch',
+    sprite: 'prop.torch',
+    size: 8,
+    onElement: { ember: 'open' },
+  },
+  // A shortcut back to the entrance: a door that opens, for good, from the far side only.
+  {
+    kind: 'fixture.door_shortcut',
+    type: 'door',
+    sprite: 'prop.door_locked',
+    size: 16,
+    opensFrom: 'S',
+  },
+  // A hole in the floor. The way down is one way and costs a little Health.
+  {
+    kind: 'fixture.drop_hole',
+    type: 'portal',
+    to: 'fixture.arrival_drop',
+    arrive: [0, 8],
+    fall: 10,
+  },
+  { kind: 'fixture.arrival_drop', type: 'arrival', arrive: [0, 8] },
+  // An arena: the trigger, and the doors that shut while its waves are live.
+  {
+    kind: 'fixture.arena_door',
+    type: 'gate',
+    sprite: 'prop.gate',
+    size: 16,
+    arenaDoor: true,
+  },
+  {
+    kind: 'fixture.arena_trigger',
+    type: 'arena',
+    arena: {
+      radius: 40,
+      doors: ['fixture.arena_door'],
+      waves: [
+        { creature: 'creature.thornling', count: 2 },
+        { creature: 'creature.bramble_boar', count: 1 },
+      ],
+    },
+  },
   // Element set pieces (M3-09). One for each school, none on a route the slice needs.
   // A wall of dry brush: Ember burns it to ash, and it grows back.
   {
@@ -289,6 +437,10 @@ export interface RoomDef {
   y1: number;
   /** Open sky. Night spent here pays Survival XP. */
   outdoors?: true;
+  /** Dark: everything but telegraphs is hidden until a torch is lit here or the avatar carries a lantern (M4-08). */
+  dark?: true;
+  /** Blocks that belong to an unsolved puzzle here go back to their start when the room is entered. */
+  reset?: true;
 }
 
 /** Glyphs the tablet shows. Each is a polyline set on a 5 by 7 grid. Not a language: a placeholder. */

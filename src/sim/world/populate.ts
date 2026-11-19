@@ -38,7 +38,7 @@ export function populateMap(
   opts: {
     spawners: boolean;
     onlyMissing: boolean;
-    /** Called with each fixture or node entity added, so chunk deltas can be applied to it. */
+    /** Called with each fixture, node or spawner entity added, so chunk deltas can be applied to it. */
     onSpawn?: (id: number, o: MapObject) => void;
   },
 ): number {
@@ -87,7 +87,8 @@ export function populateMap(
       const x = o.tx * TILE + 8;
       const y = o.ty * TILE + 14;
       if (!wanted(`spawner:${o.kind}@${px(x)},${px(y)}`)) continue;
-      createSpawner(state, o.kind, x, y);
+      const id = createSpawner(state, o.kind, x, y);
+      opts.onSpawn?.(id, o);
       added++;
     }
   }

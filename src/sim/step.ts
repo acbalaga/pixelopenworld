@@ -9,6 +9,8 @@ import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
 import { spawnerSystem } from './systems/spawner';
 import { streamSystem } from './world/stream';
+import { dungeonSystem } from './systems/dungeon';
+import { bossSystem } from './systems/boss';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
 import { projectileSystem } from './systems/projectile';
@@ -53,6 +55,8 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   combatSystem,
   movementSystem,
   fixturesSystem,
+  bossSystem,
+  dungeonSystem,
   snareSystem,
   knockSystem,
   projectileSystem,

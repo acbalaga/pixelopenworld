@@ -75,10 +75,10 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 6 pending skills: the six late ones and the ones whose M3 ticket has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(6);
+  it('list 5 pending skills: the late ones whose system has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(5);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
-    for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography', 'delving'])
+    for (const late of ['farming', 'husbandry', 'leadership', 'taming', 'cartography'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
   });
 });
@@ -220,6 +220,8 @@ describe('every skill that is not pending earns XP', () => {
       const foe = spawnEnemy(s, 'creature.mossling', 400, 300);
       feed(s, { type: 'statusApplied', id: foe, status: 'hexed', src: me, refreshed: false });
     },
+    'skill.delving': (s, me) =>
+      feed(s, { type: 'delved', who: me, dungeon: 'dungeon.sample', room: 'dungeon.sample.b' }),
     'skill.deciphering': (s, me) => {
       const tablet = spawnFixture(s, 'fixture.tablet', 22, 20);
       feed(s, { type: 'tabletRead', id: tablet, who: me });
@@ -242,8 +244,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 30 skills with a system after M3-14', () => {
-    expect(active).toHaveLength(30);
+  it('has 31 skills with a system after M4-08', () => {
+    expect(active).toHaveLength(31);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

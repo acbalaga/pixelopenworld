@@ -21,7 +21,12 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
   const id = spawn(state.entities);
   const pos = { x: px(tx * TILE + 8), y: px(ty * TILE + TILE) };
   setComp(state.entities, id, 'pos', pos);
-  setComp(state.entities, id, 'fixture', { kind, open: false, home: { ...pos } });
+  setComp(state.entities, id, 'fixture', {
+    kind,
+    open: def.litAtStart === true,
+    home: { ...pos },
+    ...(def.arena ? { arena: { state: 'idle' as const, wave: 0, foes: [] } } : {}),
+  });
   if (def.type === 'board' && def.board)
     setComp(state.entities, id, 'board', { id: def.board, day: -1, posted: [] });
   if (def.unlockedBy) {
@@ -34,16 +39,35 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'portal' ||
     def.type === 'arrival' ||
     def.type === 'plate' ||
-    def.type === 'snare'
+    def.type === 'snare' ||
+    def.type === 'torch' ||
+    def.type === 'arena'
   )
     return id;
   const size = px(def.size ?? TILE);
   // A hidden niche is a doorway in the wall: it does not block, and it cannot be used until revealed.
-  setComp(state.entities, id, 'body', { w: size, h: size, solid: def.hidden !== true });
+  // An arena door stands open until its arena starts.
+  setComp(state.entities, id, 'body', {
+    w: size,
+    h: size,
+    solid: def.hidden !== true && def.arenaDoor !== true,
+  });
+  if (def.arenaDoor) f0open(state, id);
   // Everything with a body can be used from the front. Element pieces answer to elements only.
-  if (def.type !== 'gate' && def.type !== 'element' && def.type !== 'wall')
+  if (
+    def.type !== 'gate' &&
+    def.type !== 'element' &&
+    def.type !== 'wall' &&
+    def.type !== 'breakable'
+  )
     setComp(state.entities, id, 'interactable', { kind });
   return id;
+}
+
+/** Marks a fixture open (a door that starts open). */
+function f0open(state: SimState, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  if (f) f.open = true;
 }
 
 function fixtureOfKind(state: SimState, kind: string): EntityId | null {
@@ -100,6 +124,7 @@ function useDoor(state: SimState, who: EntityId, id: EntityId): void {
   const f = getComp(state.entities, id, 'fixture');
   const def = f ? FIXTURES[f.kind] : undefined;
   const inv = getComp(state.entities, who, 'inventory');
+  if (f && def?.opensFrom && !f.open) return useShortcut(state, who, id);
   if (!f || !def?.key || !inv || f.open) return;
   if (!removeItem(inv, def.key, 1)) {
     emit(state.events, { type: 'doorLocked', id, who, key: def.key });
@@ -110,6 +135,43 @@ function useDoor(state: SimState, who: EntityId, id: EntityId): void {
   if (body) body.solid = false;
   state.entities.comps.interactable[id] = null;
   emit(state.events, { type: 'doorOpened', id, who });
+}
+
+/** A shortcut door opens, for good, only for an avatar standing on its open side. */
+function useShortcut(state: SimState, who: EntityId, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  const def = f ? FIXTURES[f.kind] : undefined;
+  const me = getComp(state.entities, who, 'pos');
+  const at = getComp(state.entities, id, 'pos');
+  if (!f || !def?.opensFrom || !me || !at) return;
+  // The door's centre is half a tile above its feet. Compare along the axis the side names.
+  const dx = (me.x - at.x) / SUBPX;
+  const dy = (me.y - (at.y - px(TILE / 2))) / SUBPX;
+  const side = def.opensFrom;
+  const onSide =
+    (side === 'N' && dy < 0 && Math.abs(dy) >= Math.abs(dx)) ||
+    (side === 'S' && dy > 0 && Math.abs(dy) >= Math.abs(dx)) ||
+    (side === 'W' && dx < 0 && Math.abs(dx) > Math.abs(dy)) ||
+    (side === 'E' && dx > 0 && Math.abs(dx) > Math.abs(dy));
+  if (!onSide) {
+    emit(state.events, { type: 'shortcutWrongSide', id, who });
+    return;
+  }
+  f.open = true;
+  const body = getComp(state.entities, id, 'body');
+  if (body) body.solid = false;
+  state.entities.comps.interactable[id] = null;
+  emit(state.events, { type: 'doorOpened', id, who });
+}
+
+/** A switch turns on or off under the avatar's hand. A latching one stays on. */
+function useSwitch(state: SimState, who: EntityId, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  const def = f ? FIXTURES[f.kind] : undefined;
+  if (!f || !def) return;
+  if (def.latch && f.open) return;
+  f.open = !f.open;
+  emit(state.events, { type: 'switchChanged', id, on: f.open });
 }
 
 function useChest(state: SimState, who: EntityId, id: EntityId): void {
@@ -210,6 +272,8 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useChest(state, who, target);
     case 'block':
       return pushBlock(state, who, target);
+    case 'switch':
+      return useSwitch(state, who, target);
     case 'tablet':
       emit(state.events, { type: 'tabletRead', id: target, who });
       return;
@@ -242,12 +306,21 @@ export function fixturesSystem(state: SimState): void {
   const blocks = query(state.entities, 'fixture', 'pos').filter(
     (id) => FIXTURES[getComp(state.entities, id, 'fixture')?.kind ?? '']?.type === 'block',
   );
+  // Raised walls (Earth Wall) weigh a plate down too.
+  const walls = query(state.entities, 'fixture', 'pos').filter(
+    (id) => FIXTURES[getComp(state.entities, id, 'fixture')?.kind ?? '']?.type === 'wall',
+  );
+  const creatures = query(state.entities, 'ai', 'fighter', 'pos').filter(
+    (id) => getComp(state.entities, id, 'fighter')?.state !== 'dead',
+  );
   const pressedKinds = new Set<string>();
   for (const id of query(state.entities, 'fixture', 'pos')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;
     const p = getComp(state.entities, id, 'pos');
     if (!f || !def || !p) continue;
+    // A switch that is on counts as a pressed plate of its own kind.
+    if (def.type === 'switch' && f.open) pressedKinds.add(f.kind);
     if (def.type === 'plate') {
       const c = { x: p.x / SUBPX, y: p.y / SUBPX - TILE / 2 };
       const near = (e: EntityId, lift: number): boolean => {
@@ -258,21 +331,33 @@ export function fixturesSystem(state: SimState): void {
           Math.abs(q.y / SUBPX - lift - c.y) <= W.plateRadius
         );
       };
-      // Plates take weight: only a block presses one, so walking over it does nothing.
-      const pressed = blocks.some((b) => near(b, 7));
+      // Plates take weight. What counts is the plate's `holds`: a block alone unless it says more.
+      const holds = def.holds ?? ['block'];
+      const byBlock = holds.includes('block') ? blocks.find((b) => near(b, 7)) : undefined;
+      const pressed =
+        byBlock !== undefined ||
+        (holds.includes('avatar') && avatars.some((a) => near(a, 4))) ||
+        (holds.includes('creature') && creatures.some((e) => near(e, 4))) ||
+        (holds.includes('wall') && walls.some((w) => near(w, 7)));
       if (pressed !== f.open) {
         f.open = pressed;
         emit(state.events, { type: 'plateChanged', id, pressed });
+        if (pressed && byBlock !== undefined)
+          emit(state.events, { type: 'blockSolved', id, block: byBlock });
       }
       if (pressed) pressedKinds.add(f.kind);
     }
   }
-  // A gate opens when its plate is pressed and stays open.
-  for (const id of query(state.entities, 'fixture')) {
+  // A gate opens when its plate or switch is on and stays open. A timed gate keeps pushing its
+  // `until` forward while it is held, and the element system shuts it (waiting while anyone stands
+  // in it) once `holdTicks` pass with nothing holding it.
+  for (const id of query(state.entities, 'fixture', 'pos')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;
-    if (!f || def?.type !== 'gate' || f.open || !def.plate || !pressedKinds.has(def.plate))
-      continue;
+    if (!f || def?.type !== 'gate' || !def.plate || def.arenaDoor) continue;
+    if (!pressedKinds.has(def.plate)) continue;
+    if (def.holdTicks !== undefined) f.until = state.worldTick + def.holdTicks;
+    if (f.open) continue;
     f.open = true;
     const body = getComp(state.entities, id, 'body');
     if (body) body.solid = false;
@@ -320,6 +405,7 @@ export function fixturesSystem(state: SimState): void {
         v.x = 0;
         v.y = 0;
       }
+      if (def.fall) fall(state, a, def.fall);
       const to = roomOfPos(q.x, q.y);
       if (to !== from) {
         resetRoom(state, to);
@@ -327,6 +413,16 @@ export function fixturesSystem(state: SimState): void {
       }
     }
   }
+}
+
+/** A drop costs a share of maximum Health, never the last point. */
+function fall(state: SimState, who: EntityId, pct: number): void {
+  const pools = getComp(state.entities, who, 'pools');
+  if (!pools) return;
+  const amount = Math.min(pools.hp - 1, Math.ceil((pools.hpMax * pct) / 100));
+  if (amount <= 0) return;
+  pools.hp -= amount;
+  emit(state.events, { type: 'fell', who, amount });
 }
 
 /** Removes every fixture. For reloading a map. */

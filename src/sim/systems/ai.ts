@@ -15,6 +15,7 @@ import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
 import { TEMPERAMENT as TP } from '../../content/balance/temperament';
 import { provenTierOf, temperamentNow, territoryOf } from '../combat/temperament';
 import { frozenAt } from '../world/stream';
+import { patternDriven } from './boss';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -363,7 +364,8 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
       const d = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
       f.aim = d;
       const reach = Math.min(...def.attacks.map((a) => a.range));
-      if (mayAttack) {
+      // A boss on a scripted pattern attacks when the pattern says (systems/boss.ts), not here.
+      if (mayAttack && !patternDriven(state, id)) {
         const pick = pickAttack(def, ai, tdist);
         if (pick >= 0) {
           const a = def.attacks[pick] as { attack: string; cooldown: number };

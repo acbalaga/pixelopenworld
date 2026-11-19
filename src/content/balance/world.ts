@@ -18,6 +18,8 @@ export const WORLD_TUNABLES = {
   fetchesInFlight: 4,
   /** Chunks farther than this many chunks from the avatar are dropped from memory (the loaded window plus one for hysteresis). */
   evictRadius: 3,
+  /** Arena doors within this many px of the trigger shut with it. */
+  arenaDoorReachPx: 200,
   /** Interact needs the avatar idle. Waystones restore all pools. */
   waystoneHeals: true,
 } as const;
