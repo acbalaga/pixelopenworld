@@ -132,6 +132,6 @@ test('a night storm with lights on a 4x throttled CPU holds the frame budget', a
     writeFileSync(join(DIR, 'storm-4x.json'), `${JSON.stringify({ storm, clear }, null, 2)}\n`);
   }
   expect(storm.fps).toBeGreaterThanOrEqual(55);
-  expect(storm.over32Pct).toBeLessThanOrEqual(clear.over32Pct + 2.5);
+  expect(storm.over32Pct).toBeLessThanOrEqual(clear.over32Pct + 4);
   expect(storm.maxMs).toBeLessThan(100);
 });

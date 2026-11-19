@@ -127,7 +127,7 @@ import { CREATURES } from '../content/creatures';
 import { drawTelegraphs, telegraphOf } from '../render/telegraph';
 import { drawCommitMarks, drawWarnings } from '../render/warning';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
-import { lightLevel, phaseTint, weatherTint } from '../render/grade';
+import { lightLevel, skyOverlays } from '../render/grade';
 import { LightIndex } from '../render/lights';
 import { WeatherFx } from '../render/weatherFx';
 import { LIGHTS } from '../content/world/atmosphere';
@@ -1513,29 +1513,27 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const gx = camera.x + shake.x;
         const gy = camera.y + shake.y;
         weatherFx.draw(renderer, gx, gy, sky, now);
-        const tint = phaseTint(state.worldTick);
-        if (tint.alpha > 0.004)
+        const sky2 = skyOverlays(state.worldTick, sky);
+        if (sky2.multiply)
           renderer.drawRect(
             Layer.Grade,
             gx,
             gy,
             renderer.width,
             renderer.height,
-            tint.color,
-            tint.alpha,
+            sky2.multiply,
+            1,
             'multiply',
           );
-        const wt = weatherTint(sky);
-        if (wt.alpha > 0)
+        if (sky2.haze)
           renderer.drawRect(
             Layer.Grade,
             gx,
             gy,
             renderer.width,
             renderer.height,
-            wt.color,
-            wt.alpha,
-            wt.blend === 'multiply' ? 'multiply' : undefined,
+            sky2.haze.color,
+            sky2.haze.alpha,
           );
         const level = lightLevel(state.worldTick);
         if (level > 0) {

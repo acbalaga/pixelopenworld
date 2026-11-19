@@ -58,3 +58,34 @@ export function lightLevel(tick: number): number {
     ? 0
     : Math.min(1, (a - LIGHT_FROM_ALPHA) / (night - LIGHT_FROM_ALPHA));
 }
+
+/** The overlays for a frame: at most one multiply (hour and weather merged) and one plain haze. */
+export interface SkyOverlays {
+  /** Colour to multiply the whole frame by, or null when the frame is untinted. */
+  multiply: string | null;
+  haze: Tint | null;
+}
+
+/**
+ * Works out the frame's overlays. Two multiply tints (the hour's and a storm's) are exactly one
+ * multiply by the product of their per-channel factors, so they are merged into a single full
+ * screen fill, which is what keeps a night storm inside the frame budget.
+ */
+export function skyOverlays(tick: number, weather: Weather): SkyOverlays {
+  const tints = [phaseTint(tick), weatherTint(weather)];
+  const factor = [1, 1, 1];
+  let any = false;
+  let haze: Tint | null = null;
+  for (const t of tints) {
+    if (t.alpha <= 0.004) continue;
+    if (t.blend === 'multiply') {
+      any = true;
+      const h = t.color.slice(1);
+      for (let i = 0; i < 3; i++) {
+        const v = parseInt(h.slice(i * 2, i * 2 + 2), 16) / 255;
+        factor[i] = (factor[i] as number) * (1 - t.alpha + t.alpha * v);
+      }
+    } else haze = t;
+  }
+  return { multiply: any ? hex(factor.map((f) => f * 255)) : null, haze };
+}

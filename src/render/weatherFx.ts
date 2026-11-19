@@ -62,16 +62,18 @@ export class WeatherFx {
     const def = WEATHER_PARTICLES[weather];
     if (def) {
       const color = PALETTE[def.color] as string;
-      for (let i = 0; i < this.n; i++)
-        r.drawRect(
-          Layer.Weather,
-          camX + (this.x[i] as number),
-          camY + (this.y[i] as number),
-          def.w,
-          def.h,
-          color,
-          def.alpha,
-        );
+      r.drawMarks(
+        Layer.Weather,
+        this.x,
+        this.y,
+        this.n,
+        camX,
+        camY,
+        def.w,
+        def.h,
+        color,
+        def.alpha,
+      );
     }
     if (weather === 'storm' && nowMs < this.flashUntil)
       r.drawRect(

@@ -1,0 +1,18 @@
+{
+  "storm": {
+    "n": 1154,
+    "meanMs": 17.34,
+    "fps": 57.7,
+    "maxMs": 50,
+    "over32": 46,
+    "over32Pct": 3.99
+  },
+  "clear": {
+    "n": 1188,
+    "meanMs": 16.85,
+    "fps": 59.4,
+    "maxMs": 33.4,
+    "over32": 13,
+    "over32Pct": 1.09
+  }
+}
