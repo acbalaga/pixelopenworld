@@ -209,3 +209,24 @@ test.describe('landscape', () => {
     await shot(page, 'm4-18-after-skill-sheet-landscape');
   });
 });
+
+test.describe('Chronicle', () => {
+  test.use({ viewport: { width: 360, height: 800 } });
+
+  test('the Bestiary starts empty with its line, and the tab is reachable with no errors', async ({
+    page,
+  }) => {
+    const problems = await watchProblems(page);
+    await page.goto('/?region=slice&nosave=1&foes=0&at=53,37');
+    await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
+    await openMenu(page);
+    await goTab(page, 'chronicle');
+    await expect(menu(page)).toContainText(
+      'Creatures are listed here once you have beaten or befriended one.',
+    );
+    await shot(page, 'm4-05-chronicle-empty');
+    expect(problems.pageErrors).toEqual([]);
+    expect(problems.csp).toEqual([]);
+    expect(problems.console).toEqual([]);
+  });
+});

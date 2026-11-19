@@ -25,6 +25,8 @@ import {
   characterView,
   itemDetail,
   skillsView,
+  bestiaryView,
+  creatureSheetView,
   techniquesView,
   type PathRowView,
   trialLog,
@@ -46,7 +48,7 @@ export const TAB_IDS = [
 export type TabId = (typeof TAB_IDS)[number];
 
 /** Tabs that work. The others are hidden until their systems exist (design/09). */
-export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'system'];
+export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'chronicle', 'system'];
 
 /** What the Menu needs from the game. It never touches the sim except through `send`. */
 export interface MenuDeps {
@@ -132,7 +134,7 @@ export class MenuSheet {
   private readonly head: HTMLElement;
   private bar!: HTMLElement;
   /** The one detail sheet that may be open (never a sheet over a sheet), and what opened it. */
-  private detail: { kind: 'skill' | 'item'; id: string; opener: string } | null = null;
+  private detail: { kind: 'skill' | 'item' | 'creature'; id: string; opener: string } | null = null;
   private detailEl: HTMLElement | null = null;
   private detailSig = '';
   /** History entries this Menu has pushed (the Menu, then a sheet), so Back unwinds them in order. */
@@ -322,6 +324,7 @@ export class MenuSheet {
       return JSON.stringify(
         skillsView(state, who).map((f) => f.rows.map((r) => [r.id, r.points, r.trial])),
       );
+    if (tab === 'chronicle') return JSON.stringify(bestiaryView(state, who).map((r) => r.id));
     if (tab === 'bag')
       return JSON.stringify(
         bagView(state, who)
@@ -356,6 +359,8 @@ export class MenuSheet {
         return JSON.stringify([characterView(state, who), requestLog(state, who), closed]);
       case 'skills':
         return JSON.stringify([skillsView(state, who), trialLog(state, who), closed]);
+      case 'chronicle':
+        return JSON.stringify([bestiaryView(state, who), closed]);
       case 'bag':
         return JSON.stringify([
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
@@ -384,6 +389,9 @@ export class MenuSheet {
         break;
       case 'bag':
         this.renderBag();
+        break;
+      case 'chronicle':
+        this.renderChronicle();
         break;
       case 'system':
         this.renderSystem();
@@ -656,9 +664,48 @@ export class MenuSheet {
     }
   }
 
+  // ---- Chronicle: the Bestiary (M4-05) ----
+
+  private renderChronicle(): void {
+    const { state, who } = this.deps.read();
+    const rows = bestiaryView(state, who);
+    put(this.body, header(S.tabs.chronicle));
+    if (rows.length === 0) {
+      this.body.appendChild(emptyState(S.bestiary.empty));
+      return;
+    }
+    const list = rows.map((r) =>
+      row({
+        key: `creature-${r.id}`,
+        name: r.name,
+        state: r.state,
+        label: r.label,
+        onOpen: () => this.openSheet('creature', r.id, `creature-${r.id}`),
+      }),
+    );
+    this.body.appendChild(this.sec('bestiary', S.bestiary.title, list.length, ...list));
+  }
+
+  private creatureSheet(
+    state: SimState,
+    who: number,
+    id: string,
+  ): { sig: string; parts: Omit<Parameters<typeof detailSheet>[0], 'onClose'> } | null {
+    const v = creatureSheetView(state, who, id);
+    if (!v) return null;
+    return {
+      sig: v.sig,
+      parts: {
+        title: v.title,
+        lines: v.lines,
+        extra: v.notes.map((n) => el('p', 'pow-part-sheet-desc', n)),
+      },
+    };
+  }
+
   // ---- The detail sheet: one level below a tab, never a sheet over a sheet ----
 
-  private openSheet(kind: 'skill' | 'item', id: string, opener: string): void {
+  private openSheet(kind: 'skill' | 'item' | 'creature', id: string, opener: string): void {
     if (this.detail) return;
     this.detail = { kind, id, opener };
     this.pushHistory();
@@ -695,7 +742,9 @@ export class MenuSheet {
     const spec =
       this.detail.kind === 'skill'
         ? this.skillSheet(state, who, this.detail.id)
-        : this.itemSheet(state, who, Number(this.detail.id));
+        : this.detail.kind === 'creature'
+          ? this.creatureSheet(state, who, this.detail.id)
+          : this.itemSheet(state, who, Number(this.detail.id));
     if (!spec) {
       this.closeSheet();
       return;

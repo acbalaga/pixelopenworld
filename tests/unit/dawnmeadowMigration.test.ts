@@ -13,7 +13,7 @@ import {
   SQUARE_SPREAD,
   dawnmeadowTile,
 } from '../../src/save/sliceRemap';
-import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
+import type { SavePlain } from '../../src/save/types';
 import { findAvatar } from '../../src/shared/summary';
 import { query } from '../../src/sim/kernel/entities';
 import { px } from '../../src/sim/kernel/fixed';
@@ -49,7 +49,11 @@ const roomy = (x: number, y: number): boolean => {
 };
 
 const load = async (plain: SavePlain): Promise<SavePlain> =>
-  migrate(await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(plain))));
+  migrate(
+    await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(plain))),
+    MIGRATIONS,
+    23,
+  );
 /** The fixture with its avatar moved to a slice tile. */
 const at = (tx: number, ty: number): SavePlain => {
   const s = deserializeState(f.plain.sim);
@@ -68,7 +72,7 @@ describe('schema 22 to 23 migration (the move to Dawnmeadow)', () => {
   it('loads the previous fixture and lands on walkable ground in the square', async () => {
     expect(f.plain.schema).toBe(22);
     const now = await load(f.plain);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    expect(now.schema).toBe(23);
     const s = deserializeState(now.sim);
     const me = findAvatar(s)!;
     const t = tileOf(s, me);
@@ -162,6 +166,5 @@ describe('schema 22 to 23 migration (the move to Dawnmeadow)', () => {
 
   it('is the only step between 22 and 23', () => {
     expect(Object.keys(MIGRATIONS).map(Number)).toContain(22);
-    expect(CURRENT_SCHEMA).toBe(23);
   });
 });

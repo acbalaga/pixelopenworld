@@ -25,6 +25,9 @@ import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { isAwake, masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
 import { calendarOf, dayPhase, weatherOn } from '../../sim/time';
+import { CREATURES } from '../../content/creatures';
+import { INTERACTIONS } from '../../content/creatures/interactions';
+import { SPECIAL_SPAWNERS, ZONES } from '../../content/creatures/rosters';
 import type { SimState } from '../../sim/state';
 
 /**
@@ -618,5 +621,94 @@ export function calendarView(state: SimState): CalendarView {
     time: C.time.replace('{phase}', clock.label).replace('{hhmm}', clock.hhmm),
     today: C.today.replace('{weather}', C.weather[weatherOn(state, state.worldTick)]),
     ahead,
+  };
+}
+
+// ---- The Bestiary (M4-05) ----
+
+export interface BestiaryRowView {
+  id: string;
+  name: string;
+  tier: number;
+  state: string;
+  label: string;
+}
+
+const KNOWN = (e: { slain?: true; befriended?: true }): boolean => !!e.slain || !!e.befriended;
+
+/** Kinds the avatar has beaten or befriended, by tier then name. */
+export function bestiaryView(state: SimState, who: number): BestiaryRowView[] {
+  const j = state.entities.comps.journal[who];
+  const B = UI_STRINGS.bestiary;
+  const rows: BestiaryRowView[] = [];
+  for (const [id, e] of Object.entries(j?.bestiary ?? {})) {
+    const def = CREATURES[id];
+    if (!def || !KNOWN(e)) continue;
+    const st = e.slain && e.befriended ? B.both : e.slain ? B.beaten : B.befriended;
+    rows.push({
+      id,
+      name: def.name,
+      tier: def.tier,
+      state: st,
+      label: fill(B.row, { name: def.name, state: st }),
+    });
+  }
+  return rows.sort((a, b) => a.tier - b.tier || a.name.localeCompare(b.name));
+}
+
+/** Where a creature is found: the zones and hand placed spawners that put it out. */
+export function habitatsOf(creature: string): string[] {
+  const out = new Set<string>();
+  for (const z of ZONES)
+    if (z.slots.some((s) => s.day === creature || s.night === creature)) out.add(z.name);
+  const places: Readonly<Record<string, string>> = {
+    'spawner.barn_rats': 'Millbrook barns',
+    'spawner.field_strawman': 'Millbrook fields, at night',
+    'spawner.hollowhorn': 'Cairnmoor, on a daily route',
+  };
+  for (const [kind, sp] of Object.entries(SPECIAL_SPAWNERS))
+    if (sp.creature === creature || sp.phases?.day === creature || sp.phases?.night === creature)
+      out.add(places[kind] ?? kind);
+  return [...out];
+}
+
+export interface CreatureSheetView {
+  title: string;
+  /** Lines for the two column list. */
+  lines: string[];
+  /** Short paragraphs under it. */
+  notes: string[];
+  sig: string;
+}
+
+/** The detail sheet of one Bestiary entry. Drops and what it takes are shown once earned. */
+export function creatureSheetView(
+  state: SimState,
+  who: number,
+  id: string,
+): CreatureSheetView | null {
+  const e = state.entities.comps.journal[who]?.bestiary[id];
+  const def = CREATURES[id];
+  if (!e || !def || !KNOWN(e)) return null;
+  const B = UI_STRINGS.bestiary;
+  const lines = [fill(B.tier, { n: def.tier })];
+  const notes: string[] = [];
+  const nature = e.temperaments.map((t) => B.temperaments[t]).filter((t): t is string => !!t);
+  notes.push(`${B.nature}: ${nature.length > 0 ? nature.join('. ') : B.unknownNature}`);
+  const homes = habitatsOf(id);
+  if (homes.length > 0) notes.push(`${B.found}: ${homes.join(', ')}`);
+  if (e.slain) {
+    const names = def.drops.filter((d) => d.item !== 'item.coin').map((d) => itemName(d.item));
+    if (names.length > 0) notes.push(`${B.drops}: ${names.join(', ')}`);
+  }
+  if (e.befriended) {
+    const takes = (INTERACTIONS[id]?.feed?.items ?? []).map((i) => itemName(i));
+    if (takes.length > 0) notes.push(`${B.takes}: ${takes.join(', ')}`);
+  }
+  return {
+    title: def.name,
+    lines,
+    notes,
+    sig: JSON.stringify([id, e.slain, e.befriended, e.temperaments]),
   };
 }

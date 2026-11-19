@@ -128,10 +128,11 @@ test('the accessibility tree names ordered controls on each tab', async ({ page 
     'tab "Character"',
     'tab "Skills"',
     'tab "Bag"',
+    'tab "Chronicle"',
     'tab "System"',
   ]);
   // Tabs for systems that do not exist yet are hidden, not greyed out.
-  expect(first).not.toMatch(/tab "(Map|Chronicle|Social|Routines)"/);
+  expect(first).not.toMatch(/tab "(Map|Social|Routines)"/);
   expect(first).toMatch(/tab "Character".*selected/);
 
   inOrder(first, [

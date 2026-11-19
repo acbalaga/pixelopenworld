@@ -609,6 +609,16 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     remapFromSlice(s);
     return { ...old, schema: 23, sim: serializeState(s) };
   },
+  /**
+   * 23 to 24 (M4-05): the journal gains a `bestiary`, what the avatar has learned of each creature
+   * kind. It starts empty: nothing was recorded before, so a kind is listed on its next kill.
+   */
+  23: (old) => {
+    const raw = JSON.parse(old.sim) as { entities: { comps: { journal: unknown[] } } };
+    for (const j of raw.entities.comps.journal)
+      if (j && typeof j === 'object') (j as Record<string, unknown>).bestiary = {};
+    return { ...old, schema: 24, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

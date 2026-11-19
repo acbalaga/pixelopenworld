@@ -20,6 +20,7 @@ export function newJournal(): Journal {
     renown: {},
     tradeCoin: {},
     pinned: null,
+    bestiary: {},
   };
 }
 

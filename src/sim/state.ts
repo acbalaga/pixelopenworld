@@ -466,6 +466,18 @@ export interface Journal {
   tradeCoin: Record<string, number>;
   /** The request shown on the HUD, or null for the first one under way. */
   pinned: string | null;
+  /** What the avatar has learned of each creature kind (M4-05 bestiary). By creature id. */
+  bestiary: Record<string, BestiaryEntry>;
+}
+
+/**
+ * One creature kind in the Bestiary. A kind is listed once it has been slain or befriended.
+ * `temperaments` are the natures the avatar has seen it act on, so the entry shows only those.
+ */
+export interface BestiaryEntry {
+  slain?: true;
+  befriended?: true;
+  temperaments: string[];
 }
 
 /** One request the avatar has taken (M3-11). */

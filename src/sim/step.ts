@@ -21,6 +21,7 @@ import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
 import { wearSystem } from './items';
 import { skillsSystem } from './systems/skills';
+import { bestiarySystem } from './systems/bestiary';
 import { trialsSystem } from './systems/trials';
 import { craftSystem } from './crafting';
 import { elementsSystem } from './elements';
@@ -77,6 +78,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   skillsSystem,
   deedsSystem,
   pathsSystem,
+  bestiarySystem,
 ];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */
