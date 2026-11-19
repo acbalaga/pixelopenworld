@@ -63,6 +63,10 @@ export type SimEvent =
   | { type: 'projectileLaunched'; id: number; owner: number }
   | { type: 'lockChanged'; id: number; target: number | null }
   | { type: 'noticed'; id: number; target: number }
+  /** A territorial creature began its warning: pose, sound and a marker at the territory edge. */
+  | { type: 'creatureWarn'; id: number; target: number }
+  /** A creature acted on its temperament in front of `target`. The Bestiary stores the first (M4-05). */
+  | { type: 'temperamentSeen'; id: number; target: number; kind: string; temperament: string }
   | { type: 'leashReset'; id: number }
   | { type: 'phaseChanged'; id: number; phase: number }
   | { type: 'spawned'; id: number; creature: string }

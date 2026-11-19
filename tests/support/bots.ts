@@ -135,6 +135,12 @@ export class Run {
       Math.round(here.x / 256) + 16,
       Math.round(here.y / 256),
     );
+    // The bot picks the fight, so the creature is provoked from the first tick.
+    const brain = this.s.entities.comps.ai[foe];
+    if (brain) {
+      brain.provoked = true;
+      brain.target = this.me;
+    }
     if (opts.hpOverride) this.s.entities.comps.pools[foe]!.hp = opts.hpOverride;
     const max = opts.maxTicks ?? 900;
     for (let i = 0; i < max; i++) {

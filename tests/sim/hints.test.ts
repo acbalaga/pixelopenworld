@@ -7,6 +7,9 @@ import type { Command } from '../../src/sim/kernel/commands';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { hostileCreatures } from '../support/temperament';
+
+hostileCreatures('creature.mossling');
 
 interface Rig {
   s: SimState;

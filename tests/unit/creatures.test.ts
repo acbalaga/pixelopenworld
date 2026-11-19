@@ -5,6 +5,7 @@ import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { minTelegraphMs, minTelegraphTicks } from '../../src/content/creatures/rules';
 import type { CreatureDef } from '../../src/content/creatures/types';
 import { SPRITES } from '../../src/content/sprites';
+import { without } from '../support/temperament';
 import { validateCreatures, type ContentRefs } from '../../tools/bake-assets/validateCreatures';
 
 const refs: ContentRefs = {
@@ -51,6 +52,26 @@ describe('creature content', () => {
           (ATTACKS[a.attack]!.windup * 1000) / 30,
           `${c.id} ${a.attack}`,
         ).toBeGreaterThanOrEqual(minTelegraphMs(c.tier));
+  });
+});
+
+describe('temperament data', () => {
+  it('a territorial creature needs territory, a curious one approach, a skittish one fleeHpPct', () => {
+    const bare = without(mossling, 'territory', 'approach', 'night');
+    expect(check({ ...bare, temperament: 'territorial' }).join()).toMatch(/needs territory/);
+    expect(check({ ...bare, temperament: 'curious' }).join()).toMatch(/needs approach/);
+    const noFlee = without(bare, 'fleeHpPct');
+    expect(check({ ...noFlee, temperament: 'skittish' }).join()).toMatch(/needs fleeHpPct/);
+    expect(check({ ...bare, temperament: 'hostile', night: 'territorial' }).join()).toMatch(
+      /needs territory/,
+    );
+  });
+
+  it('a tier 1 warning is at least a second, and the territory sits inside notice', () => {
+    const short = { ...mossling, territory: { radius: 70, warnTicks: 20 } };
+    expect(check({ ...short, night: 'territorial' }).join()).toMatch(/tier 1 minimum 30/);
+    const wide = { ...mossling, territory: { radius: 400, warnTicks: 40 } };
+    expect(check(wide).join()).toMatch(/wider than notice/);
   });
 });
 

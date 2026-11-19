@@ -32,6 +32,19 @@ export interface PhaseDef {
   speedPct: number;
 }
 
+/**
+ * How a creature decides whether and when to attack (design/04, D20). Hostile attacks on notice.
+ * Territorial warns inside its territory, then attacks. Defensive fights only when hit. Skittish
+ * runs. Passive never fights. Curious follows, and fights only when hit.
+ */
+export type Temperament =
+  | 'hostile'
+  | 'territorial'
+  | 'defensive'
+  | 'skittish'
+  | 'passive'
+  | 'curious';
+
 /** A creature. Archetype plus stats, telegraph timings (through its attacks), drops and sounds. */
 export interface CreatureDef {
   id: string;
@@ -51,7 +64,20 @@ export interface CreatureDef {
   lose: number;
   /** Returns home and resets when it is this far from where it started. */
   leash: number;
-  /** Runs away below this Health percent, if set. */
+  /** How it decides to fight. Read by the AI before it can start a chase. */
+  temperament: Temperament;
+  /** Replaces `temperament` from dusk to dawn. */
+  night?: Temperament;
+  /** Members of one pack id within `radius` px of a member that is hit are provoked too. */
+  pack?: { id: string; radius: number };
+  /**
+   * Territorial: a target inside `radius` px of the creature's home starts a warning, and a target
+   * still inside after `warnTicks` is chased.
+   */
+  territory?: { radius: number; warnTicks: number };
+  /** Curious: stops this many px from its target and follows from there. */
+  approach?: number;
+  /** Runs away below this Health percent, if set. Skittish: fights below it instead. */
   fleeHpPct?: number;
   /** Shooters keep within this band of distance, px. */
   keepRange?: { min: number; max: number };

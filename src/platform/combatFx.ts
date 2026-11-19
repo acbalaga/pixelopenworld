@@ -18,6 +18,8 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
       return CREATURE_ATTACK_SFX[e.attack] ?? null;
     case 'noticed':
       return 'sfx.creature_notice';
+    case 'creatureWarn':
+      return 'sfx.creature_warn';
     case 'projectileLaunched':
       return e.owner === playerId ? null : 'sfx.spit';
     case 'damageDealt':

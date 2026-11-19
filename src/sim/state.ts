@@ -332,7 +332,17 @@ export interface Echo {
   coin: number;
 }
 
-export type AiState = 'idle' | 'wander' | 'notice' | 'approach' | 'leash' | 'flee';
+export type AiState =
+  | 'idle'
+  | 'wander'
+  | 'notice'
+  | 'approach'
+  | 'leash'
+  | 'flee'
+  /** Territorial: a target is inside the territory and the warning is running. */
+  | 'warn'
+  /** Curious: following a target at its approach distance. */
+  | 'follow';
 
 /** Creature brain. Attacking is the fighter's state machine; this decides when to start. */
 export interface Ai {
@@ -352,6 +362,11 @@ export interface Ai {
   spawner: number;
   /** Already ran away once at low Health. */
   fled: boolean;
+  /**
+   * Hit, or a packmate was hit, or cornered: acts as hostile until it resets at its leash. Absent
+   * means false, so saves from before M4-16 load as they are.
+   */
+  provoked?: boolean;
 }
 
 /** Keeps `cap` of a creature alive near its position. */

@@ -8,6 +8,8 @@
  *   --check       exit 1 when a number is past `tools/balance-thresholds.json`
  *   --out PATH    where to write the report (default reports/fight-sim.md)
  *   --no-write    print only
+ *   --start NAME  how fights begin: `engaged` (default, the par measure) or a temperament
+ *                 (hostile, territorial, defensive, skittish, passive, curious)
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -15,7 +17,7 @@ import { SKILLS_BALANCE } from '../../src/content/balance/skills';
 import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { BUILDS } from './builds';
 import { DEVIATIONS } from './deviations';
-import { fight, type FightResult } from './harness';
+import { fight, type FightResult, type FightStart } from './harness';
 import { BANDS, PAR_TIER, ROLES, TARGETS } from './targets';
 
 const arg = (name: string): string | undefined => {
@@ -24,6 +26,7 @@ const arg = (name: string): string | undefined => {
 };
 const SEEDS = Number(arg('--seeds') ?? 20);
 const OUT = arg('--out') ?? 'reports/fight-sim.md';
+const START = (arg('--start') ?? 'engaged') as FightStart;
 const thresholds = JSON.parse(readFileSync('tools/balance-thresholds.json', 'utf8')) as {
   fightSim: {
     maxDeathPct: number;
@@ -75,7 +78,7 @@ const cells: Cell[] = [];
 const cell = (b: (typeof BUILDS)[number], tier: 1 | 2, creature: string, count: number): void => {
   const rank = par[tier] as number;
   const results = Array.from({ length: SEEDS }, (_, i) =>
-    fight(b, tier, rank, creature, i + 1, count),
+    fight(b, tier, rank, creature, i + 1, count, START),
   );
   const won = results.filter((r) => r.ttk !== null).map((r) => r.ttk as number);
   cells.push({
