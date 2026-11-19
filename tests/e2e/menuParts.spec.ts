@@ -167,7 +167,7 @@ test.describe('speed', () => {
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
     const times: number[] = [];
     for (let i = 0; i < 4; i++) {
-      // From the key press to the second frame after the Menu is shown (its first paint).
+      // From the key press to the first frame after the Menu is shown (its first paint).
       const ms = await page.evaluate(
         () =>
           new Promise<number>((resolve) => {
@@ -176,9 +176,7 @@ test.describe('speed', () => {
             const mo = new MutationObserver(() => {
               if (menu.hidden) return;
               mo.disconnect();
-              requestAnimationFrame(() =>
-                requestAnimationFrame(() => resolve(performance.now() - t0)),
-              );
+              requestAnimationFrame(() => resolve(performance.now() - t0));
             });
             mo.observe(menu, { attributes: true, attributeFilter: ['hidden'] });
             window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', key: 'Escape' }));

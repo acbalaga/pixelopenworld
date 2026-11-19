@@ -589,6 +589,7 @@ export class MenuSheet {
       rows.length === 0 ? emptyState(S.parts.requestsEmpty) : ul,
     );
     sec.dataset.key = 'requests';
+    sec.classList.add('pow-requests');
     this.body.appendChild(sec);
   }
 
