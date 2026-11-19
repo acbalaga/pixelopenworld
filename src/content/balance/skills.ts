@@ -49,6 +49,13 @@ export const SKILLS_BALANCE = {
     'technique.evasion_light_feet': 12,
   } as Readonly<Record<string, number>>,
   dummyInsightUntil: 5,
+  /**
+   * Training dummies pay no XP at or above this many points (the first Trial threshold), and no
+   * more than `dummyDailyXp` XP per skill per in-game day below it. Past the ceiling a dummy is for
+   * trying techniques, not for levelling, and no loop can farm one.
+   */
+  dummyXpUntil: 15,
+  dummyDailyXp: 350,
   /** Sprint pays once for every this many px run. */
   sprintPx: 32,
   /** A feet move longer than this in one tick is a teleport or respawn and pays no sprint XP. */

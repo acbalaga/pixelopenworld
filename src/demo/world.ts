@@ -144,6 +144,7 @@ import { createAvatar } from '../sim/avatar';
 import { SKILLS } from '../content/skills';
 import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
+import { bankOfflineRest } from '../sim/rest';
 import { ORIGINS, wakesFor } from '../content/world/origins';
 import { WAKE_TABLES } from '../content/world/wake';
 import { ORIGIN_STRINGS } from '../content/strings/origins';
@@ -605,6 +606,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const who = restored
     ? (findAvatar(restored) as number)
     : createAvatar(state, px(feet.x), px(feet.y), entry?.handle, entry?.origin);
+  // Logged out in a bed: the time away banks Rested (the clock itself stays real).
+  if (restored && loaded) {
+    const away =
+      worldTickAt(clock.trustedNow(), worldEpoch) -
+      worldTickAt(loaded.plain.time.lastTrustedNow, worldEpoch);
+    bankOfflineRest(state, who, Math.max(0, away));
+  }
   if (wake) {
     const a = state.entities.comps.avatar[who];
     if (a) a.facing = wake.facing as typeof a.facing;

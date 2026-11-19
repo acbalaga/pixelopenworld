@@ -34,6 +34,8 @@ export interface Avatar {
   coin: number;
   /** Where the avatar wakes after dying: the last Waystone touched. Feet position, sub-pixel units. */
   respawn: Vec;
+  /** Feet position where the avatar last slept in a bed. A save made still there banks Rested while away. */
+  bedAt?: Vec;
   /** Ran dry: sprint is off until stamina recovers. */
   winded: boolean;
   /** The name the player chose at setup. Shown to other players, so it is validated (shared/handle). */
@@ -288,6 +290,8 @@ export interface Skills {
   offered: string[];
   /** First-time bonuses already paid, as `skill:event:subject`. */
   seen: string[];
+  /** XP paid by training dummies on in-game day `day`, by skill. Absent means none yet. */
+  dummy?: { day: number; xp: Record<string, number> };
   /** Sprint distance: last feet position and sub-pixel distance not yet paid. */
   stride: { x: number; y: number; acc: number };
   /** Ticks of night spent outdoors that have not yet been paid as an in-game hour (Survival). */

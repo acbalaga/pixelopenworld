@@ -8,9 +8,9 @@ import { countInsight } from '../combat/techniques';
 import { SKILLS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
 import { SUBPX } from '../kernel/fixed';
-import type { SimState } from '../state';
+import type { SimState, Skills } from '../state';
 import { addXp, challengePct, pointsOf } from '../skills';
-import { dayPhase } from '../time';
+import { dayIndex, dayPhase } from '../time';
 
 const TILE = 16;
 
@@ -26,6 +26,20 @@ interface Practice {
   dummy?: boolean;
 }
 
+/**
+ * What a training dummy may pay a skill right now: nothing from the ceiling up, and at most the
+ * daily budget below it. The amount paid is counted against today's budget.
+ */
+function dummyAllowance(state: SimState, s: Skills, skill: string, amount: number): number {
+  if ((s.points[skill] ?? 0) >= B.dummyXpUntil) return 0;
+  const day = dayIndex(state.worldTick);
+  if (!s.dummy || s.dummy.day !== day) s.dummy = { day, xp: {} };
+  const used = s.dummy.xp[skill] ?? 0;
+  const paid = Math.max(0, Math.min(amount, B.dummyDailyXp - used));
+  s.dummy.xp[skill] = used + paid;
+  return paid;
+}
+
 /** Pays every skill whose table rows match `p`. Skills are visited in id order. */
 function practice(state: SimState, who: EntityId, p: Practice): void {
   const s = getComp(state.entities, who, 'skills');
@@ -37,6 +51,7 @@ function practice(state: SimState, who: EntityId, p: Practice): void {
       if (src.on !== p.on || (src.tag !== undefined && src.tag !== p.tag)) continue;
       const pct = src.scaled === false ? 100 : challengePct(p.tier, s.points[id] ?? 0);
       let amount = Math.floor((src.base * pct) / 100);
+      if (p.dummy) amount = dummyAllowance(state, s, id, amount);
       if (src.firstTime && p.subject !== null) {
         const key = `${id}:${p.on}:${p.subject}`;
         if (!s.seen.includes(key)) {

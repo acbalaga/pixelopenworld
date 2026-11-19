@@ -8,6 +8,16 @@ export const STATUS_BALANCE = {
   /** Rested: skill XP bonus while it lasts, percent, and how long a night's sleep keeps it. */
   restedXpPct: 25,
   restedTicks: 9000,
+  /** Sleeping in the dark (dusk to dawn) keeps Rested longer: ten real minutes. */
+  restedNightTicks: 18000,
+  /**
+   * Logging out in a bed banks Rested for the time away (M4 rest): this percent of the ticks away,
+   * if at least `restedOfflineMinAway` passed, never more than `restedOfflineCap`. The clock stays
+   * real: nothing here moves time of day, weather or the rosters.
+   */
+  restedOfflinePct: 50,
+  restedOfflineMinAway: 9000,
+  restedOfflineCap: 27000,
   /** Burning and Poisoned: damage dealt every `every` ticks. */
   burning: { ticks: 150, every: 15, damage: 1 },
   poisoned: { ticks: 300, every: 30, damage: 1 },

@@ -1,4 +1,6 @@
 import { offerFromFixture } from './trials';
+import { STATUS_BALANCE as SB } from '../../content/balance/status';
+import { isDark } from '../combat/temperament';
 import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import { FIXTURES } from '../../content/world/fixtures';
 import { roomAt } from '../../content/world/rooms';
@@ -210,7 +212,12 @@ export function bedNear(state: SimState, who: EntityId): EntityId | null {
 export function sleep(state: SimState, who: EntityId): boolean {
   const id = bedNear(state, who);
   if (id === null || getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
-  if (!applyStatus(state, who, 'rested', -1)) return false;
+  // A night in the dark keeps Rested longer than a nap by day.
+  const ticks = isDark(state.worldTick) ? SB.restedNightTicks : SB.restedTicks;
+  if (!applyStatus(state, who, 'rested', -1, { ticks })) return false;
+  const a = getComp(state.entities, who, 'avatar');
+  const at = getComp(state.entities, who, 'pos');
+  if (a && at) a.bedAt = { x: at.x, y: at.y };
   emit(state.events, { type: 'slept', id, who });
   return true;
 }
