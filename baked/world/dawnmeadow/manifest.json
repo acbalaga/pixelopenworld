@@ -1,7 +1,7 @@
 {
   "version": 1,
   "region": "dawnmeadow",
-  "hash": "34690dcac6de12f1",
+  "hash": "057eb83581a55c5e",
   "seed": 20260101,
   "chunks": {
     "w": 12,
@@ -85,7 +85,7 @@
       "file": "chunk-0-1.bin",
       "cx": 0,
       "cy": 1,
-      "hash": "089607aba2690a93"
+      "hash": "13cde26d6317b50c"
     },
     {
       "file": "chunk-1-1.bin",

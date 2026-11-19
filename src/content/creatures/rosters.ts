@@ -155,12 +155,17 @@ export const SPECIAL_SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     radius: 16,
     daily: true,
     step: 'c',
-    // Four points around Cairnmoor. Its home moves to the next each in-game day.
+    // Six days, six places (regions/01 Cairnmoor): the north tors, the east ridge, the central
+    // hollow, the far south west moor, the southern edge above the Fernside climb, and the western
+    // slope over the cairn ring. Its home moves to the next each in-game day, so the beast a player
+    // met on the ridge is somewhere else tomorrow. None is near the Waystone (the bake checks).
     route: [
-      { x: 30, y: 62 },
-      { x: 54, y: 78 },
-      { x: 26, y: 84 },
-      { x: 12, y: 52 },
+      { x: 14, y: 40 },
+      { x: 60, y: 70 },
+      { x: 30, y: 70 },
+      { x: 10, y: 78 },
+      { x: 52, y: 88 },
+      { x: 24, y: 52 },
     ],
   },
 };

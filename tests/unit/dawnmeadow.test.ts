@@ -327,6 +327,28 @@ describe('spawner bake checks (POW-M4-05)', () => {
     expect(validateRegion(DAWNMEADOW, missing).some((e) => e.includes('marsh slot 1'))).toBe(true);
   });
 
+  it("Hollowhorn's six route points are open ground, apart from roads and Waystones", () => {
+    const route = SPAWNERS['spawner.hollowhorn']!.route!;
+    expect(route).toHaveLength(6);
+    expect(validateRegion(DAWNMEADOW, files).filter((e) => e.includes('route point'))).toEqual([]);
+    // A route point beside the Waystone, or in a wall, is caught.
+    const w = DAWNMEADOW.waystones.find((x) => x.id === 'cairnmoor')!;
+    const near = structuredClone(SPAWNERS['spawner.hollowhorn']!);
+    (SPAWNERS as Record<string, unknown>)['spawner.hollowhorn'] = {
+      ...near,
+      route: [{ x: w.x + 3, y: w.y }, ...near.route!.slice(1)],
+    };
+    try {
+      expect(
+        validateRegion(DAWNMEADOW, files).some(
+          (e) => e.includes('route point 0') && e.includes('Waystone'),
+        ),
+      ).toBe(true);
+    } finally {
+      (SPAWNERS as Record<string, unknown>)['spawner.hollowhorn'] = near;
+    }
+  });
+
   it('every placed spawner of the baked region is a defined one, and Hollowhorn starts on its route', () => {
     for (const o of objects.filter((x) => x.kind.startsWith('spawner.')))
       expect(SPAWNERS[o.kind], o.kind).toBeDefined();

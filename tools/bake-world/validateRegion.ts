@@ -6,7 +6,11 @@ import { ZONES, slotKind } from '../../src/content/creatures/rosters';
 import { TILESET } from '../../src/content/world/tileset';
 import { carveRivers, carveRoads } from './carve';
 import { Grid, Protect } from './grid';
+import { SPAWNERS } from '../../src/content/creatures';
 import { SAFE_TILES, spawnerOf, startsFights } from './spawnRules';
+
+/** A roaming creature's route stays this far from every Waystone, in tiles. */
+export const WAYSTONE_CLEAR_TILES = 20;
 import { decodeChunk } from '../../src/sim/world/chunk';
 
 /** The shortest a landmark may be to show above the trees from afar, in tiles. */
@@ -229,6 +233,38 @@ function checkSpawners(
         }
       }
     if (hit) errors.push(at(`${o.kind} at ${o.x}, ${o.y} is within ${SAFE_TILES} tiles of ${hit}`));
+  }
+  // A roaming creature's route: every point is open ground, and keeps the same safe distances, and
+  // a good way from every Waystone, so nobody fast travels into the beast.
+  for (const [kind, def] of Object.entries(SPAWNERS)) {
+    if (!def.route || !spawners.some((o) => o.kind === kind)) continue;
+    def.route.forEach((p, i) => {
+      const where = `${kind} route point ${i} at ${p.x}, ${p.y}`;
+      if (baked.collision(p.x, p.y) !== Solid.None) errors.push(at(`${where} is not open ground`));
+      for (const w of spec.waystones)
+        if ((w.x - p.x) ** 2 + (w.y - p.y) ** 2 < WAYSTONE_CLEAR_TILES ** 2)
+          errors.push(
+            at(`${where} is within ${WAYSTONE_CLEAR_TILES} tiles of the ${w.id} Waystone`),
+          );
+      if (!startsFights(def)) return;
+      for (const w of spec.wakePoints)
+        if ((w.x - p.x) ** 2 + (w.y - p.y) ** 2 < r2)
+          errors.push(at(`${where} is within ${SAFE_TILES} tiles of wake point ${w.id}`));
+      for (let y = Math.max(0, p.y - SAFE_TILES); y <= Math.min(baked.h - 1, p.y + SAFE_TILES); y++)
+        for (
+          let x = Math.max(0, p.x - SAFE_TILES);
+          x <= Math.min(baked.w - 1, p.x + SAFE_TILES);
+          x++
+        ) {
+          if ((x - p.x) ** 2 + (y - p.y) ** 2 >= r2) continue;
+          if (roads.has(roads.at(x, y), Protect.Road))
+            return void errors.push(
+              at(`${where} is within ${SAFE_TILES} tiles of a road at ${x}, ${y}`),
+            );
+          if (walls.has(baked.objectTile(x, y)))
+            return void errors.push(at(`${where} is within ${SAFE_TILES} tiles of the town wall`));
+        }
+    });
   }
   const placedKinds = new Set(spawners.map((o) => o.kind));
   const zoneIds = new Set(spec.zones.map((z) => z.roster));
