@@ -100,6 +100,21 @@ export const TILESET: readonly string[] = [
   'tile.barrel',
   'tile.sign_post',
   'tile.board',
+  // Dawnmeadow's own art (M4-04). Appended: chunk files store these ids by position.
+  ...([0, 1] as const).flatMap((row) =>
+    (['l', 'm', 'r'] as const).map((col) => `tile.roof_thatch_${row}${col}`),
+  ),
+  'tile.wall_timber',
+  'tile.wall_timber_window',
+  'tile.wall_timber_door',
+  'tile.wall_stone_h',
+  'tile.wall_stone_v',
+  'tile.wall_stone_post',
+  'tile.crop_barley_0',
+  'tile.crop_barley_1',
+  'tile.hay_bale',
+  'tile.reeds_0',
+  'tile.reeds_1',
 ];
 
 /** Tile id for a tile definition id. Throws for unknown ids. */
@@ -122,6 +137,11 @@ export const TILE_FLAGS: Readonly<Record<string, readonly TileFlag[]>> = {
   'tile.fence_post': ['flammable'],
   'tile.crate': ['flammable'],
   'tile.barrel': ['flammable'],
+  'tile.crop_barley_0': ['flammable'],
+  'tile.crop_barley_1': ['flammable'],
+  'tile.hay_bale': ['flammable'],
+  'tile.reeds_0': ['flammable'],
+  'tile.reeds_1': ['flammable'],
 };
 
 /** Flags of a terrain id. Water is `water`. */

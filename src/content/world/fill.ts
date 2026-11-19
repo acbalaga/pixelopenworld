@@ -82,7 +82,12 @@ export const FILL_BIOMES: Readonly<Record<string, FillBiome>> = {
     detailRate: 0.04,
     details: [flower('white', 2), flower('violet', 1)],
     objectRate: 0.07,
-    objects: [{ object: 'tile.bush_green_0', weight: 5 }, tree('birch_0', 1)],
+    objects: [
+      { object: 'tile.bush_green_0', weight: 4 },
+      { object: 'tile.reeds_0', weight: 3 },
+      { object: 'tile.reeds_1', weight: 3 },
+      tree('birch_0', 1),
+    ],
   },
   // Open water.
   sea: { id: 'sea', ground: Terrain.Water, detailRate: 0, details: [], objectRate: 0, objects: [] },

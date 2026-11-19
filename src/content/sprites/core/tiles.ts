@@ -127,5 +127,24 @@ const slice: TileDef[] = [
   solidTile('tile.board', { tags: ['flammable'] }),
 ];
 
+/** Dawnmeadow's own tiles (M4-04): thatch and timber, the town wall, barley, hay and reeds. */
+const dawnmeadow: TileDef[] = [
+  ...([0, 1] as const).flatMap((row) =>
+    (['l', 'm', 'r'] as const).map((col) => solidTile(`tile.roof_thatch_${row}${col}`)),
+  ),
+  ...['', '_window', '_door'].map((k) => solidTile(`tile.wall_timber${k}`)),
+  ...['h', 'v', 'post'].map((k) => solidTile(`tile.wall_stone_${k}`)),
+  ...[0, 1].map((v): TileDef => ({
+    id: `tile.crop_barley_${v}`,
+    sprite: `tile.crop_barley_${v}`,
+    frame: 'base',
+    layer: 'detail',
+    collision: 'none',
+    tags: ['flammable'],
+  })),
+  solidTile('tile.hay_bale', { tags: ['flammable'] }),
+  ...[0, 1].map((v) => solidTile(`tile.reeds_${v}`, { collision: 'none', tags: ['flammable'] })),
+];
+
 /** Terrain, props and generated nature tiles for the core group. */
-export const CORE_TILES: readonly TileDef[] = [...terrain, ...generated, ...slice];
+export const CORE_TILES: readonly TileDef[] = [...terrain, ...generated, ...slice, ...dawnmeadow];

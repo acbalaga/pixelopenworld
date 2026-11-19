@@ -161,15 +161,15 @@ function hearthford(): StampV2 {
   part('stalls', 'market', 31, 41, 5, 1);
 
   // Eight homes.
-  const homes: [number, number, number, 'red' | 'slate'][] = [
+  const homes: [number, number, number, 'red' | 'slate' | 'thatch'][] = [
     [3, 5, 8, 'red'],
-    [12, 5, 7, 'slate'],
+    [12, 5, 7, 'thatch'],
     [40, 31, 7, 'red'],
-    [49, 31, 5, 'slate'],
+    [49, 31, 5, 'thatch'],
     [40, 38, 8, 'slate'],
-    [32, 47, 7, 'red'],
+    [32, 47, 7, 'thatch'],
     [41, 47, 7, 'slate'],
-    [50, 47, 4, 'red'],
+    [50, 47, 4, 'thatch'],
   ];
   homes.forEach(([x, y, w, roof], i) => {
     b.building(x, y, w, 5, { roof, door: Math.floor(w / 2), label: `home ${i + 1}` });
@@ -177,12 +177,12 @@ function hearthford(): StampV2 {
   });
   b.rect(2, 10, 24, 4, Terrain.Cobble);
 
-  // The wall: a low wall of fence, four gates where the streets leave, a sign at each.
+  // The wall: a low stone wall, four gates where the streets leave, a sign at each.
   const open = [26, 27, 28, 29];
-  b.fence(0, 0, 55, 0, open);
-  b.fence(0, 55, 55, 55, open);
-  b.fence(0, 0, 0, 55, open);
-  b.fence(55, 0, 55, 55, open);
+  b.wall(0, 0, 55, 0, open);
+  b.wall(0, 55, 55, 55, open);
+  b.wall(0, 0, 0, 55, open);
+  b.wall(55, 0, 55, 55, open);
   part('gate_n', 'gate', 26, 0, 4, 1);
   part('gate_s', 'gate', 26, 55, 4, 1);
   part('gate_w', 'gate', 0, 26, 1, 4);
