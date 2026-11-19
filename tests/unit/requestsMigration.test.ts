@@ -59,7 +59,11 @@ describe('schema 16 to 17 migration (requests v2)', () => {
     expect(now.ledger.requestRewards).toEqual({});
     // Nothing else changed: the avatar, the coin and the skills are as they were.
     const was = deserializeState(fixture.plain.sim);
-    expect(s.entities.comps.avatar[me]).toEqual(was.entities.comps.avatar[me]);
+    // (Schema 20 gave the avatar an origin.)
+    expect(s.entities.comps.avatar[me]).toEqual({
+      ...was.entities.comps.avatar[me],
+      origin: 'origin.unremembered',
+    });
     expect(s.entities.comps.skills[me]!.points).toEqual(was.entities.comps.skills[me]!.points);
     expect(validateSave(now).reasons.filter((r) => r.code !== 'XP_IMPLAUSIBLE')).toEqual([]);
   });

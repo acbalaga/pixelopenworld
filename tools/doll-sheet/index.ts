@@ -79,7 +79,7 @@ const groups: Group[] = [
     name: 'accessories',
     rows: ['none', ...Object.keys(ACCESSORIES)].map((a) => ({
       label: a,
-      patch: { accessory: a as DollSpec['accessory'] },
+      patch: { accessory: a as NonNullable<DollSpec['accessory']> },
     })),
   },
   {
