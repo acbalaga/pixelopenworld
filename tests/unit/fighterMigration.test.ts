@@ -3,10 +3,11 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { JsonCodec } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
-import { migrate } from '../../src/save/migrations';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
 import { deserializeState } from '../../src/sim/state';
 import { honestPlain } from '../support/saves';
+import { LAST_SLICE_SCHEMA } from '../support/saves';
 
 const fixture = JSON.parse(
   readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-8.json'), 'utf8'),
@@ -16,8 +17,8 @@ describe('schema 8 to 9 migration', () => {
   it('gives every fighter a lowered guard and a zero stood-still count', async () => {
     expect(fixture.plain.schema).toBe(8);
     const bytes = new TextEncoder().encode(JSON.stringify(fixture.plain));
-    const now = migrate(await new JsonCodec().decode(bytes));
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const now = migrate(await new JsonCodec().decode(bytes), MIGRATIONS, LAST_SLICE_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const s = deserializeState(now.sim);
     const fighters = s.entities.comps.fighter.filter((f) => f);
     // The avatar and the Mossling the fixture was exported with.

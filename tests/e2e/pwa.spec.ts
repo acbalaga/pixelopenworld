@@ -35,7 +35,7 @@ test('installability: manifest, icons and a worker with a fetch handler', async 
   page,
   request,
 }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   const href = await page.locator('link[rel=manifest]').getAttribute('href');
   const res = await request.get(href as string);
@@ -53,7 +53,7 @@ test('load once online, go offline, reload: the game boots and the saved game lo
   context,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   await controlled(page);
   // Write a save, then remember what it was.
@@ -77,7 +77,7 @@ test('load once online, go offline, reload: the game boots and the saved game lo
 });
 
 test('repeat visits serve chunks and atlases from the cache', async ({ page }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   await controlled(page);
   const served: { url: string; sw: boolean }[] = [];
@@ -149,7 +149,7 @@ test('a new version installs in the background and only takes over on the next l
   const site = await deployServer();
   try {
     const first = await context.newPage();
-    await first.goto(`${site.url}/?at=40,31`);
+    await first.goto(`${site.url}/?region=slice&at=40,31`);
     await ready(first);
     await controlled(first);
     const before = await cacheKeys(first);
@@ -179,7 +179,7 @@ test('a new version installs in the background and only takes over on the next l
     // Close every window. The next launch runs the new version and the old cache is dropped.
     await first.close();
     const next = await context.newPage();
-    await next.goto(`${site.url}/?at=40,31`);
+    await next.goto(`${site.url}/?region=slice&at=40,31`);
     await ready(next);
     await expect.poll(() => cacheKeys(next), { timeout: 20_000 }).toEqual(['pow-next']);
   } finally {
@@ -188,7 +188,7 @@ test('a new version installs in the background and only takes over on the next l
 });
 
 test('System says whether storage is protected and how to install', async ({ page }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   await page.touchscreen.tap(360 - 12 - 22, 12 + 22);
   await page.locator('[data-tab="system"]').click();
@@ -205,7 +205,7 @@ test('Update now: System offers it when a version is waiting, saves, restarts on
   const site = await deployServer();
   try {
     const page = await context.newPage();
-    await page.goto(`${site.url}/?at=40,31`);
+    await page.goto(`${site.url}/?region=slice&at=40,31`);
     await ready(page);
     await controlled(page);
     const openSystem = async (): Promise<void> => {
@@ -248,7 +248,7 @@ test('the title offers a waiting update, and taking it restarts on the new versi
   const site = await deployServer();
   try {
     const page = await context.newPage();
-    await page.goto(`${site.url}/`);
+    await page.goto(`${site.url}/?region=slice`);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Pixel');
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;

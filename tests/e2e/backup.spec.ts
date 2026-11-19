@@ -32,7 +32,7 @@ const saveNow = async (page: Page): Promise<void> => {
 };
 
 async function newCharacter(page: Page, handle: string): Promise<void> {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill(handle);
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -89,7 +89,7 @@ test('export in one profile, import in a fresh profile with the network blocked:
   // A fresh profile: nothing stored. Take the network away once the page has loaded.
   const other = await fresh(browser);
   const problems = await watchProblems(other);
-  await other.goto('/');
+  await other.goto('/?region=slice');
   await expect(other.getByText('No character on this device yet.')).toBeVisible();
   await other.waitForTimeout(1500);
   await other.context().setOffline(true);
@@ -123,7 +123,7 @@ test('a file with one flipped byte is refused with a clear message and changes n
     writeFileSync(path, bad);
 
     const other = await fresh(browser);
-    await other.goto('/');
+    await other.goto('/?region=slice');
     await expect(other.getByText('No character on this device yet.')).toBeVisible();
     const chooser = other.waitForEvent('filechooser');
     await other.getByRole('button', { name: 'Import save file' }).click();
@@ -164,7 +164,7 @@ test('importing over a save asks first, Cancel changes nothing, and Import keeps
   await expect(dialog).toContainText('replaces the save on this device');
   await dialog.getByRole('button', { name: 'Cancel' }).click();
   await expect(dialog).toHaveCount(0);
-  await other.goto('/');
+  await other.goto('/?region=slice');
   await expect(other.getByText('Signed in as Second_2.')).toBeVisible();
 
   // Import: the page reloads onto the imported character, and the old save is still stored.

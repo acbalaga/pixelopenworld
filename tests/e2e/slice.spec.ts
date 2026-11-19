@@ -20,7 +20,7 @@ const PLACES: readonly [name: string, at: string][] = [
 for (const [name, at] of PLACES) {
   test(`slice: ${name} draws with no console or CSP problems`, async ({ page }) => {
     const problems = await watchProblems(page);
-    await page.goto(`/?foes=${name === 'slice-square' ? 1 : 0}&at=${at}`);
+    await page.goto(`/?region=slice&foes=${name === 'slice-square' ? 1 : 0}&at=${at}`);
     await ready(page);
     await shot(page, name);
     expect(problems.console).toEqual([]);
@@ -35,7 +35,7 @@ test('slice: the tablet opens with the context key, shows glyphs only, and close
 }) => {
   const problems = await watchProblems(page);
   // Room D, one tile east of the tablet, facing it.
-  await page.goto('/?foes=0&at=40,134');
+  await page.goto('/?region=slice&foes=0&at=40,134');
   await ready(page);
   await page.keyboard.down('KeyA');
   await page.waitForTimeout(250);
@@ -55,7 +55,7 @@ test('slice: the tablet opens with the context key, shows glyphs only, and close
 test('slice: a locked door says so', async ({ page }) => {
   const problems = await watchProblems(page);
   // The hall, one tile west of the boss door, facing it.
-  await page.goto('/?foes=0&at=53,108');
+  await page.goto('/?region=slice&foes=0&at=53,108');
   await ready(page);
   await page.keyboard.down('KeyD');
   await page.waitForTimeout(250);
@@ -73,7 +73,7 @@ test.describe('touch', () => {
     page,
   }) => {
     const problems = await watchProblems(page);
-    await page.goto('/?foes=0&at=40,134');
+    await page.goto('/?region=slice&foes=0&at=40,134');
     await ready(page);
     await page.keyboard.down('KeyA');
     await page.waitForTimeout(250);

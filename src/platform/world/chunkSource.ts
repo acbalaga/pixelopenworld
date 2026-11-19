@@ -18,6 +18,7 @@ export interface RegionManifest {
   files: ManifestFile[];
   /** Where a new character may start, in tiles. */
   wakePoints?: { id: string; x: number; y: number }[];
+  waystones?: { id: string; x: number; y: number }[];
 }
 
 const dec = new TextDecoder();

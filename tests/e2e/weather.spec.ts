@@ -42,7 +42,7 @@ test('the same spot at four times of day, in rain and in fog', async ({ page }) 
   const problems = await watchProblems(page);
   const light: Record<string, number> = {};
   for (const time of ['dawn', 'day', 'dusk', 'night']) {
-    await page.goto(`/?${SPOT}&time=${time}&weather=clear&foes=0&nosave=1`);
+    await page.goto(`/?region=slice&${SPOT}&time=${time}&weather=clear&foes=0&nosave=1`);
     await ready(page);
     light[time] = luma(await shot(page, `time-${time}`));
   }
@@ -52,7 +52,7 @@ test('the same spot at four times of day, in rain and in fog', async ({ page }) 
   expect(light.dusk).toBeGreaterThan(light.night!);
   expect(light.day).toBeGreaterThan(light.dusk!);
   for (const weather of ['rain', 'fog', 'storm']) {
-    await page.goto(`/?${SPOT}&time=day&weather=${weather}&foes=0&nosave=1`);
+    await page.goto(`/?region=slice&${SPOT}&time=day&weather=${weather}&foes=0&nosave=1`);
     await ready(page);
     light[weather] = luma(await shot(page, `weather-${weather}`));
   }
@@ -64,7 +64,7 @@ test('the same spot at four times of day, in rain and in fog', async ({ page }) 
 });
 
 test('System shows the calendar', async ({ page }) => {
-  await page.goto(`/?${SPOT}&time=day&weather=rain&foes=0&nosave=1`);
+  await page.goto(`/?region=slice&${SPOT}&time=day&weather=rain&foes=0&nosave=1`);
   await ready(page);
   await page.keyboard.press('Escape');
   await page.locator('[data-tab="system"]').click();
@@ -122,7 +122,11 @@ test('a night storm with lights on a 4x throttled CPU holds the frame budget', a
   page,
   browser,
 }) => {
-  const storm = await record(page, `/?${SPOT}&time=night&weather=storm&foes=0&nosave=1`, 20_000);
+  const storm = await record(
+    page,
+    `/?region=slice&${SPOT}&time=night&weather=storm&foes=0&nosave=1`,
+    20_000,
+  );
   const other = await browser.newPage({ viewport: { width: 360, height: 640 } });
   const clear = await record(other, `/?${SPOT}&time=day&weather=clear&foes=0&nosave=1`, 20_000);
   await other.close();

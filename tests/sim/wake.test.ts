@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { SLICE_MAP } from '../../src/content/world/slice-map';
-import { WAKE_IDS, WAKE_LANDMARKS, WAKE_POINTS, type WakeId } from '../../src/content/world/wake';
+import { DAWNMEADOW } from '../../src/content/world/regions/dawnmeadow/spec';
+import { STAMPS } from '../../src/content/world/stamps';
+import { HEARTHFORD_SIZE } from '../../src/content/world/stamps/hearthford';
+import { TOWN_ORIGIN } from '../../src/content/world/regions/dawnmeadow/spec';
+import { bakeRegion } from '../../tools/bake-world/bake';
+import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
+import {
+  DAWNMEADOW_WAKE_POINTS,
+  WAKE_IDS,
+  WAKE_LANDMARKS,
+  WAKE_POINTS,
+  WAKE_TABLES,
+  type WakeId,
+} from '../../src/content/world/wake';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { knownTechniques } from '../../src/sim/combat/techniques';
 import { kill } from '../../src/sim/combat/fighter';
@@ -46,9 +59,9 @@ describe('the creation seed and the start stream', () => {
 
   it('the character faces the nearest landmark', () => {
     // w1 is west of the square: the fence corner and Waystone are to its east.
-    expect(facingTown(WAKE_POINTS.w1.x, WAKE_POINTS.w1.y)).toBe(Dir.E);
+    expect(facingTown(WAKE_POINTS.w1.x, WAKE_POINTS.w1.y, 'slice')).toBe(Dir.E);
     // w7 is south of it: town is north.
-    expect(facingTown(WAKE_POINTS.w7.x, WAKE_POINTS.w7.y)).toBe(Dir.N);
+    expect(facingTown(WAKE_POINTS.w7.x, WAKE_POINTS.w7.y, 'slice')).toBe(Dir.N);
   });
 });
 
@@ -82,6 +95,66 @@ describe('the eight wake points on the slice map', () => {
       expect(inside).toBe(false);
     },
   );
+});
+
+describe('the eight wake points in Dawnmeadow', () => {
+  const files = bakeRegion(DAWNMEADOW, STAMPS);
+  const chunkAt = new Map<string, ReturnType<typeof decodeChunk>>();
+  for (const [name, v] of files) {
+    const m = /^dawnmeadow\/chunk-(\d+)-(\d+)\.bin$/.exec(name);
+    if (m) chunkAt.set(`${m[1]},${m[2]}`, decodeChunk(v as Uint8Array));
+  }
+  const solid = (x: number, y: number): boolean => {
+    const c = chunkAt.get(`${Math.floor(x / CHUNK_TILES)},${Math.floor(y / CHUNK_TILES)}`);
+    return !c || c.collision[(y % CHUNK_TILES) * CHUNK_TILES + (x % CHUNK_TILES)] !== 0;
+  };
+
+  it('are the region spec points', () => {
+    expect(DAWNMEADOW.wakePoints.map((w) => ({ id: w.id, x: w.x, y: w.y }))).toEqual(
+      WAKE_IDS.map((id) => ({ id, ...DAWNMEADOW_WAKE_POINTS[id] })),
+    );
+  });
+
+  it.each(WAKE_IDS)(
+    '%s is open ground, outside the town wall, and faces Hearthford',
+    (id: WakeId) => {
+      const p = DAWNMEADOW_WAKE_POINTS[id];
+      expect(solid(p.x, p.y)).toBe(false);
+      const inTown =
+        p.x >= TOWN_ORIGIN.x &&
+        p.x < TOWN_ORIGIN.x + HEARTHFORD_SIZE &&
+        p.y >= TOWN_ORIGIN.y &&
+        p.y < TOWN_ORIGIN.y + HEARTHFORD_SIZE;
+      expect(inTown).toBe(false);
+      // The facing agrees with the dominant axis toward the nearer of the bell tower and Waystone.
+      const marks = WAKE_TABLES.dawnmeadow!.landmarks;
+      const best = [...marks].sort(
+        (a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y),
+      )[0]!;
+      const dx = best.x - p.x;
+      const dy = best.y - p.y;
+      const want = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? Dir.E : Dir.W) : dy > 0 ? Dir.S : Dir.N;
+      expect(facingTown(p.x, p.y)).toBe(want);
+    },
+  );
+
+  it('the default region is Dawnmeadow, and the slice still wakes from its own table', () => {
+    const s = createDemoState(77, 0);
+    const w = chooseWake(s);
+    expect(w).toMatchObject(DAWNMEADOW_WAKE_POINTS[w.id]);
+    const sl = chooseWake(createDemoState(77, 0), WAKE_IDS, 'slice');
+    expect(sl.id).toBe(w.id);
+    expect(sl).toMatchObject(WAKE_POINTS[sl.id]);
+    expect(() => chooseWake(createDemoState(1, 0), WAKE_IDS, 'dev_stress')).toThrow(/no wake/);
+  });
+
+  it('a new character who dies before a Waystone or bed respawns at the wake point', () => {
+    const s = createDemoState(8, 0);
+    const w = chooseWake(s);
+    const f = feetAt(w.x, w.y);
+    const me = createAvatar(s, f.x, f.y);
+    expect(s.entities.comps.avatar[me]!.respawn).toEqual({ x: f.x, y: f.y });
+  });
 });
 
 describe('the bare kit', () => {

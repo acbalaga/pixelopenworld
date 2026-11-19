@@ -35,7 +35,7 @@ const saveNow = async (page: Page): Promise<void> => {
 
 /** Plants a plain JSON save, as M1 wrote them, before the game ever opens the database. */
 async function plantLegacy(page: Page, json: number[]): Promise<void> {
-  await page.goto('/?skip=1&nosave=1');
+  await page.goto('/?region=slice&skip=1&nosave=1');
   await page.evaluate(async (data) => {
     const bytes = Uint8Array.from(data);
     const digest = await crypto.subtle.digest('SHA-256', bytes);
@@ -64,7 +64,7 @@ test('a stored save is sealed: binary header, no readable game text, and it load
   page,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Sealed_9');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -97,7 +97,7 @@ test('a stored save is sealed: binary header, no readable game text, and it load
   );
   expect(keyInfo).toEqual({ extractable: false, exportable: false });
 
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await expect(page.getByText('Signed in as Sealed_9.')).toBeVisible();
   await page.getByRole('button', { name: 'Log In as Sealed_9' }).click();
   await inWorld(page);
@@ -110,7 +110,7 @@ test('an M1 save in plain JSON migrates on load and is written back sealed', asy
   const problems = await watchProblems(page);
   await plantLegacy(page, legacyJson());
 
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await expect(page.getByText('Signed in as Fixture_2.')).toBeVisible();
   await page.getByRole('button', { name: 'Log In as Fixture_2' }).click();
   await inWorld(page);
@@ -124,7 +124,7 @@ test('an M1 save in plain JSON migrates on load and is written back sealed', asy
   const text = Buffer.from(bytes).toString('latin1');
   for (const w of WORDS) expect(text.includes(w), w).toBe(false);
 
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await expect(page.getByText('Signed in as Fixture_2.')).toBeVisible();
   expect(problems.pageErrors).toEqual([]);
 });
@@ -132,7 +132,7 @@ test('an M1 save in plain JSON migrates on load and is written back sealed', asy
 test('a damaged latest save loads the one before it and the recover screen says so', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Mend_1');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -160,7 +160,7 @@ test('a damaged latest save loads the one before it and the recover screen says 
       }),
   );
 
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In as Mend_1' }).click();
   const recover = page.locator('.pow-recover');
   await expect(recover).toBeVisible();
@@ -176,7 +176,7 @@ test('a browser without gzip streams gets a clear message and stores nothing', a
   await page.addInitScript(() => {
     Object.defineProperty(window, 'CompressionStream', { value: undefined, configurable: true });
   });
-  await page.goto('/');
+  await page.goto('/?region=slice');
   const box = page.locator('.pow-unsupported');
   await expect(box).toBeVisible();
   await expect(box).toContainText('cannot keep a safe save');
@@ -198,7 +198,7 @@ test('an honest save shows a solid seal on the title screen and in System, with 
   page,
 }) => {
   await plantLegacy(page, legacyJson());
-  await page.goto('/');
+  await page.goto('/?region=slice');
   const seal = page.locator('.pow-seal');
   await expect(seal).toHaveClass(/pow-seal-intact/);
   await expect(seal).toContainText('Save sealed');
@@ -224,7 +224,7 @@ test('a hand-edited save is flagged: cracked seal with the reason, it still play
       return sim.replace('"coin":137', '"coin":1000137');
     }),
   );
-  await page.goto('/');
+  await page.goto('/?region=slice');
   const seal = page.locator('.pow-seal');
   await expect(seal).toHaveClass(/pow-seal-flagged/);
   await expect(seal).toContainText('Save flagged');
@@ -247,7 +247,7 @@ test('a hand-edited save is flagged: cracked seal with the reason, it still play
   await saveNow(page);
 
   // And it is still flagged after the next launch.
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await expect(page.locator('.pow-seal')).toHaveClass(/pow-seal-flagged/);
   expect(problems.pageErrors).toEqual([]);
 });

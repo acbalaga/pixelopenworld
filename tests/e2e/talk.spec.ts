@@ -14,7 +14,7 @@ async function talkTo(
   at: string,
   key: 'KeyW' | 'KeyS' | 'KeyA' | 'KeyD',
 ): Promise<void> {
-  await page.goto(`/?foes=0&at=${at}`);
+  await page.goto(`/?region=slice&foes=0&at=${at}`);
   await ready(page);
   await page.keyboard.down(key);
   await page.waitForTimeout(250);

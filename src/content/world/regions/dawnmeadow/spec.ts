@@ -1,4 +1,5 @@
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
+import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
 import type { District, Placement, RegionSpec } from '../types';
 
 /*
@@ -252,16 +253,7 @@ export const DAWNMEADOW: RegionSpec = {
     { id: 'bell_tower', x: 185, y: 166 },
     { id: 'quarry_crane', x: 184, y: 37 },
   ],
-  wakePoints: [
-    { id: 'w1', x: 284, y: 127 },
-    { id: 'w2', x: 258, y: 168 },
-    { id: 'w3', x: 236, y: 198 },
-    { id: 'w4', x: 78, y: 178 },
-    { id: 'w5', x: 176, y: 270 },
-    { id: 'w6', x: 292, y: 246 },
-    { id: 'w7', x: 112, y: 238 },
-    { id: 'w8', x: 190, y: 104 },
-  ],
+  wakePoints: WAKE_IDS.map((id) => ({ id, ...DAWNMEADOW_WAKE_POINTS[id] })),
   waystones: [
     { id: 'hearthford', x: TOWN_ORIGIN.x + 21, y: TOWN_ORIGIN.y + 25 },
     { id: 'millbrook', x: 292, y: 113 },

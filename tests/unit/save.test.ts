@@ -1,4 +1,4 @@
-import { asSchema5 } from '../support/saves';
+import { LAST_SLICE_SCHEMA, asSchema5 } from '../support/saves';
 import { normalizeDoll } from '../../src/content/dolls/parts';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -13,6 +13,7 @@ import {
   OLD_SNAPSHOT_MS,
   SaveManager,
   migrate,
+  MIGRATIONS,
   sha256Hex,
   type SavePlain,
 } from '../../src/save';
@@ -216,8 +217,8 @@ describe('migrations', () => {
     expect(fixture.plain.schema).toBe(1);
     const bytes = new TextEncoder().encode(JSON.stringify(fixture.plain));
     const decoded = await new JsonCodec().decode(bytes);
-    const now = migrate(decoded);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const now = migrate(decoded, MIGRATIONS, LAST_SLICE_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     expect(now.saveId).toBe(fixture.plain.saveId);
     // The look is kept as it was, with the newer parts at their neutral entry.
     expect(now.look).toEqual(normalizeDoll(fixture.plain.look));
@@ -245,8 +246,8 @@ describe('migrations', () => {
     ) as { expectedHash: string; plain: SavePlain };
     expect(f2.plain.schema).toBe(2);
     const bytes = new TextEncoder().encode(JSON.stringify(f2.plain));
-    const now = migrate(await new JsonCodec().decode(bytes));
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const now = migrate(await new JsonCodec().decode(bytes), MIGRATIONS, LAST_SLICE_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const s = deserializeState(now.sim);
     expect(s.ledger).toEqual(now.ledger);
     const me = findAvatar(s)!;

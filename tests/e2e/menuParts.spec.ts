@@ -9,7 +9,7 @@ const sheet = (page: Page) => page.locator('.pow-part-sheet');
 
 /** Boots next to the training dummy and lets a few swings land, so Blades awakens. */
 async function withSkill(page: Page): Promise<void> {
-  await page.goto('/?nosave=1&foes=1&at=53,37');
+  await page.goto('/?region=slice&nosave=1&foes=1&at=53,37');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(4500);
 }

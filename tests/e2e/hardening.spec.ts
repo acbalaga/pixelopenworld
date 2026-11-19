@@ -21,7 +21,7 @@ test('the built site sends the security headers on the page, assets, worker and 
   page,
   request,
 }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   const asset = await page.evaluate(
     () =>
       performance
@@ -45,7 +45,7 @@ test('the built site sends the security headers on the page, assets, worker and 
 test('the policy is enforced: inline script and a third-party request are blocked', async ({
   page,
 }) => {
-  await page.goto('/?nosave=1&skip=1');
+  await page.goto('/?region=slice&nosave=1&skip=1');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   const outcome = await page.evaluate(async () => {
     const seen: string[] = [];
@@ -73,7 +73,7 @@ test('the policy is enforced: inline script and a third-party request are blocke
 
 test('a normal session has no CSP violation, console problem or page error', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.keyboard.down('KeyD');
   await page.waitForTimeout(400);
@@ -84,7 +84,7 @@ test('a normal session has no CSP violation, console problem or page error', asy
 });
 
 test('no game state is reachable from the console by name', async ({ page }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   const found = await page.evaluate(() => {
     // What a fresh page has, from a blank frame of the same origin.
@@ -113,7 +113,7 @@ test('no game state is reachable from the console by name', async ({ page }) => 
 });
 
 test('System > Help carries the privacy note', async ({ page }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.touchscreen.tap(360 - 12 - 22, 12 + 22);
   await page.locator('[data-tab="system"]').click();

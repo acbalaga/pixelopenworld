@@ -13,7 +13,7 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
   page,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/');
+  await page.goto('/?region=slice');
   // Title.
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Pixel');
   await expect(page.getByText('No character on this device yet.')).toBeVisible();
@@ -65,7 +65,7 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
   const savedHash = await page.locator('#game').getAttribute('data-saved-hash');
   expect(savedHash).not.toBeNull();
 
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await expect(page.getByText('Signed in as Fred_77.')).toBeVisible();
   await page.waitForTimeout(500);
   await shot(page, 'frontend-title-saved');
@@ -78,7 +78,7 @@ test('fresh profile: title, avatar setup, world. Second launch: title, world, sa
 });
 
 test('Log Out saves and returns to the title screen', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Tester');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -91,7 +91,7 @@ test('Log Out saves and returns to the title screen', async ({ page }) => {
 });
 
 test('the first hint appears on its own, is one line, and is not a dialog', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Walker');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -109,7 +109,7 @@ test('the first hint appears on its own, is one line, and is not a dialog', asyn
 });
 
 test('settings outlive Log Out: muted audio stays muted on the next login', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Quiet_1');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -133,7 +133,7 @@ test('settings outlive Log Out: muted audio stays muted on the next login', asyn
   );
 
   // A full reload keeps it too.
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In as Quiet_1' }).click();
   await inWorld(page);
   await page.keyboard.press('Escape');
@@ -148,7 +148,7 @@ test('Delete character in System: confirm, then the title offers a new character
   page,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Doomed_1');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -178,7 +178,7 @@ test('Delete character in System: confirm, then the title offers a new character
 test('Delete character on the title: confirm removes the character, cancel keeps it', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Keeper_3');
   await page.getByRole('button', { name: 'Enter the world' }).click();

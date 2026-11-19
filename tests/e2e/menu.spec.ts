@@ -9,7 +9,7 @@ const SIZES = [
 const TABS = ['character', 'skills', 'bag', 'system'] as const;
 
 async function boot(page: Page): Promise<void> {
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   // Input attaches a moment after the first frame; a tap straight away can be lost.
   await page.waitForTimeout(400);

@@ -16,7 +16,7 @@ async function canvasHasWorld(page: Page): Promise<boolean> {
 
 test('boots, taps to start, drags to move, no console or CSP problems', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   await expect.poll(() => canvasHasWorld(page)).toBe(true);
   await shot(page, '01-boot');
 

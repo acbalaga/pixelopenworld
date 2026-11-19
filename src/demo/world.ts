@@ -3,7 +3,8 @@
 // Keys: WASD move, J attack (Classic), Space dodge, 1 and 2 techniques (hold to aim), T scheme.
 //   ?fly=1   no collision, fast, no creatures (for crossing all nine chunks)
 //   ?auto=1  fly a fixed loop through all nine chunks without input (for the frame-rate check)
-//   ?region= stream another baked region (default slice). Dev regions start with `dev_`.
+//   ?region= stream another baked region (default dawnmeadow; `slice` is the M1 map, for tests).
+//            Dev regions start with `dev_`.
 //   ?foes=N  number of practice creatures (default 3)
 //   ?at=x,y  start at a world tile (for screenshots)
 import manifest from '../../baked/manifest.json';
@@ -144,6 +145,7 @@ import { SKILLS } from '../content/skills';
 import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
 import { ORIGINS, wakesFor } from '../content/world/origins';
+import { WAKE_TABLES } from '../content/world/wake';
 import { ORIGIN_STRINGS } from '../content/strings/origins';
 import { MirrorPanel } from '../ui/dom/mirror';
 import { ITEMS_BALANCE } from '../content/balance/items';
@@ -282,7 +284,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // tools and tests (dev regions are served by the dev server and the preview only).
   const regionId = /^[a-z][a-z0-9_]*$/.test(params.get('region') ?? '')
     ? (params.get('region') as string)
-    : 'slice';
+    : 'dawnmeadow';
   const loader: ChunkLoader = await browserLoader();
   const regionManifest = await loader.manifest(regionId);
   // The world loads after the title, so a first launch starts the region download now, while the
@@ -552,13 +554,17 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const worldNow = (): number => frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch);
   state.worldTick = worldNow();
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
-  // developer `?at=` overrides that. Other regions start at their first wake point.
+  // developer `?at=` overrides that. A region with no wake table (dev regions) starts at its
+  // first wake point.
   const wake =
-    !restored && entry && !hasAt && regionId === 'slice'
-      ? chooseWake(state, wakesFor(entry.origin))
+    !restored && entry && !hasAt && WAKE_TABLES[regionId]
+      ? chooseWake(state, wakesFor(entry.origin), regionId)
       : null;
   const savedPos = restored ? restored.entities.comps.pos[findAvatar(restored) as number] : null;
-  const regionWake = regionManifest.wakePoints?.[0];
+  // A start with no choice behind it (`?skip=1`, a dev path) stands by the region's Hearthford
+  // Waystone when it has one, else at its first wake point.
+  const hub = regionManifest.waystones?.find((w) => w.id === 'hearthford');
+  const regionWake = hub ? { x: hub.x, y: hub.y + 2 } : regionManifest.wakePoints?.[0];
   const spawnTile = hasAt
     ? { x: (at as number[])[0] as number, y: (at as number[])[1] as number }
     : wake

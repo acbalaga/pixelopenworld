@@ -35,7 +35,7 @@ test('the server answers /api/time with epoch ms, uncached', async ({ request })
 test('the game boots and plays with /api/time unreachable', async ({ page }) => {
   const problems = await watchProblems(page);
   await page.route('**/api/time', (route) => route.abort());
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   expect(await attr(page, 'data-time-synced')).toBe('false');
   await page.keyboard.down('KeyW');
@@ -48,7 +48,7 @@ test('the game boots and plays with /api/time unreachable', async ({ page }) => 
 test('a device clock set ten days ahead does not move the world while the server is reachable', async ({
   page,
 }) => {
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   expect(await attr(page, 'data-time-synced')).toBe('true');
   await saveNow(page);
@@ -57,7 +57,7 @@ test('a device clock set ten days ahead does not move the world while the server
     const real = Date.now.bind(Date);
     Date.now = () => real() + 10 * 24 * 3600 * 1000;
   });
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   expect(await attr(page, 'data-time-synced')).toBe('true');
   // The server wins: the game was closed for seconds, not ten days.
