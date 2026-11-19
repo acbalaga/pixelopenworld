@@ -29,6 +29,8 @@ export interface MapPaneDeps {
   send: (c: Command) => void;
   /** Reads the cells of chunks the picture lacks (from the chunk cache). Resolves when they are in. */
   fill: (chunks: { cx: number; cy: number }[]) => Promise<void>;
+  /** Travels to an attuned Waystone: the game closes the Menu, loads the ground and sends the command. */
+  travel: (stone: string) => void;
 }
 
 const CELL_TILES = MAP_BALANCE.cellTiles;
@@ -42,6 +44,7 @@ export class MapPane {
   private readonly canvas: HTMLCanvasElement;
   private readonly bitmap: HTMLCanvasElement;
   private readonly status: HTMLElement;
+  private readonly stones: HTMLElement;
   private readonly places: HTMLElement;
   private readonly notes: HTMLElement;
   private readonly input: HTMLInputElement;
@@ -86,6 +89,7 @@ export class MapPane {
     bar.children[0]?.setAttribute('aria-label', S.zoomIn);
     bar.children[1]?.setAttribute('aria-label', S.zoomOut);
 
+    this.stones = el('div', 'pow-map-stones');
     this.places = el('div', 'pow-map-places');
     this.notes = el('div', 'pow-map-notes');
     const form = el('form', 'pow-map-form');
@@ -106,7 +110,17 @@ export class MapPane {
     // Keys typed in the field never reach the game or the map's own shortcuts.
     this.input.addEventListener('keydown', (e) => e.stopPropagation());
 
-    put(this.root, header(S.title), this.status, this.canvas, bar, this.places, form, this.notes);
+    put(
+      this.root,
+      header(S.title),
+      this.status,
+      this.canvas,
+      bar,
+      this.stones,
+      this.places,
+      form,
+      this.notes,
+    );
     this.wire();
   }
 
@@ -378,9 +392,34 @@ export class MapPane {
 
   private fillText(v: MapView): void {
     this.status.textContent = fill(S.regionLine, { region: v.regionName, pct: v.percent });
-    const sig = JSON.stringify([v.places, v.notes, v.player && 1]);
+    const sig = JSON.stringify([v.places, v.stones, v.notes, v.player && 1]);
     if (sig === this.listSig) return;
     this.listSig = sig;
+
+    this.stones.textContent = '';
+    put(this.stones, el('h4', 'pow-part-section-title', S.stones));
+    if (v.stones.length === 0) put(this.stones, emptyState(S.stonesNone));
+    else {
+      const ul = el('ul', 'pow-map-list');
+      for (const st of v.stones) {
+        const li = el('li', 'pow-map-note');
+        const info = el('div', 'pow-map-place pow-map-stone');
+        put(
+          info,
+          el('span', 'pow-map-place-name', st.name),
+          el('span', 'pow-map-place-tag', st.block ? S.blocked[st.block] : S.attuned),
+        );
+        const go = el('button', 'pow-button pow-map-travel', S.travel);
+        go.type = 'button';
+        go.dataset.key = `travel-${st.id}`;
+        go.disabled = st.block !== null;
+        go.setAttribute('aria-label', fill(S.travelTo, { name: st.name }));
+        go.addEventListener('click', () => this.deps.travel(st.id));
+        put(li, info, go);
+        ul.appendChild(li);
+      }
+      put(this.stones, ul);
+    }
 
     this.places.textContent = '';
     put(this.places, el('h4', 'pow-part-section-title', S.places));

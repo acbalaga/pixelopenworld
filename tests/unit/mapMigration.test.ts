@@ -33,3 +33,22 @@ describe('schema 23 to 24 migration (the map)', () => {
     expect(validateSave(now).reasons.map((r) => r.code)).not.toContain('MAP_STATE');
   });
 });
+
+describe('schema 24 to 25 migration (attuned Waystones)', () => {
+  const f = JSON.parse(
+    readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-24.json'), 'utf8'),
+  ) as { plain: SavePlain; expectedHash: string };
+
+  it('loads the previous fixture with no stone attuned and nothing else changed', async () => {
+    expect(f.plain.schema).toBe(24);
+    expect(JSON.parse(f.plain.sim).map).not.toHaveProperty('waystones');
+    const decoded = await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(f.plain)));
+    const at25 = migrate(decoded, MIGRATIONS, 25);
+    expect(at25.schema).toBe(25);
+    const s = deserializeState(at25.sim);
+    expect(s.map.waystones).toEqual([]);
+    delete (s.map as { waystones?: unknown }).waystones;
+    expect(hashState(s)).toBe(f.expectedHash);
+    expect(validateSave(migrate(decoded)).reasons.map((r) => r.code)).not.toContain('MAP_STATE');
+  });
+});

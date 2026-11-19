@@ -73,7 +73,7 @@ export interface MenuDeps {
   /** The region being played, so System can offer to keep it for offline play. */
   region?: string;
   /** What the Map tab draws from (M4-06). Without it the tab says there is no map. */
-  map?: Pick<MapPaneDeps, 'ctx' | 'image' | 'fill'>;
+  map?: Pick<MapPaneDeps, 'ctx' | 'image' | 'fill' | 'travel'>;
 }
 
 let uid = 0;

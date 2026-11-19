@@ -82,6 +82,8 @@ export type Command =
   | { type: 'mend'; shop: string; from: 'bag' | 'worn'; slot: number }
   /** Leave a note on the map at world tile (x, y) (M4-06). */
   | { type: 'noteAdd'; x: number; y: number; text: string }
+  /** Travel to an attuned Waystone of the region by its id (M4-07). */
+  | { type: 'travel'; stone: string }
   /** Remove a note by id. */
   | { type: 'noteRemove'; id: number }
   /** One step of a haggle (M3-10). `start` needs `item` and `dir`, and `slot` for a sale. */
@@ -256,6 +258,10 @@ export function validateCommand(raw: unknown): Validated {
       if (text === null) return { ok: false, reason: 'bad note' };
       return { ok: true, command: { type: 'noteAdd', x: r.x, y: r.y, text } };
     }
+    case 'travel':
+      if (typeof r.stone !== 'string' || !/^[a-z][a-z0-9_]{0,31}$/.test(r.stone))
+        return { ok: false, reason: 'bad stone' };
+      return { ok: true, command: { type: 'travel', stone: r.stone } };
     case 'noteRemove':
       if (!Number.isInteger(r.id) || (r.id as number) < 1 || (r.id as number) > 1_000_000)
         return { ok: false, reason: 'bad note' };

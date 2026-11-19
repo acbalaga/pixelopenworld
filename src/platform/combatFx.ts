@@ -75,6 +75,7 @@ export function sfxFor(
     case 'blockPushed':
       return 'sfx.step';
     case 'waystoneSet':
+    case 'traveled':
       return 'sfx.chime';
     case 'pathEarned':
       return e.who === playerId ? 'sfx.chime' : null;

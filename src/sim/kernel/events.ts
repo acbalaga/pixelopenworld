@@ -171,6 +171,10 @@ export type SimEvent =
   | { type: 'waystoneSet'; id: number; who: number }
   /** The avatar uncovered `blocks` blocks of the map for the first time (M4-06). */
   | { type: 'revealed'; who: number; blocks: number }
+  /** A Waystone was touched for the first time (M4-07). */
+  | { type: 'waystoneAttuned'; who: number; region: string; stone: string }
+  /** The avatar travelled between Waystones. */
+  | { type: 'traveled'; who: number; region: string; from: string | null; to: string }
   /** A rumor was told to the avatar (M4-06). */
   | { type: 'rumorHeard'; who: number; rumor: string }
   /** The avatar took a portal. Render fades and snaps the camera. */

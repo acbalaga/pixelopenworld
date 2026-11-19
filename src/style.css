@@ -2037,3 +2037,11 @@ canvas {
   height: 100%;
   image-rendering: pixelated;
 }
+
+.pow-map-stone {
+  cursor: default;
+}
+.pow-map-travel {
+  min-width: 44px;
+  min-height: 44px;
+}

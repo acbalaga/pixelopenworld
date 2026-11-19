@@ -115,6 +115,8 @@ import { drawLockFrame } from '../ui/hud/combatHud';
 import { Hud, POOLS_HEIGHT, STATUS_HEIGHT } from '../ui/hud/hud';
 import { MenuSheet } from '../ui/dom/menu';
 import { Minimap } from '../ui/dom/minimap';
+import { MAP_STRINGS } from '../content/strings/map';
+import { travelBlock } from '../sim/systems/waystones';
 import { MapImage } from '../render/mapImage';
 import { REGIONS } from '../content/world/regions';
 import { countRevealed } from '../sim/world/fog';
@@ -922,6 +924,18 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         waystones: regionManifest.waystones ?? [],
       },
       image: mapImage,
+      travel: (stone) => {
+        const def = regionManifest.waystones?.find((w) => w.id === stone);
+        const block = travelBlock(state, who, stone);
+        if (!def || (block !== null && block !== 'loading')) return;
+        menu.close();
+        // Load the ground around the stone first, so the avatar lands on it and nothing hitches.
+        fadeAt = performance.now();
+        void streamer
+          .preload(Math.floor(def.x / CHUNK_TILES), Math.floor(def.y / CHUNK_TILES))
+          .then(() => pendingCommands.push({ type: 'travel', stone }))
+          .catch(() => notices.toast(MAP_STRINGS.blocked.loading));
+      },
       fill: async (chunks) => {
         for (const c of chunks) {
           const f = regionManifest.files.find((x) => x.cx === c.cx && x.cy === c.cy);
@@ -1466,8 +1480,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           else if (e.type === 'gateOpened') {
             openedAt.set(e.id, performance.now());
             notices.toast(W_STR.gate);
-          } else if (e.type === 'waystoneSet') notices.toast(W_STR.waystone);
-          else if (e.type === 'mirrorOpened') mirror.open();
+          } else if (e.type === 'waystoneSet') {
+            notices.toast(W_STR.waystone);
+            // A second stone makes travel possible, so the Map opens on it (M4-07).
+            if ((state.map.waystones.filter((k) => k.startsWith(`${regionId}:`)).length ?? 0) > 1)
+              menu.open('map');
+          } else if (e.type === 'waystoneAttuned' && e.who === who) {
+            const n = MAP_STRINGS.waystones[e.stone as keyof typeof MAP_STRINGS.waystones];
+            if (n) notices.toast(fill(MAP_STRINGS.attunedToast, { name: n }));
+          } else if (e.type === 'traveled' && e.who === who) {
+            fadeAt = performance.now();
+            const n = MAP_STRINGS.waystones[e.to as keyof typeof MAP_STRINGS.waystones];
+            if (n) notices.toast(fill(MAP_STRINGS.arrived, { name: n }));
+            requestSave('transition');
+          } else if (e.type === 'mirrorOpened') mirror.open();
           else if (e.type === 'tabletRead') {
             input.sampler.keyboard.reset();
             notices.openTablet();

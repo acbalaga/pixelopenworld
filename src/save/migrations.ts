@@ -619,6 +619,16 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     schema: 24,
     sim: serializeState(deserializeState(old.sim)),
   }),
+  /**
+   * 24 to 25 (M4-07): the map state gains `waystones`, the stones the avatar has attuned. It
+   * starts empty. A stone touched before this is attuned again by touching it (which is free), and
+   * the respawn point the avatar already has is kept.
+   */
+  24: (old) => {
+    const raw = JSON.parse(old.sim) as { map?: { waystones?: string[] } };
+    if (raw.map) raw.map.waystones = [];
+    return { ...old, schema: 25, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */
