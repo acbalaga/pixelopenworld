@@ -12,6 +12,7 @@ import { SUBPX } from '../../sim/kernel/fixed';
 import { pointsOf } from '../../sim/skills';
 import type { SimState } from '../../sim/state';
 import { NO_REGION } from '../../sim/systems/map';
+import { attunedIn, travelBlock, type TravelBlock } from '../../sim/systems/waystones';
 import {
   BLOCKS_PER_CHUNK,
   blockOf,
@@ -47,6 +48,14 @@ export interface PlaceView {
   y: number;
 }
 
+export interface StoneView {
+  id: string;
+  name: string;
+  attuned: boolean;
+  /** Why travel there is refused now, or null. A stone not yet attuned is `unattuned`. */
+  block: TravelBlock | null;
+}
+
 export interface NoteView {
   id: number;
   x: number;
@@ -64,6 +73,8 @@ export interface MapView {
   /** Blocks uncovered, so a view can tell when the picture changed. */
   revealed: number;
   places: PlaceView[];
+  /** Waystones attuned, with whether travel is possible now (M4-07). */
+  stones: StoneView[];
   notes: NoteView[];
   /** Cartography points, for the rumor precision line. */
   points: number;
@@ -110,6 +121,20 @@ export function mapView(state: SimState, who: EntityId, ctx: MapContext): MapVie
     });
   }
 
+  // Attuned stones, in the order they were touched. The game loads the ground around a stone
+  // before it sends the command, so a stone that is only still loading counts as open.
+  const stones: StoneView[] = [];
+  for (const id of attunedIn(state, ctx.region)) {
+    if (!(id in S.waystones)) continue;
+    const b = travelBlock(state, who, id);
+    stones.push({
+      id,
+      name: S.waystones[id as keyof typeof S.waystones],
+      attuned: true,
+      block: b === 'loading' ? null : b,
+    });
+  }
+
   const total = ctx.chunks.w * ctx.chunks.h * BLOCKS_PER_CHUNK * BLOCKS_PER_CHUNK;
   const n = countRevealed(fog);
   return {
@@ -122,6 +147,7 @@ export function mapView(state: SimState, who: EntityId, ctx: MapContext): MapVie
       total === 0 ? 0 : Math.min(100, n === 0 ? 0 : Math.max(1, Math.floor((n * 100) / total))),
     revealed: n,
     places,
+    stones,
     notes: state.map.notes.map((x) => ({ ...x })),
     points,
   };

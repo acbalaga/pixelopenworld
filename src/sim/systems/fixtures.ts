@@ -1,3 +1,4 @@
+import { attune, stoneOfFixture } from './waystones';
 import { offerFromFixture } from './trials';
 import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import { FIXTURES } from '../../content/world/fixtures';
@@ -227,6 +228,8 @@ function useWaystone(state: SimState, who: EntityId, id: EntityId): void {
     pools.sta = pools.staMax;
     pools.foc = pools.focMax;
   }
+  const stone = stoneOfFixture(state, id);
+  if (stone) attune(state, who, state.region ?? 'slice', stone);
   emit(state.events, { type: 'waystoneSet', id, who });
 }
 

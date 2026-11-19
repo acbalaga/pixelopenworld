@@ -1,4 +1,5 @@
 import { MAP_BALANCE } from '../../content/balance/map';
+import { WAYSTONES } from '../../content/world/waystones';
 import { RUMORS } from '../../content/world/rumors';
 import { validFogBits } from '../../sim/world/fog';
 import { parseChunkKey } from '../../sim/world/window';
@@ -280,6 +281,13 @@ export function consistency(v: View): Reason[] {
       Number.isInteger(n.y);
     noteIds.add(n.id);
     if (!ok) fail('MAP_STATE', `note ${n.id}`);
+  }
+  const stones = new Set<string>();
+  for (const k of map.waystones) {
+    const [region, id] = k.split(':');
+    if (stones.has(k) || !region || !WAYSTONES[region]?.some((w) => w.id === id))
+      fail('MAP_STATE', `waystone ${k.slice(0, 60)}`);
+    stones.add(k);
   }
   if (new Set(map.rumors).size !== map.rumors.length || map.rumors.some((r) => !RUMORS[r]))
     fail('MAP_STATE', 'rumors');

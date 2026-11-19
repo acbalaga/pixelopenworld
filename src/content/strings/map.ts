@@ -22,6 +22,21 @@ export const MAP_STRINGS = {
   show: 'Show the minimap',
   minimap: 'Minimap. Tap to open the map.',
   you: 'You',
+  stones: 'Waystones',
+  stonesNone: 'Touch a Waystone to attune it. Attuned stones let you travel between them for free.',
+  travel: 'Travel',
+  attuned: 'Attuned',
+  travelTo: 'Travel to {name}',
+  attunedToast: '{name} attuned.',
+  arrived: 'You arrive at {name}.',
+  blocked: {
+    unknown: 'No way there.',
+    unattuned: 'Not attuned yet.',
+    dungeon: 'Not from inside a dungeon.',
+    combat: 'Not while fighting.',
+    loading: 'The way is still opening.',
+    here: 'You are already here.',
+  },
   /** Names of places the map can show once seen, by id. */
   landmarks: {
     mill_sails: 'Windmill on the hill',

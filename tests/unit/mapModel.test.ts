@@ -25,6 +25,25 @@ function game(): { s: SimState; me: number } {
 const reveal = (s: SimState, tx: number, ty: number, r = 3): number =>
   revealDisc(regionFog(s, 'dawnmeadow'), Math.floor(tx / 4), Math.floor(ty / 4), r);
 
+describe('map model: Waystones', () => {
+  it('lists attuned stones with whether travel is possible', () => {
+    const { s, me } = game();
+    s.tick = 10_000;
+    expect(mapView(s, me, ctx).stones).toEqual([]);
+    s.map.waystones.push('dawnmeadow:hearthford', 'dawnmeadow:millbrook');
+    const v = mapView(s, me, ctx).stones;
+    expect(v.map((x) => x.id)).toEqual(['hearthford', 'millbrook']);
+    expect(v[0]).toMatchObject({ name: 'Hearthford Waystone', attuned: true });
+    expect(v[0]!.block).toBeNull();
+    // Moved next to Hearthford's stone, travel there reads as already here.
+    s.entities.comps.pos[me] = feetAt(185, 190);
+    expect(mapView(s, me, ctx).stones[0]!.block).toBe('here');
+    expect(v[1]!.block).toBeNull();
+    s.entities.comps.fighter[me]!.state = 'attack';
+    expect(mapView(s, me, ctx).stones[1]!.block).toBe('combat');
+  });
+});
+
 describe('map model', () => {
   it('shows nothing marked on a fresh map', () => {
     const { s, me } = game();

@@ -1,6 +1,6 @@
 import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import type { Chunk } from '../../sim/world/chunk';
-import { ACTIVE_RADIUS, chunkKey, inWindow, loadOrder } from '../../sim/world/window';
+import { ACTIVE_RADIUS, chunkKey, inWindow, loadOrder, windowChunks } from '../../sim/world/window';
 import type { TileWorld } from '../../sim/world/world';
 import type { ManifestFile, RegionManifest } from './chunkSource';
 import type { ChunkLoader } from './loader';
@@ -124,6 +124,29 @@ export class ChunkStreamer {
     }
     // Stay dirty while there is more to fetch, so the next completions start the next fetches.
     this.dirty = wantsMore;
+  }
+
+  /**
+   * Loads the active window around a chunk the avatar is about to be moved to (Waystone travel),
+   * so it lands on ground that is there. Chunks already in, or in flight, are left alone.
+   */
+  async preload(cx: number, cy: number): Promise<void> {
+    const jobs: Promise<void>[] = [];
+    for (const c of windowChunks(cx, cy, ACTIVE_RADIUS)) {
+      const key = chunkKey(c.cx, c.cy);
+      const f = this.index.get(key);
+      if (!f || this.world.chunk(c.cx, c.cy)) continue;
+      jobs.push(
+        this.loader.load(this.manifest.region, f).then((chunk) => {
+          if (this.world.chunk(chunk.cx, chunk.cy)) return;
+          this.world.set(chunk);
+          this.fetched++;
+          this.onChunk(chunk);
+        }),
+      );
+    }
+    await Promise.all(jobs);
+    this.dirty = true;
   }
 
   /** Resolves when the active window has arrived. Rejects if the start chunk has no file. */

@@ -1,5 +1,6 @@
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
+import { WAYSTONES } from '../../waystones';
 import type { District, Placement, RegionSpec } from '../types';
 
 /*
@@ -254,14 +255,7 @@ export const DAWNMEADOW: RegionSpec = {
     { id: 'quarry_crane', x: 184, y: 37 },
   ],
   wakePoints: WAKE_IDS.map((id) => ({ id, ...DAWNMEADOW_WAKE_POINTS[id] })),
-  waystones: [
-    { id: 'hearthford', x: TOWN_ORIGIN.x + 21, y: TOWN_ORIGIN.y + 25 },
-    { id: 'millbrook', x: 292, y: 113 },
-    { id: 'reedmouth', x: 308, y: 251 },
-    { id: 'stonecrop', x: 186, y: 51 },
-    { id: 'fernside', x: 96, y: 172 },
-    { id: 'cairnmoor', x: 49, y: 49 },
-  ],
+  waystones: WAYSTONES['dawnmeadow'] ?? [],
   districts,
   landmarkHeights: { mill_sails: 16, bell_tower: 10, quarry_crane: 14 },
 };

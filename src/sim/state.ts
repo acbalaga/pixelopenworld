@@ -573,11 +573,13 @@ export interface MapState {
   nextNote: number;
   /** Rumor ids, in the order they were heard. */
   rumors: string[];
+  /** Waystones attuned, as `region:id` keys (M4-07), in the order they were touched. */
+  waystones: string[];
 }
 
 /** A map the player has not explored. */
 export function newMapState(): MapState {
-  return { fog: {}, notes: [], nextNote: 1, rumors: [] };
+  return { fog: {}, notes: [], nextNote: 1, rumors: [], waystones: [] };
 }
 
 /** Everything that is saved. Plain, serializable data. */
