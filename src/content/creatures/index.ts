@@ -6,6 +6,10 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.mossling': {
     id: 'creature.mossling',
     name: 'Mossling',
+    temperament: 'curious',
+    night: 'territorial',
+    approach: 40,
+    territory: { radius: 70, warnTicks: 36 },
     archetype: 'chaser',
     tier: 1,
     hp: 125,
@@ -32,6 +36,8 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.spitbloom': {
     id: 'creature.spitbloom',
     name: 'Spitbloom',
+    temperament: 'territorial',
+    territory: { radius: 80, warnTicks: 36 },
     archetype: 'shooter',
     tier: 1,
     hp: 125,
@@ -58,6 +64,9 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.bramble_boar': {
     id: 'creature.bramble_boar',
     name: 'Bramble Boar',
+    temperament: 'territorial',
+    night: 'hostile',
+    territory: { radius: 90, warnTicks: 40 },
     archetype: 'charger',
     tier: 1,
     hp: 115,
@@ -89,6 +98,7 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.thornling': {
     id: 'creature.thornling',
     name: 'Thornling',
+    temperament: 'hostile',
     archetype: 'chaser',
     tier: 2,
     hp: 190,
@@ -114,6 +124,8 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.fogcap': {
     id: 'creature.fogcap',
     name: 'Fogcap',
+    temperament: 'territorial',
+    territory: { radius: 90, warnTicks: 36 },
     archetype: 'shooter',
     tier: 2,
     hp: 170,
@@ -141,6 +153,7 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.cinderback_boar': {
     id: 'creature.cinderback_boar',
     name: 'Cinderback Boar',
+    temperament: 'hostile',
     archetype: 'charger',
     tier: 2,
     hp: 140,
@@ -172,6 +185,7 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.training_dummy': {
     id: 'creature.training_dummy',
     name: 'Training Dummy',
+    temperament: 'passive',
     archetype: 'dummy',
     tier: 1,
     hp: 2000,
@@ -194,6 +208,8 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   'creature.old_bramblehide': {
     id: 'creature.old_bramblehide',
     name: 'Old Bramblehide',
+    temperament: 'territorial',
+    territory: { radius: 110, warnTicks: 45 },
     archetype: 'charger',
     tier: 1,
     hp: 1400,

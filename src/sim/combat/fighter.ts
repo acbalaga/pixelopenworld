@@ -8,6 +8,7 @@ import { dirStep, SUBPX, type Vec } from '../kernel/fixed';
 import { nextU32 } from '../kernel/rng';
 import type { Fighter, Pools, SimState } from '../state';
 import { computeDamage } from './damage';
+import { provoke } from './temperament';
 import { blocking, facingOf, hitAngle256 } from './guard';
 import { breaksGuard, knockPx, propertyPct, refundOf, staggerPoints } from './properties';
 import { inShape, len } from './geometry';
@@ -279,6 +280,7 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     pct: Math.floor((prop * through) / 100),
   });
   pools.hp = Math.max(0, pools.hp - amount);
+  if (h.src !== dst) provoke(state, dst, h.src);
   pools.lastCombat = state.tick;
   const srcPools = getComp(e, h.src, 'pools');
   if (srcPools) srcPools.lastCombat = state.tick;

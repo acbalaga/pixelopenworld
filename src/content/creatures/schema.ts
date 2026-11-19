@@ -4,6 +4,15 @@ import { z } from 'zod';
 const id = z.string().regex(/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$/, 'id must look like kind.name');
 const pos = z.number().int().nonnegative();
 
+const temperament = z.enum([
+  'hostile',
+  'territorial',
+  'defensive',
+  'skittish',
+  'passive',
+  'curious',
+]);
+
 export const creatureSchema = z.object({
   id,
   name: z.string().min(1).max(24),
@@ -16,6 +25,13 @@ export const creatureSchema = z.object({
   notice: z.number().int().positive(),
   lose: z.number().int().positive(),
   leash: z.number().int().positive(),
+  temperament: temperament,
+  night: temperament.optional(),
+  pack: z.object({ id: z.string().min(1), radius: z.number().int().positive() }).optional(),
+  territory: z
+    .object({ radius: z.number().int().positive(), warnTicks: z.number().int().positive() })
+    .optional(),
+  approach: z.number().int().positive().optional(),
   fleeHpPct: z.number().int().min(1).max(50).optional(),
   keepRange: z.object({ min: pos, max: z.number().int().positive() }).optional(),
   wander: z.boolean(),

@@ -12,6 +12,8 @@ import { nudge } from './movement';
 import { sightBlocked } from '../elements';
 import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
 import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
+import { TEMPERAMENT as TP } from '../../content/balance/temperament';
+import { provenTierOf, temperamentNow, territoryOf } from '../combat/temperament';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -22,7 +24,6 @@ const RING = 52;
 /** Creatures closer than this push each other apart. */
 const SEPARATION = 14;
 const WANDER_TICKS = 30;
-const FLEE_TICKS = 90;
 
 function pct(state: SimState, id: EntityId): number {
   const p = getComp(state.entities, id, 'pools');
@@ -60,13 +61,13 @@ function acquire(state: SimState, me: Vec, range: number, by: EntityId): EntityI
 }
 
 /** Walks along `dir` (px vector) at `speed` sub-pixels per tick, pushed off nearby creatures. */
-function walk(state: SimState, id: EntityId, dir: Vec, speed: number): void {
+function walk(state: SimState, id: EntityId, dir: Vec, speed: number): boolean {
   const me = centerPx(state, id);
   const f = getComp(state.entities, id, 'fighter');
-  if (!me || !f || speed === 0 || hasStatus(state, id, 'rooted')) return;
+  if (!me || !f || speed === 0 || hasStatus(state, id, 'rooted')) return false;
   speed = applyMods(speed, 'moveSpeed', statusMods(state, id));
   let l = len(dir);
-  if (l === 0) return;
+  if (l === 0) return false;
   let x = dir.x / l;
   let y = dir.y / l;
   f.aim = { x: dir.x, y: dir.y };
@@ -87,8 +88,61 @@ function walk(state: SimState, id: EntityId, dir: Vec, speed: number): void {
     }
   }
   l = Math.sqrt(x * x + y * y);
-  if (l === 0) return;
-  nudge(state, id, Math.round((x / l) * speed), Math.round((y / l) * speed));
+  if (l === 0) return false;
+  const moved = nudge(state, id, Math.round((x / l) * speed), Math.round((y / l) * speed));
+  return moved.x !== 0 || moved.y !== 0;
+}
+
+/** Tells the Bestiary a creature acted on its temperament in front of `target` (M4-05 stores it). */
+function seen(state: SimState, id: EntityId, def: CreatureDef, target: EntityId, t: string): void {
+  emit(state.events, { type: 'temperamentSeen', id, target, kind: def.id, temperament: t });
+}
+
+/**
+ * A target is within notice. What the creature does about it follows its temperament, read before
+ * any chase can start. Provoked creatures (hit, packmate hit, cornered) act as hostile.
+ */
+function react(
+  state: SimState,
+  id: EntityId,
+  ai: Ai,
+  def: CreatureDef,
+  target: EntityId,
+  homePx: Vec,
+): void {
+  const base = temperamentNow(def, state.worldTick, provenTierOf(state, target));
+  const t = ai.provoked && base !== 'passive' ? 'hostile' : base;
+  switch (t) {
+    case 'hostile':
+      ai.target = target;
+      enter(ai, 'notice');
+      emit(state.events, { type: 'noticed', id, target });
+      seen(state, id, def, target, 'hostile');
+      break;
+    case 'territorial': {
+      const at = centerPx(state, target);
+      if (!at || len({ x: at.x - homePx.x, y: at.y - homePx.y }) > territoryOf(def).radius) break;
+      ai.target = target;
+      enter(ai, 'warn');
+      emit(state.events, { type: 'creatureWarn', id, target });
+      seen(state, id, def, target, 'territorial');
+      break;
+    }
+    case 'skittish':
+      ai.target = target;
+      enter(ai, 'flee');
+      emit(state.events, { type: 'noticed', id, target });
+      seen(state, id, def, target, 'skittish');
+      break;
+    case 'curious':
+      ai.target = target;
+      enter(ai, 'follow');
+      seen(state, id, def, target, 'curious');
+      break;
+    // Defensive and passive never start anything.
+    default:
+      break;
+  }
 }
 
 /** The attack to use at `dist`: the shortest-ranged one that reaches and is ready. */
@@ -174,8 +228,16 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
     enter(ai, 'leash');
     ai.target = null;
   }
+  // A skittish creature fights once it is hurt below its flee Health, instead of running.
+  if (
+    def.temperament === 'skittish' &&
+    def.fleeHpPct !== undefined &&
+    pct(state, id) <= def.fleeHpPct
+  )
+    ai.provoked = true;
   if (
     def.fleeHpPct !== undefined &&
+    def.temperament !== 'skittish' &&
     !ai.fled &&
     pct(state, id) <= def.fleeHpPct &&
     ai.state !== 'leash' &&
@@ -192,24 +254,34 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
 
   switch (ai.state) {
     case 'idle': {
+      if (ai.provoked && ai.target !== null && targetOk) {
+        enter(ai, 'notice');
+        emit(state.events, { type: 'noticed', id, target: ai.target });
+        seen(state, id, def, ai.target, 'provoked');
+        break;
+      }
       const t = acquire(state, me, def.notice, id);
       if (t !== null) {
-        ai.target = t;
-        enter(ai, 'notice');
-        emit(state.events, { type: 'noticed', id, target: t });
-      } else if (def.wander && def.speed > 0 && int(state.rng.world, 0, 90) === 0) {
+        react(state, id, ai, def, t, homePx);
+        if (ai.state !== 'idle') break;
+      }
+      if (def.wander && def.speed > 0 && int(state.rng.world, 0, 90) === 0) {
         ai.heading = int(state.rng.world, 0, 8);
         enter(ai, 'wander');
       }
       break;
     }
     case 'wander': {
+      if (ai.provoked && ai.target !== null && targetOk) {
+        enter(ai, 'notice');
+        emit(state.events, { type: 'noticed', id, target: ai.target });
+        seen(state, id, def, ai.target, 'provoked');
+        break;
+      }
       const t = acquire(state, me, def.notice, id);
       if (t !== null) {
-        ai.target = t;
-        enter(ai, 'notice');
-        emit(state.events, { type: 'noticed', id, target: t });
-        break;
+        react(state, id, ai, def, t, homePx);
+        if (ai.state !== 'wander') break;
       }
       // Drift near home: head back if the wander has taken it a third of the way to the leash.
       const dir =
@@ -218,6 +290,53 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
           : dirStep((ai.heading % 8) as 0);
       walk(state, id, dir, Math.round(speed / 2));
       if (ai.t >= WANDER_TICKS) enter(ai, 'idle');
+      break;
+    }
+    case 'warn': {
+      // The warning runs while the target stays inside the territory. A step back cancels it.
+      const terr = territoryOf(def);
+      const now = temperamentNow(
+        def,
+        state.worldTick,
+        ai.target === null ? 0 : provenTierOf(state, ai.target),
+      );
+      const inside =
+        targetOk &&
+        len({ x: (tpos as Vec).x - homePx.x, y: (tpos as Vec).y - homePx.y }) <= terr.radius;
+      if (ai.provoked || now === 'hostile') {
+        if (ai.target !== null) {
+          enter(ai, 'notice');
+          emit(state.events, { type: 'noticed', id, target: ai.target });
+        }
+      } else if (!inside || now !== 'territorial') {
+        ai.target = null;
+        enter(ai, 'idle');
+      } else {
+        f.aim = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
+        if (ai.t >= terr.warnTicks) {
+          enter(ai, 'notice');
+          emit(state.events, { type: 'noticed', id, target: ai.target as number });
+        }
+      }
+      break;
+    }
+    case 'follow': {
+      const now = temperamentNow(
+        def,
+        state.worldTick,
+        ai.target === null ? 0 : provenTierOf(state, ai.target),
+      );
+      if (ai.provoked && targetOk) {
+        enter(ai, 'notice');
+        emit(state.events, { type: 'noticed', id, target: ai.target as number });
+      } else if (!targetOk || tdist > def.notice || now !== 'curious') {
+        ai.target = null;
+        enter(ai, 'idle');
+      } else {
+        const d = { x: (tpos as Vec).x - me.x, y: (tpos as Vec).y - me.y };
+        f.aim = d;
+        if (tdist > (def.approach ?? 0)) walk(state, id, d, Math.round(speed / 2));
+      }
       break;
     }
     case 'notice':
@@ -271,14 +390,33 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
         if (s) s.cur = 0;
         ai.cooldowns.fill(0);
         ai.fled = false;
+        ai.provoked = false;
         enter(ai, 'idle');
         emit(state.events, { type: 'leashReset', id });
       }
       break;
     }
     case 'flee': {
-      if (tpos) walk(state, id, { x: me.x - tpos.x, y: me.y - tpos.y }, Math.round(speed * 1.2));
-      if (ai.t >= FLEE_TICKS || !tpos) {
+      if (def.temperament === 'skittish' && ai.provoked && targetOk) {
+        enter(ai, 'notice');
+        break;
+      }
+      if (tpos) {
+        const moved = walk(
+          state,
+          id,
+          { x: me.x - tpos.x, y: me.y - tpos.y },
+          Math.round(speed * 1.2),
+        );
+        // Cornered: no step away is possible, so a skittish creature turns and fights.
+        if (!moved && def.temperament === 'skittish' && targetOk) {
+          ai.provoked = true;
+          enter(ai, 'notice');
+          emit(state.events, { type: 'noticed', id, target: ai.target as number });
+          break;
+        }
+      }
+      if (ai.t >= TP.fleeTicks || !tpos) {
         ai.target = null;
         enter(ai, 'idle');
       }

@@ -9,7 +9,17 @@ import type { Direction } from '../../src/sim/kernel/fixed';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { recomputePools } from '../../src/sim/skills';
 import { stepWorld } from '../../src/sim/step';
+import { CREATURES } from '../../src/content/creatures';
+import type { CreatureDef, Temperament } from '../../src/content/creatures/types';
 import { ARMOR, type Build } from './builds';
+
+/**
+ * How a fight begins. `engaged` is the par measure: the creatures are already on the avatar, so
+ * the numbers compare builds. A temperament name starts the fight from that nature instead: the
+ * creature is unprovoked and the avatar comes to it, so a hostile one chases, a territorial one
+ * warns first, a defensive, passive or curious one waits to be hit, and a skittish one runs.
+ */
+export type FightStart = 'engaged' | Temperament;
 
 export const TPS = 30;
 const OPEN = {
@@ -89,6 +99,35 @@ export function fight(
   creature: string,
   seed: number,
   count = 1,
+  start: FightStart = 'engaged',
+): FightResult {
+  const all = CREATURES as Record<string, CreatureDef>;
+  const real = all[creature] as CreatureDef;
+  if (start !== 'engaged') {
+    const rest: Record<string, unknown> = { ...real };
+    delete rest.night;
+    all[creature] = {
+      ...(rest as unknown as CreatureDef),
+      temperament: start,
+      approach: real.approach ?? 40,
+      fleeHpPct: real.fleeHpPct ?? 20,
+    };
+  }
+  try {
+    return fightOnce(build, tier, rank, creature, seed, count, start);
+  } finally {
+    all[creature] = real;
+  }
+}
+
+function fightOnce(
+  build: Build,
+  tier: 1 | 2,
+  rank: number,
+  creature: string,
+  seed: number,
+  count: number,
+  start: FightStart,
 ): FightResult {
   const s = createDemoState(seed, 0);
   s.world = OPEN;
@@ -112,7 +151,14 @@ export function fight(
   const foes: number[] = [];
   for (let k = 0; k < count; k++) {
     const dy = (k - (count - 1) / 2) * 20;
-    foes.push(spawnCreature(s, creature, 30 * 16 + 8 + gap + (k % 2) * 10, 30 * 16 + 14 + dy, -1));
+    const id = spawnCreature(s, creature, 30 * 16 + 8 + gap + (k % 2) * 10, 30 * 16 + 14 + dy, -1);
+    foes.push(id);
+    // Engaged: already on the avatar, as the par numbers assume.
+    const brain = s.entities.comps.ai[id];
+    if (start === 'engaged' && brain) {
+      brain.provoked = true;
+      brain.target = me;
+    }
   }
   for (let i = 0; i < wait; i++) tick();
   const pools = s.entities.comps.pools[me]!;

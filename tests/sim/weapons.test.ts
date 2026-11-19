@@ -11,6 +11,9 @@ import type { SimEvent } from '../../src/sim/kernel/events';
 import { Dir, type Direction } from '../../src/sim/kernel/fixed';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { hostileCreatures } from '../support/temperament';
+
+hostileCreatures('creature.mossling');
 
 const OPEN = {
   solidAt: (tx: number, ty: number): number => (tx < 0 || ty < 0 || tx > 60 || ty > 60 ? 1 : 0),

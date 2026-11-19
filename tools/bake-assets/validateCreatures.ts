@@ -1,3 +1,4 @@
+import { TEMPERAMENT } from '../../src/content/balance/temperament';
 import { ATTACKS } from '../../src/content/combat/attacks';
 import { minTelegraphMs, minTelegraphTicks } from '../../src/content/creatures/rules';
 import { creatureSchema, spawnerSchema } from '../../src/content/creatures/schema';
@@ -34,6 +35,20 @@ export function validateCreatures(
     if (!refs.sprites.has(c.sprite)) errors.push(`${label}: sprite ${c.sprite} does not exist`);
     for (const s of [c.sounds.notice, c.sounds.die])
       if (!refs.sfx.has(s)) errors.push(`${label}: sound ${s} does not exist`);
+    for (const t of [c.temperament, c.night]) {
+      if (t === 'territorial' && !c.territory)
+        errors.push(`${label}: a territorial creature needs territory`);
+      if (t === 'curious' && c.approach === undefined)
+        errors.push(`${label}: a curious creature needs approach`);
+      if (t === 'skittish' && c.fleeHpPct === undefined)
+        errors.push(`${label}: a skittish creature needs fleeHpPct`);
+    }
+    if (c.territory && c.tier === 1 && c.territory.warnTicks < TEMPERAMENT.warnMinTicksTier1)
+      errors.push(
+        `${label}: warnTicks ${c.territory.warnTicks} is under the tier 1 minimum ${TEMPERAMENT.warnMinTicksTier1}`,
+      );
+    if (c.territory && c.territory.radius > c.notice)
+      errors.push(`${label}: territory ${c.territory.radius} is wider than notice ${c.notice}`);
     if (c.leash < c.notice)
       errors.push(`${label}: leash ${c.leash} is shorter than notice ${c.notice}`);
     if (c.lose < c.notice)

@@ -120,6 +120,7 @@ import { SkillFeed } from '../ui/hud/skillFeed';
 import { PixelFont } from '../ui/text/pixelFont';
 import { CREATURES } from '../content/creatures';
 import { drawTelegraphs, telegraphOf } from '../render/telegraph';
+import { drawCommitMarks, drawWarnings } from '../render/warning';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
 import { DollFactory } from '../render/dollSprite';
 import type { DevOverlay } from '../dev/overlay';
@@ -1068,7 +1069,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     const last = lastDrawn.get(id);
     lastDrawn.set(id, { x, y });
     const walking = last !== undefined && (last.x !== x || last.y !== y);
-    if (f?.state === 'attack') {
+    if (state.entities.comps.ai[id]?.state === 'warn' && f?.state === 'idle') {
+      // The warning pose: the wind-up frame, held. A creature that rears is telling you to back off.
+      name = 'attack';
+      t = 0;
+    } else if (f?.state === 'attack') {
       name = 'attack';
       t = Math.min(Math.max(0, f.t) * (1000 / 30), 249);
     } else if (f?.state === 'dodge') {
@@ -1332,6 +1337,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         );
       }
       drawTelegraphs(renderer, state);
+      drawWarnings(renderer, state);
+      drawCommitMarks(renderer, state);
       drawItemsWorld();
       const worked = workOf();
       if (worked) {

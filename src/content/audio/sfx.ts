@@ -110,6 +110,19 @@ export const SFX: readonly SfxDef[] = [
     lowpass: 0.5,
     variance: 0.1,
   },
+  /** A territorial creature's warning: a low, held note that tells the player to back off. */
+  {
+    ...base,
+    id: 'sfx.creature_warn',
+    wave: 'sawtooth',
+    sustain: 0.25,
+    decay: 0.2,
+    freq: 150,
+    slide: -0.15,
+    gain: 0.3,
+    lowpass: 0.35,
+    variance: 0.05,
+  },
   {
     ...base,
     id: 'sfx.creature_growl',

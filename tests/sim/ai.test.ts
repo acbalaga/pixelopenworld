@@ -10,6 +10,14 @@ import { createDemoState, hashState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { MAX_ATTACKERS } from '../../src/sim/systems/ai';
 import { createSpawner } from '../../src/sim/systems/spawner';
+import { hostileCreatures } from '../support/temperament';
+
+hostileCreatures(
+  'creature.mossling',
+  'creature.spitbloom',
+  'creature.bramble_boar',
+  'creature.old_bramblehide',
+);
 
 const OPEN = {
   solidAt: (tx: number, ty: number): number => (tx < 0 || ty < 0 || tx > 80 || ty > 80 ? 1 : 0),
