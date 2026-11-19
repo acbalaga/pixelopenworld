@@ -29,6 +29,11 @@ export interface Settings {
   chatCollapsed: boolean;
   /** The chat sheet's last tab. */
   chatTab: string;
+  /** The Menu reopens on this tab and scroll position (M4-18). UI settings, outside the save. */
+  menuTab: string;
+  menuScroll: number;
+  /** Ids of Menu sections the player folded. Everything else is open. */
+  closedSections: string[];
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -63,6 +68,9 @@ export class SettingsStore {
       guardToggle: true,
       chatCollapsed: false,
       chatTab: 'world',
+      menuTab: 'character',
+      menuScroll: 0,
+      closedSections: [],
     };
   }
 
@@ -89,7 +97,11 @@ export class SettingsStore {
       next.muted === this.value.muted &&
       next.guardToggle === this.value.guardToggle &&
       next.chatCollapsed === this.value.chatCollapsed &&
-      next.chatTab === this.value.chatTab
+      next.chatTab === this.value.chatTab &&
+      next.menuTab === this.value.menuTab &&
+      next.menuScroll === this.value.menuScroll &&
+      next.closedSections.length === this.value.closedSections.length &&
+      next.closedSections.every((x, i) => x === this.value.closedSections[i])
     )
       return;
     this.value = next;

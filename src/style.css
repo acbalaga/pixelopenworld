@@ -281,33 +281,50 @@ canvas {
 }
 .pow-tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: calc(var(--px) * 1);
 }
 .pow-tab {
-  flex: 1 1 auto;
+  position: relative;
+  flex: 1 1 0;
   box-sizing: border-box;
   min-width: 44px;
-  min-height: 44px;
-  padding: 0 calc(var(--px) * 3);
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: calc(var(--px) * 1) calc(var(--px) * 1);
   font: inherit;
-  font-size: 0.85em;
+  font-size: 0.8em;
+  line-height: 1.1;
   color: var(--pal-3);
   background: var(--pal-16);
   border: calc(var(--px) * 1) solid var(--pal-18);
   border-radius: 0;
   cursor: pointer;
 }
+.pow-tab-icon {
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 16);
+  flex: none;
+  fill: currentColor;
+}
+.pow-tab-label {
+  /* Scales with the text setting, but never so wide that a word breaks in the middle. */
+  font-size: min(1em, 3.4vw);
+  overflow-wrap: normal;
+  text-align: center;
+}
+.pow-tab-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
 .pow-tab[aria-selected='true'] {
   color: var(--pal-0);
   background: var(--pal-47);
   border-color: var(--pal-47);
-}
-.pow-tab:disabled {
-  color: var(--pal-18);
-  background: var(--pal-0);
-  border-color: var(--pal-17);
-  cursor: default;
 }
 .pow-tab:focus-visible,
 .pow-gear-btn:focus-visible,
@@ -1482,4 +1499,326 @@ canvas {
 }
 .pow-pin-ready {
   border-left-color: var(--pal-47);
+}
+
+/* ---- Shared Menu parts (M4-18). The 6-color UI subset: pal-0, 3, 16, 17, 18, 47. ---- */
+.pow-part-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--px) * 2);
+  margin-bottom: calc(var(--px) * 2);
+}
+.pow-part-title {
+  margin: 0;
+  font-size: 1.15em;
+  color: var(--pal-47);
+}
+.pow-part-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+}
+.pow-part-select {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85em;
+}
+.pow-part-select .pow-select {
+  min-height: 48px;
+}
+.pow-part-section {
+  margin: calc(var(--px) * 2) 0;
+  border-top: 1px solid var(--pal-18);
+}
+.pow-part-section-h {
+  margin: 0;
+  font-size: 1em;
+}
+.pow-part-section-btn {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0 calc(var(--px) * 1);
+  font: inherit;
+  text-align: left;
+  color: var(--pal-47);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.pow-part-section-title {
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+}
+.pow-part-section-count {
+  color: var(--pal-3);
+  opacity: 0.8;
+}
+.pow-part-chevron {
+  width: 0;
+  height: 0;
+  border-left: 0.35em solid transparent;
+  border-right: 0.35em solid transparent;
+  border-top: 0.5em solid currentColor;
+}
+.pow-part-section.is-closed .pow-part-chevron {
+  transform: rotate(-90deg);
+}
+.pow-part-section-body[hidden] {
+  display: none;
+}
+.pow-part-row {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2em 0.8em;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2) calc(var(--px) * 2);
+  margin: 0 0 calc(var(--px) * 1);
+  font: inherit;
+  text-align: left;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-part-row-main {
+  flex: 1 1 8em;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pow-part-row-name,
+.pow-part-row-sub {
+  overflow-wrap: anywhere;
+}
+.pow-part-row-sub {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+.pow-part-row-state {
+  flex: 0 1 auto;
+  color: var(--pal-47);
+  overflow-wrap: anywhere;
+}
+.pow-part-row-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--px) * 1);
+  background: var(--pal-0);
+}
+.pow-part-row-fill {
+  display: block;
+  width: var(--fill, 0%);
+  height: 100%;
+  background: var(--pal-47);
+}
+.pow-part-dot {
+  display: inline-block;
+  width: calc(var(--px) * 3);
+  height: calc(var(--px) * 3);
+  flex: none;
+  background: var(--pal-47);
+  border: 1px solid var(--pal-0);
+}
+.pow-part-dot[hidden] {
+  display: none;
+}
+.pow-part-cell {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: max(56px, calc(var(--px) * 24));
+  display: grid;
+  place-items: center;
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pow-part-cell[aria-pressed='true'] {
+  border-color: var(--pal-47);
+  background: var(--pal-18);
+}
+.pow-part-empty {
+  margin: calc(var(--px) * 3) 0;
+  padding: calc(var(--px) * 3);
+  color: var(--pal-3);
+  opacity: 0.85;
+  border: 1px dashed var(--pal-18);
+  overflow-wrap: anywhere;
+}
+.pow-part-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  box-sizing: border-box;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+  padding: calc(var(--px) * 2) calc(var(--px) * 3) calc(var(--px) * 3);
+  background: var(--pal-17);
+  border-top: calc(var(--px) * 1) solid var(--pal-47);
+  animation: pow-part-rise 160ms ease-out;
+}
+@keyframes pow-part-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.reduced-motion .pow-part-sheet {
+  animation: none;
+}
+.pow-part-grip {
+  align-self: center;
+  flex: none;
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 2);
+  background: var(--pal-18);
+  touch-action: none;
+}
+.pow-part-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+  touch-action: none;
+}
+.pow-part-sheet-title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 1.1em;
+  color: var(--pal-47);
+  overflow-wrap: anywhere;
+}
+.pow-part-sheet-title:focus {
+  outline: none;
+}
+.pow-part-sheet-close {
+  min-width: 48px;
+  min-height: 48px;
+}
+.pow-part-sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.pow-part-sheet-desc {
+  margin: 0.3em 0 0.6em;
+}
+.pow-part-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--px) * 1) calc(var(--px) * 3);
+  margin: 0 0 0.6em;
+  padding: 0;
+  list-style: none;
+}
+.pow-part-line {
+  padding: 0.2em 0;
+  border-bottom: 1px solid var(--pal-16);
+}
+.pow-part-sheet-actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: calc(var(--px) * 2);
+}
+.pow-action.is-primary {
+  border-color: var(--pal-47);
+}
+.pow-doll {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+  margin-bottom: calc(var(--px) * 3);
+}
+.pow-doll-col {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+  min-width: 0;
+}
+.pow-doll .pow-gear-slot {
+  min-height: 48px;
+}
+.pow-doll .pow-gear-btn {
+  min-height: 48px;
+  flex-wrap: wrap;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+}
+.pow-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+  margin: calc(var(--px) * 2) 0;
+}
+.pow-chip {
+  padding: 0.3em 0.8em;
+  color: var(--pal-0);
+  background: var(--pal-47);
+  overflow-wrap: anywhere;
+}
+.pow-loadouts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+  gap: calc(var(--px) * 2);
+  margin: calc(var(--px) * 2) 0;
+}
+.pow-loadout {
+  padding: calc(var(--px) * 2);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+}
+.pow-loadout.is-active {
+  border-color: var(--pal-47);
+}
+.pow-loadout-slots {
+  margin: 0.3em 0 0;
+  overflow-wrap: anywhere;
+}
+.pow-part-tag {
+  font-size: 0.8em;
+  color: var(--pal-47);
+}
+.pow-tab:focus-visible,
+.pow-part-row:focus-visible,
+.pow-part-cell:focus-visible,
+.pow-part-section-btn:focus-visible {
+  outline: 2px solid var(--pal-47);
+  outline-offset: 2px;
+}
+
+/* Lists in the shop, storage, station and request board panels share the Menu's row look. */
+.pow-part-listrow {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+  margin-bottom: calc(var(--px) * 1);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  overflow-wrap: anywhere;
 }

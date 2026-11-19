@@ -21,7 +21,7 @@ export default defineConfig({
     {
       name: 'smoke',
       testMatch:
-        /(smoke|menu|slice|talk|save|frontend|secure|backup|time|pwa|hardening|requests|actionMeter|temperament|messages)\.spec\.ts/,
+        /(smoke|menu|slice|talk|save|frontend|secure|backup|time|pwa|hardening|requests|actionMeter|temperament|messages|menuParts)\.spec\.ts/,
       use: { baseURL: PROD },
     },
     { name: 'dev-tools', testMatch: /(devtools|sliceRun)\.spec\.ts/, use: { baseURL: DEV } },

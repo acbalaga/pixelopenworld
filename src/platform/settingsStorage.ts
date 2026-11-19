@@ -31,6 +31,13 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   if (r.controlScheme === 'flow' || r.controlScheme === 'classic')
     out.controlScheme = r.controlScheme;
   if (typeof r.chatTab === 'string' && r.chatTab.length <= 12) out.chatTab = r.chatTab;
+  if (typeof r.menuTab === 'string' && r.menuTab.length <= 16) out.menuTab = r.menuTab;
+  if (typeof r.menuScroll === 'number' && Number.isFinite(r.menuScroll) && r.menuScroll >= 0)
+    out.menuScroll = Math.min(100_000, Math.floor(r.menuScroll));
+  if (Array.isArray(r.closedSections))
+    out.closedSections = r.closedSections
+      .filter((x): x is string => typeof x === 'string' && x.length <= 40)
+      .slice(0, 60);
   return out;
 }
 

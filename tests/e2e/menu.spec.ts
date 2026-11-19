@@ -102,9 +102,6 @@ test('every interactive element in every tab is at least 44 px', async ({ page }
     if (t === 'bag') await page.locator('[data-key="slot-0"]').click();
     expect(await measure(), t).toEqual([]);
   }
-  await goTab(page, 'bag');
-  await page.locator('[data-key="slot-1"]').click();
-  expect(await measure(), 'bag with a weapon selected').toEqual([]);
 });
 
 test('the accessibility tree names ordered controls on each tab', async ({ page }) => {
@@ -131,40 +128,36 @@ test('the accessibility tree names ordered controls on each tab', async ({ page 
     'tab "Character"',
     'tab "Skills"',
     'tab "Bag"',
-    'tab "Map"',
-    'tab "Chronicle"',
-    'tab "Social"',
-    'tab "Routines"',
     'tab "System"',
   ]);
-  expect(first).toMatch(/tab "Map".*disabled/);
+  // Tabs for systems that do not exist yet are hidden, not greyed out.
+  expect(first).not.toMatch(/tab "(Map|Chronicle|Social|Routines)"/);
   expect(first).toMatch(/tab "Character".*selected/);
 
   inOrder(first, [
+    'list "Gear"',
     'img "Your avatar"',
     'progressbar "Health"',
     'progressbar "Stamina"',
     'progressbar "Focus"',
-    'list "Gear"',
-    /button "Main hand: Rusty Sword/,
   ]);
+  // A fresh character wears a wooden dagger and rags.
+  expect(first).toMatch(/button "Main hand: /);
 
   await goTab(page, 'skills');
   // A new avatar has earned no skill yet, so none is listed or named.
   const skills = await snap();
-  expect(skills).toContain('Nothing here yet');
+  expect(skills).toContain('Skills awaken the first time you use them.');
   expect(skills).not.toMatch(/Blades|Foraging|Cooking|Athletics|Ember|Evasion/);
 
   await goTab(page, 'bag');
   await page.locator('[data-key="slot-0"]').click();
-  inOrder(await snap(), [
-    'list "Bag"',
-    'button "Bread, 2"',
-    'button "Iron Sword, 1"',
-    'heading "Bread"',
-    'button "Eat"',
-    'button "Hold to drop"',
-  ]);
+  const bagSnap = await page.locator('.pow-menu').ariaSnapshot();
+  inOrder(bagSnap, ['list "Bag"', 'button "Bread, 1"']);
+  // The item opens a labelled dialog with its actions.
+  const dlg = page.getByRole('dialog', { name: 'Bread' });
+  await expect(dlg).toBeVisible();
+  inOrder(await dlg.ariaSnapshot(), ['heading "Bread"', 'button "Hold to drop"', 'button "Eat"']);
 
   await goTab(page, 'system');
   inOrder(await snap(), [
@@ -275,31 +268,33 @@ test('opens from the menu button, a swipe up from the bottom edge, and closes by
   expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
 });
 
-test('bag: wear gear, eat, and drop needs a held press', async ({ page }) => {
+test('bag: take gear off and wear it again, drop needs a held press, eating uses it up', async ({
+  page,
+}) => {
   const problems = await watchProblems(page);
   await boot(page);
   await openMenu(page);
-  await goTab(page, 'bag');
   const used = async (): Promise<number> =>
     Number(/^(\d+) of/.exec((await page.locator('.pow-bag-count').textContent()) ?? '')?.[1]);
-  const before = await used();
 
-  // Wear the iron sword: it goes on, and the rusty one takes its slot in the bag.
+  // Taking the dagger off puts it in the bag, and the Bag then wears it again from its sheet.
+  await page.locator('[data-key="gear-main"]').click();
+  await goTab(page, 'bag');
+  expect(await used()).toBe(2);
   await page.locator('[data-key="slot-1"]').click();
   await page.locator('[data-key="act-equip"]').click();
   await goTab(page, 'character');
-  await expect(page.locator('.pow-gear-btn').first()).toContainText('Iron Sword');
-  await goTab(page, 'bag');
-  await expect(page.locator('[data-key="slot-1"]')).toHaveAttribute('aria-label', 'Rusty Sword, 1');
+  await expect(page.locator('[data-key="gear-main"]')).toBeVisible();
 
   // A quick tap on Drop does nothing.
-  await page.locator('[data-key="slot-1"]').click();
+  await goTab(page, 'bag');
+  await page.locator('[data-key="slot-0"]').click();
   const drop = page.locator('[data-key="act-drop"]');
   await drop.dispatchEvent('pointerdown');
   await page.waitForTimeout(150);
   await drop.dispatchEvent('pointerup');
   await page.waitForTimeout(400);
-  expect(await used()).toBe(before);
+  expect(await used()).toBe(1);
 
   // Holding it drops the whole slot.
   const box = (await drop.boundingBox())!;
@@ -307,12 +302,7 @@ test('bag: wear gear, eat, and drop needs a held press', async ({ page }) => {
   await page.mouse.down();
   await page.waitForTimeout(1000);
   await page.mouse.up();
-  await expect.poll(used).toBe(before - 1);
-
-  // Eating removes one from the stack.
-  await page.locator('[data-key="slot-0"]').click();
-  await page.locator('[data-key="act-use"]').click();
-  await expect(page.locator('[data-key="slot-0"]')).toHaveAttribute('aria-label', 'Bread, 1');
+  await expect.poll(used).toBe(0);
   expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
 });
 

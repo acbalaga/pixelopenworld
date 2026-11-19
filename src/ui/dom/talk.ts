@@ -10,6 +10,7 @@ import { RECIPES, expand } from '../../content/items/recipes';
 import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
 import { ITEM_STRINGS } from '../../content/strings/items';
+import { emptyState } from './parts';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { holds, startNode } from '../../sim/journal';
@@ -322,7 +323,7 @@ export class TalkSheet {
       extra: HTMLElement | null = null,
       glyph: string | null = null,
     ): void => {
-      const li = el('li', 'pow-shop-row');
+      const li = el('li', 'pow-shop-row pow-part-listrow');
       const icon = el('canvas', 'pow-icon');
       icon.width = 12;
       icon.height = 12;
@@ -488,7 +489,7 @@ export class TalkSheet {
       const def = PATHS[id];
       if (!def) continue;
       const worn = paths?.worn.includes(id) === true;
-      const li = el('li', 'pow-shop-row');
+      const li = el('li', 'pow-shop-row pow-part-listrow');
       const name = PATH_STRINGS[def.nameKey] ?? id;
       const mark = paths?.shown === id ? ` (${S.pathsShown})` : worn ? ` (${S.pathsWorn})` : '';
       const b = el('button', 'pow-button', worn ? S.rest.takeOff : S.rest.wear);
@@ -627,7 +628,7 @@ export class TalkSheet {
     for (const r of recipes) {
       const units = expand(r.ingredients);
       const can = units.every((u) => held(u) >= units.filter((x) => x === u).length);
-      const li = el('li', 'pow-shop-row');
+      const li = el('li', 'pow-shop-row pow-part-listrow');
       const b = el('button', 'pow-button', recipeName(r));
       b.type = 'button';
       b.disabled = !can;
@@ -660,7 +661,7 @@ export class TalkSheet {
     const picks = el('ul', 'pow-shop-list');
     if (this.picked.length === 0) picks.appendChild(el('li', 'pow-hint', S.craft.none));
     this.picked.forEach((item, i) => {
-      const li = el('li', 'pow-shop-row');
+      const li = el('li', 'pow-shop-row pow-part-listrow');
       const b = el('button', 'pow-button', nameOf(item));
       b.type = 'button';
       b.dataset.key = `picked-${i}`;
@@ -697,7 +698,7 @@ export class TalkSheet {
       if (!st || st.item === 'item.coin' || seen.has(st.item)) return;
       seen.add(st.item);
       const left = held(st.item) - pickedOf(st.item);
-      const li = el('li', 'pow-shop-row');
+      const li = el('li', 'pow-shop-row pow-part-listrow');
       const icon = el('canvas', 'pow-icon');
       icon.width = 12;
       icon.height = 12;
@@ -732,7 +733,7 @@ export class TalkSheet {
         const d = st ? ITEMS[st.item] : undefined;
         if (!st || !d?.durability || (st.dur ?? d.durability) >= d.durability) return;
         any = true;
-        const li = el('li', 'pow-shop-row');
+        const li = el('li', 'pow-shop-row pow-part-listrow');
         const b = el('button', 'pow-button', `${S.craft.repair}: ${nameOf(st.item)}`);
         b.type = 'button';
         b.dataset.key = `repair-${slot}`;
@@ -790,7 +791,7 @@ export class TalkSheet {
       const list = el('ul', 'pow-shop-list');
       slots.forEach((stack, slot) => {
         if (!stack) return;
-        const li = el('li', 'pow-shop-row');
+        const li = el('li', 'pow-shop-row pow-part-listrow');
         const icon = el('canvas', 'pow-icon');
         icon.width = 12;
         icon.height = 12;
@@ -806,7 +807,7 @@ export class TalkSheet {
         put(li, icon, name, b);
         list.appendChild(li);
       });
-      if (used === 0) list.appendChild(el('li', 'pow-hint', S.storage.empty));
+      if (used === 0) list.appendChild(emptyState(S.storage.empty));
       col.appendChild(list);
       return col;
     };
