@@ -76,12 +76,18 @@ test.describe('landscape', () => {
   test.use({ viewport: { width: 915, height: 412 } });
   test('screenshots: setup', async ({ page }) => {
     await toSetup(page);
+    await page.evaluate(
+      () => ((document.querySelector('.pow-front') as HTMLElement).scrollTop = 0),
+    );
     await shot(page, 'm4-19-setup-landscape');
     await page.evaluate(() => {
       document
         .querySelectorAll<HTMLElement>('.pow-overlay, #pow-root, body > div')
         .forEach((n) => n.style.setProperty('--text-scale', '1.6'));
     });
+    await page.evaluate(
+      () => ((document.querySelector('.pow-front') as HTMLElement).scrollTop = 0),
+    );
     await shot(page, 'm4-19-setup-landscape-160');
   });
 });
