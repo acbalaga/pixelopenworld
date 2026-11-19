@@ -1,3 +1,4 @@
+import { emptyState } from './parts';
 import { REQUEST_STRINGS as T } from '../../content/strings/requests';
 import { boardPosted, boardReady, requestLog, type PostedView } from '../../sim/requestLog';
 import type { Command } from '../../sim/kernel/commands';
@@ -109,7 +110,7 @@ export class BoardSheet {
       const log = requestLog(state, who).filter((r) => ready.includes(r.id));
       put(sheet, el('h3', 'pow-h', T['request.board.yours']));
       for (const r of log) {
-        const row = el('div', 'pow-board-row');
+        const row = el('div', 'pow-board-row pow-part-listrow');
         const btn = el('button', 'pow-button', T['request.board.turnIn']);
         btn.type = 'button';
         btn.dataset.key = `turnin-${r.id}`;
@@ -120,9 +121,9 @@ export class BoardSheet {
     }
 
     const posted: PostedView[] = boardPosted(state, this.board);
-    if (posted.length === 0) put(sheet, el('p', 'pow-hint', T['request.board.empty']));
+    if (posted.length === 0) put(sheet, emptyState(T['request.board.empty'] as string));
     for (const p of posted) {
-      const row = el('div', 'pow-board-row');
+      const row = el('div', 'pow-board-row pow-part-listrow');
       row.dataset.request = p.id;
       put(row, el('strong', undefined, p.title), el('p', 'pow-request-ask', p.ask));
       for (const w of p.ways) {

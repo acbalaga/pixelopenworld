@@ -68,6 +68,14 @@ export interface CharacterView {
   coin: number;
   /** Earned Paths first, then hints for standard Paths that have begun. Hidden ones only once earned. */
   paths: PathRowView[];
+  /** Both loadouts: the technique names in slots 2 to 4 (null for empty), and which is in use. */
+  loadouts: LoadoutView[];
+}
+
+export interface LoadoutView {
+  n: number;
+  active: boolean;
+  slots: (string | null)[];
 }
 
 /**
@@ -113,6 +121,8 @@ export interface SkillRowView {
   mastery: string;
   /** Progress to the next point, 0 to 100. */
   progressPct: number;
+  /** XP toward the next point and what it costs, or null at the top rank. */
+  xp: { have: number; cost: number } | null;
   /** 'ready' when XP is waiting on a Trial, 'offered' when a Trial has been given. */
   trial: 'ready' | 'offered' | null;
   /**
@@ -238,7 +248,23 @@ export function characterView(state: SimState, who: number): CharacterView {
       icon: item ? (ITEMS[item]?.icon ?? null) : null,
     };
   });
-  return { pools, gear, coin: a?.coin ?? 0, paths: pathsView(state, who) };
+  const ld = state.entities.comps.loadouts[who];
+  const fighter = state.entities.comps.fighter[who];
+  const nameOfTech = (id: string | null | undefined): string | null => {
+    const t = id ? TECHNIQUE_LIST.find((x) => x.id === id) : undefined;
+    return t ? (TECHNIQUE_STRINGS[t.nameKey] ?? t.id) : null;
+  };
+  const loadouts: LoadoutView[] = ld
+    ? ([0, 1] as const).map((i) => ({
+        n: i + 1,
+        active: ld.active === i,
+        // The fighter's own slots are the active set's.
+        slots: [1, 2, 3].map((k) =>
+          nameOfTech(ld.active === i ? fighter?.slots[k] : ld.sets[i].slots[k]),
+        ),
+      }))
+    : [];
+  return { pools, gear, coin: a?.coin ?? 0, paths: pathsView(state, who), loadouts };
 }
 
 /** The Skills tab line for the Trial at a threshold: its authored hint, or "no one can test this yet". */
@@ -300,6 +326,7 @@ export function skillsView(state: SimState, who: number): SkillFamilyView[] {
         points,
         mastery,
         progressPct: cost === 0 ? 100 : Math.min(100, Math.floor((xp * 100) / cost)),
+        xp: cost === 0 ? null : { have: Math.min(xp, cost), cost },
         trial: pending !== null && xp >= cost ? (offered ? 'offered' : 'ready') : null,
         trialHint: pending !== null && !offered ? trialHintFor(id, pending) : null,
         sealed: s ? SB.thresholds.filter((th) => trialPassed(s, id, th)) : [],

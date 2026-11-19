@@ -2,6 +2,8 @@ import type { Trust } from '../../save/integrity/reasons';
 import { createBackupSection, type BackupDeps } from './backup';
 import { createDeviceSection } from './device';
 import { createSeal } from './seal';
+import { detailSheet, emptyState, gridCell, header, row, section, type SheetAction } from './parts';
+import { TAB_ICONS } from '../../content/ui/tabIcons';
 import { UI_BALANCE } from '../../content/balance/ui';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
@@ -13,6 +15,7 @@ import {
 } from '../../platform/settings';
 import type { SettingsStore } from '../../platform/settings';
 import type { Command } from '../../sim/kernel/commands';
+import { ITEMS } from '../../content/items';
 import { requestLog, type RequestView } from '../../sim/requestLog';
 import type { SimState } from '../../sim/state';
 import { REQUEST_STRINGS as RS } from '../../content/strings/requests';
@@ -24,9 +27,9 @@ import {
   techniquesView,
   type PathRowView,
   trialLog,
+  type SkillRowView,
   type BagFilterId,
   type BagSortId,
-  type ItemAction,
 } from '../menu/model';
 
 export const TAB_IDS = [
@@ -41,7 +44,7 @@ export const TAB_IDS = [
 ] as const;
 export type TabId = (typeof TAB_IDS)[number];
 
-/** Tabs that work in the slice. The others show disabled with their names. */
+/** Tabs that work. The others are hidden until their systems exist (design/09). */
 export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'system'];
 
 /** What the Menu needs from the game. It never touches the sim except through `send`. */
@@ -68,9 +71,32 @@ export interface MenuDeps {
 
 let uid = 0;
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** The 16 x 16 tab icon, drawn from `TAB_ICONS` in the text color. Decorative. */
+function tabIcon(tab: string): SVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('class', 'pow-tab-icon');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('shape-rendering', 'crispEdges');
+  (TAB_ICONS[tab] ?? []).forEach((rowStr, y) => {
+    for (let x = 0; x < rowStr.length; x++) {
+      if (rowStr[x] !== '#') continue;
+      const r = document.createElementNS(SVG_NS, 'rect');
+      r.setAttribute('x', String(x));
+      r.setAttribute('y', String(y));
+      r.setAttribute('width', '1');
+      r.setAttribute('height', '1');
+      svg.appendChild(r);
+    }
+  });
+  return svg;
+}
+
 /** Adds children in order. (`Element.append` is typed for the Worker's HTMLRewriter here.) */
-function put<T extends HTMLElement>(parent: T, ...kids: HTMLElement[]): T {
-  for (const k of kids) parent.appendChild(k);
+function put<T extends HTMLElement>(parent: T, ...kids: (HTMLElement | null)[]): T {
+  for (const k of kids) if (k) parent.appendChild(k);
   return parent;
 }
 
@@ -96,13 +122,22 @@ export class MenuSheet {
   private body: HTMLElement;
   private tabs = new Map<TabId, HTMLButtonElement>();
   private tab: TabId = 'character';
-  private selected = -1;
   private opened = false;
-  private pushed = false;
   private sig = '';
   private timer: number | null = null;
   private returnFocus: HTMLElement | null = null;
   private readonly head: HTMLElement;
+  private bar!: HTMLElement;
+  /** The one detail sheet that may be open (never a sheet over a sheet), and what opened it. */
+  private detail: { kind: 'skill' | 'item'; id: string; opener: string } | null = null;
+  private detailEl: HTMLElement | null = null;
+  private detailSig = '';
+  /** History entries this Menu has pushed (the Menu, then a sheet), so Back unwinds them in order. */
+  private pushDepth = 0;
+  private ignorePops = 0;
+  /** What each tab showed when it was last looked at, for the badge dot. */
+  private seen = new Map<TabId, string>();
+  private baselined = false;
 
   constructor(
     host: HTMLElement,
@@ -134,24 +169,53 @@ export class MenuSheet {
     const bar = el('div', 'pow-tabs');
     bar.setAttribute('role', 'tablist');
     bar.setAttribute('aria-label', S.menuTitle);
-    for (const t of TAB_IDS) {
-      const b = el('button', 'pow-tab', S.tabs[t]);
+    // Tabs for systems that are not built yet are not drawn at all.
+    for (const t of TAB_IDS.filter((x) => ENABLED_TABS.includes(x))) {
+      const b = el('button', 'pow-tab');
       b.type = 'button';
       b.id = `${id}-tab-${t}`;
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-controls', this.body.id);
       b.dataset.tab = t;
-      if (ENABLED_TABS.includes(t)) b.addEventListener('click', () => this.show(t));
-      else b.disabled = true;
+      put(b, tabIcon(t) as unknown as HTMLElement, el('span', 'pow-tab-label', S.tabs[t]));
+      const dot = el('span', 'pow-part-dot pow-tab-dot');
+      dot.hidden = true;
+      dot.setAttribute('aria-hidden', 'true');
+      b.appendChild(dot);
+      b.addEventListener('click', () => this.show(t));
       b.addEventListener('keydown', (e) => this.tabKey(e, t));
       bar.appendChild(b);
       this.tabs.set(t, b);
     }
+    this.bar = bar;
     put(this.sheet, head, this.body, bar);
     host.appendChild(this.sheet);
     window.addEventListener('popstate', () => {
-      if (this.opened) this.close(true);
+      if (this.ignorePops > 0) {
+        this.ignorePops--;
+        return;
+      }
+      if (!this.opened) {
+        this.pushDepth = 0;
+        return;
+      }
+      this.pushDepth = Math.max(0, this.pushDepth - 1);
+      // Back closes the sheet first, then the Menu.
+      if (this.detail) this.closeSheet(true);
+      else this.close(true);
     });
+    // Escape closes an open sheet before it can close the Menu.
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (this.opened && this.detail && e.code === 'Escape') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.closeSheet();
+        }
+      },
+      true,
+    );
   }
 
   get isOpen(): boolean {
@@ -163,20 +227,25 @@ export class MenuSheet {
     return target instanceof Node && this.head.contains(target);
   }
 
-  open(tab: TabId = this.tab): void {
+  open(tab?: TabId): void {
     if (this.opened) {
-      this.show(tab);
+      if (tab) this.show(tab);
       return;
     }
+    const last = this.deps.settings.get().menuTab as TabId;
+    const want = tab ?? (ENABLED_TABS.includes(last) ? last : this.tab);
     this.opened = true;
     this.returnFocus =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.sheet.hidden = false;
-    if (!this.pushed) {
-      history.pushState({ powMenu: 1 }, '');
-      this.pushed = true;
+    this.pushHistory();
+    if (!this.baselined) {
+      this.baselined = true;
+      for (const t of ENABLED_TABS) this.seen.set(t, this.tabSig(t));
     }
-    this.show(tab);
+    // Reopens where it was left, unless a button asked for a tab.
+    const restore = tab === undefined || tab === last ? this.deps.settings.get().menuScroll : 0;
+    this.show(want, restore);
     this.timer = window.setInterval(() => this.refresh(), UI_BALANCE.menu.refreshMs);
     this.tabs.get(this.tab)?.focus();
     this.deps.onOpenChange?.(true);
@@ -184,14 +253,18 @@ export class MenuSheet {
 
   close(fromPop = false): void {
     if (!this.opened) return;
+    this.deps.settings.set({ menuTab: this.tab, menuScroll: Math.round(this.body.scrollTop) });
+    this.removeSheet();
+    this.detail = null;
     this.opened = false;
     this.sheet.hidden = true;
     if (this.timer !== null) window.clearInterval(this.timer);
     this.timer = null;
-    if (this.pushed) {
-      this.pushed = false;
-      if (!fromPop) history.back();
+    if (!fromPop && this.pushDepth > 0) {
+      this.ignorePops++;
+      history.go(-this.pushDepth);
     }
+    this.pushDepth = 0;
     this.returnFocus?.focus();
     this.deps.onOpenChange?.(false);
   }
@@ -201,11 +274,11 @@ export class MenuSheet {
     else this.open(tab);
   }
 
-  /** Switches tab. */
-  show(tab: TabId): void {
+  /** Switches tab. `scroll` is where to leave the body. */
+  show(tab: TabId, scroll = 0): void {
     if (!ENABLED_TABS.includes(tab)) return;
+    if (tab !== this.tab) this.closeSheet(false, false);
     this.tab = tab;
-    this.selected = tab === 'bag' ? this.selected : -1;
     for (const [id, b] of this.tabs) {
       const on = id === tab;
       b.setAttribute('aria-selected', String(on));
@@ -214,6 +287,9 @@ export class MenuSheet {
     }
     this.sig = '';
     this.render(true);
+    this.body.scrollTop = scroll;
+    this.seen.set(tab, this.tabSig(tab));
+    this.paintBadges();
   }
 
   private tabKey(e: KeyboardEvent, t: TabId): void {
@@ -231,21 +307,57 @@ export class MenuSheet {
     }
   }
 
+  private pushHistory(): void {
+    history.pushState({ powMenu: this.pushDepth + 1 }, '');
+    this.pushDepth++;
+  }
+
+  /** What a tab shows that counts as news: a new point or Trial, or a new kind of item. */
+  private tabSig(tab: TabId): string {
+    const { state, who } = this.deps.read();
+    if (tab === 'skills')
+      return JSON.stringify(
+        skillsView(state, who).map((f) => f.rows.map((r) => [r.id, r.points, r.trial])),
+      );
+    if (tab === 'bag')
+      return JSON.stringify(
+        bagView(state, who)
+          .slots.filter((s) => s.item)
+          .map((s) => s.item)
+          .sort(),
+      );
+    return '';
+  }
+
+  private paintBadges(): void {
+    for (const [t, b] of this.tabs) {
+      const dot = b.querySelector<HTMLElement>('.pow-tab-dot');
+      if (dot) dot.hidden = t === this.tab || this.tabSig(t) === (this.seen.get(t) ?? '');
+    }
+  }
+
   /** Redraws the open tab if what it shows has changed. The System tab is left alone. */
   refresh(): void {
-    if (!this.opened || this.tab === 'system') return;
+    if (!this.opened) return;
+    this.paintBadges();
+    if (this.tab === 'system') return;
     this.render(false);
+    if (this.detail) this.mountSheet(false);
   }
 
   private signature(): string {
     const { state, who } = this.deps.read();
+    const closed = this.deps.settings.get().closedSections.join(',');
     switch (this.tab) {
       case 'character':
-        return JSON.stringify([characterView(state, who), requestLog(state, who)]);
+        return JSON.stringify([characterView(state, who), requestLog(state, who), closed]);
       case 'skills':
-        return JSON.stringify([skillsView(state, who), techniquesView(state, who)]);
+        return JSON.stringify([skillsView(state, who), trialLog(state, who), closed]);
       case 'bag':
-        return JSON.stringify([bagView(state, who), this.selected]);
+        return JSON.stringify([
+          bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
+          this.detail?.kind === 'item' ? this.detail.id : '',
+        ]);
       default:
         return '';
     }
@@ -255,10 +367,10 @@ export class MenuSheet {
     const sig = this.signature();
     if (!force && sig === this.sig) return;
     this.sig = sig;
+    const active = document.activeElement;
     const focusKey =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement.dataset.key
-        : undefined;
+      active instanceof HTMLElement && this.body.contains(active) ? active.dataset.key : undefined;
+    const scroll = this.body.scrollTop;
     this.body.textContent = '';
     switch (this.tab) {
       case 'character':
@@ -275,6 +387,7 @@ export class MenuSheet {
         break;
       default:
     }
+    if (!force) this.body.scrollTop = scroll;
     if (focusKey && !force) {
       const again = Array.from(this.body.querySelectorAll<HTMLElement>('[data-key]')).find(
         (n) => n.dataset.key === focusKey,
@@ -292,8 +405,27 @@ export class MenuSheet {
     return c;
   }
 
-  private heading(text: string, level: 'h3' | 'h4' = 'h3'): HTMLElement {
-    return el(level, 'pow-h', text);
+  /** A collapsible section whose open state is remembered per player (UI settings). */
+  private sec(
+    id: string,
+    title: string,
+    count: number | undefined,
+    ...kids: (HTMLElement | null)[]
+  ): HTMLElement {
+    const st = this.deps.settings;
+    return section(
+      {
+        id,
+        title,
+        ...(count !== undefined ? { count } : {}),
+        open: !st.get().closedSections.includes(id),
+        onToggle: (open) => {
+          const rest = st.get().closedSections.filter((x) => x !== id);
+          st.set({ closedSections: open ? rest : [...rest, id] });
+        },
+      },
+      ...kids,
+    );
   }
 
   // ---- Character ----
@@ -301,13 +433,44 @@ export class MenuSheet {
   private renderCharacter(): void {
     const { state, who } = this.deps.read();
     const v = characterView(state, who);
-    const top = el('div', 'pow-char-top');
+    put(this.body, header(S.tabs.character));
+
+    // The doll at 2x in the center with its gear slots around it: armor to the left, hands and
+    // accessory to the right. Tapping a worn piece takes it off, and the doll changes at once.
+    const doll = el('div', 'pow-doll');
     const av = el('canvas', 'pow-avatar');
     av.width = 24;
     av.height = 32;
     av.setAttribute('role', 'img');
     av.setAttribute('aria-label', S.avatarAlt);
     this.deps.drawAvatar(av);
+    const left = el('ul', 'pow-doll-col');
+    left.setAttribute('aria-label', S.gear);
+    const right = el('ul', 'pow-doll-col');
+    for (const g of v.gear) {
+      const li = el('li', 'pow-gear-slot');
+      if (g.item) {
+        const b = el('button', 'pow-gear-btn');
+        b.type = 'button';
+        b.dataset.key = `gear-${g.slot}`;
+        b.setAttribute('aria-label', `${g.label}: ${g.itemName}. ${S.unequipHint}`);
+        put(
+          b,
+          this.icon(g.icon),
+          el('span', 'pow-gear-label', g.label),
+          el('span', 'pow-gear-item', g.itemName ?? ''),
+        );
+        b.addEventListener('click', () => this.deps.send({ type: 'unequip', slot: g.slot }));
+        li.appendChild(b);
+      } else {
+        li.classList.add('pow-empty');
+        put(li, el('span', 'pow-gear-label', g.label), el('span', 'pow-gear-item', S.slotEmpty));
+      }
+      (['head', 'body', 'legs'].includes(g.slot) ? left : right).appendChild(li);
+    }
+    put(doll, left, av, right);
+    this.body.appendChild(doll);
+
     const pools = el('ul', 'pow-pools');
     for (const p of v.pools) {
       const li = el('li', 'pow-pool');
@@ -328,34 +491,44 @@ export class MenuSheet {
       li.appendChild(bar);
       pools.appendChild(li);
     }
-    put(top, av, pools);
+    put(this.body, pools, el('p', 'pow-coin', `${S.coin}: ${v.coin}`));
 
-    const gear = el('ul', 'pow-gear');
-    gear.setAttribute('aria-label', S.gear);
-    for (const g of v.gear) {
-      const li = el('li', 'pow-gear-slot');
-      if (g.item) {
-        const b = el('button', 'pow-gear-btn');
-        b.type = 'button';
-        b.dataset.key = `gear-${g.slot}`;
-        b.setAttribute('aria-label', `${g.label}: ${g.itemName}. ${S.unequipHint}`);
-        put(
-          b,
-          this.icon(g.icon),
-          el('span', 'pow-gear-label', g.label),
-          el('span', 'pow-gear-item', g.itemName ?? ''),
-        );
-        b.addEventListener('click', () => this.deps.send({ type: 'unequip', slot: g.slot }));
-        li.appendChild(b);
-      } else {
-        li.classList.add('pow-empty');
-        put(li, el('span', 'pow-gear-label', g.label), el('span', 'pow-gear-item', S.slotEmpty));
-      }
-      gear.appendChild(li);
+    // Worn Paths as chips, then the two loadouts side by side.
+    const worn = v.paths.filter((p) => p.worn);
+    if (worn.length > 0) {
+      const chips = el('ul', 'pow-chips');
+      chips.setAttribute('aria-label', S.pathsTitle);
+      for (const p of worn) put(chips, el('li', 'pow-chip', p.name));
+      this.body.appendChild(chips);
     }
-    put(this.body, top, this.heading(S.gear), gear, el('p', 'pow-coin', `${S.coin}: ${v.coin}`));
+    if (v.loadouts.length > 0) {
+      const wrap = el('div', 'pow-loadouts');
+      for (const l of v.loadouts) {
+        const card = el('section', l.active ? 'pow-loadout is-active' : 'pow-loadout');
+        card.setAttribute('aria-label', fill(S.parts.loadout, { n: l.n }));
+        put(
+          card,
+          el('h4', 'pow-part-section-title', fill(S.parts.loadout, { n: l.n })),
+          l.active ? el('span', 'pow-part-tag', S.parts.loadoutActive) : null,
+        );
+        const ul = el('ul', 'pow-loadout-slots');
+        l.slots.forEach((name, i) =>
+          put(ul, el('li', undefined, `${i + 2}: ${name ?? S.parts.loadoutEmpty}`)),
+        );
+        card.appendChild(ul);
+        wrap.appendChild(card);
+      }
+      this.body.appendChild(wrap);
+    }
     this.renderRequests(requestLog(state, who));
-    this.renderPaths(v.paths);
+    this.body.appendChild(
+      this.sec(
+        'paths',
+        S.pathsTitle,
+        v.paths.length,
+        v.paths.length === 0 ? emptyState(S.parts.pathsEmpty) : this.pathsList(v.paths),
+      ),
+    );
   }
 
   /**
@@ -363,10 +536,6 @@ export class MenuSheet {
    * and per way of finishing it which steps are done. It never shows a place. One can be pinned.
    */
   private renderRequests(rows: readonly RequestView[]): void {
-    const sec = el('section', 'pow-requests');
-    sec.dataset.key = 'requests';
-    sec.appendChild(this.heading(RS['request.log.heading'] as string));
-    if (rows.length === 0) sec.appendChild(el('p', 'pow-hint', RS['request.log.none'] as string));
     const ul = el('ul', 'pow-skills');
     for (const r of rows) {
       const li = el('li', `pow-request pow-request-${r.state}`);
@@ -388,12 +557,12 @@ export class MenuSheet {
           const way = el('ul', 'pow-request-way');
           way.setAttribute('aria-label', w.label);
           for (const st of w.steps) {
-            const row = el(
+            const stepRow = el(
               'li',
               st.status === RS['request.step.done'] ? 'pow-step pow-step-done' : 'pow-step',
             );
-            row.textContent = st.status ? `${st.text} (${st.status})` : st.text;
-            way.appendChild(row);
+            stepRow.textContent = st.status ? `${st.text} (${st.status})` : st.text;
+            way.appendChild(stepRow);
           }
           li.appendChild(way);
         }
@@ -413,15 +582,19 @@ export class MenuSheet {
       }
       ul.appendChild(li);
     }
-    sec.appendChild(ul);
+    const sec = this.sec(
+      'requests',
+      RS['request.log.heading'] as string,
+      rows.length,
+      rows.length === 0 ? emptyState(S.parts.requestsEmpty) : ul,
+    );
+    sec.dataset.key = 'requests';
+    sec.classList.add('pow-requests');
     this.body.appendChild(sec);
   }
 
-  /** The Paths section of the Character tab. Hidden Paths are not in the model until earned. */
-  private renderPaths(paths: readonly PathRowView[]): void {
-    const sec = el('section', 'pow-paths');
-    sec.appendChild(this.heading(S.pathsTitle));
-    if (paths.length === 0) sec.appendChild(el('p', 'pow-hint', S.pathsNone));
+  /** The Paths list. Hidden Paths are not in the model until earned. */
+  private pathsList(paths: readonly PathRowView[]): HTMLElement {
     const ul = el('ul', 'pow-skills');
     for (const r of paths) {
       const li = el('li', 'pow-path');
@@ -435,8 +608,7 @@ export class MenuSheet {
       li.appendChild(el('p', 'pow-hint', r.earned ? r.gift : `${S.pathsHintLabel} ${r.hint}`));
       ul.appendChild(li);
     }
-    sec.appendChild(ul);
-    this.body.appendChild(sec);
+    return ul;
   }
 
   // ---- Skills ----
@@ -445,10 +617,8 @@ export class MenuSheet {
     const { state, who } = this.deps.read();
     const fams = skillsView(state, who);
     const log = trialLog(state, who);
+    put(this.body, header(S.tabs.skills));
     if (log.length > 0) {
-      const sec = el('section', 'pow-trial-log');
-      sec.setAttribute('aria-label', S.trialsTitle);
-      const h = this.heading(S.trialsTitle);
       const ul = el('ul', 'pow-skills');
       for (const r of log) {
         const li = el('li', 'pow-skill');
@@ -461,106 +631,252 @@ export class MenuSheet {
         );
         ul.appendChild(li);
       }
-      put(sec, h, ul);
-      this.body.appendChild(sec);
+      this.body.appendChild(this.sec('trials', S.trialsTitle, log.length, ul));
     }
-    this.renderTechniques();
-    if (fams.length === 0 && log.length === 0)
-      this.body.appendChild(el('p', 'pow-hint', S.skillsEmpty));
+    if (fams.length === 0 && log.length === 0) {
+      this.body.appendChild(emptyState(S.skillsEmpty));
+      return;
+    }
     for (const fam of fams) {
-      const sec = el('section', 'pow-skill-family');
-      const h = this.heading(fam.label);
-      const hid = `pow-fam-${uid++}`;
-      h.id = hid;
-      sec.setAttribute('aria-labelledby', hid);
-      const ul = el('ul', 'pow-skills');
-      for (const r of fam.rows) {
-        const li = el('li', 'pow-skill');
-        put(
-          li,
-          el('span', 'pow-skill-name', r.name),
-          el('span', 'pow-skill-rank', `${r.mastery} ${r.points}`),
-        );
-        const bar = el('div', 'pow-meter pow-meter-skill');
-        bar.setAttribute('role', 'progressbar');
-        bar.setAttribute('aria-label', `${r.name}: ${S.nextPoint}`);
-        bar.setAttribute('aria-valuemin', '0');
-        bar.setAttribute('aria-valuemax', '100');
-        bar.setAttribute('aria-valuenow', String(r.progressPct));
-        const f = el('div', 'pow-meter-fill');
-        f.style.setProperty('--fill', `${r.progressPct}%`);
-        bar.appendChild(f);
-        li.appendChild(bar);
-        if (r.trial)
-          li.appendChild(
-            el('p', 'pow-hint', r.trial === 'offered' ? S.trialOffered : S.trialReady),
-          );
-        if (r.trialHint) li.appendChild(el('p', 'pow-hint', r.trialHint));
-        if (r.sealed.length > 0) {
-          const seals = el('p', 'pow-seals');
-          for (const th of r.sealed) {
-            const s = el('span', 'pow-seal', S.trialSeal);
-            // Long press (or hover) says what it is; screen readers read it directly.
-            s.title = `${S.trialPassed}: ${th}`;
-            s.setAttribute('role', 'img');
-            s.setAttribute('aria-label', `${S.trialPassed}: ${th}`);
-            seals.appendChild(s);
-          }
-          li.appendChild(seals);
-        }
-        ul.appendChild(li);
-      }
-      put(sec, h, ul);
-      this.body.appendChild(sec);
+      const rows = fam.rows.map((r) =>
+        row({
+          key: `skill-${r.id}`,
+          name: r.name,
+          state: `${r.mastery} ${r.points}`,
+          label: r.label,
+          progress: r.progressPct,
+          badge: r.trial !== null,
+          onOpen: () => this.openSheet('skill', r.id, `skill-${r.id}`),
+        }),
+      );
+      this.body.appendChild(this.sec(`family-${fam.family}`, fam.label, rows.length, ...rows));
     }
   }
 
-  /** The technique list: what each skill gives, and which slot of the active loadout holds it. */
-  private renderTechniques(): void {
+  // ---- The detail sheet: one level below a tab, never a sheet over a sheet ----
+
+  private openSheet(kind: 'skill' | 'item', id: string, opener: string): void {
+    if (this.detail) return;
+    this.detail = { kind, id, opener };
+    this.pushHistory();
+    this.mountSheet(true);
+    // The item grid marks the open cell.
+    if (kind === 'item') this.render(true);
+  }
+
+  /** Closes the sheet and puts focus back on the row that opened it. */
+  closeSheet(fromPop = false, refocus = true): void {
+    if (!this.detail) return;
+    const { opener, kind } = this.detail;
+    this.removeSheet();
+    this.detail = null;
+    if (!fromPop && this.pushDepth > 1) {
+      this.ignorePops++;
+      this.pushDepth--;
+      history.back();
+    }
+    if (kind === 'item' && refocus) this.render(true);
+    if (refocus) this.body.querySelector<HTMLElement>(`[data-key="${opener}"]`)?.focus();
+  }
+
+  private removeSheet(): void {
+    this.detailEl?.remove();
+    this.detailEl = null;
+    this.detailSig = '';
+  }
+
+  /** Builds the sheet from the view models. Rebuilds only when what it shows has changed. */
+  private mountSheet(first: boolean): void {
+    if (!this.detail) return;
     const { state, who } = this.deps.read();
-    const v = techniquesView(state, who);
-    if (v.groups.length === 0) return;
-    const sec = el('section', 'pow-techniques');
-    const h = this.heading(`${S.techniquesTitle}: ${fill(S.techniquesLoadout, { n: v.active })}`);
-    sec.appendChild(h);
-    sec.appendChild(el('p', 'pow-hint', S.techniquesHint));
-    for (const g of v.groups) {
-      sec.appendChild(this.heading(g.name, 'h4'));
+    const spec =
+      this.detail.kind === 'skill'
+        ? this.skillSheet(state, who, this.detail.id)
+        : this.itemSheet(state, who, Number(this.detail.id));
+    if (!spec) {
+      this.closeSheet();
+      return;
+    }
+    if (!first && spec.sig === this.detailSig) return;
+    const active = document.activeElement;
+    const focusKey =
+      active instanceof HTMLElement && this.detailEl?.contains(active)
+        ? active.dataset.key
+        : undefined;
+    this.removeSheet();
+    this.detailSig = spec.sig;
+    const ds = detailSheet({ ...spec.parts, onClose: () => this.closeSheet() });
+    this.detailEl = ds.el;
+    // Over the tab, above the tab bar, so the other tabs stay one tap away.
+    ds.el.style.bottom = `${Math.max(0, Math.round(this.sheet.getBoundingClientRect().bottom - this.bar.getBoundingClientRect().top))}px`;
+    this.sheet.appendChild(ds.el);
+    this.swipeToClose(ds.el);
+    const again = focusKey
+      ? Array.from(ds.el.querySelectorAll<HTMLElement>('[data-key]')).find(
+          (n) => n.dataset.key === focusKey,
+        )
+      : undefined;
+    (again ?? ds.title).focus();
+  }
+
+  /** A swipe down on the sheet's grip or header closes it (Back and Escape do too). */
+  private swipeToClose(sheet: HTMLElement): void {
+    const handle = sheet.querySelector<HTMLElement>('.pow-part-grip');
+    const head = sheet.querySelector<HTMLElement>('.pow-part-sheet-head');
+    let y0: number | null = null;
+    const down = (e: PointerEvent): void => {
+      if ((e.target as HTMLElement).closest('button')) return;
+      y0 = e.clientY;
+    };
+    const move = (e: PointerEvent): void => {
+      if (y0 !== null && e.clientY - y0 > UI_BALANCE.menu.swipeMinPx * 0.75) {
+        y0 = null;
+        this.closeSheet();
+      }
+    };
+    const up = (): void => {
+      y0 = null;
+    };
+    for (const t of [handle, head]) {
+      if (!t) continue;
+      t.addEventListener('pointerdown', down);
+      t.addEventListener('pointermove', move);
+      t.addEventListener('pointerup', up);
+      t.addEventListener('pointercancel', up);
+    }
+  }
+
+  private skillSheet(
+    state: SimState,
+    who: number,
+    id: string,
+  ): { sig: string; parts: Omit<Parameters<typeof detailSheet>[0], 'onClose'> } | null {
+    const r: SkillRowView | undefined = skillsView(state, who)
+      .flatMap((f) => f.rows)
+      .find((x) => x.id === id);
+    if (!r) return null;
+    const techs = techniquesView(state, who).groups.find((g) => g.skill === id);
+    const extra: (HTMLElement | null)[] = [];
+    const bar = el('div', 'pow-meter pow-meter-skill');
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-label', `${r.name}: ${S.nextPoint}`);
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '100');
+    bar.setAttribute('aria-valuenow', String(r.progressPct));
+    const f = el('div', 'pow-meter-fill');
+    f.style.setProperty('--fill', `${r.progressPct}%`);
+    bar.appendChild(f);
+    extra.push(bar);
+    extra.push(
+      el(
+        'p',
+        'pow-part-sheet-desc',
+        r.xp ? fill(S.parts.xpToNext, { have: r.xp.have, cost: r.xp.cost }) : S.parts.topRank,
+      ),
+    );
+    if (r.trial)
+      extra.push(el('p', 'pow-hint', r.trial === 'offered' ? S.trialOffered : S.trialReady));
+    if (r.trialHint) extra.push(el('p', 'pow-hint', r.trialHint));
+    if (r.sealed.length > 0) {
+      const seals = el('p', 'pow-seals');
+      for (const th of r.sealed) {
+        const s = el('span', 'pow-seal', S.trialSeal);
+        s.title = `${S.trialPassed}: ${th}`;
+        s.setAttribute('role', 'img');
+        s.setAttribute('aria-label', `${S.trialPassed}: ${th}`);
+        seals.appendChild(s);
+      }
+      extra.push(seals);
+    }
+    if (techs) {
       const ul = el('ul', 'pow-skills');
-      for (const r of g.rows) {
+      for (const t of techs.rows) {
         const li = el('li', 'pow-tech');
         const head = el('div', 'pow-tech-head');
-        put(head, this.icon(r.icon), el('span', 'pow-skill-name', r.name));
+        put(head, this.icon(t.icon), el('span', 'pow-skill-name', t.name));
         li.appendChild(head);
-        li.appendChild(el('p', 'pow-hint', r.known ? r.desc : (r.need ?? '')));
-        if (r.known && r.kind === 'passive') li.appendChild(el('p', 'pow-hint', S.techPassive));
-        if (r.known && r.kind === 'active') {
-          const row = el('div', 'pow-tech-slots');
+        // Where it comes from: "Known", "Insight 18 of 30", "Someone in Hearthford teaches this".
+        li.appendChild(el('p', 'pow-hint', t.known ? t.desc : (t.need ?? '')));
+        if (t.known && t.kind === 'passive') li.appendChild(el('p', 'pow-hint', S.techPassive));
+        if (t.known && t.kind === 'active') {
+          const slots = el('div', 'pow-tech-slots');
           for (const n of [2, 3, 4]) {
-            const here = r.slot === n - 1;
+            const here = t.slot === n - 1;
             const b = el(
               'button',
               here ? 'pow-button pow-tech-slot is-on' : 'pow-button pow-tech-slot',
               String(n),
             );
             b.type = 'button';
+            b.dataset.key = `tech-${t.id}-${n}`;
             b.setAttribute('aria-pressed', String(here));
             b.setAttribute(
               'aria-label',
-              here ? fill(S.techClear, { name: r.name, n }) : fill(S.techPut, { name: r.name, n }),
+              here ? fill(S.techClear, { name: t.name, n }) : fill(S.techPut, { name: t.name, n }),
             );
             b.addEventListener('click', () =>
-              this.deps.send({ type: 'assign', slot: n - 1, technique: here ? null : r.id }),
+              this.deps.send({ type: 'assign', slot: n - 1, technique: here ? null : t.id }),
             );
-            row.appendChild(b);
+            slots.appendChild(b);
           }
-          li.appendChild(row);
+          li.appendChild(slots);
         }
         ul.appendChild(li);
       }
-      sec.appendChild(ul);
+      extra.push(
+        el(
+          'h4',
+          'pow-h',
+          `${S.parts.techniques}: ${fill(S.techniquesLoadout, { n: techs ? techniquesView(state, who).active : 1 })}`,
+        ),
+      );
+      extra.push(el('p', 'pow-hint', S.techniquesHint));
+      extra.push(ul);
     }
-    this.body.appendChild(sec);
+    return {
+      sig: JSON.stringify([r, techs]),
+      parts: { title: r.name, lines: [`${r.mastery} ${r.points}`], extra },
+    };
+  }
+
+  private itemSheet(
+    state: SimState,
+    who: number,
+    slot: number,
+  ): { sig: string; parts: Omit<Parameters<typeof detailSheet>[0], 'onClose'> } | null {
+    const d = itemDetail(state, who, slot);
+    if (!d) return null;
+    const inv = state.entities.comps.inventory[who]?.slots[slot];
+    const icon = inv ? this.icon(ITEMS[inv.item]?.icon ?? null, 'pow-icon pow-icon-big') : null;
+    const actions: SheetAction[] = d.actions.map((a) =>
+      a === 'drop'
+        ? {
+            label: S.actions[a],
+            key: `act-${a}`,
+            onHold: () => {
+              this.deps.send({ type: 'drop', slot });
+              this.closeSheet();
+            },
+          }
+        : {
+            label: S.actions[a],
+            key: `act-${a}`,
+            primary: true,
+            onClick: () => this.deps.send({ type: a, slot }),
+          },
+    );
+    // The primary action sits last, on the thumb side.
+    actions.sort((x, y) => Number(x.primary === true) - Number(y.primary === true));
+    return {
+      sig: JSON.stringify(d),
+      parts: {
+        title: d.name,
+        icon,
+        desc: d.description,
+        lines: [d.category, d.value, d.qty, ...d.lines],
+        actions,
+      },
+    };
   }
 
   // ---- Bag ----
@@ -568,6 +884,44 @@ export class MenuSheet {
   private renderBag(): void {
     const { state, who } = this.deps.read();
     const v = bagView(state, who, { filter: this.bagFilter, sort: this.bagSort });
+    put(
+      this.body,
+      header(S.tabs.bag, [
+        {
+          kind: 'select',
+          label: S.bagFiltersLabel,
+          key: 'bag-filter',
+          value: this.bagFilter,
+          options: (Object.keys(S.bagFilters) as BagFilterId[]).map((id) => ({
+            value: id,
+            label: S.bagFilters[id],
+          })),
+          onChange: (value) => {
+            this.bagFilter = value as BagFilterId;
+            this.render(true);
+            this.body.querySelector<HTMLElement>('[data-key="bag-filter"]')?.focus();
+          },
+        },
+        {
+          kind: 'select',
+          label: S.bagSortLabel,
+          key: 'bag-sort',
+          value: this.bagSort ?? '',
+          options: [
+            { value: '', label: S.bagSlotOrder },
+            ...(Object.keys(S.bagSorts) as BagSortId[]).map((id) => ({
+              value: id,
+              label: S.bagSorts[id],
+            })),
+          ],
+          onChange: (value) => {
+            this.bagSort = (value || null) as BagSortId | null;
+            this.render(true);
+            this.body.querySelector<HTMLElement>('[data-key="bag-sort"]')?.focus();
+          },
+        },
+      ]),
+    );
     this.body.appendChild(
       el(
         'p',
@@ -575,27 +929,28 @@ export class MenuSheet {
         `${fill(S.bagCount, { used: v.used, total: v.total })}. ${S.coin}: ${v.coin}`,
       ),
     );
-    this.body.appendChild(this.bagControls());
+    if (v.used === 0) {
+      this.body.appendChild(emptyState(S.bagEmpty));
+      return;
+    }
     const grid = el('ul', 'pow-bag-grid');
     grid.setAttribute('aria-label', S.bagTitle);
     for (const s of v.slots) {
       const li = el('li', 'pow-bag-cell');
       if (s.item) {
-        const b = el('button', 'pow-bag-slot');
-        b.type = 'button';
-        b.dataset.key = `slot-${s.index}`;
-        b.setAttribute('aria-label', s.label);
-        b.setAttribute('aria-pressed', String(this.selected === s.index));
-        put(b, this.icon(s.icon, 'pow-icon pow-icon-big'));
-        if (s.qty > 1) put(b, el('span', 'pow-qty', String(s.qty)));
-        if (s.glyph) put(b, el('span', 'pow-qual', s.glyph));
-        if (s.broken) b.classList.add('pow-broken');
-        b.addEventListener('click', () => {
-          this.selected = this.selected === s.index ? -1 : s.index;
-          this.render(true);
-          this.body.querySelector<HTMLElement>(`[data-key="slot-${s.index}"]`)?.focus();
-        });
-        li.appendChild(b);
+        const open = this.detail?.kind === 'item' && this.detail.id === String(s.index);
+        li.appendChild(
+          gridCell({
+            key: `slot-${s.index}`,
+            label: s.label,
+            icon: this.icon(s.icon, 'pow-icon pow-icon-big'),
+            qty: s.qty,
+            glyph: s.glyph,
+            broken: s.broken,
+            pressed: open,
+            onOpen: () => this.openSheet('item', String(s.index), `slot-${s.index}`),
+          }),
+        );
       } else {
         li.classList.add('pow-empty');
         li.setAttribute('aria-hidden', 'true');
@@ -603,142 +958,19 @@ export class MenuSheet {
       grid.appendChild(li);
     }
     this.body.appendChild(grid);
-
-    const d = this.selected >= 0 ? itemDetail(state, who, this.selected) : null;
-    if (this.selected >= 0 && !d) this.selected = -1;
-    const detail = el('section', 'pow-detail');
-    if (!d) {
-      detail.appendChild(el('p', 'pow-hint', v.used === 0 ? S.bagEmpty : S.detailNone));
-    } else {
-      const hid = `pow-detail-${uid++}`;
-      const h = this.heading(d.name);
-      h.id = hid;
-      detail.setAttribute('aria-labelledby', hid);
-      put(
-        detail,
-        h,
-        el('p', 'pow-detail-meta', `${d.category}. ${d.value}. ${d.qty}.`),
-        el('p', 'pow-detail-desc', d.description),
-        ...d.lines.map((l) => el('p', 'pow-detail-meta', l)),
-      );
-      const actions = el('div', 'pow-actions');
-      const slot = this.selected;
-      for (const a of d.actions) for (const n of this.actionNodes(a, slot)) actions.appendChild(n);
-      detail.appendChild(actions);
-    }
-    this.body.appendChild(detail);
+    if (v.slots.every((s) => !s.item)) this.body.appendChild(emptyState(S.bagNothingHere));
   }
 
   private bagFilter: BagFilterId = 'all';
   private bagSort: BagSortId | null = null;
-
-  /** Filter chips (All, Gear, Tools, Food, Materials, Other) and the sort choice. */
-  private bagControls(): HTMLElement {
-    const wrap = el('div', 'pow-bag-controls');
-    const chips = el('div', 'pow-seg');
-    chips.setAttribute('role', 'radiogroup');
-    chips.setAttribute('aria-label', S.bagFiltersLabel);
-    for (const id of Object.keys(S.bagFilters) as BagFilterId[]) {
-      const b = el('button', 'pow-seg-btn', S.bagFilters[id]);
-      b.type = 'button';
-      b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(this.bagFilter === id));
-      b.dataset.key = `filter-${id}`;
-      b.addEventListener('click', () => {
-        this.bagFilter = id;
-        this.selected = -1;
-        this.render(true);
-        this.body.querySelector<HTMLElement>(`[data-key="filter-${id}"]`)?.focus();
-      });
-      chips.appendChild(b);
-    }
-    const label = el('label', 'pow-field', S.bagSortLabel);
-    const sel = el('select', 'pow-select');
-    sel.dataset.key = 'bag-sort';
-    const none = el('option', undefined, S.bagSlotOrder);
-    none.value = '';
-    sel.appendChild(none);
-    for (const id of Object.keys(S.bagSorts) as BagSortId[]) {
-      const o = el('option', undefined, S.bagSorts[id]);
-      o.value = id;
-      sel.appendChild(o);
-    }
-    sel.value = this.bagSort ?? '';
-    sel.addEventListener('change', () => {
-      this.bagSort = (sel.value || null) as BagSortId | null;
-      this.render(true);
-      this.body.querySelector<HTMLElement>('[data-key="bag-sort"]')?.focus();
-    });
-    label.appendChild(sel);
-    put(wrap, chips, label);
-    return wrap;
-  }
-
-  private actionNodes(a: ItemAction, slot: number): HTMLElement[] {
-    const b = el('button', 'pow-button pow-action', S.actions[a]);
-    b.type = 'button';
-    b.dataset.key = `act-${a}`;
-    if (a === 'use') b.addEventListener('click', () => this.deps.send({ type: 'use', slot }));
-    else if (a === 'equip')
-      b.addEventListener('click', () => this.deps.send({ type: 'equip', slot }));
-    else {
-      const hint = this.holdToConfirm(b, () => {
-        this.deps.send({ type: 'drop', slot });
-        this.selected = -1;
-      });
-      return [b, hint];
-    }
-    return [b];
-  }
-
-  /** Destructive actions need a held press (design/09), by touch, mouse or the keyboard. */
-  private holdToConfirm(b: HTMLButtonElement, done: () => void): HTMLElement {
-    // The hint describes the button. It is not part of its name.
-    const hint = el('span', 'pow-sr', S.dropping);
-    hint.id = `pow-hint-${uid++}`;
-    b.setAttribute('aria-describedby', hint.id);
-    let start = 0;
-    let t: number | null = null;
-    const stop = (): void => {
-      if (t !== null) window.clearInterval(t);
-      t = null;
-      b.style.setProperty('--hold', '0%');
-      b.classList.remove('holding');
-    };
-    const begin = (): void => {
-      if (t !== null) return;
-      start = performance.now();
-      b.classList.add('holding');
-      t = window.setInterval(() => {
-        const f = (performance.now() - start) / UI_BALANCE.menu.holdConfirmMs;
-        b.style.setProperty('--hold', `${Math.min(100, Math.round(f * 100))}%`);
-        if (f >= 1) {
-          stop();
-          done();
-        }
-      }, 30);
-    };
-    b.addEventListener('pointerdown', begin);
-    for (const ev of ['pointerup', 'pointerleave', 'pointercancel'] as const)
-      b.addEventListener(ev, stop);
-    b.addEventListener('keydown', (e) => {
-      if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
-        e.preventDefault();
-        begin();
-      }
-    });
-    b.addEventListener('keyup', stop);
-    b.addEventListener('blur', stop);
-    b.addEventListener('contextmenu', (e) => e.preventDefault());
-    return hint;
-  }
 
   // ---- System ----
 
   private renderSystem(): void {
     const st = this.deps.settings;
     const sys = S.system;
-    this.body.appendChild(this.heading(sys.settings));
+    put(this.body, header(S.tabs.system));
+    const box = el('div', 'pow-settings');
 
     const scheme = el('div', 'pow-seg');
     scheme.setAttribute('role', 'radiogroup');
@@ -768,7 +1000,7 @@ export class MenuSheet {
     const sRow = el('div', 'pow-setting');
     const sLabel = el('span', 'pow-setting-name', sys.scheme);
     put(sRow, sLabel, scheme);
-    this.body.appendChild(sRow);
+    box.appendChild(sRow);
 
     const slider = (
       label: string,
@@ -795,7 +1027,7 @@ export class MenuSheet {
         val.textContent = fill(sys.percent, { n: Math.round(get() * 100) });
       });
       put(row, name, val, input);
-      this.body.appendChild(row);
+      box.appendChild(row);
     };
     slider(
       sys.textScale,
@@ -843,7 +1075,7 @@ export class MenuSheet {
         set(!get());
         sync();
       });
-      this.body.appendChild(b);
+      box.appendChild(b);
     };
     toggle(
       sys.handedness,
@@ -871,21 +1103,32 @@ export class MenuSheet {
       (v) => st.set({ muted: v }),
     );
 
-    this.body.appendChild(this.heading(S.title.sealLabel));
-    this.body.appendChild(createSeal(this.deps.trust()));
-
-    this.body.appendChild(this.heading(S.device.heading));
-    this.body.appendChild(createDeviceSection({ beforeUpdate: this.deps.beforeUpdate }));
-
-    this.body.appendChild(this.heading(S.backup.heading));
-    this.body.appendChild(createBackupSection(this.root, this.deps.backup));
-
-    this.body.appendChild(this.heading(S.help.heading));
     const privacy = el('div', 'pow-help');
     privacy.dataset.key = 'privacy-note';
-    put(privacy, this.heading(S.help.privacyHeading, 'h4'));
+    put(privacy, el('h4', 'pow-h', S.help.privacyHeading));
     for (const line of S.help.privacy) put(privacy, el('p', 'pow-hint', line));
-    this.body.appendChild(privacy);
+    // Each group folds, and the fold is remembered.
+    this.body.appendChild(this.sec('sys-settings', sys.settings, undefined, box));
+    this.body.appendChild(
+      this.sec('sys-save', S.title.sealLabel, undefined, createSeal(this.deps.trust())),
+    );
+    this.body.appendChild(
+      this.sec(
+        'sys-device',
+        S.device.heading,
+        undefined,
+        createDeviceSection({ beforeUpdate: this.deps.beforeUpdate }),
+      ),
+    );
+    this.body.appendChild(
+      this.sec(
+        'sys-backup',
+        S.backup.heading,
+        undefined,
+        createBackupSection(this.root, this.deps.backup),
+      ),
+    );
+    this.body.appendChild(this.sec('sys-help', S.help.heading, undefined, privacy));
 
     const out = el('div', 'pow-logout');
     const btn = el('button', 'pow-button pow-danger', sys.logOut);
@@ -897,6 +1140,6 @@ export class MenuSheet {
     del.dataset.key = 'delete-character';
     del.addEventListener('click', () => this.deps.onDeleteCharacter());
     put(out, del, el('p', 'pow-hint', S.retire.note));
-    this.body.appendChild(out);
+    this.body.appendChild(this.sec('sys-account', sys.account, undefined, out));
   }
 }
