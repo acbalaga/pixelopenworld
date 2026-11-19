@@ -66,7 +66,7 @@ import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
 import { FIXTURES } from '../content/world/fixtures';
 import { litFor } from '../sim/systems/dungeon';
-import { roomAt, OUTDOORS } from '../content/world/rooms';
+import { roomAt as sliceRoomAt, OUTDOORS } from '../content/world/rooms';
 import { UI_STRINGS } from '../content/strings/ui';
 import { PATHS } from '../content/paths';
 import { PATH_STRINGS } from '../content/strings/paths';
@@ -828,11 +828,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
 
   // Rooms: the camera is held to the room the avatar is in and snaps when it changes.
   const ROOM_PX = TILE_PX;
+  // The slice's rooms (the square and the cave) exist only on the slice. Any other region is one
+  // open room as big as the region, until its own interiors and dungeons register (M4-11).
+  const regionRoom: typeof OUTDOORS = {
+    id: 'room.region',
+    x0: 0,
+    y0: 0,
+    x1: regionManifest.chunks.w * CHUNK_TILES,
+    y1: regionManifest.chunks.h * CHUNK_TILES,
+    outdoors: true,
+  };
+  const roomAt = (tx: number, ty: number): typeof OUTDOORS | null =>
+    regionId === 'slice' ? sliceRoomAt(tx, ty) : regionRoom;
   const startPos = state.entities.comps.pos[who];
   let room =
     (restored && startPos
       ? roomAt(Math.floor(startPos.x / 256 / TILE_PX), Math.floor((startPos.y / 256 - 1) / TILE_PX))
-      : roomAt(spawnTile.x, spawnTile.y)) ?? OUTDOORS;
+      : roomAt(spawnTile.x, spawnTile.y)) ?? regionRoom;
   const enterRoom = (r: typeof OUTDOORS): void => {
     room = r;
     camera.setBounds(r.x0 * ROOM_PX, r.y0 * ROOM_PX, r.x1 * ROOM_PX, r.y1 * ROOM_PX);
@@ -1366,7 +1378,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (e.type === 'roomChanged' && e.who === who) {
             const tx = Math.floor(apos.x / 256 / TILE_PX);
             const ty = Math.floor((apos.y / 256 - 1) / TILE_PX);
-            enterRoom(roomAt(tx, ty) ?? OUTDOORS);
+            enterRoom(roomAt(tx, ty) ?? regionRoom);
             fadeAt = performance.now();
             requestSave('transition');
           } else if (e.type === 'trialPassed' && e.id === who) askPersistence();

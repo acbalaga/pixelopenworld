@@ -57,6 +57,29 @@ export interface NamedPoint extends TilePoint {
   id: string;
 }
 
+/**
+ * A named part of a hub or settlement, in region tiles: what the bake checks read. A `square` may
+ * hold civic things only (no station, bed or counter). A `street` must be at least 3 tiles wide
+ * and clear of anything solid.
+ */
+export interface District {
+  id: string;
+  kind:
+    | 'square'
+    | 'street'
+    | 'craft_row'
+    | 'rune_house'
+    | 'inn'
+    | 'guard_yard'
+    | 'market'
+    | 'home'
+    | 'gate';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface RegionSpec {
   id: string;
   /** Seeds every fill generator. */
@@ -80,4 +103,8 @@ export interface RegionSpec {
   landmarks: readonly NamedPoint[];
   wakePoints: readonly NamedPoint[];
   waystones: readonly NamedPoint[];
+  /** Hub districts and streets, for the bake checks (optional). */
+  districts?: readonly District[];
+  /** Landmarks tall enough to see from afar, with their height in tiles. Checked by the bake. */
+  landmarkHeights?: Readonly<Record<string, number>>;
 }

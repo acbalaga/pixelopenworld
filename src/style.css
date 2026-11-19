@@ -1842,14 +1842,27 @@ canvas {
   background:
     radial-gradient(ellipse 42% 16% at 50% 82%, var(--ground) 0 70%, transparent 72%), var(--pal-17);
   border: 1px solid var(--pal-18);
+  /* The preview stays on screen while the options scroll under it, so every change shows as it is made. */
+  position: sticky;
+  /* Up into the screen's own top padding, so nothing shows through above it. */
+  top: calc(var(--px) * -4);
+  z-index: 2;
+  box-shadow: 0 calc(var(--px) * 2) 0 var(--pal-16);
 }
 .pow-preview-stage .pow-preview {
-  width: calc(var(--px) * 48);
-  height: calc(var(--px) * 64);
+  /* Half size on a short screen (a phone), so the pinned preview leaves room for the options. */
+  width: calc(var(--px) * 24);
+  height: calc(var(--px) * 32);
   background: transparent;
   border: 0;
   touch-action: pan-y;
   cursor: ew-resize;
+}
+@media (min-height: 800px) {
+  .pow-preview-stage .pow-preview {
+    width: calc(var(--px) * 48);
+    height: calc(var(--px) * 64);
+  }
 }
 .pow-turn {
   min-width: 48px;

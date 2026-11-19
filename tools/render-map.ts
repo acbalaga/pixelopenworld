@@ -30,6 +30,10 @@ const argv = process.argv.slice(2);
 const ri = argv.indexOf('--region');
 const region = ri >= 0 ? (argv[ri + 1] as string) : 'slice';
 if (ri >= 0) argv.splice(ri, 2);
+// `--down N` shrinks the picture by N (averaging), for a whole region on one screen.
+const di = argv.indexOf('--down');
+const down = di >= 0 ? Math.max(1, Number(argv[di + 1])) : 1;
+if (di >= 0) argv.splice(di, 2);
 const chunkDir = join(baked, 'world', region);
 const files = readdirSync(chunkDir).filter((n) => /^chunk-\d+-\d+\.bin$/.test(n));
 const world = new TileWorld(
@@ -114,5 +118,24 @@ for (const layer of layers) {
   }
 }
 const target = argv[0] ?? join(root, region ? `map-${region}.png` : 'map-slice.png');
-writeFileSync(target, PNG.sync.write(out, { colorType: 2, deflateLevel: 9, filterType: 4 }));
-console.log(`render-map: ${out.width}x${out.height} -> ${target}`);
+let final = out;
+if (down > 1) {
+  const w = Math.floor(out.width / down);
+  const h = Math.floor(out.height / down);
+  final = new PNG({ width: w, height: h });
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const sum = [0, 0, 0];
+      for (let j = 0; j < down; j++)
+        for (let i = 0; i < down; i++) {
+          const si = ((y * down + j) * out.width + x * down + i) * 4;
+          for (let k = 0; k < 3; k++) sum[k] = (sum[k] as number) + (out.data[si + k] as number);
+        }
+      const di2 = (y * w + x) * 4;
+      for (let k = 0; k < 3; k++)
+        final.data[di2 + k] = Math.round((sum[k] as number) / (down * down));
+      final.data[di2 + 3] = 255;
+    }
+}
+writeFileSync(target, PNG.sync.write(final, { colorType: 2, deflateLevel: 9, filterType: 4 }));
+console.log(`render-map: ${final.width}x${final.height} -> ${target}`);
