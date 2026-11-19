@@ -6,11 +6,11 @@ Made by `npm run xp-report` (POW-M3-02). Do not edit by hand. Each loop is a tes
 - Target time to 15: `4 h * xpTo(15) / xpTo(50)` = **26.8 minutes** (design/10). The band is 20 to 40 minutes for combat and 35 to 70 for Foraging and Cooking, which are slower on purpose (reports/sim-bot.md).
 - "Time to 15" is when the skill has 14 points and a full bar: the next point waits on a Trial (design/03).
 
-| Loop | Skill | XP in 30 min | XP per hour | Minutes to 15 | In its band |
-| --- | --- | --- | --- | --- | --- |
-| Fight Mosslings with the sword, sell the loot | skill.blades | 4449 | 8898 | 29.6 | yes |
-| Forage the herb patches and berry bushes, sell what is gathered | skill.foraging | 3558 | 7116 | 51.7 | yes |
-| Forage, cook at the camp pot, sell the dishes | skill.cooking | 3917 | 7834 | 41.9 | yes |
+| Loop                                                            | Skill          | XP in 30 min | XP per hour | Minutes to 15 | In its band |
+| --------------------------------------------------------------- | -------------- | ------------ | ----------- | ------------- | ----------- |
+| Fight Mosslings with the sword, sell the loot                   | skill.blades   | 4449         | 8898        | 29.6          | yes         |
+| Forage the herb patches and berry bushes, sell what is gathered | skill.foraging | 3558         | 7116        | 51.7          | yes         |
+| Forage, cook at the camp pot, sell the dishes                   | skill.cooking  | 3917         | 7834        | 41.9          | yes         |
 
 Notes for M3-12 (balance harness):
 

@@ -19,12 +19,17 @@ export interface TileSprite {
   animated?: boolean;
 }
 
-/** A chunk being painted a few rows at a time. */
+/** Tiles painted per step, and steps per row, per pass, per phase. */
+const SEGMENT = 8;
+const SEGMENTS = CHUNK_TILES / SEGMENT;
+const STEPS_PER_PHASE = CHUNK_TILES * SEGMENTS * 2;
+
+/** A chunk being painted a few steps at a time. */
 interface PaintJob {
   chunk: Chunk;
   canvases: HTMLCanvasElement[];
   ctxs: CanvasRenderingContext2D[];
-  /** Rows painted so far, counting both passes of every phase. */
+  /** Steps painted so far, counting both passes of every phase. */
   step: number;
   total: number;
 }
@@ -63,8 +68,12 @@ export class ChunkRenderer {
   /** Chunks that scrolled into view before they were painted and had to be finished at once. */
   stalls = 0;
   private job: PaintJob | null = null;
+  /** Canvases of dropped chunks, ready to be painted again. */
+  private readonly pool: HTMLCanvasElement[] = [];
   /** Frame budget for painting, ms. */
   budgetMs = (): number => WORLD_TUNABLES.paintBudgetMs;
+  /** How long the previous frame's own work took, ms. Painting backs off when frames are heavy. */
+  lastFrameMs = 0;
   /** True for chunk coordinates outside the region, which have no neighbor to wait for. */
   beyondEdge: (cx: number, cy: number) => boolean = () => false;
 
@@ -119,34 +128,41 @@ export class ChunkRenderer {
     const canvases: HTMLCanvasElement[] = [];
     const ctxs: CanvasRenderingContext2D[] = [];
     for (let i = 0; i < phases; i++) {
-      const canvas = document.createElement('canvas');
-      canvas.width = CHUNK_PX;
-      canvas.height = CHUNK_PX;
+      // Canvases of dropped chunks are reused: allocating a megabyte each time and leaving the
+      // old ones to the collector is what makes a frame hitch while crossing a region.
+      const spare = this.pool.pop();
+      const canvas = spare ?? document.createElement('canvas');
+      if (!spare) {
+        canvas.width = CHUNK_PX;
+        canvas.height = CHUNK_PX;
+      }
       const ctx = canvas.getContext('2d', { alpha: true });
       if (!ctx) throw new Error('2d context unavailable');
       ctx.imageSmoothingEnabled = false;
+      if (spare) ctx.clearRect(0, 0, CHUNK_PX, CHUNK_PX);
       canvases.push(canvas);
       ctxs.push(ctx);
     }
-    return { chunk, canvases, ctxs, step: 0, total: phases * CHUNK_TILES * 2 };
+    return { chunk, canvases, ctxs, step: 0, total: phases * STEPS_PER_PHASE };
   }
 
   /**
-   * Paints rows of a job until `deadline` (a `performance.now()` value) passes, or to the end when
-   * `deadline` is Infinity. A step is one row of one phase of one pass (ground, then detail), so
-   * it is a few dozen draw calls. Returns true when the job is finished.
+   * Paints a job in small steps until `deadline` (a `performance.now()` value) passes, or to the
+   * end when `deadline` is Infinity. A step is a segment of {@link SEGMENT} tiles of one row of one
+   * phase of one pass (ground, then detail), a few dozen draw calls, so a frame never overshoots
+   * its budget by much. Returns true when the job is finished.
    */
   private run(job: PaintJob, deadline: number): boolean {
-    const phases = job.canvases.length;
     while (job.step < job.total) {
-      const perPhase = CHUNK_TILES * 2;
-      const phase = Math.floor(job.step / perPhase);
-      const within = job.step % perPhase;
-      const pass = within < CHUNK_TILES ? 0 : 1;
-      const row = within < CHUNK_TILES ? within : within - CHUNK_TILES;
+      const phase = Math.floor(job.step / STEPS_PER_PHASE);
+      const within = job.step % STEPS_PER_PHASE;
+      const pass = within < STEPS_PER_PHASE / 2 ? 0 : 1;
+      const seg = pass === 0 ? within : within - STEPS_PER_PHASE / 2;
+      const row = Math.floor(seg / SEGMENTS);
+      const x0 = (seg % SEGMENTS) * SEGMENT;
       const ctx = job.ctxs[phase] as CanvasRenderingContext2D;
-      if (pass === 0) this.paintGroundRow(job.chunk, ctx, row, phase, phases);
-      else this.paintDetailRow(job.chunk, ctx, row);
+      if (pass === 0) this.paintGround(job.chunk, ctx, row, x0, phase);
+      else this.paintDetail(job.chunk, ctx, row, x0);
       job.step++;
       if (job.step < job.total && performance.now() >= deadline) return false;
     }
@@ -154,14 +170,14 @@ export class ChunkRenderer {
     return true;
   }
 
-  private paintGroundRow(
+  private paintGround(
     chunk: Chunk,
     ctx: CanvasRenderingContext2D,
     y: number,
+    x0: number,
     phase: number,
-    _phases: number,
   ): void {
-    for (let x = 0; x < CHUNK_TILES; x++) {
+    for (let x = x0; x < x0 + SEGMENT; x++) {
       const i = tileIndex(x, y);
       const tx = chunk.cx * CHUNK_TILES + x;
       const ty = chunk.cy * CHUNK_TILES + y;
@@ -184,8 +200,8 @@ export class ChunkRenderer {
     }
   }
 
-  private paintDetailRow(chunk: Chunk, ctx: CanvasRenderingContext2D, y: number): void {
-    for (let x = 0; x < CHUNK_TILES; x++) {
+  private paintDetail(chunk: Chunk, ctx: CanvasRenderingContext2D, y: number, x0: number): void {
+    for (let x = x0; x < x0 + SEGMENT; x++) {
       const d = chunk.detail[tileIndex(x, y)] as number;
       if (d === 0) continue;
       const h = this.tileFrame[d - 1] as number;
@@ -265,8 +281,13 @@ export class ChunkRenderer {
 
   /** Forgets a chunk's painted layers, when the chunk leaves memory. */
   drop(cx: number, cy: number): void {
+    const list = this.cache.get(`${cx},${cy}`);
+    if (list) this.pool.push(...list);
     this.cache.delete(`${cx},${cy}`);
-    if (this.job && this.job.chunk.cx === cx && this.job.chunk.cy === cy) this.job = null;
+    if (this.job && this.job.chunk.cx === cx && this.job.chunk.cy === cy) {
+      this.pool.push(...this.job.canvases);
+      this.job = null;
+    }
   }
 
   private canvasFor(cx: number, cy: number, phase: number): HTMLCanvasElement | null {
@@ -304,7 +325,8 @@ export class ChunkRenderer {
     this.pump(
       Math.floor((camX + viewW / 2) / CHUNK_PX),
       Math.floor((camY + viewH / 2) / CHUNK_PX),
-      this.budgetMs(),
+      // Never below half a millisecond, so painting always moves on even when frames are heavy.
+      Math.max(0.5, Math.min(this.budgetMs(), WORLD_TUNABLES.paintFrameCapMs - this.lastFrameMs)),
     );
     const cx0 = Math.floor(camX / CHUNK_PX);
     const cy0 = Math.floor(camY / CHUNK_PX);

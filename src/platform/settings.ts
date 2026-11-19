@@ -34,6 +34,10 @@ export interface Settings {
   menuScroll: number;
   /** Ids of Menu sections the player folded. Everything else is open. */
   closedSections: string[];
+  /** Download the region being played in the background, so it plays offline (M4-03). */
+  prefetchRegions: boolean;
+  /** Regions the player keeps for offline play. They are fetched whole and stay cached. */
+  pinnedRegions: string[];
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -71,6 +75,8 @@ export class SettingsStore {
       menuTab: 'character',
       menuScroll: 0,
       closedSections: [],
+      prefetchRegions: true,
+      pinnedRegions: [],
     };
   }
 
@@ -100,6 +106,9 @@ export class SettingsStore {
       next.chatTab === this.value.chatTab &&
       next.menuTab === this.value.menuTab &&
       next.menuScroll === this.value.menuScroll &&
+      next.prefetchRegions === this.value.prefetchRegions &&
+      next.pinnedRegions.length === this.value.pinnedRegions.length &&
+      next.pinnedRegions.every((x, i) => x === this.value.pinnedRegions[i]) &&
       next.closedSections.length === this.value.closedSections.length &&
       next.closedSections.every((x, i) => x === this.value.closedSections[i])
     )

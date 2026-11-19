@@ -440,9 +440,7 @@ interface RequestDef {
   estMinutes: number;
 }
 type RequestObjective =
-  | TrialObjective
-  | { kind: 'talk'; npc: string }
-  | { kind: 'flag'; flag: string };
+  TrialObjective | { kind: 'talk'; npc: string } | { kind: 'flag'; flag: string };
 ```
 
 Steps inside a solution run in order. The engine (`src/sim/systems/requests.ts`, replacing the request part of `npcs.ts`) reuses the Trial objective trackers from M3-03.

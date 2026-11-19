@@ -12,6 +12,8 @@ export const WORLD_TUNABLES = {
   bedReachPx: 40,
   /** Terrain painting spends at most this many ms of a frame on offscreen chunk layers (M4-03). */
   paintBudgetMs: 2,
+  /** Painting only uses what is left of this much frame time (ms) after the previous frame's own work, so a heavy frame is never made heavier. */
+  paintFrameCapMs: 9,
   /** Fetches in flight at once while streaming chunks. */
   fetchesInFlight: 4,
   /** Chunks farther than this many chunks from the avatar are dropped from memory (the loaded window plus one for hysteresis). */

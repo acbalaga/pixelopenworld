@@ -21,10 +21,14 @@ export default defineConfig({
     {
       name: 'smoke',
       testMatch:
-        /(smoke|menu|slice|talk|save|frontend|secure|backup|time|pwa|hardening|requests|actionMeter|temperament|messages|menuParts|setupV2)\.spec\.ts/,
+        /(smoke|menu|slice|talk|save|frontend|secure|backup|time|pwa|hardening|requests|actionMeter|temperament|messages|menuParts|setupV2|streamingOffline)\.spec\.ts/,
       use: { baseURL: PROD },
     },
-    { name: 'dev-tools', testMatch: /(devtools|sliceRun)\.spec\.ts/, use: { baseURL: DEV } },
+    {
+      name: 'dev-tools',
+      testMatch: /(devtools|sliceRun|streaming)\.spec\.ts/,
+      use: { baseURL: DEV },
+    },
   ],
   webServer: [
     {

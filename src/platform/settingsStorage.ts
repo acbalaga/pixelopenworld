@@ -12,7 +12,14 @@ export interface SettingsBackend {
 }
 
 const NUMBERS = ['textScale', 'hudScale', 'buttonScale', 'hudOpacity'] as const;
-const BOOLEANS = ['reducedMotion', 'haptics', 'muted', 'guardToggle', 'chatCollapsed'] as const;
+const BOOLEANS = [
+  'reducedMotion',
+  'haptics',
+  'muted',
+  'guardToggle',
+  'chatCollapsed',
+  'prefetchRegions',
+] as const;
 
 /** Keeps only the fields that are present and of the right type. The store clamps the numbers. */
 export function sanitizeSettings(raw: unknown): Partial<Settings> {
@@ -34,6 +41,10 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   if (typeof r.menuTab === 'string' && r.menuTab.length <= 16) out.menuTab = r.menuTab;
   if (typeof r.menuScroll === 'number' && Number.isFinite(r.menuScroll) && r.menuScroll >= 0)
     out.menuScroll = Math.min(100_000, Math.floor(r.menuScroll));
+  if (Array.isArray(r.pinnedRegions))
+    out.pinnedRegions = r.pinnedRegions
+      .filter((x): x is string => typeof x === 'string' && /^[a-z][a-z0-9_]{0,40}$/.test(x))
+      .slice(0, 40);
   if (Array.isArray(r.closedSections))
     out.closedSections = r.closedSections
       .filter((x): x is string => typeof x === 'string' && x.length <= 40)

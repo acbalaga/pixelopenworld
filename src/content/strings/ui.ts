@@ -185,6 +185,8 @@ export const UI_STRINGS = {
     haptics: 'Vibration',
     guardToggle: 'Tap Guard to raise and lower it',
     mute: 'Mute audio',
+    prefetchRegions: 'Download the region for offline play',
+    pinRegion: 'Keep this region for offline play',
     scheme: 'Controls',
     flow: 'Flow',
     classic: 'Classic',
