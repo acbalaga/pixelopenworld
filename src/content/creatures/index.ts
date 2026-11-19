@@ -1,7 +1,9 @@
+import { DAWNMEADOW_CREATURES } from './dawnmeadow';
 import type { CreatureDef, SpawnerDef } from './types';
 
 /** The tier 1 creatures and the cave miniboss. Telegraph times come from their attacks. */
 export const CREATURES: Readonly<Record<string, CreatureDef>> = {
+  ...DAWNMEADOW_CREATURES,
   /** The par common enemy (design/04): time to kill 4 to 8 seconds. A Chaser. */
   'creature.mossling': {
     id: 'creature.mossling',
