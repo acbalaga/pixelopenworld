@@ -10,7 +10,7 @@ test('the lanes show a floater, notices, a banner, and the chat lane folds and o
   page,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?nosave=1&foes=0&at=19,43');
+  await page.goto('/?region=slice&nosave=1&foes=0&at=19,43');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(1200);
   // The first hint is a notice in the notice lane.

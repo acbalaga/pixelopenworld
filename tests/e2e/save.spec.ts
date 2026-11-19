@@ -23,7 +23,7 @@ const attr = (page: Page, name: string): Promise<string | null> =>
 test('play, gain an item and XP, reload: the state is identical', async ({ page }) => {
   const problems = await watchProblems(page);
   // Start by Brin the shopkeeper with the dummy nearby, in a fresh browser profile.
-  await page.goto('/?at=40,31');
+  await page.goto('/?region=slice&at=40,31');
   await ready(page);
   await page.keyboard.down('KeyW');
   await page.waitForTimeout(250);
@@ -44,7 +44,7 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
     .toBeGreaterThan(seq0);
 
   // Skill XP: switch to Classic, face the training dummy one tile north, and swing at it.
-  await page.goto('/?foes=1&at=53,39');
+  await page.goto('/?region=slice&foes=1&at=53,39');
   await ready(page);
   await page.keyboard.press('KeyT');
   await page.keyboard.down('KeyW');
@@ -74,7 +74,7 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
     document.addEventListener('visibilitychange', stop, true);
   });
   // No `?at=`, which would move the loaded avatar. `skip` goes past the title.
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   await ready(page);
   expect(await attr(page, 'data-loaded-seq')).toBe(savedSeq);
   expect(await attr(page, 'data-loaded-hash')).toBe(savedHash);
@@ -93,7 +93,7 @@ test('play, gain an item and XP, reload: the state is identical', async ({ page 
 test('a killed save leaves the latest readable: an aborted IndexedDB transaction changes nothing', async ({
   page,
 }) => {
-  await page.goto('/?foes=0&at=48,41');
+  await page.goto('/?region=slice&foes=0&at=48,41');
   await ready(page);
   await hide(page);
   await expect
@@ -146,7 +146,7 @@ test('a killed save leaves the latest readable: an aborted IndexedDB transaction
 test('a damaged latest save is skipped with the recover screen, and the game still loads', async ({
   page,
 }) => {
-  await page.goto('/?foes=0&at=48,41');
+  await page.goto('/?region=slice&foes=0&at=48,41');
   await ready(page);
   await hide(page);
   await expect

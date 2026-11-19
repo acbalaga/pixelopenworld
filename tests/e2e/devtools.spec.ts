@@ -3,7 +3,7 @@ import { shot, watchProblems } from './helpers';
 
 test('overlay shows timing and toggles with the key', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   const overlay = page.locator('#pow-dev-overlay');
   await expect(overlay).toContainText(/fps/);
   await expect(overlay).toContainText(/entities \d+/);
@@ -18,7 +18,7 @@ test('overlay shows timing and toggles with the key', async ({ page }) => {
 });
 
 test('overlay toggles with a three finger tap', async ({ page }) => {
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   const overlay = page.locator('#pow-dev-overlay');
   await expect(overlay).toBeVisible();
   const three = async (): Promise<void> => {
@@ -64,7 +64,7 @@ test('the dev server sends the policy, and the dev reporter sees no violation', 
   page,
 }) => {
   const problems = await watchProblems(page);
-  const res = await page.goto('/?skip=1');
+  const res = await page.goto('/?region=slice&skip=1');
   expect(res?.headers()['content-security-policy']).toContain("default-src 'self'");
   await expect(page.locator('#pow-dev-overlay')).toContainText(/fps/);
   await page.waitForTimeout(500);

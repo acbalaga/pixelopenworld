@@ -29,7 +29,7 @@ test('a downloaded region plays with no network, even where the avatar has not b
 }) => {
   const problems = await watchProblems(page);
   // The first start is near the top of the slice. Its window covers the outdoor chunks only.
-  await page.goto('/?at=40,20&nosave=1');
+  await page.goto('/?region=slice&at=40,20&nosave=1');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   // The first visit installs the worker. A reload puts the page under it.
   await page.evaluate(async () => {
@@ -42,7 +42,7 @@ test('a downloaded region plays with no network, even where the avatar has not b
 
   await context.setOffline(true);
   // Start in the cave, three chunk rows from where the avatar was: only the download has them.
-  await page.goto('/?at=40,130&nosave=1');
+  await page.goto('/?region=slice&at=40,130&nosave=1');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(1500);
   expect(problems.pageErrors).toEqual([]);

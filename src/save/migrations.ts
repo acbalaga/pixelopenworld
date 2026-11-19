@@ -19,6 +19,7 @@ import { deserializeState, serializeState } from '../sim/state';
 import { DEFAULT_ORIGIN } from '../content/world/origins';
 import { normalizeDoll } from '../content/dolls/parts';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
+import { remapFromSlice } from './sliceRemap';
 
 /**
  * Migrations, keyed by the schema they upgrade FROM. Each takes a save at schema N and returns
@@ -597,6 +598,16 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const c = raw.entities.comps;
     c.boss = c.pos.map(() => null);
     return { ...old, schema: 22, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 22 to 23 (M4-04): the game boots into Dawnmeadow, so a save made on the slice map moves to the
+   * equivalent place. See `sliceRemap.ts` for the rules. Map objects of the slice are removed (the
+   * region places its own and streaming adds them), and the chunk deltas that described them go.
+   */
+  22: (old) => {
+    const s = deserializeState(old.sim);
+    remapFromSlice(s);
+    return { ...old, schema: 23, sim: serializeState(s) };
   },
 };
 

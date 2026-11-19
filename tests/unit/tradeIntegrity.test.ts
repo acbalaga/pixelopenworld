@@ -3,13 +3,14 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { JsonCodec } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
-import { migrate } from '../../src/save/migrations';
-import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
+import type { SavePlain } from '../../src/save/types';
 import { buyPrice, lowestBuy } from '../../src/sim/economy';
 import { createStream } from '../../src/sim/kernel/rng';
 import { deserializeState } from '../../src/sim/state';
 import { SHOPS } from '../../src/content/dialogue';
 import { honestPlain, tamper } from '../support/saves';
+import { LAST_SLICE_SCHEMA } from '../support/saves';
 
 const fixture = JSON.parse(
   readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-12.json'), 'utf8'),
@@ -25,8 +26,10 @@ describe('schema 12 to 13 migration', () => {
 
     const now = migrate(
       await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(fixture.plain))),
+      MIGRATIONS,
+      LAST_SLICE_SCHEMA,
     );
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const s = deserializeState(now.sim);
     expect(s.rng.trade).toEqual(createStream(s.seed, 'trade'));
     const me = s.entities.comps.avatar.findIndex((a) => a);

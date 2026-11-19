@@ -233,3 +233,10 @@ export function asSchema5(s: SimState): SimState {
   }
   return s;
 }
+
+/**
+ * The last schema in which the game ran on the slice map. Migration tests for the steps before it
+ * stop here, since the step to Dawnmeadow (22 to 23) removes the slice's objects and moves the
+ * avatar, which is what those tests look at.
+ */
+export const LAST_SLICE_SCHEMA = 22;

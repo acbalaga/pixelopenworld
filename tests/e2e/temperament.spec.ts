@@ -23,7 +23,7 @@ function red(png: PNG): number {
 
 test('a territorial creature warns before it commits to a chase', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?nosave=1&at=58,52');
+  await page.goto('/?region=slice&nosave=1&at=58,52');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   const reds: number[] = [];
   for (let k = 0; k < 14; k++) {

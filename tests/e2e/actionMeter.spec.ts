@@ -7,7 +7,7 @@ test.use({ viewport: { width: 360, height: 800 } });
 
 test('felling a tree shows the meter, the work frame and the node outline', async ({ page }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?nosave=1&foes=0&at=19,43');
+  await page.goto('/?region=slice&nosave=1&foes=0&at=19,43');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(800);
   // A short press turns the avatar toward the tree without walking away from it.

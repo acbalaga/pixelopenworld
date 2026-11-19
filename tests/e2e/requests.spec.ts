@@ -27,7 +27,7 @@ test('the board posts jobs, one is taken, shown in the log, and pinned on the HU
 }) => {
   const problems = await watchProblems(page);
   // Just south of the board in the square.
-  await page.goto('/?foes=0&at=43,38');
+  await page.goto('/?region=slice&foes=0&at=43,38');
   await ready(page);
   await use(page, 'KeyW');
   const board = page.locator('.pow-board');
@@ -67,7 +67,7 @@ test('an authored request: accepted from Orla, shown in her words, pinned as her
   page,
 }) => {
   const problems = await watchProblems(page);
-  await page.goto('/?foes=0&at=50,45');
+  await page.goto('/?region=slice&foes=0&at=50,45');
   await ready(page);
   await use(page, 'KeyW');
   const talk = page.locator('.pow-talk');

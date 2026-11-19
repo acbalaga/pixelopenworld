@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { REQUEST_BALANCE as RB } from '../../src/content/balance/requests';
 import { JsonCodec } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
-import { migrate } from '../../src/save/migrations';
-import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
+import type { SavePlain } from '../../src/save/types';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { renownIn } from '../../src/sim/renown';
 import { passTrial } from '../../src/sim/skills';
@@ -15,7 +15,7 @@ import {
   serializeState,
   type SimState,
 } from '../../src/sim/state';
-import { honestPlain, tamper } from '../support/saves';
+import { LAST_SLICE_SCHEMA, honestPlain, tamper } from '../support/saves';
 
 type Sim = SimState;
 
@@ -24,13 +24,17 @@ const fixture = JSON.parse(
 ) as { plain: SavePlain };
 
 const migrated = async (plain: SavePlain): Promise<SavePlain> =>
-  migrate(await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(plain))));
+  migrate(
+    await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(plain))),
+    MIGRATIONS,
+    LAST_SLICE_SCHEMA,
+  );
 
 describe('schema 16 to 17 migration (requests v2)', () => {
   it('moves each request to solutions and step progress, and keeps what was done', async () => {
     expect(fixture.plain.schema).toBe(16);
     const now = await migrated(fixture.plain);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const s = deserializeState(now.sim);
     const me = s.entities.comps.avatar.findIndex((a) => a);
     const j = s.entities.comps.journal[me]!;

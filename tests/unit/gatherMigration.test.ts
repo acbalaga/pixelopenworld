@@ -3,12 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { JsonCodec } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
-import { migrate } from '../../src/save/migrations';
-import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
+import type { SavePlain } from '../../src/save/types';
 import { madeItems } from '../../src/sim/ledger';
 import { addItem } from '../../src/sim/items';
 import { deserializeState } from '../../src/sim/state';
 import { honestPlain, tamper } from '../support/saves';
+import { LAST_SLICE_SCHEMA } from '../support/saves';
 
 const fixture = JSON.parse(
   readFileSync(join(__dirname, '..', 'fixtures', 'saves', 'schema-9.json'), 'utf8'),
@@ -22,8 +23,10 @@ describe('schema 9 to 10 migration', () => {
     expect(before.entities.comps.node.filter((n) => n && n.readyAt > 0)).toHaveLength(1);
     const now = migrate(
       await new JsonCodec().decode(new TextEncoder().encode(JSON.stringify(fixture.plain))),
+      MIGRATIONS,
+      LAST_SLICE_SCHEMA,
     );
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const s = deserializeState(now.sim);
     const nodes = s.entities.comps.node.filter((n) => n);
     expect(nodes).toHaveLength(2);

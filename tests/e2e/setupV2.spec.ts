@@ -4,8 +4,8 @@ import { shot, watchProblems } from './helpers';
 // POW-M4-19: the setup screen on the new look editor, origins, and the inn mirror.
 test.setTimeout(90_000);
 
-async function toSetup(page: Page): Promise<void> {
-  await page.goto('/');
+async function toSetup(page: Page, path = '/?region=slice'): Promise<void> {
+  await page.goto(path);
   await page.getByRole('button', { name: 'Log In' }).click();
   await expect(page.getByRole('heading', { name: 'Create your character' })).toBeVisible();
 }
@@ -79,6 +79,21 @@ test.describe('portrait', () => {
     await shot(page, 'm4-19-first-line');
   });
 
+  test('the default world is Dawnmeadow: a new character wakes in it, with no errors', async ({
+    page,
+  }) => {
+    const problems = await watchProblems(page);
+    await toSetup(page, '/');
+    await page.getByLabel('Handle').fill('Wake_2');
+    await page.getByRole('button', { name: 'Enter the world' }).click();
+    await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
+    await page.waitForTimeout(2500);
+    await shot(page, 'm4-04-first-frame-dawnmeadow');
+    expect(problems.pageErrors).toEqual([]);
+    expect(problems.csp).toEqual([]);
+    expect(problems.console).toEqual([]);
+  });
+
   test('screenshots: setup at 100% and 160% text', async ({ page }) => {
     await toSetup(page);
     await shot(page, 'm4-19-setup-portrait');
@@ -122,7 +137,7 @@ test.describe('the inn mirror', () => {
   }) => {
     const problems = await watchProblems(page);
     // The mirror stands in the square at tile 52,39. Walk up to it from the south.
-    await page.goto('/?nosave=1&foes=0&at=52,41');
+    await page.goto('/?region=slice&nosave=1&foes=0&at=52,41');
     await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
     await page.waitForTimeout(800);
     await page.keyboard.down('KeyW');

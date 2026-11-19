@@ -5,13 +5,13 @@ import { join } from 'node:path';
 import { JsonCodec, sha256Hex } from '../../src/save/codec';
 import { validateSave } from '../../src/save/integrity';
 import { SaveManager } from '../../src/save/manager';
-import { migrate } from '../../src/save/migrations';
+import { MIGRATIONS, migrate } from '../../src/save/migrations';
 import { MemoryStorage } from '../../src/save/storage';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
 import { findAvatar } from '../../src/shared/summary';
 import { deserializeState, serializeState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
-import { LOOK, T0, asSchema5, honestState } from '../support/saves';
+import { LAST_SLICE_SCHEMA, LOOK, T0, asSchema5, honestState } from '../support/saves';
 
 function setup(audit?: (p: SavePlain) => void) {
   const storage = new MemoryStorage();
@@ -172,8 +172,8 @@ describe('older saves migrate to the current schema and validate clean', () => {
   it('schema 3 gains a start time and an Intact trust', () => {
     const f = fixture('schema-3.json').plain;
     expect(f.schema).toBe(3);
-    const now = migrate(f);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const now = migrate(f, MIGRATIONS, LAST_SLICE_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     expect(now.startedAt).toBe(f.createdAt - f.playSeconds * 1000);
     expect(now.trust).toEqual({ state: 'intact', reasons: [], flaggedAt: null });
     expect(withoutNewFields(now.sim)).toBe(f.sim);
@@ -183,8 +183,8 @@ describe('older saves migrate to the current schema and validate clean', () => {
   it('schema 4 gains a trusted-time record that keeps the time of day', () => {
     const f = fixture('schema-4.json').plain;
     expect(f.schema).toBe(4);
-    const now = migrate(f);
-    expect(now.schema).toBe(CURRENT_SCHEMA);
+    const now = migrate(f, MIGRATIONS, LAST_SLICE_SCHEMA);
+    expect(now.schema).toBe(LAST_SLICE_SCHEMA);
     const tick = (JSON.parse(f.sim) as { tick: number }).tick;
     expect(now.time).toEqual({
       epoch: f.createdAt - Math.floor((tick * 60_000) / 1800),

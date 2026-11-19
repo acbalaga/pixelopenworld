@@ -47,7 +47,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   const problems = await watchProblems(page);
 
   // Create an avatar.
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In' }).click();
   await page.getByLabel('Handle').fill('Runner_1');
   await page.getByRole('button', { name: 'Enter the world' }).click();
@@ -55,7 +55,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await saveNow(page);
 
   // Back in, skipping the title with a developer parameter, standing south of the guard. The saved avatar moves to `?at=`.
-  await page.goto('/?at=50,45');
+  await page.goto('/?region=slice&at=50,45');
   await inWorld(page);
 
   // Take the guard's request.
@@ -107,7 +107,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   await saveNow(page);
 
   // Cook at the camp pot: stand south of it, face it, open its panel, craft.
-  await page.goto('/?at=42,41');
+  await page.goto('/?region=slice&at=42,41');
   await inWorld(page);
   await face(page, 'KeyW', 60);
   // Gathering is covered by the sim tests. Here the bag is stocked as if the herbs were picked.
@@ -133,7 +133,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
   // Reload: the request stays done, the recipe and coin stay as they were.
   await saveNow(page);
   const saved = await snap(page);
-  await page.goto('/');
+  await page.goto('/?region=slice');
   await page.getByRole('button', { name: 'Log In as Runner_1' }).click();
   await inWorld(page);
   const after = await snap(page);
@@ -147,7 +147,7 @@ test('slice run: create, take the request, fight, turn in, cook, reload', async 
 });
 
 test('the dev scheme toggle switches Flow and Classic', async ({ page }) => {
-  await page.goto('/?skip=1');
+  await page.goto('/?region=slice&skip=1');
   const btn = page.locator('#pow-dev-scheme');
   await expect(btn).toHaveText('Scheme: flow');
   await btn.click();
