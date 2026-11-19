@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "region": "slice",
+  "hash": "12a509a2af172dd3",
+  "chunks": {
+    "w": 3,
+    "h": 5
+  },
+  "files": [
+    {
+      "file": "chunk-0-0.bin",
+      "cx": 0,
+      "cy": 0,
+      "hash": "50e0497b32ad3bc5"
+    },
+    {
+      "file": "chunk-1-0.bin",
+      "cx": 1,
+      "cy": 0,
+      "hash": "9efae16ad2e6229c"
+    },
+    {
+      "file": "chunk-2-0.bin",
+      "cx": 2,
+      "cy": 0,
+      "hash": "c97da505d17820cb"
+    },
+    {
+      "file": "chunk-0-1.bin",
+      "cx": 0,
+      "cy": 1,
+      "hash": "1c08c981a366b69b"
+    },
+    {
+      "file": "chunk-1-1.bin",
+      "cx": 1,
+      "cy": 1,
+      "hash": "1f97b5a202c3f8f0"
+    },
+    {
+      "file": "chunk-2-1.bin",
+      "cx": 2,
+      "cy": 1,
+      "hash": "01f1fe6c09868101"
+    },
+    {
+      "file": "chunk-0-2.bin",
+      "cx": 0,
+      "cy": 2,
+      "hash": "7648e2ced7763a61"
+    },
+    {
+      "file": "chunk-1-2.bin",
+      "cx": 1,
+      "cy": 2,
+      "hash": "0ae4eb233ee56aec"
+    },
+    {
+      "file": "chunk-2-2.bin",
+      "cx": 2,
+      "cy": 2,
+      "hash": "f008af96e1c9cffe"
+    },
+    {
+      "file": "chunk-0-3.bin",
+      "cx": 0,
+      "cy": 3,
+      "hash": "362984a20e75c4ce"
+    },
+    {
+      "file": "chunk-1-3.bin",
+      "cx": 1,
+      "cy": 3,
+      "hash": "0d9c7a5bb4aab302"
+    },
+    {
+      "file": "chunk-2-3.bin",
+      "cx": 2,
+      "cy": 3,
+      "hash": "2f8392815a8374fe"
+    },
+    {
+      "file": "chunk-0-4.bin",
+      "cx": 0,
+      "cy": 4,
+      "hash": "fbe8a9f57ff0bbd6"
+    },
+    {
+      "file": "chunk-1-4.bin",
+      "cx": 1,
+      "cy": 4,
+      "hash": "8d1cf956c62dae2c"
+    },
+    {
+      "file": "chunk-2-4.bin",
+      "cx": 2,
+      "cy": 4,
+      "hash": "8800e1585f52826a"
+    }
+  ],
+  "interiors": []
+}

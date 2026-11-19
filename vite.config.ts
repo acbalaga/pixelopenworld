@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import { SECURITY_HEADERS } from './src/shared/headers';
@@ -42,6 +42,49 @@ function publicFiles(dir = 'public', prefix = ''): string[] {
 }
 
 /**
+ * Serves the baked world (M4-03) at `/world/<region>/...` in dev and emits it into the build.
+ * Chunk files are not precached: the game fetches them as the avatar moves, and keeps them in
+ * IndexedDB and in the service worker's world cache. Regions whose id starts `dev_` are dev tools
+ * and are left out of the production build.
+ */
+function worldFiles(): Plugin {
+  const root = 'baked/world';
+  const regions = (): string[] =>
+    existsSync(root) ? readdirSync(root).filter((n) => statSync(join(root, n)).isDirectory()) : [];
+  return {
+    name: 'pow-world-files',
+    configureServer(server) {
+      server.middlewares.use('/world', (req, res, next) => {
+        const path = decodeURIComponent((req.url ?? '').split('?')[0] ?? '').replace(/^\/+/, '');
+        const file = join(root, path);
+        if (path.includes('..') || !existsSync(file) || !statSync(file).isFile()) return next();
+        res.setHeader(
+          'Content-Type',
+          file.endsWith('.json') ? 'application/json' : 'application/octet-stream',
+        );
+        res.end(readFileSync(file));
+      });
+    },
+    generateBundle() {
+      if (this.environment?.name !== 'client') return;
+      const walk = (dir: string, prefix: string): void => {
+        for (const n of readdirSync(dir)) {
+          const full = join(dir, n);
+          if (statSync(full).isDirectory()) walk(full, posix.join(prefix, n));
+          else
+            this.emitFile({
+              type: 'asset',
+              fileName: posix.join('world', prefix, n),
+              source: readFileSync(full),
+            });
+        }
+      };
+      for (const r of regions()) if (!r.startsWith('dev_')) walk(join(root, r), r);
+    },
+  };
+}
+
+/**
  * Writes `/sw.js` from `src/platform/pwa/sw.js` with the precache list filled in: the page, every
  * emitted asset, and the icons and manifest from `public/`. The cache name carries a hash of the
  * list, so any change to a hashed file makes a new version.
@@ -61,6 +104,7 @@ function serviceWorker(): Plugin {
               f !== 'sw.js' &&
               !f.endsWith('.map') &&
               !f.startsWith('.') &&
+              !f.startsWith('world/') &&
               f !== '_headers',
           )
           .map((f) => `/${f}`),
@@ -76,7 +120,7 @@ function serviceWorker(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [cloudflare(), serviceWorker()],
+  plugins: [cloudflare(), worldFiles(), serviceWorker()],
   define: {
     __SEAL_ENV__: JSON.stringify(sealEnv()),
     __APP_VERSION__: JSON.stringify(gitSha()),

@@ -36,8 +36,9 @@ function strip(n: number): TileWorld {
 
 function game(n: number, atChunk: number) {
   const s = createDemoState(7, 0);
-  s.world = strip(n);
-  s.stream = newStream(s.world, false);
+  const w = strip(n);
+  s.world = w;
+  s.stream = newStream(w, false);
   createAvatar(s, px(atChunk * CHUNK_PX + 100), px(100));
   return s;
 }
@@ -134,7 +135,7 @@ describe('entity streaming', () => {
     expect(back.deltas).toEqual(s.deltas);
     expect(hashState(back)).toBe(hashState(s));
     back.world = s.world;
-    back.stream = newStream(back.world!, false);
+    back.stream = newStream(s.world as TileWorld, false);
     streamSystem(back);
     moveTo(back, 0);
     streamSystem(back);
@@ -158,8 +159,8 @@ describe('entity streaming', () => {
   it('freezes creatures outside the active window', () => {
     const s = game(12, 0);
     streamSystem(s);
-    const near = spawnCreature(s, 'creature.mossling', 3 * 16, 100, null);
-    const far = spawnCreature(s, 'creature.mossling', 2 * CHUNK_PX + 40, 100, null);
+    const near = spawnCreature(s, 'creature.mossling', 3 * 16, 100);
+    const far = spawnCreature(s, 'creature.mossling', 2 * CHUNK_PX + 40, 100);
     expect(frozenAt(s, getComp(s.entities, near, 'pos')!.x, 0)).toBe(false);
     expect(
       frozenAt(s, getComp(s.entities, far, 'pos')!.x, getComp(s.entities, far, 'pos')!.y),

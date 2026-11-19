@@ -10,6 +10,12 @@ export const WORLD_TUNABLES = {
   blockPortalClear: 20,
   /** The avatar must be this close to a bed (px) to sleep or change Paths. */
   bedReachPx: 40,
+  /** Terrain painting spends at most this many ms of a frame on offscreen chunk layers (M4-03). */
+  paintBudgetMs: 2,
+  /** Fetches in flight at once while streaming chunks. */
+  fetchesInFlight: 4,
+  /** Chunks farther than this many chunks from the avatar are dropped from memory (the loaded window plus one for hysteresis). */
+  evictRadius: 3,
   /** Interact needs the avatar idle. Waystones restore all pools. */
   waystoneHeals: true,
 } as const;

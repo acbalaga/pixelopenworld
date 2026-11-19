@@ -1,3 +1,4 @@
+import { WORLD_TUNABLES } from '../content/balance/world';
 import { GRASS_VARIANTS, TERRAINS, TILESET } from '../content/world/tileset';
 import { blobIndex } from '../shared/autotile';
 import { CHUNK_TILES, tileIndex, type Chunk } from '../sim/world/chunk';
@@ -16,6 +17,16 @@ export interface TileSprite {
   offset?: readonly [number, number];
   /** `frame` names an animation, not a frame. */
   animated?: boolean;
+}
+
+/** A chunk being painted a few rows at a time. */
+interface PaintJob {
+  chunk: Chunk;
+  canvases: HTMLCanvasElement[];
+  ctxs: CanvasRenderingContext2D[];
+  /** Rows painted so far, counting both passes of every phase. */
+  step: number;
+  total: number;
 }
 
 /** Fades roofs and canopies that an entity stands under. State is kept only while a fade is active. */
@@ -49,6 +60,13 @@ export class ChunkRenderer {
   private fader = new OverheadFader();
   /** Chunks painted since creation. Painting is the expensive step and happens once per chunk. */
   chunksBuilt = 0;
+  /** Chunks that scrolled into view before they were painted and had to be finished at once. */
+  stalls = 0;
+  private job: PaintJob | null = null;
+  /** Frame budget for painting, ms. */
+  budgetMs = (): number => WORLD_TUNABLES.paintBudgetMs;
+  /** True for chunk coordinates outside the region, which have no neighbor to wait for. */
+  beyondEdge: (cx: number, cy: number) => boolean = () => false;
 
   constructor(
     private readonly atlas: Atlas,
@@ -92,60 +110,93 @@ export class ChunkRenderer {
   private tileOffset: (readonly [number, number])[];
   private terrainInfo: (typeof TERRAINS)[number][] = [];
 
-  private paint(chunk: Chunk): HTMLCanvasElement[] {
+  /** Starts painting a chunk. The job is resumed with {@link run} until it reports done. */
+  private begin(chunk: Chunk): PaintJob {
     const phases = TERRAINS.reduce(
       (m, t) => (t.overlay && this.hasTerrain(chunk, t.id) ? Math.max(m, t.overlay.phases) : m),
       1,
     );
-    const out: HTMLCanvasElement[] = [];
-    for (let phase = 0; phase < phases; phase++) {
+    const canvases: HTMLCanvasElement[] = [];
+    const ctxs: CanvasRenderingContext2D[] = [];
+    for (let i = 0; i < phases; i++) {
       const canvas = document.createElement('canvas');
       canvas.width = CHUNK_PX;
       canvas.height = CHUNK_PX;
       const ctx = canvas.getContext('2d', { alpha: true });
       if (!ctx) throw new Error('2d context unavailable');
       ctx.imageSmoothingEnabled = false;
-      for (let y = 0; y < CHUNK_TILES; y++) {
-        for (let x = 0; x < CHUNK_TILES; x++) {
-          const i = tileIndex(x, y);
-          const tx = chunk.cx * CHUNK_TILES + x;
-          const ty = chunk.cy * CHUNK_TILES + y;
-          const terrain = chunk.ground[i] as number;
-          if (terrain === 0) continue;
-          const hash = (Math.imul(tx, 73856093) ^ Math.imul(ty, 19349663)) >>> 7;
-          const base = this.bases.get(terrain) ?? this.grass;
-          this.draw(ctx, base[hash % base.length] as number, x * TILE_PX, y * TILE_PX);
-          const info = this.terrainInfo[terrain];
-          if (info?.overlay) {
-            const frames = this.blob.get(info.key) as number[];
-            const idx = blobIndex(this.world.neighborMask(tx, ty, terrain));
-            this.draw(
-              ctx,
-              frames[idx * info.overlay.phases + (phase % info.overlay.phases)] as number,
-              x * TILE_PX,
-              y * TILE_PX,
-            );
-          }
-        }
-      }
-      for (let y = 0; y < CHUNK_TILES; y++) {
-        for (let x = 0; x < CHUNK_TILES; x++) {
-          const d = chunk.detail[tileIndex(x, y)] as number;
-          if (d === 0) continue;
-          const h = this.tileFrame[d - 1] as number;
-          const off = this.tileOffset[d - 1] as readonly [number, number];
-          this.draw(
-            ctx,
-            h,
-            x * TILE_PX + 8 - this.atlas.originX(h) + off[0],
-            y * TILE_PX + 14 - this.atlas.originY(h) + off[1],
-          );
-        }
-      }
-      out.push(canvas);
+      canvases.push(canvas);
+      ctxs.push(ctx);
+    }
+    return { chunk, canvases, ctxs, step: 0, total: phases * CHUNK_TILES * 2 };
+  }
+
+  /**
+   * Paints rows of a job until `deadline` (a `performance.now()` value) passes, or to the end when
+   * `deadline` is Infinity. A step is one row of one phase of one pass (ground, then detail), so
+   * it is a few dozen draw calls. Returns true when the job is finished.
+   */
+  private run(job: PaintJob, deadline: number): boolean {
+    const phases = job.canvases.length;
+    while (job.step < job.total) {
+      const perPhase = CHUNK_TILES * 2;
+      const phase = Math.floor(job.step / perPhase);
+      const within = job.step % perPhase;
+      const pass = within < CHUNK_TILES ? 0 : 1;
+      const row = within < CHUNK_TILES ? within : within - CHUNK_TILES;
+      const ctx = job.ctxs[phase] as CanvasRenderingContext2D;
+      if (pass === 0) this.paintGroundRow(job.chunk, ctx, row, phase, phases);
+      else this.paintDetailRow(job.chunk, ctx, row);
+      job.step++;
+      if (job.step < job.total && performance.now() >= deadline) return false;
     }
     this.chunksBuilt++;
-    return out;
+    return true;
+  }
+
+  private paintGroundRow(
+    chunk: Chunk,
+    ctx: CanvasRenderingContext2D,
+    y: number,
+    phase: number,
+    _phases: number,
+  ): void {
+    for (let x = 0; x < CHUNK_TILES; x++) {
+      const i = tileIndex(x, y);
+      const tx = chunk.cx * CHUNK_TILES + x;
+      const ty = chunk.cy * CHUNK_TILES + y;
+      const terrain = chunk.ground[i] as number;
+      if (terrain === 0) continue;
+      const hash = (Math.imul(tx, 73856093) ^ Math.imul(ty, 19349663)) >>> 7;
+      const base = this.bases.get(terrain) ?? this.grass;
+      this.draw(ctx, base[hash % base.length] as number, x * TILE_PX, y * TILE_PX);
+      const info = this.terrainInfo[terrain];
+      if (info?.overlay) {
+        const frames = this.blob.get(info.key) as number[];
+        const idx = blobIndex(this.world.neighborMask(tx, ty, terrain));
+        this.draw(
+          ctx,
+          frames[idx * info.overlay.phases + (phase % info.overlay.phases)] as number,
+          x * TILE_PX,
+          y * TILE_PX,
+        );
+      }
+    }
+  }
+
+  private paintDetailRow(chunk: Chunk, ctx: CanvasRenderingContext2D, y: number): void {
+    for (let x = 0; x < CHUNK_TILES; x++) {
+      const d = chunk.detail[tileIndex(x, y)] as number;
+      if (d === 0) continue;
+      const h = this.tileFrame[d - 1] as number;
+      const off = this.tileOffset[d - 1] as readonly [number, number];
+      this.draw(
+        ctx,
+        h,
+        x * TILE_PX + 8 - this.atlas.originX(h) + off[0],
+        y * TILE_PX + 14 - this.atlas.originY(h) + off[1],
+      );
+    }
   }
 
   private hasTerrain(chunk: Chunk, id: number): boolean {
@@ -169,18 +220,53 @@ export class ChunkRenderer {
   }
 
   /**
-   * Paints at most one missing chunk in the ring around chunk (cx, cy). Call once per frame so
-   * chunks are ready before they scroll into view and no frame pays for more than one.
+   * True if every neighbor of the chunk is loaded or lies beyond the edge of the region, so its
+   * border tiles autotile correctly. A chunk is painted only then, and once painted it is kept
+   * until it is dropped, because its neighbors stay loaded as long as it does.
    */
-  warm(cx: number, cy: number): void {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (this.cache.has(`${cx + dx},${cy + dy}`) || !this.world.chunk(cx + dx, cy + dy))
-          continue;
-        this.canvasFor(cx + dx, cy + dy, 0);
-        return;
+  private ready(cx: number, cy: number): boolean {
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        if (!this.world.chunk(cx + dx, cy + dy) && !this.beyondEdge(cx + dx, cy + dy)) return false;
+    return true;
+  }
+
+  /**
+   * Spends up to `budgetMs` painting chunks around chunk (cx, cy), nearest first. Call once per
+   * frame so chunks are painted before they scroll into view and no frame pays for more than the
+   * budget. A chunk that is half painted keeps its place until the next call.
+   */
+  pump(cx: number, cy: number, budgetMs: number): void {
+    const deadline = performance.now() + budgetMs;
+    for (;;) {
+      if (!this.job) {
+        let best: Chunk | null = null;
+        let bestD = Infinity;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const c = this.world.chunk(cx + dx, cy + dy);
+            if (!c || this.cache.has(`${c.cx},${c.cy}`) || !this.ready(c.cx, c.cy)) continue;
+            const d = Math.abs(dx) + Math.abs(dy);
+            if (d < bestD) {
+              best = c;
+              bestD = d;
+            }
+          }
+        }
+        if (!best) return;
+        this.job = this.begin(best);
       }
+      if (!this.run(this.job, deadline)) return;
+      this.cache.set(`${this.job.chunk.cx},${this.job.chunk.cy}`, this.job.canvases);
+      this.job = null;
+      if (performance.now() >= deadline) return;
     }
+  }
+
+  /** Forgets a chunk's painted layers, when the chunk leaves memory. */
+  drop(cx: number, cy: number): void {
+    this.cache.delete(`${cx},${cy}`);
+    if (this.job && this.job.chunk.cx === cx && this.job.chunk.cy === cy) this.job = null;
   }
 
   private canvasFor(cx: number, cy: number, phase: number): HTMLCanvasElement | null {
@@ -189,7 +275,12 @@ export class ChunkRenderer {
     if (!list) {
       const chunk = this.world.chunk(cx, cy);
       if (!chunk) return null;
-      list = this.paint(chunk);
+      // Not painted in time: finish it now rather than show a hole. Counted, so a test can see it.
+      const job = this.job && this.job.chunk === chunk ? this.job : this.begin(chunk);
+      this.run(job, Infinity);
+      if (this.job === job) this.job = null;
+      this.stalls++;
+      list = job.canvases;
       this.cache.set(key, list);
     }
     return list[phase % list.length] ?? null;
@@ -210,7 +301,11 @@ export class ChunkRenderer {
     target: { x: number; y: number } | null,
     dtMs: number,
   ): void {
-    this.warm(Math.floor((camX + viewW / 2) / CHUNK_PX), Math.floor((camY + viewH / 2) / CHUNK_PX));
+    this.pump(
+      Math.floor((camX + viewW / 2) / CHUNK_PX),
+      Math.floor((camY + viewH / 2) / CHUNK_PX),
+      this.budgetMs(),
+    );
     const cx0 = Math.floor(camX / CHUNK_PX);
     const cy0 = Math.floor(camY / CHUNK_PX);
     const cx1 = Math.floor((camX + viewW - 1) / CHUNK_PX);

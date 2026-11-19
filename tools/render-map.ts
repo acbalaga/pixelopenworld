@@ -28,12 +28,10 @@ const atlas = PNG.sync.read(readFileSync(join(baked, 'atlas-core.png')));
 
 const argv = process.argv.slice(2);
 const ri = argv.indexOf('--region');
-const region = ri >= 0 ? argv[ri + 1] : undefined;
+const region = ri >= 0 ? (argv[ri + 1] as string) : 'slice';
 if (ri >= 0) argv.splice(ri, 2);
-const chunkDir = region ? join(baked, 'world', region) : baked;
-const files = readdirSync(chunkDir).filter((n) =>
-  region ? /^chunk-\d+-\d+\.bin$/.test(n) : /^chunk-slice-\d+-\d+\.bin$/.test(n),
-);
+const chunkDir = join(baked, 'world', region);
+const files = readdirSync(chunkDir).filter((n) => /^chunk-\d+-\d+\.bin$/.test(n));
 const world = new TileWorld(
   files.map((f) => decodeChunk(new Uint8Array(readFileSync(join(chunkDir, f))))),
 );

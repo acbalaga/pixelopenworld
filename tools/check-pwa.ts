@@ -22,12 +22,21 @@ function walk(dir: string, prefix = ''): string[] {
 const built = walk(dist)
   .map((f) => (f === '/index.html' ? '/' : f))
   .filter((f) => f !== '/sw.js' && f !== '/_headers' && !f.startsWith('/.'));
+// Chunk files are fetched as the avatar moves and kept in the world cache, not precached.
+const world = built.filter((f) => f.startsWith('/world/'));
+const shellFiles = built.filter((f) => !f.startsWith('/world/'));
 
 const problems: string[] = [];
-for (const f of built) if (!listed.has(f)) problems.push(`built but not precached: ${f}`);
+for (const f of shellFiles) if (!listed.has(f)) problems.push(`built but not precached: ${f}`);
 for (const f of listed)
   if (!existsSync(join(dist, f))) problems.push(`precached but missing: ${f}`);
 if (!listed.has('/')) problems.push('the shell (/) is not precached');
+for (const f of listed)
+  if (f.startsWith('/world/')) problems.push(`chunk files are not precached: ${f}`);
+if (!world.includes('/world/slice/manifest.json'))
+  problems.push('the slice region is not in the build');
+for (const f of world)
+  if (f.startsWith('/world/dev_')) problems.push(`dev region in the build: ${f}`);
 const code = sw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 if (/clients\.claim/.test(code)) problems.push('sw.js must not call clients.claim');
 if ((code.match(/skipWaiting/g) ?? []).length !== 1 || !/skip-waiting/.test(code))
