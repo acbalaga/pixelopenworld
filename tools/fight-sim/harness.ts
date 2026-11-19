@@ -130,6 +130,8 @@ function fightOnce(
   start: FightStart,
 ): FightResult {
   const s = createDemoState(seed, 0);
+  // Time-to-kill targets are for clear weather. Weather has its own tests (M4-09).
+  s.weatherOverride = 'clear';
   s.world = OPEN;
   const f = feetAt(30, 30);
   const me = createAvatar(s, f.x, f.y, 'Sim_1');

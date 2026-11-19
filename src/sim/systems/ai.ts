@@ -16,6 +16,7 @@ import { TEMPERAMENT as TP } from '../../content/balance/temperament';
 import { provenTierOf, temperamentNow, territoryOf } from '../combat/temperament';
 import { frozenAt } from '../world/stream';
 import { patternDriven } from './boss';
+import { noticePct } from '../weatherEffects';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -33,7 +34,9 @@ function pct(state: SimState, id: EntityId): number {
 }
 
 /** Nearest living player-side fighter within `range` px of `me`, or null. */
-function acquire(state: SimState, me: Vec, range: number, by: EntityId): EntityId | null {
+function acquire(state: SimState, me: Vec, rangeIn: number, by: EntityId): EntityId | null {
+  // Fog, sand and storm cut how far a creature notices (M4-09).
+  const range = Math.floor((rangeIn * noticePct(state, me.x * SUBPX, me.y * SUBPX)) / 100);
   let best: EntityId | null = null;
   let bestD = range;
   for (const id of query(state.entities, 'fighter', 'pos')) {

@@ -24,7 +24,7 @@ import { AFFIXES, parseAffix } from '../../content/items/affixes';
 import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { isAwake, masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
-import { dayPhase } from '../../sim/time';
+import { calendarOf, dayPhase, weatherOn } from '../../sim/time';
 import type { SimState } from '../../sim/state';
 
 /**
@@ -584,5 +584,39 @@ export function clockView(tick: number): ClockView {
     phase,
     label: UI_STRINGS.clock[phase],
     hhmm: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+  };
+}
+
+/** The calendar as System shows it: today's date and hour, today's weather, and the days ahead. */
+export interface CalendarView {
+  date: string;
+  time: string;
+  today: string;
+  ahead: string[];
+}
+
+/** How many days ahead the calendar lists. */
+export const FORECAST_DAYS = 6;
+
+/** Builds the calendar for the world clock `state.worldTick`. Pure. */
+export function calendarView(state: SimState): CalendarView {
+  const C = UI_STRINGS.calendar;
+  const cal = calendarOf(state.worldTick);
+  const clock = clockView(state.worldTick);
+  const dayTicks = TIME.phases.reduce((n, p) => n + p.minutes, 0) * TIME.ticksPerMinute;
+  const ahead: string[] = [];
+  for (let i = 1; i <= FORECAST_DAYS; i++) {
+    const at = state.worldTick + i * dayTicks;
+    const c = calendarOf(at);
+    ahead.push(`${C.seasons[c.season]} ${c.day}: ${C.weather[weatherOn(state, at)]}`);
+  }
+  return {
+    date: C.date
+      .replace('{year}', String(cal.year))
+      .replace('{season}', C.seasons[cal.season])
+      .replace('{day}', String(cal.day)),
+    time: C.time.replace('{phase}', clock.label).replace('{hhmm}', clock.hhmm),
+    today: C.today.replace('{weather}', C.weather[weatherOn(state, state.worldTick)]),
+    ahead,
   };
 }

@@ -13,6 +13,7 @@ import { blocking, facingOf, hitAngle256 } from './guard';
 import { breaksGuard, knockPx, propertyPct, refundOf, staggerPoints } from './properties';
 import { inShape, len } from './geometry';
 import { recordKill } from '../ledger';
+import { elementPct } from '../weatherEffects';
 
 /** A fresh set of pools at full. */
 export function newPools(tick: number): Pools {
@@ -274,11 +275,17 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     SB.defenseFloor,
     applyMods(cb?.defense ?? 0, 'defense', statusMods(state, dst)),
   );
-  const amount = computeDamage(h.power, h.mult, h.rank, defense, h.element, {
+  let amount = computeDamage(h.power, h.mult, h.rank, defense, h.element, {
     crit,
     staggered: wasStaggered || h.asStaggered === true,
     pct: Math.floor((prop * through) / 100),
   });
+  // Weather feeds some elements and damps others where the target stands (M4-09).
+  if (h.elem && amount > 0) {
+    const at = getComp(e, dst, 'pos');
+    if (at)
+      amount = Math.max(1, Math.floor((amount * elementPct(state, h.elem, at.x, at.y)) / 100));
+  }
   pools.hp = Math.max(0, pools.hp - amount);
   if (h.src !== dst) provoke(state, dst, h.src);
   pools.lastCombat = state.tick;

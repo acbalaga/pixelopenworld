@@ -43,6 +43,32 @@ export interface Renderer {
     h: number,
     color: string,
     alpha?: number,
+    blend?: GlobalCompositeOperation,
+  ): void;
+  /** Draws a soft round light with its centre at world (x, y). It adds to what is below it. */
+  drawLight(
+    layer: LayerId,
+    x: number,
+    y: number,
+    radius: number,
+    color: string,
+    alpha: number,
+  ): void;
+  /**
+   * Draws `n` same-sized marks at (`xs[i]`, `ys[i]`) offset by (ox, oy) in one fill. The arrays are
+   * read when the frame ends, so they must not change until then. For weather particles.
+   */
+  drawMarks(
+    layer: LayerId,
+    xs: Float32Array,
+    ys: Float32Array,
+    n: number,
+    ox: number,
+    oy: number,
+    w: number,
+    h: number,
+    color: string,
+    alpha: number,
   ): void;
   /** Draws an atlas frame with its origin at world (x, y). Get handles from the atlas once. */
   drawSprite(
@@ -73,8 +99,19 @@ class Commands {
   handle: number[] = [];
   flip: number[] = [];
   alpha: number[] = [];
+  /** Composite operation for rects, or '' for the usual. */
+  blend: string[] = [];
   sortY: number[] = [];
-  push(layer: number, x: number, y: number, w: number, h: number, color: string, alpha = 1): void {
+  push(
+    layer: number,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    color: string,
+    alpha = 1,
+    blend = '',
+  ): void {
     const i = this.n++;
     this.layer[i] = layer;
     this.x[i] = x;
@@ -85,6 +122,7 @@ class Commands {
     this.handle[i] = -1;
     this.flip[i] = 0;
     this.alpha[i] = alpha;
+    this.blend[i] = blend;
     this.sortY[i] = y + h;
   }
   pushSprite(layer: number, handle: number, x: number, y: number, flip: boolean, alpha = 1): void {
@@ -98,6 +136,7 @@ class Commands {
     this.handle[i] = handle;
     this.flip[i] = flip ? 1 : 0;
     this.alpha[i] = alpha;
+    this.blend[i] = '';
     this.sortY[i] = y;
   }
 }
@@ -164,6 +203,7 @@ export class Canvas2DRenderer implements Renderer {
     this.cmds.n = 0;
     this.tileCount = 0;
     this.blitCount = 0;
+    this.markCount = 0;
   }
 
   drawRect(
@@ -174,8 +214,41 @@ export class Canvas2DRenderer implements Renderer {
     h: number,
     color: string,
     alpha = 1,
+    blend: GlobalCompositeOperation | '' = '',
   ): void {
-    this.cmds.push(layer, x, y, w, h, color, alpha);
+    this.cmds.push(layer, x, y, w, h, color, alpha, blend);
+  }
+
+  drawLight(
+    layer: LayerId,
+    x: number,
+    y: number,
+    radius: number,
+    color: string,
+    alpha: number,
+  ): void {
+    // A light is a rect command with the colour and a negative width: the radius.
+    this.cmds.push(layer, x, y, -radius, 0, color, alpha, 'lighter');
+  }
+
+  private marks: { xs: Float32Array; ys: Float32Array; n: number; w: number; h: number }[] = [];
+  private markCount = 0;
+
+  drawMarks(
+    layer: LayerId,
+    xs: Float32Array,
+    ys: Float32Array,
+    n: number,
+    ox: number,
+    oy: number,
+    w: number,
+    h: number,
+    color: string,
+    alpha: number,
+  ): void {
+    this.marks[this.markCount] = { xs, ys, n, w, h };
+    // A marks command: the width field holds the index into the list.
+    this.cmds.push(layer, ox, oy, this.markCount++, 0, color, alpha, 'marks');
   }
 
   drawSprite(layer: LayerId, handle: number, x: number, y: number, flipX = false, alpha = 1): void {
@@ -233,11 +306,36 @@ export class Canvas2DRenderer implements Renderer {
         } else if (handle <= -2) {
           b.drawImage(this.blits[-2 - handle] as CanvasImageSource, sx, sy);
           blits++;
+        } else if (c.blend[i] === 'marks') {
+          const m = this.marks[c.w[i] as number] as (typeof this.marks)[number];
+          b.globalAlpha = c.alpha[i] as number;
+          b.fillStyle = c.color[i] as string;
+          b.beginPath();
+          for (let k = 0; k < m.n; k++)
+            b.rect(
+              Math.round(sx + (m.xs[k] as number)),
+              Math.round(sy + (m.ys[k] as number)),
+              m.w,
+              m.h,
+            );
+          b.fill();
+          b.globalAlpha = 1;
+        } else if ((c.w[i] as number) < 0) {
+          // A light: a cached radial gradient of the colour, scaled to the radius.
+          const r = -(c.w[i] as number);
+          b.globalCompositeOperation = 'lighter';
+          b.globalAlpha = c.alpha[i] as number;
+          b.drawImage(this.lightImage(c.color[i] as string), sx - r, sy - r, r * 2, r * 2);
+          b.globalAlpha = 1;
+          b.globalCompositeOperation = 'source-over';
         } else {
           const a = c.alpha[i] as number;
+          const blend = c.blend[i] as string;
           if (a < 1) b.globalAlpha = a;
+          if (blend) b.globalCompositeOperation = blend as GlobalCompositeOperation;
           b.fillStyle = c.color[i] as string;
           b.fillRect(sx, sy, c.w[i] as number, c.h[i] as number);
+          if (blend) b.globalCompositeOperation = 'source-over';
           if (a < 1) b.globalAlpha = 1;
         }
         calls++;
@@ -246,6 +344,27 @@ export class Canvas2DRenderer implements Renderer {
     this.drawCalls = calls;
     this.terrainBlits = blits;
     this.sctx.drawImage(this.back, 0, 0, this.width * this.scale, this.height * this.scale);
+  }
+
+  private lights = new Map<string, HTMLCanvasElement>();
+
+  /** A 64 px radial gradient from the colour to nothing, made once per colour. */
+  private lightImage(color: string): HTMLCanvasElement {
+    let img = this.lights.get(color);
+    if (!img) {
+      img = document.createElement('canvas');
+      img.width = 64;
+      img.height = 64;
+      const g = img.getContext('2d') as CanvasRenderingContext2D;
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, color);
+      grad.addColorStop(0.45, color);
+      grad.addColorStop(1, '#000000');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      this.lights.set(color, img);
+    }
+    return img;
   }
 
   private drawGrid(g: TileGrid, ox: number, oy: number): number {
