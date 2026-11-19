@@ -22,6 +22,10 @@ describe('dev code check', () => {
     const dir = bundle({ 'assets/index-abc.js': 'e.id="pow-dev-overlay"' });
     expect(findDevLeaks(dir)).toHaveLength(1);
   });
+  it('flags the map viewer route', () => {
+    const dir = bundle({ 'assets/index.js': 'p==="/dev/map"' });
+    expect(findDevLeaks(dir)).toHaveLength(1);
+  });
   it('flags a dev route string and a dev-named file', () => {
     const dir = bundle({ 'assets/dev-sprites-1.js': 'x', 'assets/index.js': 'p==="/dev/sprites"' });
     expect(findDevLeaks(dir).length).toBeGreaterThanOrEqual(2);

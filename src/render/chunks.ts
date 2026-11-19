@@ -63,6 +63,8 @@ export class ChunkRenderer {
   private tileAnim: number[] = [];
   private blob = new Map<string, number[]>();
   private fader = new OverheadFader();
+  /** Layers to draw. Tools turn them off one at a time. Ground includes the detail layer. */
+  show = { ground: true, objects: true, overhead: true };
   /** Chunks painted since creation. Painting is the expensive step and happens once per chunk. */
   chunksBuilt = 0;
   /** Chunks that scrolled into view before they were painted and had to be finished at once. */
@@ -335,7 +337,8 @@ export class ChunkRenderer {
     for (let cy = cy0; cy <= cy1; cy++) {
       for (let cx = cx0; cx <= cx1; cx++) {
         const canvas = this.canvasFor(cx, cy, phase);
-        if (canvas) r.drawBlit(Layer.Ground, canvas, cx * CHUNK_PX, cy * CHUNK_PX);
+        if (canvas && this.show.ground)
+          r.drawBlit(Layer.Ground, canvas, cx * CHUNK_PX, cy * CHUNK_PX);
       }
     }
     // Overhead sprites reach up to 32 px above their tile, so scan a few extra rows below the view.
@@ -360,7 +363,7 @@ export class ChunkRenderer {
         const ax = tx * TILE_PX + 8;
         const ay = ty * TILE_PX + 14;
         const o = chunk.object[i] as number;
-        if (o !== 0) {
+        if (o !== 0 && this.show.objects) {
           const anim = this.tileAnim[o - 1] as number;
           const handle =
             anim >= 0
@@ -369,7 +372,7 @@ export class ChunkRenderer {
           r.drawSprite(Layer.Objects, handle, ax, ay);
         }
         const h = chunk.overhead[i] as number;
-        if (h !== 0) {
+        if (h !== 0 && this.show.overhead) {
           const off = this.tileOffset[h - 1] as readonly [number, number];
           const oy = ay + off[1];
           const covering =

@@ -9,6 +9,7 @@ export const DEV_MARKERS: readonly string[] = [
   'pow-dev-',
   '/dev/sprites',
   '/dev/audio',
+  '/dev/map',
   'dev-page',
   'src/dev/',
 ];
