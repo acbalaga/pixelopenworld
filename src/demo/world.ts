@@ -1444,7 +1444,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           }
           talk.onEvent(e);
           board.onEvent(e);
-          const sfx = sfxFor(e, who);
+          const sfx = sfxFor(e, who, (id) => {
+            const c = state.entities.comps.ai[id]?.creature;
+            return c ? CREATURES[c]?.sounds : undefined;
+          });
           if (sfx) audio.playSfx(sfx);
           const h = hapticFor(e, who);
           if (h !== null) vibrate(h, settings.get().haptics);

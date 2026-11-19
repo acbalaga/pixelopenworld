@@ -1,5 +1,6 @@
 import type { AnimDef, SpriteDef } from '../types';
 import { Img, outlined, shadedEllipse, toSprite, type Tones4 } from './img';
+import { dawnmeadowCreatureSprites } from './creaturesDawnmeadow';
 
 /**
  * Creature generators. Each draws three views (down, up, right; left is the right view mirrored)
@@ -8,11 +9,11 @@ import { Img, outlined, shadedEllipse, toSprite, type Tones4 } from './img';
  * silhouette and light rules hold for every frame. Output is baked and reviewed on the contact sheet.
  */
 
-type View = 'down' | 'up' | 'right';
+export type View = 'down' | 'up' | 'right';
 const VIEWS: readonly View[] = ['down', 'up', 'right'];
 
 /** What the body is doing this frame. */
-interface Pose {
+export interface Pose {
   view: View;
   /** Body lifted by this many px (bob). Negative is down. */
   bob: number;
@@ -71,7 +72,7 @@ const hurt = (view: View): Pose => ({
   rear: false,
 });
 
-interface Maker {
+export interface Maker {
   id: string;
   size: number;
   /** Feet anchor. */
@@ -107,7 +108,7 @@ function anims(walks: boolean): Record<string, AnimDef> {
   return out;
 }
 
-function sprite(m: Maker): SpriteDef {
+export function sprite(m: Maker): SpriteDef {
   return toSprite(m.id, 'core', m.origin, frames(m), anims(m.walks));
 }
 
@@ -416,5 +417,8 @@ const dummy: Maker = {
 
 /** Every creature sprite. */
 export function creatureSprites(): SpriteDef[] {
-  return [mossling, spitbloom, boar, bramblehide, thornling, fogcap, cinderback, dummy].map(sprite);
+  return [
+    ...[mossling, spitbloom, boar, bramblehide, thornling, fogcap, cinderback, dummy].map(sprite),
+    ...dawnmeadowCreatureSprites(),
+  ];
 }

@@ -2,6 +2,182 @@ import type { SfxDef } from './types';
 
 const base = { attack: 0, slide: 0, variance: 0.05, gain: 0.5, bus: 'effects' } as const;
 
+/**
+ * Voices for the Dawnmeadow creatures (M4-05). Each kind has a notice (short, rising or sharp)
+ * and a die (falling away) built from the same few waves, so they sit with the starter set.
+ */
+type Voice = Omit<SfxDef, 'id' | 'attack' | 'slide' | 'variance' | 'gain' | 'bus'> &
+  Partial<Pick<SfxDef, 'attack' | 'slide' | 'variance' | 'gain'>>;
+function voices(name: string, notice: Voice, die: Voice): SfxDef[] {
+  return [
+    { ...base, gain: 0.3, variance: 0.1, ...notice, id: `sfx.${name}_notice` },
+    { ...base, gain: 0.38, variance: 0.08, ...die, id: `sfx.${name}_die` },
+  ];
+}
+const CREATURE_VOICES: SfxDef[] = [
+  ...voices(
+    'squeak',
+    { wave: 'sine', sustain: 0.04, decay: 0.08, freq: 900, slide: 0.3, lowpass: 0.9 },
+    { wave: 'sine', sustain: 0.05, decay: 0.2, freq: 800, slide: -0.6, lowpass: 0.9 },
+  ),
+  ...voices(
+    'chirp',
+    {
+      wave: 'square',
+      sustain: 0.03,
+      decay: 0.07,
+      freq: 1500,
+      slide: 0.35,
+      lowpass: 0.8,
+      gain: 0.22,
+    },
+    {
+      wave: 'square',
+      sustain: 0.04,
+      decay: 0.18,
+      freq: 1300,
+      slide: -0.6,
+      lowpass: 0.7,
+      gain: 0.25,
+    },
+  ),
+  ...voices(
+    'screech',
+    {
+      wave: 'sawtooth',
+      sustain: 0.1,
+      decay: 0.15,
+      freq: 1100,
+      slide: -0.3,
+      lowpass: 0.7,
+      gain: 0.26,
+    },
+    { wave: 'sawtooth', sustain: 0.08, decay: 0.3, freq: 900, slide: -0.7, lowpass: 0.6 },
+  ),
+  ...voices(
+    'bark',
+    { wave: 'sawtooth', sustain: 0.05, decay: 0.1, freq: 260, slide: -0.2, lowpass: 0.5 },
+    { wave: 'sawtooth', sustain: 0.08, decay: 0.28, freq: 300, slide: -0.7, lowpass: 0.4 },
+  ),
+  ...voices(
+    'snort',
+    { wave: 'noise', sustain: 0.06, decay: 0.12, freq: 260, slide: -0.2, lowpass: 0.3, gain: 0.34 },
+    { wave: 'triangle', sustain: 0.12, decay: 0.35, freq: 200, slide: -0.6, lowpass: 0.3 },
+  ),
+  ...voices(
+    'buzz',
+    {
+      wave: 'sawtooth',
+      sustain: 0.14,
+      decay: 0.1,
+      freq: 380,
+      slide: 0.1,
+      vibratoDepth: 0.06,
+      vibratoRate: 40,
+      lowpass: 0.5,
+      gain: 0.2,
+    },
+    {
+      wave: 'sawtooth',
+      sustain: 0.06,
+      decay: 0.2,
+      freq: 400,
+      slide: -0.8,
+      lowpass: 0.5,
+      gain: 0.25,
+    },
+  ),
+  ...voices(
+    'click',
+    { wave: 'noise', sustain: 0.02, decay: 0.04, freq: 1800, slide: 0, lowpass: 0.9, gain: 0.26 },
+    { wave: 'noise', sustain: 0.04, decay: 0.2, freq: 1200, slide: -0.5, lowpass: 0.7 },
+  ),
+  ...voices(
+    'squelch',
+    { wave: 'noise', sustain: 0.06, decay: 0.12, freq: 420, slide: -0.4, lowpass: 0.3, gain: 0.3 },
+    { wave: 'noise', sustain: 0.1, decay: 0.3, freq: 360, slide: -0.7, lowpass: 0.25 },
+  ),
+  ...voices(
+    'rattle',
+    {
+      wave: 'noise',
+      sustain: 0.1,
+      decay: 0.1,
+      freq: 2200,
+      slide: 0,
+      vibratoDepth: 0.2,
+      vibratoRate: 30,
+      lowpass: 0.9,
+      gain: 0.24,
+    },
+    { wave: 'noise', sustain: 0.15, decay: 0.3, freq: 1800, slide: -0.5, lowpass: 0.8 },
+  ),
+  ...voices(
+    'rustle',
+    { wave: 'noise', sustain: 0.1, decay: 0.12, freq: 1500, slide: 0.1, lowpass: 0.5, gain: 0.22 },
+    { wave: 'noise', sustain: 0.12, decay: 0.3, freq: 1000, slide: -0.4, lowpass: 0.4 },
+  ),
+  ...voices(
+    'crumble',
+    {
+      wave: 'noise',
+      sustain: 0.08,
+      decay: 0.15,
+      freq: 160,
+      slide: -0.2,
+      lowpass: 0.25,
+      gain: 0.34,
+    },
+    { wave: 'noise', sustain: 0.15, decay: 0.45, freq: 140, slide: -0.6, lowpass: 0.2, gain: 0.5 },
+  ),
+  ...voices(
+    'wisp',
+    {
+      wave: 'sine',
+      sustain: 0.12,
+      decay: 0.2,
+      freq: 520,
+      slide: 0.5,
+      vibratoDepth: 0.03,
+      vibratoRate: 8,
+      gain: 0.26,
+    },
+    {
+      wave: 'sine',
+      sustain: 0.1,
+      decay: 0.45,
+      freq: 700,
+      slide: -0.8,
+      vibratoDepth: 0.03,
+      vibratoRate: 8,
+      gain: 0.3,
+    },
+  ),
+  ...voices(
+    'roar',
+    {
+      wave: 'sawtooth',
+      sustain: 0.25,
+      decay: 0.2,
+      freq: 90,
+      slide: 0.2,
+      vibratoDepth: 0.05,
+      vibratoRate: 18,
+      lowpass: 0.3,
+      gain: 0.45,
+    },
+    {
+      wave: 'sawtooth',
+      sustain: 0.3,
+      decay: 0.6,
+      freq: 100,
+      slide: -0.7,
+      lowpass: 0.25,
+      gain: 0.5,
+    },
+  ),
+];
+
 /** The starter effects and the creature set. */
 export const SFX: readonly SfxDef[] = [
   {
@@ -180,4 +356,5 @@ export const SFX: readonly SfxDef[] = [
     lowpass: 0.2,
     gain: 0.6,
   },
+  ...CREATURE_VOICES,
 ];

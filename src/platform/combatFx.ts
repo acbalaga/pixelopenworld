@@ -9,15 +9,38 @@ const CREATURE_ATTACK_SFX: Readonly<Record<string, string>> = {
   'attack.boss_charge': 'sfx.charge',
   'attack.boss_slam': 'sfx.slam',
   'attack.spitbloom_seed': 'sfx.creature_growl',
+  'attack.hawk_dive': 'sfx.charge',
+  'attack.ram_butt': 'sfx.creature_growl',
+  'attack.rock_slam': 'sfx.slam',
+  'attack.wisp_spark': 'sfx.spit',
+  ...Object.fromEntries(
+    [
+      'nip',
+      'peck',
+      'sting',
+      'bite',
+      'pinch',
+      'bone_slash',
+      'straw_flail',
+      'mole_claw',
+      'thorn_jab',
+      'leech_latch',
+    ].map((n) => [`attack.${n}`, 'sfx.creature_growl']),
+  ),
 };
 
 /** Which sound effect an event makes, or null for silence. Ids are in content/audio/sfx. */
-export function sfxFor(e: SimEvent, playerId: number): string | null {
+export function sfxFor(
+  e: SimEvent,
+  playerId: number,
+  /** The creature behind an entity id, so each kind has its own voice (M4-05). */
+  voiceOf?: (id: number) => { notice: string; die: string } | undefined,
+): string | null {
   switch (e.type) {
     case 'attackStarted':
       return CREATURE_ATTACK_SFX[e.attack] ?? null;
     case 'noticed':
-      return 'sfx.creature_notice';
+      return voiceOf?.(e.id)?.notice ?? 'sfx.creature_notice';
     case 'creatureWarn':
       return 'sfx.creature_warn';
     case 'projectileLaunched':
@@ -39,7 +62,7 @@ export function sfxFor(e: SimEvent, playerId: number): string | null {
     case 'echoRecovered':
       return 'sfx.pickup';
     case 'died':
-      return e.team === 1 ? 'sfx.creature_die' : 'sfx.hit_heavy';
+      return e.team === 1 ? (voiceOf?.(e.id)?.die ?? 'sfx.creature_die') : 'sfx.hit_heavy';
     case 'staggerBreak':
       return 'sfx.ui_open';
     case 'doorOpened':
