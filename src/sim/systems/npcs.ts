@@ -4,6 +4,7 @@ import { REQUESTS } from '../../content/requests';
 import type { Effect } from '../../content/dialogue/types';
 import { countItem, give, learnRecipe, removeItem } from '../items';
 import { learnTechnique } from '../combat/techniques';
+import { hearRumor } from './map';
 import { holds } from '../journal';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
@@ -61,6 +62,7 @@ export function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   else if ('openShop' in e && SHOPS[e.openShop])
     emit(state.events, { type: 'shopOpened', who, shop: e.openShop });
   else if ('renown' in e) addRenown(state, who, RB.homeRegion, e.renown);
+  else if ('rumor' in e) hearRumor(state, who, e.rumor);
   else if ('takeItem' in e) {
     const inv = getComp(state.entities, who, 'inventory');
     if (inv && countItem(inv, e.takeItem) >= e.qty) removeItem(inv, e.takeItem, e.qty);

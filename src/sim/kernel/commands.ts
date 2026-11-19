@@ -1,4 +1,5 @@
 import { CRAFTING } from '../../content/balance/crafting';
+import { MAP_BALANCE } from '../../content/balance/map';
 import { EQUIP_SLOTS } from '../../content/items/types';
 import { isDirection, type Direction } from './fixed';
 
@@ -79,6 +80,10 @@ export type Command =
   | { type: 'buyback'; shop: string; index: number }
   /** The repair service: mend a carried item (`bag`) or a worn one (`worn`, slot index of the equip slots). */
   | { type: 'mend'; shop: string; from: 'bag' | 'worn'; slot: number }
+  /** Leave a note on the map at world tile (x, y) (M4-06). */
+  | { type: 'noteAdd'; x: number; y: number; text: string }
+  /** Remove a note by id. */
+  | { type: 'noteRemove'; id: number }
   /** One step of a haggle (M3-10). `start` needs `item` and `dir`, and `slot` for a sale. */
   | {
       type: 'haggle';
@@ -88,6 +93,23 @@ export type Command =
       dir?: 'buy' | 'sell';
       slot?: number;
     };
+
+/**
+ * A note's text as the sim keeps it: whitespace collapsed, ends trimmed, at most `maxLength`
+ * characters, no control characters. Null if nothing is left. The same rule runs in the Menu, so
+ * what the player sees is what is saved.
+ */
+export function cleanNoteText(raw: string): string | null {
+  const spaced = Array.from(raw)
+    .map((ch) => {
+      const c = ch.codePointAt(0) ?? 0;
+      return c < 32 || (c >= 127 && c <= 159) || c === 0x2028 || c === 0x2029 ? ' ' : ch;
+    })
+    .join('');
+  const t = spaced.replace(/\s+/g, ' ').trim();
+  const cut = Array.from(t).slice(0, MAP_BALANCE.notes.maxLength).join('').trim();
+  return cut.length > 0 ? cut : null;
+}
 
 /** Result of validating a raw command. */
 export type Validated = { ok: true; command: Command } | { ok: false; reason: string };
@@ -228,6 +250,16 @@ export function validateCommand(raw: unknown): Validated {
     }
     case 'loadout':
       return { ok: true, command: { type: 'loadout' } };
+    case 'noteAdd': {
+      if (!isCoord(r.x) || !isCoord(r.y)) return { ok: false, reason: 'bad position' };
+      const text = typeof r.text === 'string' ? cleanNoteText(r.text) : null;
+      if (text === null) return { ok: false, reason: 'bad note' };
+      return { ok: true, command: { type: 'noteAdd', x: r.x, y: r.y, text } };
+    }
+    case 'noteRemove':
+      if (!Number.isInteger(r.id) || (r.id as number) < 1 || (r.id as number) > 1_000_000)
+        return { ok: false, reason: 'bad note' };
+      return { ok: true, command: { type: 'noteRemove', id: r.id as number } };
     case 'sleep':
       return { ok: true, command: { type: 'sleep' } };
     case 'takeRequest':

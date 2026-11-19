@@ -162,6 +162,6 @@ describe('schema 22 to 23 migration (the move to Dawnmeadow)', () => {
 
   it('is the only step between 22 and 23', () => {
     expect(Object.keys(MIGRATIONS).map(Number)).toContain(22);
-    expect(CURRENT_SCHEMA).toBe(23);
+    expect(CURRENT_SCHEMA).toBeGreaterThanOrEqual(23);
   });
 });

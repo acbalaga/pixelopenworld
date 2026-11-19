@@ -30,6 +30,8 @@ export type Effect =
   | { openShop: string }
   /** Raises the home region's Renown. Only on a choice that also sets a flag it requires unset. */
   | { renown: number }
+  /** Tells the avatar of a place: a rumor id from `content/world/rumors` (M4-06). */
+  | { rumor: string }
   /** Takes items from the bag, if it holds that many. */
   | { takeItem: string; qty: number };
 

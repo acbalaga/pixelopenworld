@@ -114,6 +114,10 @@ import { drawCanvasButton, type ButtonKit } from '../ui/hud/canvasButton';
 import { drawLockFrame } from '../ui/hud/combatHud';
 import { Hud, POOLS_HEIGHT, STATUS_HEIGHT } from '../ui/hud/hud';
 import { MenuSheet } from '../ui/dom/menu';
+import { Minimap } from '../ui/dom/minimap';
+import { MapImage } from '../render/mapImage';
+import { REGIONS } from '../content/world/regions';
+import { countRevealed } from '../sim/world/fog';
 import {
   applyPaletteVars,
   applyPanelImages,
@@ -305,7 +309,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   chunkRenderer.beyondEdge = streamer.beyondEdge;
   // Lights that map tiles make (torches, lit windows) are indexed as chunks arrive (M4-09).
   const lightIndex = new LightIndex();
-  streamer.onChunk = (c) => lightIndex.add(c);
+  // The map picture reads each chunk as it arrives. Ground uncovered in an earlier session is read
+  // from the chunk cache when the Map opens (M4-06).
+  const mapImage = new MapImage(regionManifest.chunks.w, regionManifest.chunks.h);
+  streamer.onChunk = (c) => {
+    lightIndex.add(c);
+    mapImage.setChunk(c);
+  };
   streamer.onDrop = (cx, cy) => {
     chunkRenderer.drop(cx, cy);
     lightIndex.remove(cx, cy);
@@ -903,6 +913,22 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   };
   const menu = new MenuSheet(root, {
     region: regionId,
+    map: {
+      ctx: {
+        region: regionId,
+        regionName: REGIONS.find((r) => r.id === regionId)?.name ?? regionId,
+        chunks: regionManifest.chunks,
+        landmarks: regionManifest.landmarks ?? [],
+        waystones: regionManifest.waystones ?? [],
+      },
+      image: mapImage,
+      fill: async (chunks) => {
+        for (const c of chunks) {
+          const f = regionManifest.files.find((x) => x.cx === c.cx && x.cy === c.cy);
+          if (f) mapImage.setChunk(await loader.load(regionId, f));
+        }
+      },
+    },
     read: () => ({ state, who }),
     send: (c) => pendingCommands.push(c),
     settings,
@@ -994,6 +1020,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
   });
   const pinned = new PinnedLine(root);
+  // The minimap (M4-06): a tap opens the Map tab. It sits beside the loadout swap button.
+  const minimap = new Minimap(root, mapImage, () => menu.open('map'));
+  let mmRevealedAt = 0;
+  let mmRevealed = 0;
   attachSwipe({
     height: () => canvas.getBoundingClientRect().height,
     bottomInset: () => readSafeInsets(probe).bottom,
@@ -1833,6 +1863,34 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           buttonScale: settings.get().buttonScale,
           insets: readSafeInsets(probe),
         });
+        {
+          // Under the top row, beside the loadout swap button (away from the screen edge), so it
+          // never covers the clock. Only when it is wanted.
+          const bag = layout.buttons.swap;
+          const size = 56 * settings.get().hudScale;
+          const left = settings.get().handedness === 'left';
+          minimap.hidden = !settings.get().minimap || menuOpen || talkOpen || mirrorOpen;
+          if (!minimap.button.hidden && bag) {
+            minimap.place(
+              css.left + (left ? bag.x + bag.w + 8 : bag.x - 8 - size),
+              css.top + bag.y,
+            );
+            const me = state.entities.comps.pos[who];
+            if (me) {
+              // Counting the fog is a few hundred reads, so it runs about four times a second.
+              if (now - mmRevealedAt > 250) {
+                mmRevealedAt = now;
+                mmRevealed = countRevealed(state.map.fog[regionId] ?? {});
+              }
+              minimap.update(
+                state.map.fog[regionId] ?? {},
+                Math.floor(me.x / 256 / 16),
+                Math.floor((me.y / 256 - 1) / 16),
+                mmRevealed,
+              );
+            }
+          }
+        }
         const kit: ButtonKit = {
           panels,
           fonts,

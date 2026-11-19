@@ -24,7 +24,8 @@ export type XpEvent =
   | 'tabletRead'
   | 'delveRoom'
   | 'delveBlock'
-  | 'delveClear';
+  | 'delveClear'
+  | 'reveal';
 
 /** What an insight count can follow: any XP event, or a perfect dodge (which pays no XP of its own). */
 export type InsightEvent = XpEvent | 'perfectDodge';
@@ -46,7 +47,7 @@ export interface XpSource {
   /**
    * Lump of XP the first time. The subject per event: damage the creature kind at the kill,
    * gather the item, craft the recipe, tabletRead the tablet kind, perform the technique, sneak
-   * the creature kind, haggle the shop, delveRoom the room, delveBlock the plate, delveClear the dungeon. Other events have none. Fires once ever per subject.
+   * the creature kind, haggle the shop, delveRoom the room, delveBlock the plate, delveClear the dungeon. `reveal` is one block of map uncovered for the first time. Other events have none. Fires once ever per subject.
    */
   firstTime?: number;
 }

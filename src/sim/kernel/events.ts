@@ -169,6 +169,10 @@ export type SimEvent =
   | { type: 'boardOpened'; id: number; who: number; board: string }
   | { type: 'storageMoved'; who: number; item: string; qty: number; dir: 'in' | 'out' }
   | { type: 'waystoneSet'; id: number; who: number }
+  /** The avatar uncovered `blocks` blocks of the map for the first time (M4-06). */
+  | { type: 'revealed'; who: number; blocks: number }
+  /** A rumor was told to the avatar (M4-06). */
+  | { type: 'rumorHeard'; who: number; rumor: string }
   /** The avatar took a portal. Render fades and snaps the camera. */
   | { type: 'talkStarted'; who: number; npc: string }
   | { type: 'requestStarted'; who: number; request: string }

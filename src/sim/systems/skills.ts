@@ -203,6 +203,9 @@ export function skillsSystem(state: SimState): void {
         });
       } else if (e.type === 'dungeonCleared' && e.who === who) {
         practice(state, who, { on: 'delveClear', tag: undefined, tier: 0, subject: e.dungeon });
+      } else if (e.type === 'revealed' && e.who === who) {
+        for (let n = 0; n < e.blocks; n++)
+          practice(state, who, { on: 'reveal', tag: undefined, tier: 0, subject: null });
       } else if (e.type === 'tabletRead' && e.who === who) {
         const kind = getComp(state.entities, e.id, 'fixture')?.kind ?? null;
         practice(state, who, { on: 'tabletRead', tag: undefined, tier: 0, subject: kind });

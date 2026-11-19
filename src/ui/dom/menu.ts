@@ -32,6 +32,8 @@ import {
   type BagFilterId,
   type BagSortId,
 } from '../menu/model';
+import { MAP_STRINGS } from '../../content/strings/map';
+import { MapPane, type MapPaneDeps } from './mapPane';
 
 export const TAB_IDS = [
   'character',
@@ -46,7 +48,7 @@ export const TAB_IDS = [
 export type TabId = (typeof TAB_IDS)[number];
 
 /** Tabs that work. The others are hidden until their systems exist (design/09). */
-export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'system'];
+export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'map', 'system'];
 
 /** What the Menu needs from the game. It never touches the sim except through `send`. */
 export interface MenuDeps {
@@ -70,6 +72,8 @@ export interface MenuDeps {
   onOpenChange?: (open: boolean) => void;
   /** The region being played, so System can offer to keep it for offline play. */
   region?: string;
+  /** What the Map tab draws from (M4-06). Without it the tab says there is no map. */
+  map?: Pick<MapPaneDeps, 'ctx' | 'image' | 'fill'>;
 }
 
 let uid = 0;
@@ -141,6 +145,8 @@ export class MenuSheet {
   /** What each tab showed when it was last looked at, for the badge dot. */
   private seen = new Map<TabId, string>();
   private baselined = false;
+  /** The Map tab's pane. It outlives the tab's redraws so pan and zoom are kept. */
+  private mapPane: MapPane | null = null;
 
   constructor(
     host: HTMLElement,
@@ -344,6 +350,10 @@ export class MenuSheet {
     if (!this.opened) return;
     this.paintBadges();
     if (this.tab === 'system') return;
+    if (this.tab === 'map') {
+      this.mapPane?.update();
+      return;
+    }
     this.render(false);
     if (this.detail) this.mountSheet(false);
   }
@@ -384,6 +394,9 @@ export class MenuSheet {
         break;
       case 'bag':
         this.renderBag();
+        break;
+      case 'map':
+        this.renderMap();
         break;
       case 'system':
         this.renderSystem();
@@ -429,6 +442,23 @@ export class MenuSheet {
       },
       ...kids,
     );
+  }
+
+  // ---- Map ----
+
+  private renderMap(): void {
+    const m = this.deps.map;
+    if (!m) {
+      put(this.body, header(S.tabs.map), emptyState(MAP_STRINGS.placesNone));
+      return;
+    }
+    this.mapPane ??= new MapPane({
+      ...m,
+      read: this.deps.read,
+      send: this.deps.send,
+    });
+    this.body.appendChild(this.mapPane.root);
+    this.mapPane.update();
   }
 
   // ---- Character ----
@@ -1089,6 +1119,11 @@ export class MenuSheet {
       sys.reducedMotion,
       () => st.get().reducedMotion,
       (v) => st.set({ reducedMotion: v }),
+    );
+    toggle(
+      sys.minimap,
+      () => st.get().minimap,
+      (v) => st.set({ minimap: v }),
     );
     toggle(
       sys.haptics,
