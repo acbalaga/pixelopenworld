@@ -629,6 +629,17 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     if (raw.map) raw.map.waystones = [];
     return { ...old, schema: 25, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 25 to 26 (M4-20): the journal gains `singulars`, progress in the hidden questlines. It starts
+   * empty: a character has touched none.
+   */
+  25: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { journal: ({ singulars?: unknown } | null)[] } };
+    };
+    for (const j of raw.entities.comps.journal) if (j) j.singulars = {};
+    return { ...old, schema: 26, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

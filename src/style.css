@@ -2045,3 +2045,19 @@ canvas {
   min-width: 44px;
   min-height: 44px;
 }
+
+.pow-chronicle {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 3);
+}
+.pow-chronicle-line {
+  padding: calc(var(--px) * 3);
+  color: var(--pal-3);
+  background: var(--pal-17);
+  border-left: calc(var(--px) * 1) solid var(--pal-47);
+  overflow-wrap: anywhere;
+}

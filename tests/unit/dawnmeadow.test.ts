@@ -129,8 +129,12 @@ describe('Hearthford', () => {
     expect(inOrBeside(one('fixture.alchemy_table'), 'apothecary')).toBe(true);
     expect(inOrBeside(one('fixture.tinker_bench'), 'tinker_shed')).toBe(true);
     expect(inOrBeside(one('fixture.rune_stone'), 'rune_house')).toBe(true);
-    for (const k of ['fixture.bed', 'fixture.storage', 'prop.camp_pot', 'fixture.mirror'])
+    for (const k of ['fixture.bed', 'fixture.storage', 'fixture.mirror'])
       expect(inOrBeside(one(k), 'inn_yard', 0), k).toBe(true);
+    // The inn's cook pot, and an old one on the porch of an empty house (POW-M4-20, region doc 11).
+    const pots = where('prop.camp_pot');
+    expect(pots).toHaveLength(2);
+    expect(pots.filter((p) => inOrBeside(p, 'inn_yard', 0))).toHaveLength(1);
     expect(inOrBeside(one('spawner.training_dummy'), 'guard_yard', 0)).toBe(true);
     // The Waystone and the board stay in the square.
     const inSquare = (o: { x: number; y: number }): boolean => inOrBeside(o, 'square', 0);

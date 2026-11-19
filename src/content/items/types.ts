@@ -95,6 +95,8 @@ export interface ItemDef {
   teaches?: string;
   /** Reading it (the Use button) teaches this technique, awakens its skill, and uses it up (M4-15). */
   manual?: { technique: string; skill: string };
+  /** A shiny thing: a crow takes it from the ground by a scarecrow (M4-20). */
+  shiny?: true;
   /** Which Bag filter lists it. */
   bag: BagFilter;
 }

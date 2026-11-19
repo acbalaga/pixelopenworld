@@ -35,7 +35,9 @@ export type FixtureType =
   | 'torch'
   | 'arena'
   | 'ledge'
-  | 'rest';
+  | 'rest'
+  /** A thing that records being used and does nothing else (a scarecrow, a mound of earth). */
+  | 'site';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -111,6 +113,19 @@ export interface FixtureDef {
 
 const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.waystone', type: 'waystone', sprite: 'prop.waystone', size: 12 },
+
+  // Millbrook's scarecrow with a crow on it, and a mound of turned earth (M4-20). Both only record
+  // being used. What they mean is in `content/singulars`.
+  { kind: 'fixture.scarecrow', type: 'site', sprite: 'prop.scarecrow', size: 10 },
+  { kind: 'fixture.crow_mound', type: 'site', sprite: 'prop.crow_mound', size: 10 },
+  // A set of firebricks in a crate: a stand-in for the Rootway R9, the Deeps and the Undermill.
+  {
+    kind: 'fixture.chest_firebrick',
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: { items: [{ item: 'item.firebrick', qty: 1 }] },
+  },
 
   // Cave graph: square - A - B - (C puzzle, D side room, E boss behind a locked door). E has a
   // one way shortcut back to A. Each portal sits in a room's wall; `arrive` is where someone
@@ -421,13 +436,15 @@ const LIST: readonly FixtureDef[] = [
  * One chest for each manual (M4-15), named for the manual: `fixture.chest_manual_lunge`. They are
  * stand-ins on the slice map until POW-M4-11 and POW-M4-21 move each to its place in the region.
  */
-const MANUAL_CHESTS: readonly FixtureDef[] = MANUALS.map((m) => ({
-  kind: `fixture.chest_${m.id.replace(/^item\./, '')}`,
-  type: 'chest',
-  sprite: 'prop.chest',
-  size: 12,
-  loot: { items: [{ item: m.id, qty: 1 }] },
-}));
+const MANUAL_CHESTS: readonly FixtureDef[] = MANUALS.filter((m) => m.via !== 'singular').map(
+  (m) => ({
+    kind: `fixture.chest_${m.id.replace(/^item\./, '')}`,
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: { items: [{ item: m.id, qty: 1 }] },
+  }),
+);
 
 /** Every fixture kind. */
 export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries(

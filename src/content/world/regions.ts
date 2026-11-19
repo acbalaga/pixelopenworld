@@ -53,8 +53,12 @@ export const REGIONS: readonly RegionDef[] = [
         'fixture.chest_key',
         'fixture.chest_side',
         'fixture.satchel',
+        // Stand-ins for the firebrick set (M4-20) until the dungeons place it.
+        'fixture.chest_firebrick',
         // Manuals (M4-15), stand-ins until M4-11 and M4-21 place them.
-        ...MANUALS.map((m) => `fixture.chest_${m.id.replace(/^item\./, '')}`),
+        ...MANUALS.filter((m) => m.via !== 'singular').map(
+          (m) => `fixture.chest_${m.id.replace(/^item\./, '')}`,
+        ),
       ],
     },
   },

@@ -659,6 +659,32 @@ function bedroll(): SpriteDef {
   return toSprite('prop.bedroll', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/** A scarecrow on a post with a crow perched on its arm (M4-20). */
+function scarecrow(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(7, 4, 8, 15, WOOD[1]);
+  im.rect(2, 6, 13, 7, WOOD[2]);
+  im.rect(5, 8, 10, 13, GOLD[1]);
+  im.rect(6, 1, 9, 4, GOLD[3]);
+  im.rect(5, 1, 10, 1, WOOD[1]);
+  // The crow: a dark body, a beak and a bright eye.
+  im.rect(10, 3, 13, 6, METAL[0]);
+  im.rect(13, 4, 14, 4, GOLD[2]);
+  im.set(12, 4, METAL[3]);
+  return toSprite('prop.scarecrow', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** A low mound of turned earth with a few pebbles (M4-20). */
+function crowMound(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(3, 10, 12, 14, WOOD[1]);
+  im.rect(5, 8, 10, 10, WOOD[2]);
+  im.set(6, 9, WOOD[3]);
+  im.set(9, 11, STONE[2]);
+  im.set(4, 12, STONE[3]);
+  return toSprite('prop.crow_mound', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 function gate(): SpriteDef {
   const closed = new Img(16, 16);
   for (let x = 1; x < 16; x += 4) closed.rect(x, 1, x + 1, 15, METAL[1]);
@@ -827,5 +853,7 @@ export function worldSprites(): SpriteDef[] {
     runeStone(),
     tinkerBench(),
     snareProp(),
+    scarecrow(),
+    crowMound(),
   ];
 }

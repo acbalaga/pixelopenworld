@@ -191,6 +191,7 @@ export function asSchema5(s: SimState): SimState {
     delete (j as { renown?: unknown }).renown;
     delete (j as { tradeCoin?: unknown }).tradeCoin;
     delete (j as { pinned?: unknown }).pinned;
+    delete (j as { singulars?: unknown }).singulars;
     for (const r of Object.values(j.requests)) {
       delete (r as { solution?: unknown }).solution;
       delete (r as { prog?: unknown }).prog;

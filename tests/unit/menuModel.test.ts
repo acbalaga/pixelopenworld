@@ -221,7 +221,7 @@ describe('menu tabs', () => {
       'system',
     ]);
     for (const t of TAB_IDS) expect(UI_STRINGS.tabs[t]).toBeTruthy();
-    expect([...ENABLED_TABS]).toEqual(['character', 'skills', 'bag', 'map', 'system']);
+    expect([...ENABLED_TABS]).toEqual(['character', 'skills', 'bag', 'map', 'chronicle', 'system']);
   });
   it('has no em dashes in any HUD or Menu string', () => {
     const walk = (v: unknown): string[] =>

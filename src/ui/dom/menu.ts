@@ -22,6 +22,7 @@ import { REQUEST_STRINGS as RS } from '../../content/strings/requests';
 import {
   bagView,
   calendarView,
+  canRestOutdoors,
   characterView,
   itemDetail,
   skillsView,
@@ -34,6 +35,7 @@ import {
 } from '../menu/model';
 import { MAP_STRINGS } from '../../content/strings/map';
 import { MapPane, type MapPaneDeps } from './mapPane';
+import { chronicleLines } from '../menu/singularModel';
 
 export const TAB_IDS = [
   'character',
@@ -48,7 +50,14 @@ export const TAB_IDS = [
 export type TabId = (typeof TAB_IDS)[number];
 
 /** Tabs that work. The others are hidden until their systems exist (design/09). */
-export const ENABLED_TABS: readonly TabId[] = ['character', 'skills', 'bag', 'map', 'system'];
+export const ENABLED_TABS: readonly TabId[] = [
+  'character',
+  'skills',
+  'bag',
+  'map',
+  'chronicle',
+  'system',
+];
 
 /** What the Menu needs from the game. It never touches the sim except through `send`. */
 export interface MenuDeps {
@@ -363,9 +372,16 @@ export class MenuSheet {
     const closed = this.deps.settings.get().closedSections.join(',');
     switch (this.tab) {
       case 'character':
-        return JSON.stringify([characterView(state, who), requestLog(state, who), closed]);
+        return JSON.stringify([
+          characterView(state, who),
+          requestLog(state, who),
+          closed,
+          canRestOutdoors(state, who),
+        ]);
       case 'skills':
         return JSON.stringify([skillsView(state, who), trialLog(state, who), closed]);
+      case 'chronicle':
+        return JSON.stringify(chronicleLines(state, who));
       case 'bag':
         return JSON.stringify([
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
@@ -397,6 +413,9 @@ export class MenuSheet {
         break;
       case 'map':
         this.renderMap();
+        break;
+      case 'chronicle':
+        this.renderChronicle();
         break;
       case 'system':
         this.renderSystem();
@@ -444,6 +463,22 @@ export class MenuSheet {
     );
   }
 
+  // ---- Chronicle ----
+
+  /** What the avatar has found and finished, in its own words. For now: the Singulars it has done. */
+  private renderChronicle(): void {
+    const { state, who } = this.deps.read();
+    const lines = chronicleLines(state, who);
+    put(this.body, header(S.tabs.chronicle));
+    if (lines.length === 0) {
+      put(this.body, emptyState(S.chronicleEmpty));
+      return;
+    }
+    const ul = el('ul', 'pow-chronicle');
+    for (const t of lines) put(ul, el('li', 'pow-chronicle-line', t));
+    put(this.body, ul);
+  }
+
   // ---- Map ----
 
   private renderMap(): void {
@@ -466,7 +501,23 @@ export class MenuSheet {
   private renderCharacter(): void {
     const { state, who } = this.deps.read();
     const v = characterView(state, who);
-    put(this.body, header(S.tabs.character));
+    const rest = canRestOutdoors(state, who);
+    put(
+      this.body,
+      header(
+        S.tabs.character,
+        rest
+          ? [
+              {
+                kind: 'button',
+                label: S.sleepHere,
+                key: 'sleep-here',
+                onClick: () => this.deps.send({ type: 'sleep' }),
+              },
+            ]
+          : [],
+      ),
+    );
 
     // The doll at 2x in the center with its gear slots around it: armor to the left, hands and
     // accessory to the right. Tapping a worn piece takes it off, and the doll changes at once.

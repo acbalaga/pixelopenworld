@@ -17,6 +17,7 @@ import { projectileSystem } from './systems/projectile';
 import { hintsSystem } from './systems/hints';
 import { boardsSystem } from './systems/boards';
 import { mapSystem } from './systems/map';
+import { singularsSystem } from './systems/singulars';
 import { requestsSystem } from './systems/requests';
 import { fixturesSystem } from './systems/fixtures';
 import { itemsSystem } from './systems/items';
@@ -79,6 +80,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   deedsSystem,
   pathsSystem,
   mapSystem,
+  singularsSystem,
 ];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */

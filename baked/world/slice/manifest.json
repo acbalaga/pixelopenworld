@@ -1,7 +1,7 @@
 {
   "version": 1,
   "region": "slice",
-  "hash": "12a509a2af172dd3",
+  "hash": "b1d93de979af9807",
   "chunks": {
     "w": 3,
     "h": 5
@@ -11,7 +11,7 @@
       "file": "chunk-0-0.bin",
       "cx": 0,
       "cy": 0,
-      "hash": "50e0497b32ad3bc5"
+      "hash": "ea623a12f9298831"
     },
     {
       "file": "chunk-1-0.bin",

@@ -50,6 +50,11 @@ function millbrook(): StampV2 {
     b.object(x, y, 'tile.hay_bale');
   b.fence(1, 1, 10, 1);
   b.fence(1, 5, 10, 5);
+  // A scarecrow with a crow on it beside the field, and a mound of turned earth (M4-20). The
+  // crate under the mill is a stand-in for the Undermill's firebricks until M4-11.
+  b.place('fixture.scarecrow', 12, 3);
+  b.place('fixture.crow_mound', 13, 12);
+  b.place('fixture.chest_firebrick', 11, 13);
   b.building(13, 22, 4, 4, { roof: 'thatch', door: 1, label: 'farm three shed' });
   return b.toStamp('millbrook');
 }
@@ -89,6 +94,8 @@ function stonecrop(): StampV2 {
   b.place('fixture.waystone', 22, 15);
   b.object(17, 17, 'tile.rock');
   b.place('fixture.tablet', 16, 17);
+  // A crate for the Deeps' firebricks, a stand-in until M4-11 (M4-20).
+  b.place('fixture.chest_firebrick', 19, 18);
   return b.toStamp('stonecrop');
 }
 
@@ -100,6 +107,8 @@ function fernsideArch(): StampV2 {
   b.object(1, 3, 'tile.rock');
   b.object(4, 4, 'tile.rock');
   b.place('fixture.waystone', 6, 4);
+  // A crate for the Rootway's firebricks, a stand-in until M4-21 (M4-20).
+  b.place('fixture.chest_firebrick', 7, 2);
   return b.toStamp('fernside_arch');
 }
 

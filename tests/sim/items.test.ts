@@ -502,17 +502,17 @@ describe('cooking and experiments', () => {
     expect(countItem(inv(r), 'item.sunwort')).toBe(1);
     expect(ofType(r.events, 'craftFailed')).toHaveLength(0);
   });
-  it('all fourteen cooking recipes work at the pot, and cooking pays Cooking skill XP', () => {
+  it('all fifteen cooking recipes work at the pot, and cooking pays Cooking skill XP', () => {
     const r = atPot();
     const cooking = Object.values(RECIPES).filter((x) => x.craft === 'cooking');
-    expect(cooking).toHaveLength(14);
+    expect(cooking).toHaveLength(15);
     for (const rec of cooking) {
       const units = expand(rec.ingredients);
       for (const i of units) stash(r, i);
       r.tick({ type: 'cook', items: units });
       expect(countItem(inv(r), rec.result), rec.id).toBeGreaterThanOrEqual(rec.qty);
     }
-    expect(inv(r).recipes.filter((id) => RECIPES[id]?.craft === 'cooking')).toHaveLength(14);
+    expect(inv(r).recipes.filter((id) => RECIPES[id]?.craft === 'cooking')).toHaveLength(15);
     const skills = r.s.entities.comps.skills[r.me]!;
     expect(skills.points['skill.cooking']! + skills.xp['skill.cooking']!).toBeGreaterThan(0);
   });

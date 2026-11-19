@@ -301,6 +301,7 @@ export function give(
   if (!inv) return;
   madeItems(state, source, item, qty);
   const left = addItem(inv, item, qty, extra);
+  if (source !== 'singular') emit(state.events, { type: 'itemGained', who, item, qty });
   if (left > 0) {
     const f = feet(state, who);
     spawnPickup(state, item, left, f.x, f.y, newStack(item, 1, extra));
@@ -351,6 +352,7 @@ export function dropFromBag(state: SimState, who: EntityId, slot: number): boole
   const id = spawnPickup(state, stack.item, stack.qty, f.x, f.y, stack);
   const pk = getComp(state.entities, id, 'pickup');
   if (pk) pk.age = -B.loot.dropGraceTicks;
+  emit(state.events, { type: 'itemDropped', who, item: stack.item, qty: stack.qty, pickup: id });
   return true;
 }
 

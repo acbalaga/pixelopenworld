@@ -159,6 +159,8 @@ function hearthford(): StampV2 {
   ] as const)
     b.object(x, y, x % 2 ? 'tile.crate' : 'tile.barrel');
   part('stalls', 'market', 31, 41, 5, 1);
+  // An old cook pot on the porch of the empty house (home 5, below). Nothing marks it (M4-20).
+  b.place('prop.camp_pot', 43, 44);
 
   // Eight homes.
   const homes: [number, number, number, 'red' | 'slate' | 'thatch'][] = [

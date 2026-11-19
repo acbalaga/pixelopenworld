@@ -115,6 +115,7 @@ import { drawLockFrame } from '../ui/hud/combatHud';
 import { Hud, POOLS_HEIGHT, STATUS_HEIGHT } from '../ui/hud/hud';
 import { MenuSheet } from '../ui/dom/menu';
 import { Minimap } from '../ui/dom/minimap';
+import { singularBanner } from '../ui/menu/singularModel';
 import { MAP_STRINGS } from '../content/strings/map';
 import { travelBlock } from '../sim/systems/waystones';
 import { MapImage } from '../render/mapImage';
@@ -1485,6 +1486,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             // A second stone makes travel possible, so the Map opens on it (M4-07).
             if ((state.map.waystones.filter((k) => k.startsWith(`${regionId}:`)).length ?? 0) > 1)
               menu.open('map');
+          } else if (
+            (e.type === 'singularStep' || e.type === 'worldFirst') &&
+            singularBanner(state, who, e)
+          ) {
+            notices.toast(singularBanner(state, who, e) as string);
           } else if (e.type === 'waystoneAttuned' && e.who === who) {
             const n = MAP_STRINGS.waystones[e.stone as keyof typeof MAP_STRINGS.waystones];
             if (n) notices.toast(fill(MAP_STRINGS.attunedToast, { name: n }));

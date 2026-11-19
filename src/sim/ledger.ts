@@ -55,6 +55,7 @@ export type ItemSource =
   | 'dialogue'
   | 'shop'
   | 'buyback'
+  | 'singular'
   | 'seed';
 
 /** An empty ledger. */
