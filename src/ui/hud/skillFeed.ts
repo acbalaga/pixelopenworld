@@ -3,18 +3,14 @@ import { fill, SKILL_STRINGS } from '../../content/strings/skills';
 import { PALETTE } from '../../content/sprites/palette';
 import type { Renderer } from '../../render/renderer';
 import type { SimEvent } from '../../sim/kernel/events';
+import type { MessageRouter } from '../messages/router';
 import type { PixelFont } from '../text/pixelFont';
 
 const INK = PALETTE[3] as string;
 const DARK = PALETTE[0] as string;
-const GOLD = PALETTE[47] as string;
 
 /** How long the small XP tick stays up after the last gain, ms. */
 const TICK_MS = 1600;
-/** How long the rank-up banner stays up, ms. */
-const BANNER_MS = 2600;
-/** Banners that wait their turn, so a burst of rank-ups is read one at a time. */
-const MAX_QUEUED = 4;
 
 interface Tick {
   skill: string;
@@ -22,19 +18,15 @@ interface Tick {
   at: number;
 }
 
-interface Banner {
-  text: string;
-  mastery: boolean;
-}
-
 /**
- * The small XP tick and the rank-up banner (design/03). Render-side only: it reads sim events
- * and keeps its own timers in wall time, so it never touches the sim.
+ * The small XP tick (design/03) and the source of rank-up banners. Render-side only: it reads sim
+ * events and keeps its own timers in wall time, so it never touches the sim. Banners go to the
+ * message router, which owns their lane and timing.
  */
 export class SkillFeed {
   private ticks: Tick[] = [];
-  private queue: Banner[] = [];
-  private shown: (Banner & { at: number }) | null = null;
+
+  constructor(private readonly router: MessageRouter) {}
 
   /** Takes this tick's events for the avatar `who`. */
   ingest(events: readonly SimEvent[], who: number): void {
@@ -47,18 +39,16 @@ export class SkillFeed {
           : e.points === 1
             ? fill(SKILL_STRINGS.newSkill, { skill: name })
             : fill(SKILL_STRINGS.rankUp, { skill: name, points: e.points });
-        if (this.queue.length < MAX_QUEUED) this.queue.push({ text, mastery: e.mastery !== null });
+        this.router.post({ lane: 'banner', text, tone: e.mastery !== null ? 'gold' : 'plain' });
       }
     }
   }
 
-  /** Draws the banner centered at `cx` and the XP ticks below the bars at (`x`, `y`). */
+  /** Draws the XP ticks below the bars at (`x`, `y`). */
   draw(
     r: Renderer,
     font: PixelFont,
     now: number,
-    cx: number,
-    bannerY: number,
     x: number,
     y: number,
     reducedMotion: boolean,
@@ -80,15 +70,5 @@ export class SkillFeed {
       );
       row++;
     }
-    if (this.shown && now - this.shown.at >= BANNER_MS) this.shown = null;
-    if (!this.shown) {
-      const next = this.queue.shift();
-      if (next) this.shown = { ...next, at: now };
-    }
-    if (this.shown)
-      font.draw(r, this.shown.text, cx, bannerY, this.shown.mastery ? GOLD : INK, {
-        align: 'center',
-        outline: DARK,
-      });
   }
 }

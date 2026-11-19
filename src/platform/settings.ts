@@ -25,6 +25,10 @@ export interface Settings {
   muted: boolean;
   /** Touch guard: a tap raises it and the next tap lowers it. Off holds it while the finger is down. */
   guardToggle: boolean;
+  /** The chat lane is folded to its unread glyph (M4-17). A UI setting, outside the save. */
+  chatCollapsed: boolean;
+  /** The chat sheet's last tab. */
+  chatTab: string;
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -57,6 +61,8 @@ export class SettingsStore {
       haptics: true,
       muted: false,
       guardToggle: true,
+      chatCollapsed: false,
+      chatTab: 'world',
     };
   }
 
@@ -81,7 +87,9 @@ export class SettingsStore {
       next.controlScheme === this.value.controlScheme &&
       next.haptics === this.value.haptics &&
       next.muted === this.value.muted &&
-      next.guardToggle === this.value.guardToggle
+      next.guardToggle === this.value.guardToggle &&
+      next.chatCollapsed === this.value.chatCollapsed &&
+      next.chatTab === this.value.chatTab
     )
       return;
     this.value = next;

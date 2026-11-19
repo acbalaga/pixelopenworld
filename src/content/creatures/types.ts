@@ -38,12 +38,7 @@ export interface PhaseDef {
  * runs. Passive never fights. Curious follows, and fights only when hit.
  */
 export type Temperament =
-  | 'hostile'
-  | 'territorial'
-  | 'defensive'
-  | 'skittish'
-  | 'passive'
-  | 'curious';
+  'hostile' | 'territorial' | 'defensive' | 'skittish' | 'passive' | 'curious';
 
 /** A creature. Archetype plus stats, telegraph timings (through its attacks), drops and sounds. */
 export interface CreatureDef {

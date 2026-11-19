@@ -61,7 +61,7 @@ test('slice: a locked door says so', async ({ page }) => {
   await page.waitForTimeout(250);
   await page.keyboard.up('KeyD');
   await page.keyboard.press('KeyE');
-  await expect(page.locator('.pow-toast')).toContainText('Locked');
+  await expect(page.locator('.pow-notice')).toContainText('Locked');
   expect(problems.pageErrors).toEqual([]);
 });
 

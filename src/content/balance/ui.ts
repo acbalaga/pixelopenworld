@@ -21,6 +21,48 @@ export const UI_BALANCE = {
     /** The Menu redraws from the sim at most this often while open. */
     refreshMs: 200,
   },
+  /**
+   * Message lanes (design/09, D21). Times are ms. Sizes are CSS px, so they follow the clear text
+   * rather than the logical pixel grid.
+   */
+  messages: {
+    /** A notice shows this long, plus `noticePerCharMs` for every character past `noticeFreeChars`. */
+    noticeBaseMs: 2600,
+    noticePerCharMs: 40,
+    noticeFreeChars: 32,
+    noticeCapMs: 6000,
+    /** Notices on screen at once. More wait their turn. */
+    noticeMax: 2,
+    /** The same key posted again within this long adds a count instead of a new message. */
+    mergeMs: 1500,
+    bannerMs: 3000,
+    /** Banners that wait their turn. */
+    bannerQueueMax: 8,
+    /** Floaters stacked at once, how long each stays, the longest text, and the merge window. */
+    floaterStack: 3,
+    floaterMs: 1600,
+    floaterChars: 24,
+    floaterMergeMs: 1500,
+    /** Chat lines in the lane, and how long a line stays in it. */
+    chatLines: 2,
+    chatShowMs: 14_000,
+    /** The System log keeps everything since login, up to this many entries. */
+    logMax: 2000,
+    /** Layout, CSS px. */
+    laneGap: 6,
+    rowH: 40,
+    bannerH: 48,
+    /** Landscape lanes start under the clock row. */
+    clockRowPx: 30,
+    chatRowH: 18,
+    laneMaxW: 320,
+    chatLandscapeW: 220,
+    /** Floater column: beside the avatar, from the head point down to the feet. */
+    floaterW: 120,
+    floaterRowH: 20,
+    /** The chat sheet's share of the screen height. */
+    sheetFraction: 0.5,
+  },
   /** The action meter over the avatar while it works (design/09). Distances are logical px. */
   meter: {
     /** Space between the top of the meter and the avatar's head point. */
