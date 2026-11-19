@@ -73,7 +73,11 @@ import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
 import { pinnedLine } from '../sim/requestLog';
 import { TalkSheet } from '../ui/dom/talk';
-import { ChatTicker, HintLine, PinnedLine } from '../ui/dom/ambient';
+import { ChatTicker, PinnedLine } from '../ui/dom/ambient';
+import { drawFloaters } from '../ui/messages/floaters';
+import { lanesFor } from '../ui/messages/layout';
+import { MessageRouter } from '../ui/messages/router';
+import { MessageView } from '../ui/messages/view';
 import { confirmRetire } from '../ui/dom/retire';
 import { BoardSheet } from '../ui/dom/board';
 import { populateMap } from '../sim/world/populate';
@@ -132,6 +136,7 @@ import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
 import { ITEMS_BALANCE } from '../content/balance/items';
 import { ITEMS } from '../content/items';
+import { ITEM_STRINGS } from '../content/strings/items';
 import { NODES } from '../content/items/recipes';
 import { dollWithGear } from '../render/gearDoll';
 import { madeItems } from '../sim/ledger';
@@ -433,8 +438,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // The DOM layer: the Menu and anything else read as clear text.
   applySettings(root, settings.get());
   settings.subscribe((st) => applySettings(root, st));
-  const notices = new Notices(root);
-  const hintLine = new HintLine(root);
+  const router = new MessageRouter();
+  const notices = new Notices(root, router);
+  const messageView = new MessageView(root, router, settings);
+  // The hint on show, so it is posted once and retracted when the sim drops it.
+  let shownHint: string | null = null;
   const fit = (v: Parameters<Canvas2DRenderer['resize']>[0]): void => {
     renderer.resize(v);
     applyPixelScale(root, v.scale / v.dpr);
@@ -867,14 +875,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   audio.setMuted('master', settings.get().muted);
   settings.subscribe((st) => audio.setMuted('master', st.muted));
   const feedback = new CombatFeedback({ hit: INK, crit: GOLD, hurt: HURT });
-  const skillFeed = new SkillFeed();
+  const skillFeed = new SkillFeed(router);
   const centerOf = (id: number): { x: number; y: number } | null => {
     const p = state.entities.comps.pos[id];
     return p ? { x: Math.round(p.x / 256), y: Math.round(p.y / 256) - 4 } : null;
   };
 
   // Scripted chat, scaffolding until M5.
-  const chat = new ChatTicker(root, state.tick / 30);
+  const chat = new ChatTicker(router, state.tick / 30);
 
   // Autosave (tech/02): every 60 seconds of play, on room changes and Trials, when the page is
   // hidden or closed. One save runs at a time. `data-saved-seq` and `data-saved-hash` let tests
@@ -1182,7 +1190,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
           worldTick: worldTickAt(clock.trustedNow(), worldEpoch),
         });
-        hintLine.set(state.entities.comps.journal[who]?.hint?.id.replace('hint.', '') ?? null);
+        {
+          // Hints are notices with a glyph (design/09): posted once, retracted when acted on.
+          const hint = state.entities.comps.journal[who]?.hint?.id.replace('hint.', '') ?? null;
+          if (hint !== shownHint) {
+            if (shownHint) router.retract(`hint.${shownHint}`);
+            const text = hint ? (UI_STRINGS.hints as Record<string, string>)[hint] : undefined;
+            if (hint && text) router.post({ lane: 'hint', text, key: `hint.${hint}` });
+            shownHint = hint;
+          }
+        }
         chat.update(state.tick / 30);
         if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {
           lastSaveTick = state.tick;
@@ -1221,6 +1238,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             fadeAt = performance.now();
             requestSave('transition');
           } else if (e.type === 'trialPassed' && e.id === who) askPersistence();
+          else if (e.type === 'itemPickedUp' && e.id === who)
+            router.post({
+              lane: 'floater',
+              text: ITEM_STRINGS[ITEMS[e.item]?.nameKey ?? ''] ?? e.item,
+              key: e.item,
+              amount: e.qty,
+            });
           else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') {
             openedAt.set(e.id, performance.now());
@@ -1455,12 +1479,38 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         icon: iconOf,
       });
       drawLockFrame(renderer, fonts.small, state, who, Math.floor(v.width / 2), v.safe.y + 15);
+      // The message lanes (design/09): placed from the same control layout the HUD uses, so the
+      // lanes, the action meter and the thumb zone never overlap.
+      const cssBox = canvas.getBoundingClientRect();
+      const lay = computeLayout(cssBox.width, cssBox.height, settings.get().handedness === 'left', {
+        scheme: settings.get().controlScheme,
+        guard: shieldWorn,
+        hudScale: settings.get().hudScale,
+        buttonScale: settings.get().buttonScale,
+        insets: readSafeInsets(probe),
+      });
+      const lanes = lanesFor(v, lay, readSafeInsets(probe));
+      const kCss = v.cssWidth / v.width;
+      const craftNow = state.entities.comps.craft[who];
+      const stepNow = craftNow ? STATIONS[craftNow.station] : undefined;
+      // A trace or hold step is a panel over the avatar: lanes wait behind it like any panel.
+      const panelStep = !!stepNow && (stepNow.step === 'trace' || stepNow.step === 'hold');
+      router.update(
+        now,
+        menuOpen || talkOpen || notices.tabletOpen || messageView.open || panelStep,
+      );
+      messageView.setBusy(panelStep);
+      messageView.layout(lanes, cssBox.height * (1 - UI_BALANCE.messages.sheetFraction));
+      messageView.render();
+      drawFloaters(renderer, fonts.small, router, {
+        x: lanes.floaters.x / kCss,
+        y: lanes.floaters.y / kCss,
+        h: lanes.floaters.h / kCss,
+      });
       skillFeed.draw(
         renderer,
         fonts.small,
         now,
-        Math.floor(v.width / 2),
-        v.safe.y + 40,
         v.safe.x + 3,
         v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
         settings.get().reducedMotion,
@@ -1475,22 +1525,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           headY: feetY - UI_BALANCE.meter.headDy,
           feetY,
         };
-        const cssBox = canvas.getBoundingClientRect();
-        const lay = computeLayout(
-          cssBox.width,
-          cssBox.height,
-          settings.get().handedness === 'left',
-          {
-            scheme: settings.get().controlScheme,
-            guard: shieldWorn,
-            hudScale: settings.get().hudScale,
-            buttonScale: settings.get().buttonScale,
-            insets: readSafeInsets(probe),
-          },
-        );
         const mvp = {
           safe: v.safe,
-          topLimit: v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
+          // Under the status row and under the message lanes, so the meter never rises into them.
+          topLimit: Math.max(
+            v.safe.y + 3 + POOLS_HEIGHT + STATUS_HEIGHT + 4,
+            Math.ceil(lanes.meterTop / kCss),
+          ),
           zoneTop: Math.round(lay.stickZone.y * (v.dpr / v.scale)),
         };
         let draw: ((r: Draws) => void) | null = null;

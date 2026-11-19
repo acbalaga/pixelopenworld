@@ -1,14 +1,17 @@
 import { TABLET_GLYPHS } from '../../content/world/fixtures';
 import { UI_STRINGS as S } from '../../content/strings/ui';
+import type { MessageRouter } from '../messages/router';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
 /** Short clear-text messages and the carved tablet. DOM only, built with createElement. */
 export class Notices {
   private tabletEl: HTMLElement | null = null;
-  private timers = new Set<number>();
 
-  constructor(private readonly root: HTMLElement) {
+  constructor(
+    private readonly root: HTMLElement,
+    private readonly router: MessageRouter,
+  ) {
     window.addEventListener('keydown', (e) => {
       if (this.tabletEl && (e.code === 'Escape' || e.code === 'Enter' || e.code === 'Space')) {
         e.preventDefault();
@@ -21,18 +24,9 @@ export class Notices {
     return this.tabletEl !== null;
   }
 
-  /** A line of text near the bottom of the screen that fades by itself. */
-  toast(text: string): void {
-    const el = document.createElement('div');
-    el.className = 'pow-toast';
-    el.setAttribute('role', 'status');
-    el.textContent = text;
-    this.root.appendChild(el);
-    const t = window.setTimeout(() => {
-      el.remove();
-      this.timers.delete(t);
-    }, 2600);
-    this.timers.add(t);
+  /** A short system message, sent to the notice lane. The router places and times it. */
+  toast(text: string, key?: string): void {
+    this.router.post({ lane: 'notice', text, ...(key ? { key } : {}) });
   }
 
   /** The tablet: a line of glyphs and nothing else. Any tap or Escape closes it. */

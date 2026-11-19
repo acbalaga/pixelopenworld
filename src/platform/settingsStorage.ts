@@ -12,7 +12,7 @@ export interface SettingsBackend {
 }
 
 const NUMBERS = ['textScale', 'hudScale', 'buttonScale', 'hudOpacity'] as const;
-const BOOLEANS = ['reducedMotion', 'haptics', 'muted', 'guardToggle'] as const;
+const BOOLEANS = ['reducedMotion', 'haptics', 'muted', 'guardToggle', 'chatCollapsed'] as const;
 
 /** Keeps only the fields that are present and of the right type. The store clamps the numbers. */
 export function sanitizeSettings(raw: unknown): Partial<Settings> {
@@ -30,6 +30,7 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   if (r.handedness === 'left' || r.handedness === 'right') out.handedness = r.handedness;
   if (r.controlScheme === 'flow' || r.controlScheme === 'classic')
     out.controlScheme = r.controlScheme;
+  if (typeof r.chatTab === 'string' && r.chatTab.length <= 12) out.chatTab = r.chatTab;
   return out;
 }
 

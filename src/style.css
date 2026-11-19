@@ -582,37 +582,7 @@ canvas {
   grid-column: 1 / -1;
 }
 
-/* Short messages and the carved tablet (M1-07). */
-.pow-toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
-  transform: translateX(-50%);
-  max-width: min(90vw, 28em);
-  padding: 0.4em 0.9em;
-  font-size: calc(1rem * var(--text-scale, 1));
-  color: var(--pal-3);
-  background: var(--pal-0);
-  border: 1px solid var(--pal-18);
-  text-align: center;
-  pointer-events: none;
-  animation: pow-toast-life 2.6s linear forwards;
-}
-@keyframes pow-toast-life {
-  0% {
-    opacity: 0;
-  }
-  8%,
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-.reduced-motion .pow-toast {
-  animation: none;
-}
+/* The carved tablet (M1-07). The message lanes are below. */
 .pow-tablet {
   position: fixed;
   inset: 0;
@@ -1055,55 +1025,201 @@ canvas {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-.pow-hint-line {
+/* Message lanes (M4-17, design/09). Positions come from JS (`ui/messages/layout.ts`), so no lane
+   picks its own spot. Clear text, scaled with the text setting. */
+.pow-notices,
+.pow-banner,
+.pow-chat-lane,
+.pow-chat-unread {
   position: fixed;
-  left: 50%;
-  top: calc(env(safe-area-inset-top, 0px) + 64px);
-  transform: translateX(-50%);
-  max-width: min(92vw, 30em);
-  padding: 0.35em 0.8em;
-  text-align: center;
+  box-sizing: border-box;
   font-size: calc(0.95rem * var(--text-scale, 1));
   color: var(--pal-3);
-  background: rgba(26, 22, 20, 0.82);
-  border: 1px solid var(--pal-18);
-  pointer-events: none;
 }
-.pow-chat-ticker {
-  position: fixed;
-  left: calc(env(safe-area-inset-left, 0px) + 6px);
-  top: calc(env(safe-area-inset-top, 0px) + 54px);
-  max-width: min(66vw, 24em);
+.pow-notices {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   pointer-events: none;
+  overflow: visible;
+}
+.pow-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0.2em 0.8em;
+  overflow: hidden;
+  font-size: 0.9em;
+  line-height: 1.2;
+  background: rgba(26, 22, 20, 0.88);
+  border: 1px solid var(--pal-18);
+  pointer-events: auto;
+  cursor: pointer;
+  animation: pow-lane-in 160ms ease-out;
+}
+.pow-notice-hint {
+  border-color: var(--pal-14);
+}
+.pow-notice-icon {
+  flex: none;
+  width: 1.3em;
+  height: 1.3em;
+  display: grid;
+  place-items: center;
+  background: var(--pal-14);
+  color: var(--pal-0);
+  font-weight: 700;
+  font-size: 0.8em;
+}
+.pow-banner {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.3em 0.8em;
+  background: rgba(26, 22, 20, 0.92);
+  border: 2px solid var(--pal-18);
+  font-weight: 700;
+  pointer-events: none;
+  animation: pow-lane-in 200ms ease-out;
+}
+.pow-banner:not(:empty) {
+  display: flex;
+}
+.pow-banner-gold {
+  border-color: var(--pal-47);
+  color: var(--pal-47);
+}
+@keyframes pow-lane-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.reduced-motion .pow-notice,
+.reduced-motion .pow-banner {
+  animation: none;
+}
+.pow-busy {
+  visibility: hidden;
+}
+.pow-chat-lane {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
   font-size: calc(0.8rem * var(--text-scale, 1));
 }
+.pow-chat-lane,
+.pow-chat-unread,
+.pow-chat-sheet {
+  pointer-events: auto;
+}
+.pow-chat-lane[hidden],
+.pow-chat-unread[hidden] {
+  display: none;
+}
+.pow-chat-lines {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  cursor: pointer;
+}
 .pow-chat-line {
+  margin: 0;
   padding: 0.1em 0.5em;
-  background: rgba(26, 22, 20, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(26, 22, 20, 0.7);
   color: var(--pal-3);
-  animation: pow-chat-life 14s linear forwards;
+}
+.pow-chat-old {
+  opacity: 0.6;
 }
 .pow-chat-name {
   font-weight: 700;
   color: var(--pal-14);
 }
-@keyframes pow-chat-life {
-  0% {
-    opacity: 0;
-  }
-  4%,
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+.pow-chat-collapse,
+.pow-chat-unread,
+.pow-chat-close {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--pal-3);
+  background: rgba(26, 22, 20, 0.85);
+  border: 1px solid var(--pal-18);
+  cursor: pointer;
 }
-.reduced-motion .pow-chat-line {
-  animation: none;
+.pow-chat-unread {
+  width: 28px;
+  height: 28px;
+}
+.pow-chat-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  font-size: calc(0.95rem * var(--text-scale, 1));
+  color: var(--pal-3);
+  background: rgba(26, 22, 20, 0.97);
+  border-top: 2px solid var(--pal-18);
+}
+.pow-chat-sheet[hidden] {
+  display: none;
+}
+.pow-chat-head {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px;
+  border-bottom: 1px solid var(--pal-18);
+}
+.pow-chat-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+.pow-chat-tab {
+  min-height: 40px;
+  padding: 0 0.8em;
+  font: inherit;
+  color: var(--pal-3);
+  background: transparent;
+  border: 1px solid var(--pal-18);
+  cursor: pointer;
+}
+.pow-chat-tab-on {
+  background: var(--pal-18);
+  font-weight: 700;
+}
+.pow-chat-close {
+  min-width: 40px;
+}
+.pow-chat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 10px;
+}
+.pow-chat-row {
+  margin: 0 0 0.35em;
+  overflow-wrap: anywhere;
 }
 
 /* The save seal (M2-02): a glyph and a short label, with a plain explanation on tap. */

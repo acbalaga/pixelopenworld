@@ -96,9 +96,10 @@ test('the first hint appears on its own, is one line, and is not a dialog', asyn
   await page.getByLabel('Handle').fill('Walker');
   await page.getByRole('button', { name: 'Enter the world' }).click();
   await inWorld(page);
-  const hint = page.locator('.pow-hint-line');
+  const hint = page.locator('.pow-notice-hint');
   await expect(hint).toContainText('Drag on the lower left', { timeout: 8000 });
-  expect(await hint.getAttribute('role')).toBe('status');
+  // The notice lane is the live region (role=status) that holds it.
+  expect(await page.locator('.pow-notices').getAttribute('role')).toBe('status');
   await shot(page, 'frontend-hint');
   // Doing the thing clears it.
   await page.keyboard.down('KeyD');
