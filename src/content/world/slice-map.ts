@@ -263,6 +263,8 @@ function outdoors(g: Grid, objects: Obj[]): void {
   object(g, 49, 40, 'fixture.rune_stone', objects);
   // A bedroll by the Waystone (M3-09). Sleeping on it makes you Rested.
   object(g, 45, 37, 'fixture.bed', objects);
+  // The inn mirror (M4-19), in the square until POW-M4-04 builds the inn.
+  object(g, 52, 39, 'fixture.mirror', objects);
   // Element set pieces in the east meadow, one for each school (M3-09). No route needs them.
   for (const [x, kind] of [
     [62, 'fixture.brush_wall'],

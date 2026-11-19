@@ -9,16 +9,8 @@ import {
   updateReady,
   updateSupported,
 } from '../../platform/pwa';
-import {
-  BODY_TYPES,
-  CLOTH_COLORS,
-  HAIR_COLORS,
-  HAIR_STYLES,
-  SKIN_TONES,
-  randomDoll,
-  type DollSpec,
-} from '../../content/dolls/parts';
-import { PALETTE } from '../../content/sprites/palette';
+import { normalizeDoll, randomDoll, type DollSpec } from '../../content/dolls/parts';
+import { createLookEditor, type Facing } from './lookEditor';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { checkHandle, HANDLE_MAX } from '../../shared/handle';
@@ -31,7 +23,7 @@ export interface FrontEndDeps {
   /** A saved character on this device, or null. */
   save: { handle: string; playSeconds: number; look: DollSpec; trust: Trust } | null;
   /** Paints the character preview (24 x 32) into a canvas. */
-  drawPreview: (canvas: HTMLCanvasElement, look: DollSpec) => void;
+  drawPreview: (canvas: HTMLCanvasElement, look: DollSpec, dir?: Facing) => void;
   rand: () => number;
   /** Restoring a save file from the title. `onImported` is set here; the game applies the import. */
   importer: Omit<ImportDeps, 'onImported'>;
@@ -46,7 +38,8 @@ export interface FrontEndDeps {
 }
 
 export type FrontEndResult =
-  { mode: 'continue' } | { mode: 'new'; handle: string; look: DollSpec; seed: number };
+  | { mode: 'continue' }
+  | { mode: 'new'; handle: string; look: DollSpec; seed: number; origin: string };
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -64,8 +57,6 @@ function put<T extends HTMLElement>(parent: T, ...kids: HTMLElement[]): T {
   for (const k of kids) parent.appendChild(k);
   return parent;
 }
-
-const titleCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 function minutes(sec: number): string {
   const m = Math.max(1, Math.round(sec / 60));
@@ -281,19 +272,20 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
 
     const setup = (): void => {
       screen.textContent = '';
-      const look: DollSpec = { ...randomDoll(deps.rand), mainHand: 'sword', offHand: 'none' };
+      const look: DollSpec = {
+        ...randomDoll(deps.rand),
+        mainHand: 'sword',
+        offHand: 'none',
+      };
+      look.bottomColor = look.topColor;
       const form = el('form', 'pow-setup');
       form.noValidate = true;
       form.setAttribute('aria-labelledby', 'pow-setup-h');
       const h = el('h2', undefined, S.setup.heading);
       h.id = 'pow-setup-h';
 
-      const preview = el('canvas', 'pow-preview');
-      preview.width = 24;
-      preview.height = 32;
-      preview.setAttribute('role', 'img');
-      preview.setAttribute('aria-label', S.setup.preview);
-      const redraw = (): void => deps.drawPreview(preview, look);
+      // The look editor owns the preview, the groups of choices, the dice and the origin.
+      const editor = createLookEditor(look, deps, { origin: true });
 
       // Handle.
       const hl = el('label', 'pow-field-label', S.setup.handle);
@@ -322,80 +314,11 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
       };
       input.addEventListener('input', () => validate(input.value.length > 0));
 
-      // Choices: one group of buttons per field.
-      const groups: (() => void)[] = [];
-      const group = <K extends keyof DollSpec>(
-        label: string,
-        key: K,
-        values: readonly DollSpec[K][],
-        text: (v: DollSpec[K]) => string,
-        swatch?: (v: DollSpec[K]) => string,
-      ): HTMLElement => {
-        const box = el('fieldset', 'pow-choices');
-        const legend = el('legend', 'pow-field-label', label);
-        box.appendChild(legend);
-        const row = el('div', 'pow-choice-row');
-        const buttons = values.map((v) => {
-          const b = el('button', swatch ? 'pow-swatch' : 'pow-pill');
-          b.type = 'button';
-          b.setAttribute('aria-label', text(v));
-          b.title = text(v);
-          if (swatch) b.style.setProperty('--sw', swatch(v));
-          else b.textContent = text(v);
-          b.addEventListener('click', () => {
-            look[key] = v;
-            sync();
-            redraw();
-          });
-          row.appendChild(b);
-          return { b, v };
-        });
-        const sync = (): void => {
-          for (const { b, v } of buttons) b.setAttribute('aria-pressed', String(look[key] === v));
-        };
-        groups.push(sync);
-        sync();
-        box.appendChild(row);
-        return box;
-      };
-      const rampColor = (r: readonly number[]): string => PALETTE[r[2] as number] as string;
-      const body = group(S.setup.body, 'body', BODY_TYPES, (v) => (v === 'a' ? 'Broad' : 'Slim'));
-      const skin = group(
-        S.setup.skin,
-        'skin',
-        Object.keys(SKIN_TONES) as (keyof typeof SKIN_TONES)[],
-        titleCase,
-        (v) => rampColor(SKIN_TONES[v]),
-      );
-      const hair = group(S.setup.hair, 'hair', HAIR_STYLES, titleCase);
-      const hairColor = group(
-        S.setup.hairColor,
-        'hairColor',
-        Object.keys(HAIR_COLORS) as (keyof typeof HAIR_COLORS)[],
-        titleCase,
-        (v) => rampColor(HAIR_COLORS[v]),
-      );
-      const outfit = group(
-        S.setup.outfit,
-        'topColor',
-        Object.keys(CLOTH_COLORS) as (keyof typeof CLOTH_COLORS)[],
-        titleCase,
-        (v) => rampColor(CLOTH_COLORS[v]),
-      );
-
       const random = el('button', 'pow-button', S.setup.randomize);
       random.type = 'button';
       random.addEventListener('click', () => {
         Object.assign(look, randomDoll(deps.rand), { mainHand: 'sword', offHand: 'none' });
-        // The outfit color drives the trousers too, so the outfit reads as one.
-        look.bottomColor = look.topColor;
-        for (const g of groups) g();
-        redraw();
-      });
-      // Choosing an outfit color dresses the whole outfit in it.
-      outfit.addEventListener('click', () => {
-        look.bottomColor = look.topColor;
-        redraw();
+        editor.randomize();
       });
 
       form.addEventListener('submit', (e) => {
@@ -406,26 +329,25 @@ export function runFrontEnd(deps: FrontEndDeps): Promise<FrontEndResult> {
         }
         // The creation seed is drawn here, in the platform layer, never in the sim.
         const seed = crypto.getRandomValues(new Uint32Array(1))[0] as number;
-        finish({ mode: 'new', handle: input.value.trim(), look: { ...look }, seed });
+        // The two clothing colors chosen here are the character's own colors (M4-19).
+        const final: DollSpec = { ...look, ownColors: [look.topColor, look.bottomColor] };
+        finish({
+          mode: 'new',
+          handle: input.value.trim(),
+          look: normalizeDoll(final),
+          seed,
+          origin: editor.origin(),
+        });
       });
 
       put(
         form,
         h,
-        put(
-          el('div', 'pow-setup-top'),
-          preview,
-          put(el('div', 'pow-setup-name'), hl, input, hint, err),
-        ),
-        body,
-        skin,
-        hair,
-        hairColor,
-        outfit,
+        put(el('div', 'pow-setup-name'), hl, input, hint, err),
+        editor.el,
         put(el('div', 'pow-setup-actions'), random, enter),
       );
       screen.appendChild(form);
-      redraw();
       input.focus();
     };
 

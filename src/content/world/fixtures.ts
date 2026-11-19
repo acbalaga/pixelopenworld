@@ -26,6 +26,7 @@ export type FixtureType =
   | 'board'
   | 'station'
   | 'bed'
+  | 'mirror'
   | 'element'
   | 'wall'
   | 'snare';
@@ -204,6 +205,8 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.snare', type: 'snare', sprite: 'prop.snare', size: 8 },
   // A bedroll by the square Waystone. Sleeping on it applies Rested (M3-09).
   { kind: 'fixture.bed', type: 'bed', sprite: 'prop.bedroll', size: 14 },
+  // The inn mirror (M4-19), placed in the square until the inn is built (M4-04). Free.
+  { kind: 'fixture.mirror', type: 'mirror', sprite: 'prop.mirror', size: 12 },
   // Raised by the Earth Wall technique (M3-13). It blocks bodies and bolts and does not last.
   { kind: 'fixture.earth_wall', type: 'wall', sprite: 'prop.earth_wall', size: 16 },
   // Element set pieces (M3-09). One for each school, none on a route the slice needs.

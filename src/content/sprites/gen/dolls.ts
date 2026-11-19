@@ -1,5 +1,5 @@
 import { DOLL_ANIMS, DOLL_ORIGIN, type BodyType } from '../../dolls/parts';
-import { POSES, type Dir, type Pose } from '../../dolls/poses';
+import { POSES, type Pose } from '../../dolls/poses';
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
 

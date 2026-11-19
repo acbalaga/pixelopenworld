@@ -223,6 +223,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return;
     case 'bed':
       return useBed(state, who, target);
+    case 'mirror':
+      emit(state.events, { type: 'mirrorOpened', id: target, who });
+      return;
     case 'element':
       // Only a revealed niche can be opened. The rest answer to elements, not to the button.
       if (f.revealed) useChest(state, who, target);
