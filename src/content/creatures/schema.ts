@@ -86,4 +86,14 @@ export const spawnerSchema = z.object({
   cap: z.number().int().positive(),
   respawn: z.number().int().positive(),
   radius: pos,
+  daily: z.boolean().optional(),
+  phases: z
+    .object({ day: id.nullable(), night: id.nullable() })
+    .refine((p) => p.day !== null || p.night !== null, 'a spawner needs someone by day or night')
+    .optional(),
+  step: z.enum(['a', 'b', 'c']).optional(),
+  route: z
+    .array(z.object({ x: pos, y: pos }))
+    .min(2)
+    .optional(),
 });

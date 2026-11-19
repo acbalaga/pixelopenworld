@@ -8,6 +8,7 @@ import { emit } from './kernel/events';
 import { dirStep, SUBPX, type Vec } from './kernel/fixed';
 import type { SimState } from './state';
 import { applyStatus } from './statuses';
+import { scareable } from './creatureCare';
 import { scare } from './systems/ai';
 import { spawnFixture } from './systems/fixtures';
 
@@ -72,6 +73,7 @@ export function useGadget(state: SimState, who: EntityId, slot: number): boolean
       const c = centerPx(state, id);
       if (!g || !cb || !c || g.team === 0 || g.state === 'dead' || cb.tier > GADGET.bellMaxTier)
         continue;
+      if (!scareable(cb.kind)) continue;
       if (len({ x: c.x - me.x, y: c.y - me.y }) <= GADGET.bellRadius) scare(state, id, who);
     }
   } else if (kind === 'repair') {

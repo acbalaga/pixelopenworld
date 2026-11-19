@@ -2,6 +2,11 @@ import { FIXTURES } from '../../src/content/world/fixtures';
 import type { RegionSpec } from '../../src/content/world/regions/types';
 import { Solid, tileIndex, CHUNK_TILES, type Chunk } from '../../src/sim/world/chunk';
 import type { WorldFiles } from './bake';
+import { ZONES, slotKind } from '../../src/content/creatures/rosters';
+import { TILESET } from '../../src/content/world/tileset';
+import { carveRivers, carveRoads } from './carve';
+import { Grid, Protect } from './grid';
+import { SAFE_TILES, spawnerOf, startsFights } from './spawnRules';
 import { decodeChunk } from '../../src/sim/world/chunk';
 
 /** The shortest a landmark may be to show above the trees from afar, in tiles. */
@@ -46,6 +51,11 @@ class Baked {
   elevation(tx: number, ty: number): number {
     const c = this.chunk(tx, ty);
     return c ? (c.elevation[this.index(tx, ty)] as number) : 0;
+  }
+  /** The object layer tile id at a tile (0 for none). */
+  objectTile(tx: number, ty: number): number {
+    const c = this.chunk(tx, ty);
+    return c ? (c.object[this.index(tx, ty)] as number) : 0;
   }
   /** Every placed object by world tile. */
   objects(): { kind: string; x: number; y: number }[] {
@@ -158,5 +168,77 @@ export function validateRegion(spec: RegionSpec, files: WorldFiles): string[] {
         ),
       );
   }
+
+  errors.push(...checkSpawners(spec, baked, objects));
+  return errors;
+}
+
+/**
+ * Spawner rules (POW-M4-05): every spawner kind is known; none that starts fights stands within
+ * `SAFE_TILES` of a wake point, a road or a town wall; and every slot of every zone roster is
+ * placed at least once, so no creature of the region doc is missing from the map.
+ */
+function checkSpawners(
+  spec: RegionSpec,
+  baked: Baked,
+  objects: { kind: string; x: number; y: number }[],
+): string[] {
+  const errors: string[] = [];
+  const at = (m: string): string => `${spec.id}: ${m}`;
+  const spawners = objects.filter((o) => o.kind.startsWith('spawner.'));
+  if (spawners.length === 0 && spec.zones.length === 0) return errors;
+  // Roads are drawn again on a blank grid, so the check never depends on what the ground looks like.
+  const roads = new Grid(baked.w, baked.h);
+  carveRivers(spec, roads);
+  carveRoads(spec, roads);
+  const walls = new Set(
+    ['h', 'v', 'post'].map((k) => TILESET.indexOf(`tile.wall_stone_${k}`) + 1).filter((i) => i > 0),
+  );
+  const r2 = SAFE_TILES * SAFE_TILES;
+  for (const o of spawners) {
+    const def = spawnerOf(o.kind);
+    if (!def) {
+      errors.push(at(`${o.kind} at ${o.x}, ${o.y} is not a known spawner`));
+      continue;
+    }
+    if (!startsFights(def)) continue;
+    for (const w of spec.wakePoints)
+      if ((w.x - o.x) ** 2 + (w.y - o.y) ** 2 < r2)
+        errors.push(
+          at(`${o.kind} at ${o.x}, ${o.y} is within ${SAFE_TILES} tiles of wake point ${w.id}`),
+        );
+    let hit: string | null = null;
+    for (
+      let y = Math.max(0, o.y - SAFE_TILES);
+      y <= Math.min(baked.h - 1, o.y + SAFE_TILES) && !hit;
+      y++
+    )
+      for (
+        let x = Math.max(0, o.x - SAFE_TILES);
+        x <= Math.min(baked.w - 1, o.x + SAFE_TILES);
+        x++
+      ) {
+        if ((x - o.x) ** 2 + (y - o.y) ** 2 >= r2) continue;
+        if (roads.has(roads.at(x, y), Protect.Road)) {
+          hit = `a road at ${x}, ${y}`;
+          break;
+        }
+        if (walls.has(baked.objectTile(x, y))) {
+          hit = `the town wall at ${x}, ${y}`;
+          break;
+        }
+      }
+    if (hit) errors.push(at(`${o.kind} at ${o.x}, ${o.y} is within ${SAFE_TILES} tiles of ${hit}`));
+  }
+  const placedKinds = new Set(spawners.map((o) => o.kind));
+  const zoneIds = new Set(spec.zones.map((z) => z.roster));
+  for (const z of ZONES)
+    if (zoneIds.has(`roster.${z.id}`))
+      z.slots.forEach((_, i) => {
+        if (!placedKinds.has(slotKind(z.id, i)))
+          errors.push(
+            at(`roster ${z.id} slot ${i} (${slotKind(z.id, i)}) has no spawner on the map`),
+          );
+      });
   return errors;
 }

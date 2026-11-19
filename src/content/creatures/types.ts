@@ -123,4 +123,13 @@ export interface SpawnerDef {
   radius: number;
   /** Dungeon enemies: once all are down they return on the next in-game day, at dawn, not on a timer (M4-08). */
   daily?: boolean;
+  /**
+   * Who stands here by day and by night (M4-05). `null` means nobody. Absent means `creature` at
+   * all hours. Creatures of the other phase leave once the avatar is away (`PHASE_DESPAWN_PX`).
+   */
+  phases?: { day: string | null; night: string | null };
+  /** The zone step: scales the creature's Health, defense and power (`SPAWN_STEPS`). Default a. */
+  step?: 'a' | 'b' | 'c';
+  /** A roaming creature's route in region tiles. Its home moves to the next point each in-game day. */
+  route?: readonly { x: number; y: number }[];
 }

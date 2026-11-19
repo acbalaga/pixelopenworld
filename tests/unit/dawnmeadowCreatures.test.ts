@@ -23,7 +23,7 @@ const DOC: [string, Temperament, Temperament | undefined, Archetype][] = [
   ['barrow_bones', 'hostile', undefined, 'chaser'],
   ['reed_crab', 'defensive', undefined, 'guard'],
   ['marsh_leech', 'hostile', undefined, 'chaser'],
-  ['rubblet', 'territorial', undefined, 'guard'],
+  ['rubblet', 'territorial', 'hostile', 'guard'],
   ['crag_hawk', 'territorial', undefined, 'flyer'],
   ['moorhound', 'hostile', undefined, 'chaser'],
   ['thornling_scout', 'hostile', undefined, 'skirmisher'],

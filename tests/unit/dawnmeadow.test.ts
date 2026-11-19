@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CREATURES, SPAWNERS } from '../../src/content/creatures';
+import { ZONES, slotKind } from '../../src/content/creatures/rosters';
 import { NPCS } from '../../src/content/dialogue';
 import { NODES } from '../../src/content/items/recipes';
 import { FIXTURES } from '../../src/content/world/fixtures';
@@ -8,7 +9,7 @@ import type { RegionSpec } from '../../src/content/world/regions/types';
 import { STAMPS } from '../../src/content/world/stamps';
 import { HEARTHFORD, TOWN_PARTS } from '../../src/content/world/stamps/hearthford';
 import { WAKE_IDS } from '../../src/content/world/wake';
-import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
+import { CHUNK_TILES, decodeChunk, encodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion, type WorldFiles } from '../../tools/bake-world/bake';
 import {
   MIN_LANDMARK_HEIGHT,
@@ -264,5 +265,73 @@ describe('the region checks', () => {
       wakePoints: [{ id: 'w1', x: 20, y: 370 }, ...DAWNMEADOW.wakePoints.slice(1)],
     };
     expect(validateRegion(wet, files).some((e) => e.includes('wake point w1'))).toBe(true);
+  });
+});
+
+describe('spawner bake checks (POW-M4-05)', () => {
+  /** The baked files with one more object put in the chunk that holds (x, y). */
+  function withObject(kind: string, x: number, y: number): WorldFiles {
+    const out: WorldFiles = new Map(files);
+    const name = `dawnmeadow/chunk-${Math.floor(x / CHUNK_TILES)}-${Math.floor(y / CHUNK_TILES)}.bin`;
+    const c = decodeChunk(files.get(name) as Uint8Array);
+    c.objects.push({ kind, x: x - c.cx * CHUNK_TILES, y: y - c.cy * CHUNK_TILES });
+    out.set(name, encodeChunk(c));
+    return out;
+  }
+  /** The baked files with every object of a kind taken out. */
+  function without(kind: string): WorldFiles {
+    const out: WorldFiles = new Map(files);
+    for (const [name, v] of files) {
+      if (!name.endsWith('.bin')) continue;
+      const c = decodeChunk(v as Uint8Array);
+      const n = c.objects.length;
+      c.objects = c.objects.filter((o) => o.kind !== kind);
+      if (c.objects.length !== n) out.set(name, encodeChunk(c));
+    }
+    return out;
+  }
+
+  it('the real bake passes, and every zone slot has a spawner on the map', () => {
+    expect(validateRegion(DAWNMEADOW, files)).toEqual([]);
+    const kinds = new Set(objects.filter((o) => o.kind.startsWith('spawner.')).map((o) => o.kind));
+    for (const z of ZONES)
+      z.slots.forEach((_s, i) => expect(kinds.has(slotKind(z.id, i))).toBe(true));
+    for (const k of ['spawner.barn_rats', 'spawner.field_strawman', 'spawner.hollowhorn'])
+      expect(kinds.has(k), k).toBe(true);
+  });
+
+  it('no spawner that starts fights stands within 12 tiles of a wake point', () => {
+    const w = DAWNMEADOW.wakePoints[0]!;
+    const bad = withObject('spawner.hollow_0', w.x + 3, w.y + 3);
+    expect(validateRegion(DAWNMEADOW, bad).some((e) => e.includes(`wake point ${w.id}`))).toBe(
+      true,
+    );
+    // A skittish creature's spawner may stand there.
+    const ok = withObject('spawner.commons_0', w.x + 3, w.y + 3);
+    expect(validateRegion(DAWNMEADOW, ok).some((e) => e.includes('commons_0'))).toBe(false);
+  });
+
+  it('none stands within 12 tiles of a road or of the town wall', () => {
+    // The west gate of Hearthford: the wall and the west road are both right there.
+    const bad = withObject('spawner.cairnmoor_0', TOWN_ORIGIN.x - 6, TOWN_ORIGIN.y + 28);
+    const errs = validateRegion(DAWNMEADOW, bad).filter((e) => e.includes('cairnmoor_0'));
+    expect(errs.some((e) => /road|town wall/.test(e))).toBe(true);
+  });
+
+  it('an unknown spawner kind and a roster slot with no spawner are reported', () => {
+    const unknown = withObject('spawner.nonesuch', 100, 100);
+    expect(validateRegion(DAWNMEADOW, unknown).some((e) => e.includes('not a known spawner'))).toBe(
+      true,
+    );
+    const missing = without(slotKind('marsh', 1));
+    expect(validateRegion(DAWNMEADOW, missing).some((e) => e.includes('marsh slot 1'))).toBe(true);
+  });
+
+  it('every placed spawner of the baked region is a defined one, and Hollowhorn starts on its route', () => {
+    for (const o of objects.filter((x) => x.kind.startsWith('spawner.')))
+      expect(SPAWNERS[o.kind], o.kind).toBeDefined();
+    const horn = objects.find((o) => o.kind === 'spawner.hollowhorn')!;
+    const first = SPAWNERS['spawner.hollowhorn']!.route![0]!;
+    expect({ x: horn.x, y: horn.y }).toEqual(first);
   });
 });

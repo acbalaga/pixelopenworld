@@ -69,6 +69,8 @@ export type SimEvent =
   | { type: 'temperamentSeen'; id: number; target: number; kind: string; temperament: string }
   | { type: 'leashReset'; id: number }
   /** A burrower went under, or rose to strike. */
+  /** A creature took food from the avatar's hand and settled (M4-05). */
+  | { type: 'creatureFed'; id: number; who: number; item: string }
   | { type: 'burrowed'; id: number }
   | { type: 'surfaced'; id: number }
   | { type: 'phaseChanged'; id: number; phase: number }

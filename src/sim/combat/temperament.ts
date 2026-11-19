@@ -112,6 +112,7 @@ function mark(state: SimState, id: number, src: number): void {
   // Passive creatures never fight back. Skittish ones run when hit, and fight only when cornered.
   if (!ai || !def || def.temperament === 'passive' || def.temperament === 'skittish') return;
   if (f?.state === 'dead') return;
+  delete ai.calmUntil;
   ai.provoked = true;
   if (ai.target === null) ai.target = src;
 }

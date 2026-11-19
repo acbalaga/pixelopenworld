@@ -67,3 +67,39 @@ test('the region streams: walking from Hearthford to the east gate loads and dro
   await page.keyboard.up('KeyD');
   expect(problems.pageErrors).toEqual([]);
 });
+
+/** Where creatures stand by zone (M4-05): a spawner of the zone, found from the bake. */
+const ZONE_SPOTS: { name: string; at: [number, number]; time: 'day' | 'night' }[] = [
+  { name: 'commons-day', at: [133, 165], time: 'day' },
+  { name: 'commons-night', at: [133, 165], time: 'night' },
+  { name: 'millbrook-day', at: [346, 108], time: 'day' },
+  { name: 'millbrook-barn-night', at: [274, 121], time: 'night' },
+  { name: 'hollow-day', at: [41, 265], time: 'day' },
+  { name: 'hollow-night', at: [41, 265], time: 'night' },
+  { name: 'marsh-day', at: [322, 195], time: 'day' },
+  { name: 'rise-day', at: [122, 34], time: 'day' },
+  { name: 'fernside-night', at: [28, 127], time: 'night' },
+  { name: 'cairnmoor-day', at: [28, 39], time: 'day' },
+];
+
+test('every zone loads with its creatures standing in it, and the screenshots are kept', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  const EV = join(process.cwd(), 'docs', 'ops', 'evidence', 'pow-m4-05', 'zones');
+  for (const s of ZONE_SPOTS) {
+    await page.goto(
+      `/?region=dawnmeadow&at=${s.at[0]},${s.at[1]}&time=${s.time}&weather=clear&nosave=1`,
+    );
+    await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
+    await page.waitForTimeout(3500);
+    const png = await page.screenshot();
+    expect(png.length, s.name).toBeGreaterThan(20_000);
+    if (process.env.POW_EVIDENCE) {
+      mkdirSync(EV, { recursive: true });
+      writeFileSync(join(EV, `${s.name}.png`), png);
+    }
+  }
+  expect(problems.pageErrors).toEqual([]);
+  expect(problems.csp).toEqual([]);
+});

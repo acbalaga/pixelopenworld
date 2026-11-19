@@ -1,4 +1,5 @@
 import { ITEMS_BALANCE as B } from '../content/balance/items';
+import { feedCreature } from './creatureCare';
 import { WEAPONS } from '../content/combat/attacks';
 import { ITEMS } from '../content/items';
 import type { StatusId } from '../content/combat/statuses';
@@ -471,6 +472,7 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'use':
       if (
+        !feedCreature(state, who, c.slot) &&
         !eat(state, who, c.slot) &&
         !readScroll(state, who, c.slot) &&
         !readManual(state, who, c.slot)

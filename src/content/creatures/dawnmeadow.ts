@@ -298,6 +298,7 @@ const LIST: CreatureDef[] = [
     id: 'creature.rubblet',
     name: 'Rubblet',
     temperament: 'territorial',
+    night: 'hostile',
     territory: { radius: 70, warnTicks: 36 },
     archetype: 'guard',
     tether: 80,

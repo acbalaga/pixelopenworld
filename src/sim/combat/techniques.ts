@@ -1,4 +1,5 @@
 import { SKILLS_BALANCE } from '../../content/balance/skills';
+import { soothe } from '../creatureCare';
 import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
 import { ATTACKS, WEAPONS } from '../../content/combat/attacks';
 import {
@@ -228,8 +229,10 @@ function dazeNear(
     const cb = getComp(state.entities, id, 'combatant');
     const c = centerPx(state, id);
     if (!f || !cb || !c || f.team === 0 || f.state === 'dead' || cb.tier > e.maxTier) continue;
-    if (len({ x: c.x - me.x, y: c.y - me.y }) <= e.radius)
+    if (len({ x: c.x - me.x, y: c.y - me.y }) <= e.radius) {
       applyStatus(state, id, 'dazed', who, { ticks: e.ticks });
+      soothe(state, id);
+    }
   }
 }
 

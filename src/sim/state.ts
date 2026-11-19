@@ -384,6 +384,8 @@ export interface Ai {
   provoked?: boolean;
   /** Skirmisher: it struck, and backs off once the strike is done. */
   skirm?: boolean;
+  /** Calm until this world tick (fed or soothed): it notices nothing. Hit, it ends. Absent means not calm. */
+  calmUntil?: number;
 }
 
 /** Keeps `cap` of a creature alive near its position. */

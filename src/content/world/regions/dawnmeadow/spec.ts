@@ -1,6 +1,7 @@
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
-import type { District, Placement, RegionSpec } from '../types';
+import { SPECIAL_SPAWNERS, ZONES } from '../../../creatures/rosters';
+import type { District, Placement, RegionSpec, SpawnZone } from '../types';
 
 /*
  * Dawnmeadow (POW-M4-04, regions/01-dawnmeadow). 12 x 12 chunks. This file is authoritative for
@@ -159,7 +160,38 @@ const placements: Placement[] = [
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
+  // Spawners placed by hand (M4-05): pests by the barn, scarecrows in the fields, the field boss.
+  at('spawner.barn_rats', 272, 119),
+  at('spawner.field_strawman', 293, 105),
+  at('spawner.field_strawman', 277, 99),
+  at(
+    'spawner.hollowhorn',
+    SPECIAL_SPAWNERS['spawner.hollowhorn']!.route![0]!.x,
+    SPECIAL_SPAWNERS['spawner.hollowhorn']!.route![0]!.y,
+  ),
 ];
+
+/** One zone per chunk of the sketch: its letter picks the roster (creatures/rosters.ts). */
+const zones: SpawnZone[] = CHUNKS.flatMap((row, cy) =>
+  [...row].flatMap((letter, cx) => {
+    const zone = ZONES.find((z) => z.letters.includes(letter));
+    if (!zone) return [];
+    const x0 = cx * 32;
+    const y0 = cy * 32;
+    return [
+      {
+        id: `${zone.id}_${cx}_${cy}`,
+        roster: `roster.${zone.id}`,
+        polygon: [
+          { x: x0, y: y0 },
+          { x: x0 + 31, y: y0 },
+          { x: x0 + 31, y: y0 + 31 },
+          { x: x0, y: y0 + 31 },
+        ],
+      },
+    ];
+  }),
+);
 
 const { biomes, elevation } = masks();
 
@@ -246,7 +278,7 @@ export const DAWNMEADOW: RegionSpec = {
     },
   ],
   placements,
-  zones: [],
+  zones,
   interiors: [],
   landmarks: [
     { id: 'mill_sails', x: 277, y: 99 },

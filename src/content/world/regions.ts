@@ -1,3 +1,4 @@
+import { ROSTER_SPAWNERS } from '../creatures/rosters';
 import { MANUALS } from '../items/manuals';
 /**
  * Regions and what each must supply (design/02, POW-M3-12). The slice is the first map: it is
@@ -48,6 +49,8 @@ export const REGIONS: readonly RegionDef[] = [
         'spawner.spitbloom',
         'spawner.bramble_boar',
         'spawner.old_bramblehide',
+        // The zone rosters and the hand placed ones (M4-05).
+        ...Object.keys(ROSTER_SPAWNERS),
       ],
       chests: [
         'fixture.chest_key',

@@ -5,6 +5,7 @@ import { encodeChunk } from '../../src/sim/world/chunk';
 import { resolveStamp, type ResolvedStamp, type StampV2 } from '../../src/sim/world/stamp';
 import { carveRivers, carveRoads } from './carve';
 import { fillScatter } from './fill/scatter';
+import { fillSpawners } from './fill/spawners';
 import { fillCliffs, fillTerrain } from './fill/terrain';
 import { Grid, Protect } from './grid';
 import { parseRegionSpec } from './schema';
@@ -136,6 +137,7 @@ export function bakeRegion(rawSpec: unknown, stamps: StampLibrary): WorldFiles {
   for (const z of spec.zones)
     for (const p of z.polygon) inRegion(g, src, `zones ${z.id}`, p, 'a polygon point');
   fillScatter(spec, g);
+  fillSpawners(spec, g);
 
   const out: WorldFiles = new Map();
   const dir = `${spec.id}/`;

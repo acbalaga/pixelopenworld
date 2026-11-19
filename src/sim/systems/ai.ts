@@ -360,6 +360,22 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
     ai.fled = true;
   }
 
+  // A calm creature (fed or soothed) notices nothing, and lets go of what it was after.
+  const calmNow = ai.calmUntil !== undefined && state.worldTick < ai.calmUntil;
+  if (!calmNow && ai.calmUntil !== undefined) delete ai.calmUntil;
+  if (
+    calmNow &&
+    ai.state !== 'idle' &&
+    ai.state !== 'wander' &&
+    ai.state !== 'leash' &&
+    ai.state !== 'flee'
+  ) {
+    if (ai.state === 'burrow') surfaceBody(state, id);
+    ai.target = null;
+    enter(ai, 'idle');
+    return;
+  }
+
   const tpos = ai.target === null ? null : centerPx(state, ai.target);
   const tf = ai.target === null ? null : getComp(state.entities, ai.target, 'fighter');
   const tdist = tpos ? len({ x: tpos.x - me.x, y: tpos.y - me.y }) : Infinity;
@@ -373,7 +389,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
         seen(state, id, def, ai.target, 'provoked');
         break;
       }
-      const t = acquire(state, me, def.notice, id);
+      const t = calmNow ? null : acquire(state, me, def.notice, id);
       if (t !== null) {
         react(state, id, ai, def, t, homePx);
         if (ai.state !== 'idle') break;
@@ -391,7 +407,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
         seen(state, id, def, ai.target, 'provoked');
         break;
       }
-      const t = acquire(state, me, def.notice, id);
+      const t = calmNow ? null : acquire(state, me, def.notice, id);
       if (t !== null) {
         react(state, id, ai, def, t, homePx);
         if (ai.state !== 'wander') break;

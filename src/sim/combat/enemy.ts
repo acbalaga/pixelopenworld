@@ -1,3 +1,4 @@
+import { SPAWN_STEPS, type SpawnStep } from '../../content/balance/world';
 import { CREATURES } from '../../content/creatures';
 import { setComp, spawn, type EntityId } from '../kernel/entities';
 import { px } from '../kernel/fixed';
@@ -15,9 +16,13 @@ export function spawnCreature(
   yPx: number,
   spawner = -1,
   brain = true,
+  step: SpawnStep = 'a',
 ): EntityId {
   const def = CREATURES[creatureId];
   if (!def) throw new Error(`unknown creature ${creatureId}`);
+  const k = SPAWN_STEPS[step];
+  const scale = (n: number, pct: number): number => Math.max(1, Math.round((n * pct) / 100));
+  const hp = scale(def.hp, k.hp);
   const id = spawn(state.entities);
   setComp(state.entities, id, 'pos', { x: px(xPx), y: px(yPx) });
   setComp(state.entities, id, 'vel', { x: 0, y: 0 });
@@ -28,8 +33,8 @@ export function spawnCreature(
     ...(def.archetype === 'flyer' ? { pass: true } : {}),
   });
   setComp(state.entities, id, 'pools', {
-    hp: def.hp,
-    hpMax: def.hp,
+    hp,
+    hpMax: hp,
     sta: 1000,
     staMax: 1000,
     foc: 1000,
@@ -40,8 +45,8 @@ export function spawnCreature(
   setComp(state.entities, id, 'fighter', newFighter(1));
   setComp(state.entities, id, 'combatant', {
     weapon: 'claws',
-    power: def.power,
-    defense: def.defense,
+    power: scale(def.power, k.power),
+    defense: Math.round((def.defense * k.defense) / 100),
     skillRank: 0,
     name: def.name,
     kind: def.id,

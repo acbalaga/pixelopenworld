@@ -1,4 +1,6 @@
 import { SPAWNERS } from '../../src/content/creatures';
+import { ROSTER_SPAWNERS } from '../../src/content/creatures/rosters';
+import { DAWNMEADOW } from '../../src/content/world/regions/dawnmeadow/spec';
 import { NODES } from '../../src/content/items/recipes';
 import { FIXTURES } from '../../src/content/world/fixtures';
 import { REGIONS, type RegionDef } from '../../src/content/world/regions';
@@ -17,7 +19,13 @@ export function validateRegions(
   chests: readonly string[] = Object.values(FIXTURES)
     .filter((f) => f.type === 'chest' && f.loot)
     .map((f) => f.kind),
-  placed: readonly string[] = (SLICE_MAP.objects ?? []).map((o) => o.kind),
+  // The slice map, the Dawnmeadow spec's own placements, and the zone spawners the bake places in
+  // every zone (the bake check fails if a slot has none).
+  placed: readonly string[] = [
+    ...(SLICE_MAP.objects ?? []).map((o) => o.kind),
+    ...DAWNMEADOW.placements.map((p) => p.kind),
+    ...Object.keys(ROSTER_SPAWNERS),
+  ],
 ): string[] {
   const errors: string[] = [];
   const homes = new Map<string, string[]>();

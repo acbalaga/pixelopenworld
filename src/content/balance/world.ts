@@ -23,3 +23,17 @@ export const WORLD_TUNABLES = {
   /** Interact needs the avatar idle. Waystones restore all pools. */
   waystoneHeals: true,
 } as const;
+
+/**
+ * Zone steps inside tier 1 (regions/01-dawnmeadow section 3): percent of a creature's base Health,
+ * defense and power. Step a is the base. Difficulty rises with distance from Hearthford.
+ */
+export const SPAWN_STEPS = {
+  a: { hp: 100, defense: 100, power: 100 },
+  b: { hp: 125, defense: 115, power: 115 },
+  c: { hp: 155, defense: 130, power: 135 },
+} as const;
+export type SpawnStep = keyof typeof SPAWN_STEPS;
+
+/** A creature of the wrong phase leaves only when the avatar is at least this far away, px. */
+export const PHASE_DESPAWN_PX = 240;
