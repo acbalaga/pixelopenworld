@@ -573,6 +573,18 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       sim: serializeState(deserializeState(JSON.stringify(raw))),
     };
   },
+  /**
+   * 20 to 21 (M4-03): the sim gains `deltas`, what the player changed in each chunk. It starts
+   * empty. Fixtures and nodes the old save holds stay as entities. The first streaming step adopts
+   * them into the chunks they stand in, and folds them into deltas as those chunks leave the
+   * window, so what the player did to the world (a chest opened, a tree felled, a block pushed)
+   * is kept.
+   */
+  20: (old) => ({
+    ...old,
+    schema: 21,
+    sim: serializeState(deserializeState(old.sim)),
+  }),
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

@@ -6,6 +6,8 @@ import type { CollisionGrid } from './systems/collision';
 import type { EquipSlot, Quality } from '../content/items/types';
 import type { RequestDef } from '../content/requests/types';
 import { newLedger, type Ledger } from './ledger';
+import type { Deltas } from './world/deltas';
+import type { StreamState } from './world/stream';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -522,10 +524,14 @@ export interface SimState {
   entities: EntityStore<Components>;
   /** Lifetime totals for the integrity check (tech/02). Saved. */
   ledger: Ledger;
+  /** What the player changed in each chunk, by chunk key (M4-03). Saved. */
+  deltas: Deltas;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
   world: CollisionGrid | null;
+  /** Transient. Chunk streaming state, or absent when the whole map is resident (tests). */
+  stream?: StreamState | null;
 }
 
 /** Every component name, in a fixed order. */
@@ -576,6 +582,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     rng: createStreams(seed),
     entities: createStore<Components>(COMPONENT_KEYS),
     ledger: newLedger(),
+    deltas: {},
     events: createEventQueue(),
     world: null,
   };
@@ -605,13 +612,14 @@ export function canonical(v: unknown): string {
     .join(',')}}`;
 }
 
-function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'worldTick'> {
+function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'worldTick' | 'stream'> {
   return {
     seed: state.seed,
     tick: state.tick,
     rng: state.rng,
     entities: state.entities,
     ledger: state.ledger,
+    deltas: state.deltas,
   };
 }
 
@@ -622,8 +630,12 @@ export function serializeState(state: SimState): string {
 
 /** Rebuilds a state from {@link serializeState} output. Round trip is exact. */
 export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
-  const raw = JSON.parse(text) as Omit<SimState, 'events' | 'world' | 'ledger' | 'worldTick'> & {
+  const raw = JSON.parse(text) as Omit<
+    SimState,
+    'events' | 'world' | 'ledger' | 'worldTick' | 'deltas' | 'stream'
+  > & {
     ledger?: Ledger;
+    deltas?: Deltas;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -638,6 +650,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     ...raw,
     worldTick: raw.tick,
     ledger: raw.ledger ?? newLedger(),
+    deltas: raw.deltas ?? {},
     events: createEventQueue(),
     world,
   };

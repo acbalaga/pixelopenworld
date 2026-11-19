@@ -14,6 +14,7 @@ import { TECHNIQUE_BALANCE as TB } from '../../content/balance/techniques';
 import { activeMods, applyMods, hasStatus, modAdd, statusMods } from '../mods';
 import { TEMPERAMENT as TP } from '../../content/balance/temperament';
 import { provenTierOf, temperamentNow, territoryOf } from '../combat/temperament';
+import { frozenAt } from '../world/stream';
 
 /** Ticks a creature spends noticing before it commits (about a third of a second). */
 const NOTICE_TICKS = 10;
@@ -161,7 +162,11 @@ function pickAttack(def: CreatureDef, ai: Ai, dist: number): number {
  * Runs before the combat system, so an attack decided this tick starts its wind-up this tick.
  */
 export function aiSystem(state: SimState): void {
-  const ids = query(state.entities, 'ai', 'fighter', 'pos', 'pools');
+  // Creatures outside the active window are frozen (M4-03).
+  const ids = query(state.entities, 'ai', 'fighter', 'pos', 'pools').filter((id) => {
+    const p = getComp(state.entities, id, 'pos');
+    return !p || !frozenAt(state, p.x, p.y);
+  });
 
   // Engagement cap: attackers already swinging count first, then the nearest approachers.
   const attacking = new Map<EntityId, number>();
