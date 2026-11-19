@@ -1,3 +1,7 @@
+import { MAP_BALANCE } from '../../content/balance/map';
+import { RUMORS } from '../../content/world/rumors';
+import { validFogBits } from '../../sim/world/fog';
+import { parseChunkKey } from '../../sim/world/window';
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { STATUS_BALANCE as SBAL } from '../../content/balance/status';
 import { STATUSES, type StatusId } from '../../content/combat/statuses';
@@ -251,6 +255,34 @@ export function consistency(v: View): Reason[] {
   }
   for (const [region, n] of Object.entries(journal.tradeCoin))
     if (!isCount(n) || region !== RB.homeRegion) fail('RENOWN_RANGE', `trade ${region} ${n}`);
+
+  // Map (M4-06): fog entries are 16 hex characters at a real chunk, notes and rumors are within
+  // their caps and known. None of it is value, so this only keeps a damaged save from loading garbage.
+  const map = sim.map;
+  for (const [region, fog] of Object.entries(map.fog)) {
+    if (region.length === 0 || region.length > 40)
+      fail('MAP_STATE', `region ${region.slice(0, 40)}`);
+    for (const [key, bits] of Object.entries(fog))
+      if (!parseChunkKey(key) || !validFogBits(bits)) fail('MAP_STATE', `fog ${region} ${key}`);
+  }
+  if (map.notes.length > MAP_BALANCE.notes.max) fail('MAP_STATE', `notes ${map.notes.length}`);
+  const noteIds = new Set<number>();
+  for (const n of map.notes) {
+    const ok =
+      Number.isInteger(n.id) &&
+      n.id >= 1 &&
+      n.id < map.nextNote &&
+      !noteIds.has(n.id) &&
+      typeof n.text === 'string' &&
+      n.text.length > 0 &&
+      Array.from(n.text).length <= MAP_BALANCE.notes.maxLength &&
+      Number.isInteger(n.x) &&
+      Number.isInteger(n.y);
+    noteIds.add(n.id);
+    if (!ok) fail('MAP_STATE', `note ${n.id}`);
+  }
+  if (new Set(map.rumors).size !== map.rumors.length || map.rumors.some((r) => !RUMORS[r]))
+    fail('MAP_STATE', 'rumors');
 
   // Statuses: known ids, one of each on a unit, and no longer than the longest a meal or a spell gives.
   const longest = Math.max(

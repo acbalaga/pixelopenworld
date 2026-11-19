@@ -1,3 +1,4 @@
+import { MAP_BALANCE } from '../balance/map';
 import type { SkillDef, TrialDef } from './types';
 
 export type { SkillDef, TrialDef, XpSource, XpEvent, SkillFamily } from './types';
@@ -191,7 +192,13 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         sources: [{ on: 'sneak', base: 8, firstTime: 60, scaled: false }],
       },
       // Exploration.
-      { id: 'skill.cartography', name: 'Cartography', family: 'exploration', sources: [] },
+      {
+        id: 'skill.cartography',
+        name: 'Cartography',
+        family: 'exploration',
+        // One block of map uncovered for the first time (M4-06).
+        sources: [{ on: 'reveal', base: MAP_BALANCE.xpPerBlock, scaled: false }],
+      },
       {
         id: 'skill.survival',
         name: 'Survival',
@@ -240,7 +247,6 @@ export const PENDING_SKILLS: string[] = [
   'skill.husbandry',
   'skill.leadership',
   'skill.taming',
-  'skill.cartography',
 ];
 
 /**

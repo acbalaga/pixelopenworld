@@ -8,6 +8,7 @@ import { SKILLS_BALANCE } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { COMBAT } from '../../content/balance/combat';
 import { ITEMS_BALANCE } from '../../content/balance/items';
+import { MAP_BALANCE, MAX_REVEAL_BLOCKS } from '../../content/balance/map';
 import { MOVEMENT } from '../../content/balance/movement';
 import { SHOP_BALANCE } from '../../content/balance/shop';
 import { ATTACKS } from '../../content/combat/attacks';
@@ -104,6 +105,18 @@ export const COOK_EVENTS_PER_SECOND = 2;
 export const SPRINT_EVENTS_PER_SECOND =
   (((MOVEMENT.walkSpeed * MOVEMENT.sprintFactor256) / 256 / 256) * TPS) / SKILLS_BALANCE.sprintPx;
 
+/**
+ * Blocks of map revealed for the first time per second (M4-06). Crossing a block edge at sprint
+ * speed uncovers one new row of the widest disc. A jump (Waystone travel) uncovers a whole disc
+ * at once, which the first seconds of any save cover with room to spare.
+ */
+export const REVEAL_EVENTS_PER_SECOND =
+  Math.ceil(
+    (((MOVEMENT.walkSpeed * MOVEMENT.sprintFactor256) / 256 / 256) * TPS) /
+      (MAP_BALANCE.blockTiles * 16),
+  ) *
+  (2 * MAX_REVEAL_BLOCKS + 1);
+
 /** Creatures killed per second. Judgement: design/04 puts a common kill at 4 to 8 s; this allows area kills. */
 export const KILLS_PER_SECOND_MAX = 2;
 
@@ -137,6 +150,7 @@ const RATES: Record<XpSource['on'], number> = {
   delveRoom: 0,
   delveBlock: 0,
   delveClear: 0,
+  reveal: REVEAL_EVENTS_PER_SECOND,
   block: BLOCK_EVENTS_PER_SECOND,
   parry: BLOCK_EVENTS_PER_SECOND,
   heal: 2,

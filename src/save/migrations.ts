@@ -609,6 +609,16 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     remapFromSlice(s);
     return { ...old, schema: 23, sim: serializeState(s) };
   },
+  /**
+   * 23 to 24 (M4-06): the sim gains `map`, the fog, notes and rumors. A character begins with
+   * nothing uncovered. The first steps in the world uncover the ground around the avatar, so the
+   * map is never empty for long and nothing is invented for places the player has been.
+   */
+  23: (old) => ({
+    ...old,
+    schema: 24,
+    sim: serializeState(deserializeState(old.sim)),
+  }),
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

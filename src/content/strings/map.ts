@@ -1,0 +1,43 @@
+/** Map text (POW-M4-06). No em dashes. Names are what the player reads, never ids. */
+export const MAP_STRINGS = {
+  title: 'Map',
+  regionLine: '{region}, {pct}% uncovered',
+  canvasLabel: 'Map of {region}. Drag to move it, pinch or use the buttons to zoom.',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  center: 'Find me',
+  places: 'Places',
+  placesNone: 'Nothing marked yet. Walk, and the map draws itself.',
+  seen: 'Seen',
+  heard: 'Heard of',
+  heardHint: 'Marked from what you were told. The mark may sit a little off.',
+  notes: 'Your notes',
+  notesNone: 'No notes.',
+  noteLabel: 'Note for this spot',
+  notePlaceholder: 'Write a note',
+  noteAdd: 'Mark here',
+  noteFull: 'The page is full. Remove a note first.',
+  noteRemove: 'Remove note: {text}',
+  noteAt: 'At {x}, {y}',
+  show: 'Show the minimap',
+  minimap: 'Minimap. Tap to open the map.',
+  you: 'You',
+  /** Names of places the map can show once seen, by id. */
+  landmarks: {
+    mill_sails: 'Windmill on the hill',
+    bell_tower: 'Bell tower',
+    quarry_crane: 'Quarry crane',
+  },
+  waystones: {
+    hearthford: 'Hearthford Waystone',
+    millbrook: 'Millbrook Waystone',
+    reedmouth: 'Reedmouth Waystone',
+    stonecrop: 'Stonecrop Waystone',
+    fernside: 'Fernside Waystone',
+    cairnmoor: 'Cairnmoor Waystone',
+  },
+  rumors: {
+    'rumor.quarry_crane': 'A crane standing over a quarry',
+    'rumor.mill_sails': 'Sails turning on a hill',
+  },
+} as const;

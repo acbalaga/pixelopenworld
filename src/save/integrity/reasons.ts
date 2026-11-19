@@ -31,6 +31,7 @@ export const REASON_CODES = [
   'REQUEST_STATE',
   'RENOWN_RANGE',
   'TICK_PLAYTIME_MISMATCH',
+  'MAP_STATE',
   // Ledger: what the avatar holds does not reconcile with what the sim recorded.
   'COIN_RECONCILE',
   'XP_EXCEEDS_EARNED',

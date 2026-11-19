@@ -1914,3 +1914,126 @@ canvas {
     width: min(32rem, 95vw);
   }
 }
+
+/* ---- Map tab and minimap (M4-06). Palette: 0, 3, 16, 17, 18, 47. ---- */
+.pow-map {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-map-status {
+  margin: 0;
+  color: var(--pal-3);
+}
+.pow-map-canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 60vh;
+  box-sizing: border-box;
+  border: calc(var(--px) * 1) solid var(--pal-18);
+  background: var(--pal-17);
+  image-rendering: pixelated;
+  /* The canvas handles drag and pinch itself. */
+  touch-action: none;
+  cursor: grab;
+}
+.pow-map-canvas:focus-visible {
+  outline: calc(var(--px) * 2) solid var(--pal-47);
+  outline-offset: calc(var(--px) * 1);
+}
+.pow-map-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+}
+.pow-map-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pow-map-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+}
+.pow-map-note {
+  display: flex;
+  gap: calc(var(--px) * 2);
+  align-items: stretch;
+}
+.pow-map-place {
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: calc(var(--px) * 3);
+  padding: calc(var(--px) * 2) calc(var(--px) * 3);
+  color: var(--pal-3);
+  background: var(--pal-17);
+  border: 1px solid var(--pal-18);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.pow-map-place:hover,
+.pow-map-place:focus-visible {
+  border-color: var(--pal-47);
+}
+.pow-map-place-tag {
+  flex: none;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+.pow-map-del {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pow-map-form {
+  display: flex;
+  gap: calc(var(--px) * 2);
+}
+.pow-map-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 calc(var(--px) * 3);
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+}
+.pow-minimap {
+  position: fixed;
+  left: var(--mm-left, auto);
+  top: var(--mm-top, 0);
+  right: auto;
+  width: calc(56px * var(--hud-scale, 1));
+  height: calc(56px * var(--hud-scale, 1));
+  padding: 0;
+  box-sizing: border-box;
+  background: var(--pal-17);
+  border: calc(var(--px) * 1) solid var(--pal-0);
+  outline: 1px solid var(--pal-3);
+  outline-offset: -2px;
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 0.92;
+}
+.pow-minimap[hidden] {
+  display: none;
+}
+.pow-minimap:focus-visible {
+  outline: calc(var(--px) * 2) solid var(--pal-47);
+}
+.pow-minimap-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}

@@ -18,6 +18,7 @@ const BOOLEANS = [
   'muted',
   'guardToggle',
   'chatCollapsed',
+  'minimap',
   'prefetchRegions',
 ] as const;
 

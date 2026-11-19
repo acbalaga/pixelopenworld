@@ -19,6 +19,8 @@ export interface RegionManifest {
   /** Where a new character may start, in tiles. */
   wakePoints?: { id: string; x: number; y: number }[];
   waystones?: { id: string; x: number; y: number }[];
+  /** Tall landmarks, in tiles. The map shows each one once its ground is uncovered (M4-06). */
+  landmarks?: { id: string; x: number; y: number }[];
 }
 
 const dec = new TextDecoder();

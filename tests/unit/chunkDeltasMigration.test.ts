@@ -26,6 +26,7 @@ describe('schema 20 to 21 migration (chunk deltas)', () => {
     expect(s.deltas).toEqual({});
     // Nothing else changed: with the deltas field removed the old hash comes back.
     delete (s as { deltas?: unknown }).deltas;
+    delete (s as { map?: unknown }).map;
     expect(hashState(s)).toBe(f.expectedHash);
     // Streaming adopts the old entities and folds the ones far from the avatar into deltas.
     const now = migrate(decoded, MIGRATIONS, LAST_SLICE_SCHEMA);
@@ -61,6 +62,7 @@ describe('schema 21 to 22 migration (dungeons and bosses)', () => {
     expect(s.entities.comps.boss.every((b) => b === null)).toBe(true);
     // Nothing else changed: without the new component the old hash comes back.
     delete (s.entities.comps as { boss?: unknown }).boss;
+    delete (s as { map?: unknown }).map;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 });

@@ -8,6 +8,7 @@ import type { RequestDef } from '../content/requests/types';
 import { newLedger, type Ledger } from './ledger';
 import type { Deltas } from './world/deltas';
 import type { StreamState } from './world/stream';
+import type { Fog } from './world/fog';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -552,6 +553,33 @@ export interface Components {
   board: Board;
 }
 
+/** A note the player left on the map (M4-06). `x` and `y` are world tiles. */
+export interface MapNote {
+  id: number;
+  x: number;
+  y: number;
+  text: string;
+}
+
+/**
+ * What the player knows of the map (M4-06): fog by region, notes, and the rumors heard. A rumor
+ * is an id into `content/world/rumors`; where its mark is drawn comes from the Cartography rank.
+ */
+export interface MapState {
+  /** Fog by region id. A region the avatar never entered has none. */
+  fog: Record<string, Fog>;
+  notes: MapNote[];
+  /** The id the next note takes. Never reused, so a delete cannot make two commands collide. */
+  nextNote: number;
+  /** Rumor ids, in the order they were heard. */
+  rumors: string[];
+}
+
+/** A map the player has not explored. */
+export function newMapState(): MapState {
+  return { fog: {}, notes: [], nextNote: 1, rumors: [] };
+}
+
 /** Everything that is saved. Plain, serializable data. */
 export interface SimState {
   /** Master seed the sim started from. */
@@ -565,6 +593,8 @@ export interface SimState {
   ledger: Ledger;
   /** What the player changed in each chunk, by chunk key (M4-03). Saved. */
   deltas: Deltas;
+  /** Fog, notes and rumors (M4-06). Saved. */
+  map: MapState;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
@@ -627,6 +657,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     entities: createStore<Components>(COMPONENT_KEYS),
     ledger: newLedger(),
     deltas: {},
+    map: newMapState(),
     events: createEventQueue(),
     world: null,
   };
@@ -664,6 +695,7 @@ function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'world
     entities: state.entities,
     ledger: state.ledger,
     deltas: state.deltas,
+    map: state.map,
   };
 }
 
@@ -676,10 +708,11 @@ export function serializeState(state: SimState): string {
 export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
   const raw = JSON.parse(text) as Omit<
     SimState,
-    'events' | 'world' | 'ledger' | 'worldTick' | 'deltas' | 'stream'
+    'events' | 'world' | 'ledger' | 'worldTick' | 'deltas' | 'map' | 'stream'
   > & {
     ledger?: Ledger;
     deltas?: Deltas;
+    map?: MapState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -695,6 +728,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     worldTick: raw.tick,
     ledger: raw.ledger ?? newLedger(),
     deltas: raw.deltas ?? {},
+    map: raw.map ?? newMapState(),
     events: createEventQueue(),
     world,
   };
