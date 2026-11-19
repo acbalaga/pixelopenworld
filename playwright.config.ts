@@ -26,7 +26,7 @@ export default defineConfig({
     },
     {
       name: 'dev-tools',
-      testMatch: /(devtools|sliceRun|streaming)\.spec\.ts/,
+      testMatch: /(devtools|sliceRun|streaming|weather)\.spec\.ts/,
       use: { baseURL: DEV },
     },
   ],

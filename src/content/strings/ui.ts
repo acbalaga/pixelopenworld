@@ -198,6 +198,24 @@ export const UI_STRINGS = {
     percent: '{n} percent',
   },
   clock: { dawn: 'Dawn', day: 'Day', dusk: 'Dusk', night: 'Night' },
+  // The calendar in System (M4-09). A season is seven days.
+  calendar: {
+    heading: 'Calendar',
+    date: 'Year {year}, {season}, day {day} of 7',
+    time: '{phase}, {hhmm}',
+    today: 'Weather today: {weather}',
+    ahead: 'The days ahead',
+    seasons: { spring: 'Spring', summer: 'Summer', autumn: 'Autumn', winter: 'Winter' },
+    weather: {
+      clear: 'Clear',
+      rain: 'Rain',
+      storm: 'Storm',
+      fog: 'Fog',
+      snow: 'Snow',
+      heat: 'Heat',
+      sandstorm: 'Sandstorm',
+    },
+  },
   statusFed: 'Fed: {item}',
   // One name and one sentence for Help per status (M3-09). Never color alone: each has its own icon shape.
   statusNames: {

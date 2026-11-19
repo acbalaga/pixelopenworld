@@ -21,6 +21,7 @@ import type { SimState } from '../../sim/state';
 import { REQUEST_STRINGS as RS } from '../../content/strings/requests';
 import {
   bagView,
+  calendarView,
   characterView,
   itemDetail,
   skillsView,
@@ -1126,6 +1127,19 @@ export class MenuSheet {
     privacy.dataset.key = 'privacy-note';
     put(privacy, el('h4', 'pow-h', S.help.privacyHeading));
     for (const line of S.help.privacy) put(privacy, el('p', 'pow-hint', line));
+    // The calendar (M4-09): the date, the hour, today's weather and the days ahead.
+    const cal = calendarView(this.deps.read().state);
+    const calBox = el('div', 'pow-calendar');
+    calBox.dataset.key = 'calendar';
+    put(
+      calBox,
+      el('p', 'pow-cal-date', cal.date),
+      el('p', 'pow-cal-time', cal.time),
+      el('p', 'pow-cal-today', cal.today),
+      el('h4', 'pow-h', S.calendar.ahead),
+      ...cal.ahead.map((l) => el('p', 'pow-hint pow-cal-ahead', l)),
+    );
+    this.body.appendChild(this.sec('sys-calendar', S.calendar.heading, undefined, calBox));
     // Each group folds, and the fold is remembered.
     this.body.appendChild(this.sec('sys-settings', sys.settings, undefined, box));
     this.body.appendChild(

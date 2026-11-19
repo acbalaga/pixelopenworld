@@ -127,6 +127,14 @@ import { CREATURES } from '../content/creatures';
 import { drawTelegraphs, telegraphOf } from '../render/telegraph';
 import { drawCommitMarks, drawWarnings } from '../render/warning';
 import { ChunkRenderer, TILE_PX } from '../render/chunks';
+import { lightLevel, phaseTint, weatherTint } from '../render/grade';
+import { LightIndex } from '../render/lights';
+import { WeatherFx } from '../render/weatherFx';
+import { LIGHTS } from '../content/world/atmosphere';
+import { TIME } from '../content/balance/time';
+import type { Weather } from '../content/balance/time';
+import { WEATHER } from '../content/balance/time';
+import { currentWeather } from '../sim/time';
 import { DollFactory } from '../render/dollSprite';
 import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
@@ -293,7 +301,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const camera = new Camera(worldW, worldH);
   const chunkRenderer = new ChunkRenderer(atlas, world, m.tiles);
   chunkRenderer.beyondEdge = streamer.beyondEdge;
-  streamer.onDrop = (cx, cy) => chunkRenderer.drop(cx, cy);
+  // Lights that map tiles make (torches, lit windows) are indexed as chunks arrive (M4-09).
+  const lightIndex = new LightIndex();
+  streamer.onChunk = (c) => lightIndex.add(c);
+  streamer.onDrop = (cx, cy) => {
+    chunkRenderer.drop(cx, cy);
+    lightIndex.remove(cx, cy);
+  };
+  const weatherFx = new WeatherFx(() => Math.random());
 
   const startGear0 = { ...newInventory().equipment };
   const rand = ((): (() => number) => {
@@ -517,7 +532,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const hasAt = !!at && at.length === 2 && at.every(Number.isFinite);
   // A new character has its own creation seed. Developer paths without one keep seed 1.
   const state = restored ?? createDemoState(entry?.seed ?? 1, 0);
-  state.worldTick = worldTickAt(clock.trustedNow(), worldEpoch);
+  // Dev builds can freeze the time of day (`?time=dawn|day|dusk|night`) and force the weather
+  // (`?weather=rain`), for screenshots and the frame-rate checks.
+  const wantTime = import.meta.env.DEV ? params.get('time') : null;
+  const frozenTick = ((): number | null => {
+    if (!wantTime) return null;
+    let at = 0;
+    for (const p of TIME.phases) {
+      if (p.phase === wantTime)
+        return Math.round((at + p.minutes / 2 - TIME.startMinute) * TIME.ticksPerMinute);
+      at += p.minutes;
+    }
+    return null;
+  })();
+  const wantWeather = import.meta.env.DEV ? params.get('weather') : null;
+  state.region = regionId;
+  if (wantWeather && (WEATHER as readonly string[]).includes(wantWeather))
+    state.weatherOverride = wantWeather as Weather;
+  const worldNow = (): number => frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch);
+  state.worldTick = worldNow();
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
   // developer `?at=` overrides that. Other regions start at their first wake point.
   const wake =
@@ -1287,7 +1320,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         if (rec.bag) menu.toggle('bag');
         stepWorld(state, who, {
           commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
-          worldTick: worldTickAt(clock.trustedNow(), worldEpoch),
+          worldTick: worldNow(),
         });
         {
           // Hints are notices with a glyph (design/09): posted once, retracted when acted on.
@@ -1467,6 +1500,77 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           Math.round(np.y / 256),
           atlas.animFlip(a),
         );
+      }
+      // The sky: weather particles, the tint of the hour and the weather, and the lights of the
+      // night. Under open sky only: caves, dungeons and houses keep their own light (M4-09).
+      const outdoors =
+        fly ||
+        room.outdoors === true ||
+        roomAt(Math.floor(pxX / TILE_PX), Math.floor((pxY - 1) / TILE_PX)) === null;
+      const sky: Weather = outdoors ? currentWeather(state) : 'clear';
+      weatherFx.update(dt, sky, renderer.width, renderer.height, now);
+      if (outdoors) {
+        const gx = camera.x + shake.x;
+        const gy = camera.y + shake.y;
+        weatherFx.draw(renderer, gx, gy, sky, now);
+        const tint = phaseTint(state.worldTick);
+        if (tint.alpha > 0.004)
+          renderer.drawRect(
+            Layer.Grade,
+            gx,
+            gy,
+            renderer.width,
+            renderer.height,
+            tint.color,
+            tint.alpha,
+            'multiply',
+          );
+        const wt = weatherTint(sky);
+        if (wt.alpha > 0)
+          renderer.drawRect(
+            Layer.Grade,
+            gx,
+            gy,
+            renderer.width,
+            renderer.height,
+            wt.color,
+            wt.alpha,
+            wt.blend === 'multiply' ? 'multiply' : undefined,
+          );
+        const level = lightLevel(state.worldTick);
+        if (level > 0) {
+          const glow = (
+            x: number,
+            y: number,
+            def: { radius: number; color: number; alpha: number },
+          ): void => {
+            const flicker = 1 + 0.05 * Math.sin(now / 140 + x * 0.7);
+            renderer.drawLight(
+              Layer.Grade,
+              x,
+              y,
+              def.radius * flicker,
+              PALETTE[def.color] as string,
+              def.alpha * level,
+            );
+          };
+          lightIndex.forVisible(gx, gy, renderer.width, renderer.height, 64, (l) =>
+            glow(l.x, l.y, l.def),
+          );
+          for (const id of state.entities.comps.fixture.keys()) {
+            const f = state.entities.comps.fixture[id];
+            const fp = state.entities.comps.pos[id];
+            const t = f ? FIXTURES[f.kind]?.type : undefined;
+            if (!f || !fp || (t !== 'waystone' && !(t === 'torch' && f.open))) continue;
+            glow(
+              Math.round(fp.x / 256),
+              Math.round(fp.y / 256) - 8,
+              LIGHTS.fixtures[t as string] as never,
+            );
+          }
+          if (state.entities.comps.inventory[who]?.equipment.off?.item === 'item.lantern')
+            glow(pxX, pxY - 8, LIGHTS.lantern);
+        }
       }
       drawTelegraphs(renderer, state);
       drawWarnings(renderer, state);

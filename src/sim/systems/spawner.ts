@@ -7,6 +7,7 @@ import { int } from '../kernel/rng';
 import type { SimState } from '../state';
 import { frozenAt } from '../world/stream';
 import { dayIndex } from '../time';
+import { spawnTicks } from '../weatherEffects';
 
 /** Places a spawner at a position in whole px. It fills to its cap on the first tick. */
 export function createSpawner(state: SimState, kind: string, xPx: number, yPx: number): EntityId {
@@ -42,7 +43,7 @@ export function spawnerSystem(state: SimState): void {
       sp.timer = 0;
       continue;
     }
-    sp.timer++;
+    sp.timer += spawnTicks(state, p.x, p.y);
     if (sp.timer < def.respawn) continue;
     for (let tries = 0; tries < 8; tries++) {
       const x =

@@ -559,6 +559,10 @@ export interface SimState {
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
   world: CollisionGrid | null;
+  /** Transient. The region being played, for its weather table. Absent means the slice. */
+  region?: string;
+  /** Transient. Dev only: forces the weather, for screenshots and tests. */
+  weatherOverride?: import('../content/balance/time').Weather;
   /** Transient. Chunk streaming state, or absent when the whole map is resident (tests). */
   stream?: StreamState | null;
 }
