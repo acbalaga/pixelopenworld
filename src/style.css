@@ -789,7 +789,8 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* `safe` keeps the top reachable when a long form (the setup screen) overflows. */
+  justify-content: safe center;
   gap: calc(var(--px) * 6);
   padding: calc(env(safe-area-inset-top, 0px) + var(--px) * 4)
     calc(env(safe-area-inset-right, 0px) + var(--px) * 4)
@@ -944,6 +945,7 @@ canvas {
   font-size: 1.4em;
 }
 .pow-setup {
+  margin-block: auto;
   width: min(100%, 30rem);
   display: flex;
   flex-direction: column;
