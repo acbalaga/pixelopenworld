@@ -40,6 +40,29 @@ test.describe('portrait', () => {
     expect(problems.pageErrors).toEqual([]);
   });
 
+  test('the preview stays pinned on screen while the options scroll, and shows each change', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 640 });
+    await toSetup(page);
+    const preview = page.getByRole('img', { name: 'Preview of your character' });
+    const topBefore = (await preview.boundingBox())!.y;
+    // Scroll the form to its very bottom: the preview is still inside the screen.
+    await page.locator('.pow-front').evaluate((el) => (el.scrollTop = el.scrollHeight));
+    await page.waitForTimeout(150);
+    const box = (await preview.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(640);
+    expect(box.y).toBeLessThanOrEqual(topBefore);
+    // From down there a choice still changes the pinned preview.
+    const grab = (): Promise<Buffer> => preview.screenshot();
+    const before = await grab();
+    await page.getByRole('button', { name: 'Randomize', exact: true }).click();
+    await page.waitForTimeout(150);
+    expect((await grab()).equals(before)).toBe(false);
+    await shot(page, 'setup-preview-pinned');
+  });
+
   test('an origin narrows where the character wakes, and its first line shows', async ({
     page,
   }) => {
