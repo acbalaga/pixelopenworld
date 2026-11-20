@@ -23,6 +23,8 @@ export interface RoamerDef {
    * from the last back to the first (its `arrive` taken as a minute of the next day).
    */
   stops: readonly RoamStop[];
+  /** Minutes to find, read and beat or avoid it, for the pacing ledger (M4-12). */
+  estMinutes: number;
 }
 
 export const ROAMERS: Readonly<Record<string, RoamerDef>> = {
@@ -36,6 +38,7 @@ export const ROAMERS: Readonly<Record<string, RoamerDef>> = {
     creature: 'creature.hollowhorn',
     region: 'dawnmeadow',
     spawner: 'spawner.hollowhorn',
+    estMinutes: 30,
     stops: [
       { x: 2, y: 47, arrive: 2, leave: 8 },
       { x: 29, y: 43, arrive: 14, leave: 20 },

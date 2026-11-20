@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "bench": "vitest run --config vitest.bench.config.ts",
-    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:dev && npm run check:seal && npm run check:pwa && npm run check:prod && npm run check:deps",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:dev && npm run check:seal && npm run check:pwa && npm run check:prod && npm run check:pacing && npm run check:deps",
     "bake": "tsx tools/bake-assets/index.ts",
     "bake:check": "tsx tools/bake-assets/index.ts --check",
     "bake:world": "tsx tools/bake-world/index.ts",
@@ -34,7 +34,9 @@
     "doll-sheet": "tsx tools/doll-sheet/index.ts",
     "sim-bot": "tsx tools/sim-bot/index.ts",
     "balance:ci": "tsx tools/fight-sim/index.ts --seeds 20 --check --no-write && tsx tools/fight-sim/rootway.ts --seeds 40 --check --no-write && tsx tools/sim-bot/index.ts --minutes 20 --cap 120 --check --no-write",
-    "fight-sim:rootway": "tsx tools/fight-sim/rootway.ts"
+    "fight-sim:rootway": "tsx tools/fight-sim/rootway.ts",
+    "pacing": "tsx tools/pacing-ledger/index.ts",
+    "check:pacing": "tsx tools/pacing-ledger/index.ts --check --no-write"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",
