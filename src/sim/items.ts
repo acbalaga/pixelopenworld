@@ -15,6 +15,7 @@ import { learnTechnique } from './combat/techniques';
 import { int, next, type Rng } from './kernel/rng';
 import { recomputePools } from './skills';
 import { applyStatus, clearStatus, statusesOf } from './statuses';
+import { feedCreature } from './creatureFeed';
 import { useGadget } from './gadgets';
 import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { activeMods, applyMods, modPct, stackMods } from './mods';
@@ -478,6 +479,9 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
         !readManual(state, who, c.slot)
       )
         useGadget(state, who, c.slot);
+      return;
+    case 'feed':
+      feedCreature(state, who, c.slot);
       return;
     case 'drop':
       dropFromBag(state, who, c.slot);

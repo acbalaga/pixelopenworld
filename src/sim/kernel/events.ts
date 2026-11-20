@@ -67,6 +67,10 @@ export type SimEvent =
   | { type: 'creatureWarn'; id: number; target: number }
   /** A creature acted on its temperament in front of `target`. The Bestiary stores the first (M4-05). */
   | { type: 'temperamentSeen'; id: number; target: number; kind: string; temperament: string }
+  /** The avatar `who` fed `item` to creature `id`, which is now calm. */
+  | { type: 'creatureFed'; who: number; id: number; kind: string; item: string }
+  /** The avatar `who` made a friend of creature `id` of `kind` (fed, soothed). The Bestiary opens the entry. */
+  | { type: 'befriended'; who: number; id: number; kind: string }
   | { type: 'leashReset'; id: number }
   /** A burrower went under, or rose to strike. */
   | { type: 'burrowed'; id: number }

@@ -16,6 +16,24 @@ export const UI_STRINGS = {
   },
   sleepHere: 'Sleep here',
   chronicleEmpty: 'Nothing is written here yet.',
+  /** The Bestiary section of the Chronicle (M4-05). Entries open on a first kill or a first friend. */
+  bestiary: {
+    title: 'Bestiary',
+    count: '{n} of {total} creatures known',
+    kills: 'Defeated {n}',
+    befriended: 'Befriended',
+    seen: 'Seen to be: {list}',
+    notSeen: 'Temperament not yet seen',
+    /** What a creature does, by temperament, once the avatar has seen it act that way. */
+    temperament: {
+      hostile: 'Hostile',
+      territorial: 'Territorial',
+      defensive: 'Defensive',
+      skittish: 'Skittish',
+      passive: 'Passive',
+      curious: 'Curious',
+    },
+  },
   pathsTitle: 'Paths',
   pathsWorn: 'Worn',
   pathsShown: 'Shown as your title',
@@ -94,7 +112,7 @@ export const UI_STRINGS = {
   detailNone: 'Choose an item to see what it does.',
   detailValue: 'Worth {n} coin',
   detailStack: 'Carrying {n}',
-  actions: { use: 'Use', equip: 'Wear', drop: 'Hold to drop' },
+  actions: { use: 'Use', equip: 'Wear', feed: 'Feed', drop: 'Hold to drop' },
   /** The Use button, by what the item is: food is eaten, scrolls and manuals are read. */
   useVerb: { eat: 'Eat', read: 'Read', use: 'Use' },
   dropping: 'Keep holding to drop',

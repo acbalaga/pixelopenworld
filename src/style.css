@@ -2061,3 +2061,29 @@ canvas {
   border-left: calc(var(--px) * 1) solid var(--pal-47);
   overflow-wrap: anywhere;
 }
+
+.pow-bestiary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 3);
+}
+.pow-bestiary-count {
+  margin: 0 0 calc(var(--px) * 3);
+  color: var(--pal-3);
+}
+.pow-bestiary-row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+  padding: calc(var(--px) * 3);
+  color: var(--pal-3);
+  background: var(--pal-17);
+  border-left: calc(var(--px) * 1) solid var(--pal-47);
+  overflow-wrap: anywhere;
+}
+.pow-bestiary-name {
+  font-weight: bold;
+}

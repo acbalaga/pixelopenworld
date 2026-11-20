@@ -116,6 +116,8 @@ function react(
   target: EntityId,
   homePx: Vec,
 ): void {
+  // A creature that has been fed notices nothing until it is hit or the calm wears off.
+  if (ai.calmUntil !== undefined && state.worldTick < ai.calmUntil) return;
   // A guard lets go of anything that stands beyond its tether, so it never starts that chase.
   if (def.archetype === 'guard' && beyondTether(state, def, target, homePx)) return;
   const base = temperamentNow(def, state.worldTick, provenTierOf(state, target));

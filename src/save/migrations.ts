@@ -640,6 +640,18 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     for (const j of raw.entities.comps.journal) if (j) j.singulars = {};
     return { ...old, schema: 26, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 26 to 27 (M4-05): the journal gains `bestiary`, what the avatar has learned of each creature.
+   * It starts empty. Kills are read from the ledger, so a character who has already killed things
+   * finds those entries open.
+   */
+  26: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { journal: ({ bestiary?: unknown } | null)[] } };
+    };
+    for (const j of raw.entities.comps.journal) if (j) j.bestiary = {};
+    return { ...old, schema: 27, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

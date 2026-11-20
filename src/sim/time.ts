@@ -24,6 +24,18 @@ export function dayPhase(tick: number): DayPhase {
   return TIME.phases[0].phase;
 }
 
+/** The minute of the in-game day (0 up to the length of the day) a tick falls on. Day 1 starts at 0. */
+export function minuteOfDay(tick: number): number {
+  const cycleTicks = CYCLE_MIN * TIME.ticksPerMinute;
+  return (
+    (((tick + TIME.startMinute * TIME.ticksPerMinute) % cycleTicks) / TIME.ticksPerMinute) %
+    CYCLE_MIN
+  );
+}
+
+/** Minutes in one in-game day. */
+export const DAY_MINUTES = CYCLE_MIN;
+
 /** The in-game day a tick falls in. A new day begins at dawn. Shops restock on it. */
 export function dayIndex(tick: number): number {
   const cycleTicks = CYCLE_MIN * TIME.ticksPerMinute;

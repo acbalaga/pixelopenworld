@@ -18,7 +18,7 @@ import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { BUILDS } from './builds';
 import { DEVIATIONS } from './deviations';
 import { fight, type FightResult, type FightStart } from './harness';
-import { BANDS, PAR_TIER, ROLES, TARGETS } from './targets';
+import { BANDS, PAR_TIER, ROLES, STEP_OF, TARGETS } from './targets';
 
 const arg = (name: string): string | undefined => {
   const i = process.argv.indexOf(name);
@@ -65,12 +65,15 @@ const pct = (xs: number[], p: number): number | null => {
 };
 const mean = (xs: number[]): number => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 
-/** How many of a creature a spawner keeps standing together: the pack a player meets. */
+/**
+ * How many of a creature a spawner keeps standing together: the pack a player meets. Zone spawners
+ * (M4-05, they carry a `step`) are the open land's own and are not the outside packs this measures.
+ */
 const packOf = (creature: string): number =>
   Math.max(
     1,
     ...Object.values(SPAWNERS)
-      .filter((sp) => sp.creature === creature)
+      .filter((sp) => sp.creature === creature && sp.step === undefined)
       .map((sp) => sp.cap),
   );
 
@@ -78,7 +81,7 @@ const cells: Cell[] = [];
 const cell = (b: (typeof BUILDS)[number], tier: 1 | 2, creature: string, count: number): void => {
   const rank = par[tier] as number;
   const results = Array.from({ length: SEEDS }, (_, i) =>
-    fight(b, tier, rank, creature, i + 1, count, START),
+    fight(b, tier, rank, creature, i + 1, count, START, STEP_OF[creature]),
   );
   const won = results.filter((r) => r.ttk !== null).map((r) => r.ttk as number);
   cells.push({
@@ -152,7 +155,9 @@ const deviations = cells.filter((c) => atPar(c) && !inBand(c));
 const unlisted = deviations.filter((c) => !listed(c));
 const deaths = cells.reduce((n, c) => n + c.deaths, 0);
 /** Deaths of a prepared character against one common creature: the fight a player is meant to win. */
-const parCommon = cells.filter((c) => atPar(c) && ROLES[c.creature] === 'common');
+const parCommon = cells.filter(
+  (c) => atPar(c) && (ROLES[c.creature] === 'common' || ROLES[c.creature] === 'critter'),
+);
 const commonDeaths = parCommon.reduce((n, c) => n + c.deaths, 0);
 const commonFights = parCommon.reduce((n, c) => n + c.results.length, 0);
 const fights = cells.reduce((n, c) => n + c.results.length, 0);

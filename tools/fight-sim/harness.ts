@@ -2,6 +2,7 @@ import { ATTACKS, WEAPONS } from '../../src/content/combat/attacks';
 import { TECHNIQUES } from '../../src/content/combat/techniques';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnCreature } from '../../src/sim/combat/enemy';
+import { applyStep } from '../../src/sim/systems/spawner';
 import { assign, learnTechnique } from '../../src/sim/combat/techniques';
 import { equip, give } from '../../src/sim/items';
 import type { Command } from '../../src/sim/kernel/commands';
@@ -100,6 +101,7 @@ export function fight(
   seed: number,
   count = 1,
   start: FightStart = 'engaged',
+  step?: 'a' | 'b' | 'c',
 ): FightResult {
   const all = CREATURES as Record<string, CreatureDef>;
   const real = all[creature] as CreatureDef;
@@ -114,7 +116,7 @@ export function fight(
     };
   }
   try {
-    return fightOnce(build, tier, rank, creature, seed, count, start);
+    return fightOnce(build, tier, rank, creature, seed, count, start, step);
   } finally {
     all[creature] = real;
   }
@@ -128,6 +130,7 @@ function fightOnce(
   seed: number,
   count: number,
   start: FightStart,
+  step?: 'a' | 'b' | 'c',
 ): FightResult {
   const s = createDemoState(seed, 0);
   // Time-to-kill targets are for clear weather. Weather has its own tests (M4-09).
@@ -154,6 +157,7 @@ function fightOnce(
   for (let k = 0; k < count; k++) {
     const dy = (k - (count - 1) / 2) * 20;
     const id = spawnCreature(s, creature, 30 * 16 + 8 + gap + (k % 2) * 10, 30 * 16 + 14 + dy, -1);
+    if (step) applyStep(s, id, step);
     foes.push(id);
     // Engaged: already on the avatar, as the par numbers assume.
     const brain = s.entities.comps.ai[id];

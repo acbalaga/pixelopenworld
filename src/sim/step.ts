@@ -7,6 +7,7 @@ import type { SimState } from './state';
 import { applyAvatarCommand } from './avatar';
 import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
+import { roamSystem } from './systems/roamers';
 import { spawnerSystem } from './systems/spawner';
 import { streamSystem } from './world/stream';
 import { dungeonSystem } from './systems/dungeon';
@@ -17,6 +18,7 @@ import { projectileSystem } from './systems/projectile';
 import { hintsSystem } from './systems/hints';
 import { boardsSystem } from './systems/boards';
 import { mapSystem } from './systems/map';
+import { bestiarySystem } from './systems/bestiary';
 import { singularsSystem } from './systems/singulars';
 import { requestsSystem } from './systems/requests';
 import { fixturesSystem } from './systems/fixtures';
@@ -53,6 +55,7 @@ export function step(state: SimState, input: TickInput): number {
 export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   streamSystem,
   spawnerSystem,
+  roamSystem,
   aiSystem,
   combatSystem,
   movementSystem,
@@ -81,6 +84,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   pathsSystem,
   mapSystem,
   singularsSystem,
+  bestiarySystem,
 ];
 
 /** Advances a world with an avatar (entity `who`) one tick. Returns rejected command count. */

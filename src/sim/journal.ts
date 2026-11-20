@@ -21,6 +21,7 @@ export function newJournal(): Journal {
     tradeCoin: {},
     pinned: null,
     singulars: {},
+    bestiary: {},
   };
 }
 
