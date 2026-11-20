@@ -10,7 +10,7 @@ import { spawnCreature } from '../sim/combat/enemy';
 import type { Command } from '../sim/kernel/commands';
 import { addItem, countItem } from '../sim/items';
 import { earnCoin, madeItems } from '../sim/ledger';
-import { getComp, type EntityId } from '../sim/kernel/entities';
+import { getComp, query, type EntityId } from '../sim/kernel/entities';
 import { addXp, offerTrial, passTrial } from '../sim/skills';
 import type { SimState } from '../sim/state';
 import type { StatusId } from '../content/combat/statuses';
@@ -65,6 +65,8 @@ export interface PowDevApi {
   statuses(ids: string[]): void;
   /** An element hits the world at a tile, as a bolt would. For screenshots of the set pieces. */
   element(element: string, tx: number, ty: number): void;
+  /** Sets every living creature's Health to a percent of its maximum. For screenshots of boss phases. */
+  foeHp(pct: number): void;
 }
 
 const TILE = 16;
@@ -137,6 +139,13 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     },
     learn(technique) {
       learnTechnique(state, who, technique);
+    },
+    foeHp(pct) {
+      for (const id of query(state.entities, 'fighter', 'pools')) {
+        const f = getComp(state.entities, id, 'fighter');
+        const p = getComp(state.entities, id, 'pools');
+        if (f?.team === 1 && p) p.hp = Math.max(1, Math.round((p.hpMax * pct) / 100));
+      }
     },
     deed(id, n) {
       const d = getComp(state.entities, who, 'deeds');
