@@ -95,6 +95,7 @@ function hearthford(): StampV2 {
   b.building(41, 5, 9, 5, { roof: 'red', door: 4, label: 'carpentry facade' });
   part('carpentry', 'craft_row', 41, 5, 9, 5);
   b.place('fixture.workbench', 43, 10);
+  b.place('npc.carpenter', 46, 10);
   b.building(31, 14, 9, 5, { roof: 'red', door: 4, label: 'tailor facade' });
   part('tailor', 'craft_row', 31, 14, 9, 5);
   b.place('fixture.loom', 33, 19);
@@ -106,6 +107,7 @@ function hearthford(): StampV2 {
   b.building(18, 14, 8, 5, { roof: 'red', door: 3, label: "tinker's shed facade" });
   part('tinker_shed', 'craft_row', 18, 14, 8, 5);
   b.place('fixture.tinker_bench', 20, 19);
+  b.place('npc.tinker', 22, 19);
 
   // The rune house and Wren's study.
   b.building(3, 15, 12, 5, { roof: 'slate', door: 5, label: 'rune house facade' });
@@ -117,6 +119,7 @@ function hearthford(): StampV2 {
   // The bell tower: the reeve's house, tall enough to see from two chunks away.
   b.building(20, 2, 6, 10, { roof: 'slate', door: 2, label: 'bell tower' });
   part('bell_tower', 'home', 20, 2, 6, 10);
+  b.place('npc.reeve', 22, 12);
 
   // The guard yard: a fenced yard south of the west street, with the training dummy and a rack.
   b.rect(2, 31, 13, 8, Terrain.Dirt);

@@ -1,0 +1,53 @@
+/**
+ * Where people spend their hours (POW-M4-12, regions/01-dawnmeadow sections 4 and 9). A place is a
+ * named spot in a settlement or the countryside. Hearthford's places are the parts of its layout
+ * (`TOWN_PARTS`), so the same name means the same rectangle; a test holds them to that. Data only.
+ */
+export interface PlaceDef {
+  id: string;
+  /** The settlement or area it is in. */
+  area: 'hearthford' | 'millbrook' | 'reedmouth' | 'stonecrop' | 'cairnmoor' | 'wayside';
+  /** Indoors places shelter from weather. */
+  indoors: boolean;
+  /** The stamp part that makes up a Hearthford place. Absent for the rest. */
+  part?: string;
+}
+
+const hearth = (id: string, part: string, indoors: boolean): PlaceDef => ({
+  id: `hearthford.${id}`,
+  area: 'hearthford',
+  indoors,
+  part,
+});
+const at = (id: string, area: PlaceDef['area'], indoors: boolean): PlaceDef => ({
+  id,
+  area,
+  indoors,
+});
+
+export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
+  [
+    hearth('square', 'square', false),
+    hearth('market_street', 'market_street', false),
+    hearth('brin_shop', 'brin_shop', true),
+    hearth('smithy', 'smithy', true),
+    hearth('carpentry', 'carpentry', true),
+    hearth('tailor', 'tailor', true),
+    hearth('apothecary', 'apothecary', true),
+    hearth('tinker_shed', 'tinker_shed', true),
+    hearth('rune_house', 'rune_house', true),
+    hearth('bell_tower', 'bell_tower', true),
+    hearth('guard_yard', 'guard_yard', false),
+    hearth('inn', 'inn', true),
+    at('millbrook.mill', 'millbrook', true),
+    at('millbrook.farm_one', 'millbrook', true),
+    at('millbrook.fields', 'millbrook', false),
+    at('reedmouth.jetty', 'reedmouth', false),
+    at('reedmouth.hut', 'reedmouth', true),
+    at('stonecrop.quarry', 'stonecrop', false),
+    at('stonecrop.foreman_tent', 'stonecrop', true),
+    at('cairnmoor.well', 'cairnmoor', false),
+    at('cairnmoor.shelter', 'cairnmoor', true),
+    at('wayside.chapel', 'wayside', true),
+  ].map((p) => [p.id, p]),
+);

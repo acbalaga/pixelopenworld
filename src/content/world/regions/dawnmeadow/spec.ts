@@ -161,6 +161,8 @@ const placements: Placement[] = [
   stamp('cairn_ring', 44, 44),
   // Hollowhorn's spawner, at the middle of its route on Cairnmoor (creatures/roamers.ts).
   { kind: 'spawner.hollowhorn', x: 19, y: 54 },
+  // Old Fen keeps to the well on Cairnmoor, away from Hollowhorn's grazing (creatures/roamers.ts).
+  { kind: 'npc.hermit', x: 12, y: 36 },
   stamp('chapel', 171, 262),
   stamp('lean_to', 76, 176),
   stamp('shepherd_hut', 108, 232),
