@@ -5,6 +5,7 @@ import { DAWNMEADOW_CLUSTERS } from './clusters';
 import { MOUTHS } from '../../dungeons/mouths';
 import { DEEPS_MOUTH } from '../../dungeons/deeps';
 import { UNDERMILL_MOUTH } from '../../dungeons/undermill';
+import { CLIMB_TOP, LANDING, LANDING_SPOTS } from '../../dungeons/west';
 import { BUILT_DUNGEONS } from '../../dungeons/registry';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
@@ -185,6 +186,10 @@ const placements: Placement[] = [
   // mouths, with a stamp to mark each mini-dungeon's.
   ...BUILT_DUNGEONS.flatMap((d) => d.placements().map((r) => stamp(r.stamp, r.x, r.y))),
   ...BUILT_DUNGEONS.flatMap((d) => d.outside().map((o) => at(o.kind, o.x, o.y))),
+  // The closed yard at the far west, and the ends of the climb.
+  stamp(LANDING.stamp, LANDING.x, LANDING.y),
+  at('fixture.fc_top', CLIMB_TOP.x, CLIMB_TOP.y),
+  at('fixture.wl_climb', LANDING_SPOTS.climb.x, LANDING_SPOTS.climb.y),
   stamp(UNDERMILL_MOUTH.stamp, UNDERMILL_MOUTH.x, UNDERMILL_MOUTH.y),
   stamp(DEEPS_MOUTH.stamp, DEEPS_MOUTH.x, DEEPS_MOUTH.y),
   ...Object.values(MOUTHS).flatMap((m) => (m.stamp ? [stamp(m.stamp, m.x, m.y)] : [])),

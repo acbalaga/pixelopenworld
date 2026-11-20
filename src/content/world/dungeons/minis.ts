@@ -11,6 +11,7 @@
 import type { FixtureDef } from '../fixtures';
 import { defineDungeon, type DoorSpec, type RoomSpec } from './build';
 import { MOUTHS } from './mouths';
+import { LANDING_SPOTS } from './west';
 import type { DungeonEdge } from './types';
 
 export const MINI_CELL = 16;
@@ -197,8 +198,8 @@ const m2 = mini({
     {
       room: 's3',
       tile: { x: 1, y: 3 },
-      // West of the Thornwall gorge, in Fernside's trees: the badger tunnels' far side.
-      at: { x: 20, y: 162 },
+      // The badger tunnels' far side: the closed yard on the west edge.
+      at: LANDING_SPOTS.tunnel,
       kind: 'fixture.m2_back',
       outKind: 'fixture.m2_back_out',
     },
