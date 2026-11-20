@@ -283,13 +283,12 @@ describe('the discoverable check (M4-11)', () => {
   const land = (spec: RegionSpec): string[] =>
     validateRegion(spec, files).filter((e) => e.includes('chunk'));
   // The region as it stood before the node clusters: the chunks they cover are pending again.
-  const clusterChunks = [
-    ...new Set(
-      DAWNMEADOW_CLUSTERS.map(
-        (c) => `${Math.floor(c.x / CHUNK_TILES)},${Math.floor(c.y / CHUNK_TILES)}`,
-      ),
-    ),
-  ];
+  const chunkOf = (p: { x: number; y: number }): string =>
+    `${Math.floor(p.x / CHUNK_TILES)},${Math.floor(p.y / CHUNK_TILES)}`;
+  const poiChunks = new Set((DAWNMEADOW.pois ?? []).map(chunkOf));
+  const clusterChunks = [...new Set(DAWNMEADOW_CLUSTERS.map(chunkOf))].filter(
+    (k) => !poiChunks.has(k),
+  );
   const bare: RegionSpec = {
     ...DAWNMEADOW,
     placements: DAWNMEADOW.placements.filter((p) => !DAWNMEADOW_CLUSTERS.includes(p)),
@@ -300,7 +299,7 @@ describe('the discoverable check (M4-11)', () => {
     expect(DAWNMEADOW.pendingDiscoverables ?? []).toEqual([]);
     expect(land(DAWNMEADOW)).toEqual([]);
     expect(land(bare)).toEqual([]);
-    expect(clusterChunks.length).toBeGreaterThan(60);
+    expect(clusterChunks.length).toBeGreaterThan(50);
   });
 
   it('puts a cluster of at least two nodes of different kinds in each chunk it covers', () => {

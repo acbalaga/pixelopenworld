@@ -192,6 +192,8 @@ const placements: Placement[] = [
   // The manual chests, each at the place of interest that holds it (POW-M4-11). The two in the
   // Rootway are placed by its own rooms.
   ...DAWNMEADOW_POIS.flatMap((p) => (p.manual ? [at(poiChest(p.manual), p.x, p.y)] : [])),
+  // The places of interest that have a shape of their own.
+  ...DAWNMEADOW_POIS.flatMap((p) => (p.stamp ? [stamp(p.stamp.id, p.stamp.x, p.stamp.y)] : [])),
 
   // Gathering nodes round the Commons and the rises.
   at('node.oak_tree', 150, 160),

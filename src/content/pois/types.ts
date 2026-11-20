@@ -21,4 +21,6 @@ export interface PoiDef {
    * manual is a second source of its technique that can be found without a teacher.
    */
   manual?: string;
+  /** A stamp that gives the place its shape, at its top left in region tiles. */
+  stamp?: { id: string; x: number; y: number };
 }
