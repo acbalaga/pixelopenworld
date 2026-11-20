@@ -1,4 +1,5 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
+import { FRAGMENT_SLOTS, fragmentMarker } from '../../../pois/fragments';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
 import { DAWNMEADOW_CLUSTERS } from './clusters';
 import { MOUTHS } from '../../dungeons/mouths';
@@ -216,6 +217,9 @@ const placements: Placement[] = [
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
+
+  // Lore fragment slots: empty markers (content arrives in M10).
+  ...FRAGMENT_SLOTS.flatMap((f) => (f.at ? [at(fragmentMarker(f.id), f.at.x, f.at.y)] : [])),
 
   // A node cluster in every land chunk with no other discoverable (POW-M4-11).
   ...DAWNMEADOW_CLUSTERS,
