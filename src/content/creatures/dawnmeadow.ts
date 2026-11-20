@@ -9,13 +9,13 @@ import type { CreatureDef, DropDef } from './types';
  * tier minimum. Temperament decides who starts a fight (design/04, D20).
  */
 
-const drop = (item: string, chance: number, min = 1, max = min): DropDef => ({
+export const drop = (item: string, chance: number, min = 1, max = min): DropDef => ({
   item,
   chance,
   min,
   max,
 });
-const coin = (chance: number, min: number, max = min): DropDef =>
+export const coin = (chance: number, min: number, max = min): DropDef =>
   drop('item.coin', chance, min, max);
 
 /** What every entry shares unless it says otherwise. */
@@ -25,7 +25,7 @@ const base = {
   staggerMax: 30,
 } as const;
 
-function make(
+export function make(
   c: Omit<CreatureDef, 'tier' | 'wander' | 'staggerMax' | 'sounds' | 'sprite'> & {
     tier?: number;
     wander?: boolean;

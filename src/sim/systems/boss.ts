@@ -4,7 +4,7 @@
  * creature with a `boss` component, so every combat rule still applies to it.
  */
 import { BOSSES } from '../../content/creatures/bosses';
-import type { BossDef, ObjectiveDone } from '../../content/creatures/bosses/types';
+import type { BossDef, ObjectiveDone, Summon } from '../../content/creatures/bosses/types';
 import { centerPx, kill, startAttack } from '../combat/fighter';
 import { len } from '../combat/geometry';
 import { spawnCreature } from '../combat/enemy';
@@ -18,10 +18,16 @@ import type { SimState } from '../state';
 const TILE = 16;
 
 /** Places a boss and its creature at a feet position in whole px. */
-export function spawnBoss(state: SimState, bossId: string, xPx: number, yPx: number): EntityId {
+export function spawnBoss(
+  state: SimState,
+  bossId: string,
+  xPx: number,
+  yPx: number,
+  spawner = -1,
+): EntityId {
   const def = BOSSES[bossId];
   if (!def) throw new Error(`unknown boss ${bossId}`);
-  const id = spawnCreature(state, def.creature, xPx, yPx);
+  const id = spawnCreature(state, def.creature, xPx, yPx, spawner);
   setComp(state.entities, id, 'boss', {
     id: bossId,
     phase: 0,
@@ -69,6 +75,25 @@ function stepDone(state: SimState, done: ObjectiveDone, who: EntityId | null): b
   }
   const inv = who === null ? undefined : getComp(state.entities, who, 'inventory');
   return !!inv && countItem(inv, done.item) >= done.qty;
+}
+
+/** Calls a phase's creatures in a ring around the boss, on open ground where there is any. */
+function summon(state: SimState, id: EntityId, call: Summon): void {
+  const at = centerPx(state, id);
+  if (!at) return;
+  for (let k = 0; k < call.count; k++) {
+    const turn = (k / call.count) * Math.PI * 2;
+    const x = Math.round(at.x + Math.cos(turn) * call.radius * TILE);
+    const y = Math.round(at.y + Math.sin(turn) * call.radius * TILE) + 4;
+    const solid = state.world?.solidAt(Math.floor(x / TILE), Math.floor((y - 4) / TILE)) ?? 0;
+    const c = spawnCreature(
+      state,
+      call.creature,
+      solid !== 0 ? Math.round(at.x) : x,
+      solid !== 0 ? Math.round(at.y) + 8 : y,
+    );
+    emit(state.events, { type: 'spawned', id: c, creature: call.creature });
+  }
 }
 
 /** Marks the hazards' tiles that hurt now, and hurts an avatar standing on one. */
@@ -137,6 +162,8 @@ export function bossSystem(state: SimState): void {
       b.phaseTick = state.tick;
       b.hazardHit = false;
       emit(state.events, { type: 'bossPhase', id, boss: def.id, phase: target });
+      const call = def.phases[target]?.summon;
+      if (call) summon(state, id, call);
     }
     const phase = def.phases[b.phase];
     if (!phase) continue;

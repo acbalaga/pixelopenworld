@@ -1,10 +1,12 @@
 import { DAWNMEADOW_CREATURES } from './dawnmeadow';
+import { ROOTWAY_CREATURES } from './rootway';
 import type { CreatureDef, SpawnerDef } from './types';
 import { zoneSpawners } from './zoneSpawners';
 
 /** The tier 1 creatures and the cave miniboss. Telegraph times come from their attacks. */
 export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   ...DAWNMEADOW_CREATURES,
+  ...ROOTWAY_CREATURES,
   /** The par common enemy (design/04): time to kill 4 to 8 seconds. A Chaser. */
   'creature.mossling': {
     id: 'creature.mossling',
@@ -301,6 +303,24 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     creature: 'creature.hollowhorn',
     cap: 1,
     respawn: 1,
+    radius: 0,
+    daily: true,
+  },
+  /** The Rootway's Old Bramblehide: the boss, with its two phases. Back the next in-game day (M4-21). */
+  'spawner.rw_bramblehide': {
+    kind: 'spawner.rw_bramblehide',
+    creature: 'creature.old_bramblehide',
+    cap: 1,
+    respawn: 1,
+    radius: 0,
+    daily: true,
+    boss: 'boss.old_bramblehide',
+  },
+  'spawner.rw_glowcap': {
+    kind: 'spawner.rw_glowcap',
+    creature: 'creature.glowcap',
+    cap: 1,
+    respawn: 600,
     radius: 0,
     daily: true,
   },

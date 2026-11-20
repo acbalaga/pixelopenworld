@@ -180,6 +180,9 @@ function removeFoe(state: SimState, id: EntityId): void {
   destroy(state.entities, id);
 }
 
+/** Journal flag for a boss brought down: `cleared:<boss id>`. */
+export const BOSS_CLEARED = 'cleared:';
+
 /** Delving events: the first entry of each dungeon room, and a dungeon cleared by its boss falling. */
 function delving(state: SimState): void {
   for (const e of state.events.list) {
@@ -194,8 +197,13 @@ function delving(state: SimState): void {
     if (e?.type !== 'bossResolved') continue;
     const dungeon = Object.values(DUNGEONS).find((d) => d.boss === e.boss);
     if (!dungeon) continue;
-    for (const who of query(state.entities, 'avatar'))
+    for (const who of query(state.entities, 'avatar')) {
+      // The boss's chest and any other `needsFlag` thing opens for those who were there.
+      const flags = getComp(state.entities, who, 'journal')?.flags;
+      const flag = `${BOSS_CLEARED}${e.boss}`;
+      if (flags && !flags.includes(flag)) flags.push(flag);
       emit(state.events, { type: 'dungeonCleared', who, dungeon: dungeon.id });
+    }
   }
 }
 

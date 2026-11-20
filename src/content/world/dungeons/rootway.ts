@@ -7,8 +7,7 @@
  *
  * The data is the room graph the validator reads. `rootwayFixtures` and `rootwayRooms` turn it into
  * the portals, arrival markers and camera rooms the game needs, and `ROOTWAY_STAMPS` into the
- * stamps the region places. Part one of the ticket: the layout and the plumbing. The Root Grub,
- * the Glowcap, the two phase boss and the tuning are part two, so some rooms hold stand-ins.
+ * stamps the region places.
  */
 import type { FixtureDef, RoomDef } from '../fixtures';
 import type { StampV2 } from '../../../sim/world/stamp';
@@ -76,8 +75,10 @@ const SPECS: readonly RoomSpec[] = [
     w: 18,
     h: 7,
     objects: [
-      // The sleeping boar in the passage, and the Hide manual past it.
+      // The sleeping boar in the passage, and what lies past it: the patrol's satchel (the guard's
+      // request) and the Hide manual.
       { x: 9, y: 3, kind: 'spawner.bramble_boar' },
+      { x: 12, y: 5, kind: 'fixture.satchel' },
       { x: 15, y: 5, kind: 'fixture.chest_manual_hide' },
     ],
   },
@@ -89,9 +90,9 @@ const SPECS: readonly RoomSpec[] = [
     h: 12,
     // Unlit: only telegraphs show until a torch is lit or a lantern is carried.
     objects: [
-      { x: 6, y: 3, kind: 'spawner.spitbloom' },
-      { x: 12, y: 8, kind: 'spawner.spitbloom' },
-      { x: 15, y: 3, kind: 'spawner.spitbloom' },
+      { x: 6, y: 3, kind: 'spawner.rw_glowcap' },
+      { x: 12, y: 8, kind: 'spawner.rw_glowcap' },
+      { x: 15, y: 3, kind: 'spawner.rw_glowcap' },
       { x: 10, y: 2, kind: 'fixture.torch' },
     ],
     extra: { dark: true },
@@ -154,7 +155,7 @@ const SPECS: readonly RoomSpec[] = [
     w: 20,
     h: 14,
     objects: [
-      { x: 10, y: 5, kind: 'spawner.old_bramblehide' },
+      { x: 10, y: 5, kind: 'spawner.rw_bramblehide' },
       { x: 18, y: 2, kind: 'fixture.rw_chest_den' },
     ],
   },
@@ -243,6 +244,7 @@ export const ROOTWAY: DungeonDef = {
   // Skills a character at this cave's tier has. Heavy Arms is for the secret only.
   skills: ['skill.stealth', 'skill.athletics', 'skill.heavy_arms'],
   entrance: 'r1',
+  boss: 'boss.old_bramblehide',
   rooms: SPECS.map(room),
   edges: EDGES,
 };
@@ -373,8 +375,7 @@ export function rootwayParts(): FixtureDef[] {
       size: 16,
       key: 'item.root_key',
     },
-    // The snare chamber: a gate behind the avatar, and what comes from the floor. Stand-ins for
-    // the Root Grubs (part two).
+    // The snare chamber: a gate behind the avatar, and what comes from the floor.
     {
       kind: 'fixture.rw_arena_door',
       type: 'gate',
@@ -389,7 +390,7 @@ export function rootwayParts(): FixtureDef[] {
         radius: 40,
         doors: ['fixture.rw_arena_door'],
         waves: [
-          { creature: 'creature.mossling', count: 3 },
+          { creature: 'creature.root_grub', count: 3 },
           { creature: 'creature.bramble_boar', count: 1 },
         ],
       },
@@ -401,6 +402,8 @@ export function rootwayParts(): FixtureDef[] {
       sprite: 'prop.chest',
       size: 12,
       loot: { items: [{ item: 'item.herbed_skewer', qty: 2 }], coin: 60 },
+      // Shut for anyone who fled past the boss to the drop.
+      needsFlag: 'cleared:boss.old_bramblehide',
     },
     {
       kind: 'fixture.rw_chest_heart',

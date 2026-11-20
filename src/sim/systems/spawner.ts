@@ -1,6 +1,7 @@
 import { SPAWNERS } from '../../content/creatures';
 import { SPAWNS } from '../../content/balance/world';
 import { spawnCreature } from '../combat/enemy';
+import { spawnBoss } from './boss';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { px, SUBPX } from '../kernel/fixed';
@@ -71,7 +72,9 @@ export function spawnerSystem(state: SimState): void {
         (def.radius > 0 ? int(state.rng.world, -def.radius, def.radius + 1) : 0);
       if (state.world && state.world.solidAt(Math.floor(x / 16), Math.floor((y - 4) / 16)) !== 0)
         continue;
-      const c = spawnCreature(state, def.creature, x, y, id);
+      const c = def.boss
+        ? spawnBoss(state, def.boss, x, y, id)
+        : spawnCreature(state, def.creature, x, y, id);
       if (def.step) applyStep(state, c, def.step);
       sp.members.push(c);
       sp.timer = 0;
