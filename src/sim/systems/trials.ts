@@ -85,6 +85,7 @@ function onDamageDealt(
       p.bad = [...new Set([...(p.bad ?? []), e.dst])];
     }
     if (!dead) continue;
+    if (o.phases && !o.phases.includes(dayPhase(state.worldTick))) continue;
     const tainted = p.bad?.includes(e.dst) ?? false;
     if (p.bad) p.bad = p.bad.filter((x) => x !== e.dst);
     if (tainted || (o.creature !== undefined && target?.kind !== o.creature)) continue;
@@ -176,6 +177,24 @@ export function advanceTracked(
       return;
     case 'parried':
       if (e.who === who) perform(state, who, list, 'parry');
+      return;
+    case 'haggleWon':
+      if (e.who === who) perform(state, who, list, 'haggle');
+      return;
+    case 'sleptOutdoors':
+      if (e.who === who) perform(state, who, list, 'sleepOutdoors');
+      return;
+    case 'manualRead':
+      if (e.who === who) perform(state, who, list, 'readManual');
+      return;
+    case 'revealed':
+      if (e.who !== who) return;
+      for (const t of list) {
+        const { o, p } = t;
+        if (o.kind !== 'explore') continue;
+        p.n += e.blocks;
+        finish(t, o.blocks);
+      }
       return;
     case 'creatureFed':
       if (e.who !== who) return;

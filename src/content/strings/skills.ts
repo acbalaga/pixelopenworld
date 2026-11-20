@@ -1,3 +1,4 @@
+import { authoredTrialStrings } from '../skills/dawnmeadowTrials';
 /** Player-facing text for skills. No em dashes. */
 export const SKILL_STRINGS = {
   /** HUD tick after XP is earned. `{n}` is the amount, `{skill}` the skill name. */
@@ -16,6 +17,7 @@ export const SKILL_STRINGS = {
  * is the Skills tab line: it names the giver and gives a clue, never the whole answer.
  */
 export const TRIAL_STRINGS: Readonly<Record<string, string>> = {
+  ...authoredTrialStrings(),
   'trial.blades.15.intro':
     'Three Mosslings, one after another, with a blade, and not one of them lands a hit on you. Then I will believe your edge.',
   'trial.blades.15.hint': 'Orla, at the gate, wants a clean fight with a blade.',

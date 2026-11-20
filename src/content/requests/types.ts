@@ -36,6 +36,8 @@ export interface RequestDef {
     renown: number;
   };
   requires?: Cond[];
+  /** The Thread this request is a stage of (M4-12). A stage is not counted as a request by the ledger. */
+  thread?: string;
   /** A finished request can be taken again after this many in-game days. */
   repeat?: { cooldownDays: number };
   /** Minutes it takes, for the pacing ledger (M4-12). */

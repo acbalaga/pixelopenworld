@@ -13,6 +13,7 @@ import {
 } from '../../src/content/balance/pacing';
 import { ROAMERS } from '../../src/content/creatures/roamers';
 import { REQUESTS } from '../../src/content/requests';
+import { THREADS } from '../../src/content/requests/threads';
 import { TRIALS } from '../../src/content/skills';
 import { SINGULARS } from '../../src/content/singulars';
 import { DUNGEONS } from '../../src/content/world/dungeons';
@@ -43,9 +44,11 @@ export function collectItems(): { items: LedgerItem[]; problems: string[] } {
     }
     items.push({ id, region, category, minutes });
   };
-  // Authored requests only. A standing request is a repeatable job, not a piece of the story.
+
+  // A Thread stage is counted in its Thread, not here.
   for (const r of Object.values(REQUESTS))
-    if (r.kind === 'authored') add(r.id, r.region, 'requests', r.estMinutes);
+    if (r.kind === 'authored' && !r.thread) add(r.id, r.region, 'requests', r.estMinutes);
+  for (const t of THREADS) add(t.id, HOME_REGION, 'threads', t.estMinutes);
   // Rank 15 Trials. They carry no region: the first map's are Dawnmeadow's.
   for (const t of Object.values(TRIALS))
     if (t.threshold === 15) add(t.id, HOME_REGION, 'trials15', t.estMinutes);

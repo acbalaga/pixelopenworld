@@ -1,5 +1,6 @@
 import { COLD_OVEN_FLAGS } from '../singulars';
-import { AUTHORED } from '../requests/dawnmeadow';
+import { EVERY } from '../requests/dawnmeadow';
+import { AUTHORED_TRIALS } from '../skills/dawnmeadowTrials';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
 export type * from './types';
@@ -993,41 +994,80 @@ const WORK_HOSTS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
- * Adds Dawnmeadow's authored requests (M4-12) to their givers: a turn-in entry for each, and a
- * work node that offers them, reached from the node the giver's menu starts at.
+ * Adds Dawnmeadow's authored requests and Trials (M4-12) to their givers. A request gets a turn-in
+ * entry and a place on the work node; a Trial gets a place on the test node. Each node is reached
+ * from a door on the node the giver's menu starts at.
  */
-function withAuthoredRequests(base: Readonly<Record<string, Dialogue>>): Record<string, Dialogue> {
+function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, Dialogue> {
   const out: Record<string, Dialogue> = { ...base };
-  const givers = [...new Set(AUTHORED.map((a) => a.giver))];
+  const givers = [
+    ...new Set([...EVERY.map((a) => a.giver), ...AUTHORED_TRIALS.map((t) => t.giver)]),
+  ];
   for (const npc of givers) {
     const d = base[npc];
     if (!d) continue;
-    const flows = AUTHORED.filter((a) => a.giver === npc).map((a) =>
-      requestFlow(a.key, `request.${a.key}`, 'rq', `request.${a.key}.ask`),
-    );
     const nodes: Record<string, DialogueNode> = { ...d.nodes };
-    for (const f of flows) Object.assign(nodes, f.nodes);
-    nodes['work'] = {
-      id: 'work',
-      text: 'dlg.rq.work',
-      choices: [...flows.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
-    };
-    const hosts = WORK_HOSTS[npc] ?? ['greet'];
-    const door: Choice = { text: 'dlg.c_work', next: 'work' };
-    for (const h of hosts) {
+    const entries = [...d.entries];
+    const doors: Choice[] = [];
+
+    const mine = EVERY.filter((a) => a.giver === npc);
+    const flows = mine.map((a) => {
+      const f = requestFlow(a.key, `request.${a.key}`, 'rq', `request.${a.key}.ask`);
+      // A Thread stage is offered only once the stage before it is done.
+      const after = a.thread?.after;
+      return after
+        ? {
+            ...f,
+            offer: {
+              ...f.offer,
+              if: [...(f.offer.if ?? []), { request: `request.${after}`, is: 'done' as const }],
+            },
+          }
+        : f;
+    });
+    if (flows.length > 0) {
+      for (const f of flows) Object.assign(nodes, f.nodes);
+      nodes['work'] = {
+        id: 'work',
+        text: 'dlg.rq.work',
+        choices: [...flows.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
+      };
+      entries.unshift(...flows.map((f) => f.ready));
+      doors.push({ text: 'dlg.c_work', next: 'work' });
+    }
+
+    const tests = AUTHORED_TRIALS.filter((t) => t.giver === npc);
+    if (tests.length > 0) {
+      const choices: Choice[] = [];
+      for (const t of tests) {
+        const name = t.skill.replace(/^skill\./, '');
+        const trial = `trial.${name}.15`;
+        nodes[`rq_offer_${name}`] = { id: `rq_offer_${name}`, text: `${trial}.intro`, next: null };
+        choices.push({
+          text: `dlg.rq.t_${name}`,
+          next: `rq_offer_${name}`,
+          if: [{ trial, is: 'passed', not: true }],
+          do: [{ offerTrial: trial }],
+        });
+      }
+      nodes['rq_tests'] = {
+        id: 'rq_tests',
+        text: 'dlg.rq.tests',
+        choices: [...choices, { text: 'dlg.c_bye', next: null }],
+      };
+      doors.push({ text: 'dlg.c_tests', next: 'rq_tests' });
+    }
+
+    for (const h of WORK_HOSTS[npc] ?? ['greet']) {
       const n = nodes[h];
       if (!n?.choices) continue;
       // Before the last choice, which is the way out.
       const at = n.choices.length - 1;
-      nodes[h] = { ...n, choices: [...n.choices.slice(0, at), door, ...n.choices.slice(at)] };
+      nodes[h] = { ...n, choices: [...n.choices.slice(0, at), ...doors, ...n.choices.slice(at)] };
     }
-    out[npc] = {
-      ...d,
-      entries: [...flows.map((f) => f.ready), ...d.entries],
-      nodes,
-    };
+    out[npc] = { ...d, entries, nodes };
   }
   return out;
 }
 
-export const DIALOGUES: Readonly<Record<string, Dialogue>> = withAuthoredRequests(BASE_DIALOGUES);
+export const DIALOGUES: Readonly<Record<string, Dialogue>> = withAuthored(BASE_DIALOGUES);

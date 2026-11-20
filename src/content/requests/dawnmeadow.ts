@@ -1,4 +1,5 @@
 import { REQUEST_BALANCE as RB } from '../balance/requests';
+import { THREAD_STAGES } from './threads';
 import type { RequestDef, RequestObjective } from './types';
 
 /**
@@ -20,8 +21,10 @@ export interface AuthoredRequest {
   title: string;
   ask: string;
   ways: { id: string; label: string; steps: RequestObjective[] }[];
-  reward: { coin: number; renown: number };
+  reward: { coin: number; renown: number; items?: { item: string; qty: number }[] };
   estMinutes: number;
+  /** A Thread stage: the Thread it belongs to, and the stage before it, which must be done first. */
+  thread?: { id: string; after?: string };
   /** What the giver says. `offer` and `remind` are the player's two buttons. */
   talk: { offer: string; remind: string; accepted: string; progress: string; report: string };
 }
@@ -385,10 +388,10 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
 ];
 
-/** The request defs the table above makes. */
+/** The request defs the tables make. */
 export function authoredDefs(): Record<string, RequestDef> {
   const out: Record<string, RequestDef> = {};
-  for (const a of AUTHORED) {
+  for (const a of EVERY) {
     const id = `request.${a.key}`;
     out[id] = {
       id,
@@ -402,20 +405,24 @@ export function authoredDefs(): Record<string, RequestDef> {
         labelKey: `${id}.${w.id}`,
         steps: w.steps,
       })),
-      reward: { coin: a.reward.coin, items: [], renown: a.reward.renown },
+      reward: { coin: a.reward.coin, items: a.reward.items ?? [], renown: a.reward.renown },
+      ...(a.thread?.after
+        ? { requires: [{ request: `request.${a.thread.after}`, is: 'done' as const }] }
+        : {}),
+      ...(a.thread ? { thread: a.thread.id } : {}),
       estMinutes: a.estMinutes,
     };
   }
   return out;
 }
 
-/** The strings the table makes: titles, asks, ways, and the giver's lines. */
+/** The strings the tables make: titles, asks, ways, and the giver's lines. */
 export function authoredStrings(): Record<string, string> {
   const out: Record<string, string> = {
     'dlg.c_work': 'Is there any work for me?',
     'dlg.rq.work': 'There is always something. Ask.',
   };
-  for (const a of AUTHORED) {
+  for (const a of EVERY) {
     const id = `request.${a.key}`;
     out[`${id}.title`] = a.title;
     out[`${id}.ask`] = a.ask;
@@ -428,3 +435,6 @@ export function authoredStrings(): Record<string, string> {
   }
   return out;
 }
+
+/** Every authored request the builders and the dialogue read: the single ones, then Thread stages. */
+export const EVERY: readonly AuthoredRequest[] = [...AUTHORED, ...THREAD_STAGES];
