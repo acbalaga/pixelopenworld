@@ -295,6 +295,15 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     respawn: 150,
     radius: 0,
   },
+  /** Hollowhorn's spawner. It stands at a baked tile; the creature follows its route (roamers.ts). */
+  'spawner.hollowhorn': {
+    kind: 'spawner.hollowhorn',
+    creature: 'creature.hollowhorn',
+    cap: 1,
+    respawn: 1,
+    radius: 0,
+    daily: true,
+  },
   'spawner.old_bramblehide': {
     kind: 'spawner.old_bramblehide',
     creature: 'creature.old_bramblehide',

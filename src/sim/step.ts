@@ -7,6 +7,7 @@ import type { SimState } from './state';
 import { applyAvatarCommand } from './avatar';
 import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
+import { roamSystem } from './systems/roamers';
 import { spawnerSystem } from './systems/spawner';
 import { streamSystem } from './world/stream';
 import { dungeonSystem } from './systems/dungeon';
@@ -54,6 +55,7 @@ export function step(state: SimState, input: TickInput): number {
 export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   streamSystem,
   spawnerSystem,
+  roamSystem,
   aiSystem,
   combatSystem,
   movementSystem,

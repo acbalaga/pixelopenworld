@@ -50,6 +50,7 @@ export const REGIONS: readonly RegionDef[] = [
         'spawner.spitbloom',
         'spawner.bramble_boar',
         'spawner.old_bramblehide',
+        'spawner.hollowhorn',
         // Zone spawners (M4-05): every kind Dawnmeadow's rosters can place.
         ...[
           ...new Set(

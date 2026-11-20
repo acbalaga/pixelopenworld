@@ -159,6 +159,8 @@ const placements: Placement[] = [
   stamp('stonecrop', 164, 36),
   stamp('fernside_arch', 90, 168),
   stamp('cairn_ring', 44, 44),
+  // Hollowhorn's spawner, at the middle of its route on Cairnmoor (creatures/roamers.ts).
+  { kind: 'spawner.hollowhorn', x: 19, y: 54 },
   stamp('chapel', 171, 262),
   stamp('lean_to', 76, 176),
   stamp('shepherd_hut', 108, 232),

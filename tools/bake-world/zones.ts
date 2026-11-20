@@ -1,5 +1,8 @@
 import { SPAWNS } from '../../src/content/balance/world';
 import { CREATURES, SPAWNERS } from '../../src/content/creatures';
+import { ROAMERS } from '../../src/content/creatures/roamers';
+import { routeAt } from '../../src/sim/systems/roamers';
+import { DAY_MINUTES } from '../../src/sim/time';
 import { zoneSpawnerKind } from '../../src/content/creatures/zoneSpawners';
 import { ROSTERS } from '../../src/content/world/rosters';
 import type { RegionSpec, TilePoint } from '../../src/content/world/regions/types';
@@ -191,6 +194,35 @@ export function checkSpawnClearance(spec: RegionSpec, g: Grid): string[] {
       errors.push(
         `${spec.id}: ${o.kind} at ${o.x}, ${o.y} is within ${SPAWNS.clearTiles} tiles of a road, wall or wake point`,
       );
+  }
+  return errors;
+}
+
+/**
+ * The route check (POW-M4-05): a roamer's route in this region, sampled every half minute of the
+ * day, keeps to open ground at least `SPAWNS.clearTiles` from a road, wall, stamp or wake point, so
+ * it never wanders into a settlement or onto a spawn point. Returns every problem found.
+ */
+export function checkRoamerRoutes(spec: RegionSpec, g: Grid): string[] {
+  const dist = clearance(spec, g);
+  const errors: string[] = [];
+  for (const def of Object.values(ROAMERS)) {
+    if (def.region !== spec.id) continue;
+    const bad = new Set<string>();
+    for (let m = 0; m < DAY_MINUTES; m += 0.5) {
+      const at = routeAt(def, m);
+      const x = Math.round(at.x);
+      const y = Math.round(at.y);
+      const where = `${def.creature} route at ${x}, ${y}`;
+      if (!g.inside(x, y) || !openGround(g, x, y)) bad.add(`${where} is not open ground`);
+      else if ((dist[g.at(x, y)] as number) <= SPAWNS.clearTiles)
+        bad.add(
+          `${where} is within ${SPAWNS.clearTiles} tiles of a road, wall, stamp or wake point`,
+        );
+    }
+    errors.push(...[...bad].map((e) => `${spec.id}: ${e}`));
+    const home = spec.placements.some((p) => !p.stamp && p.kind === def.spawner);
+    if (!home) errors.push(`${spec.id}: no ${def.spawner} placed for ${def.creature}`);
   }
   return errors;
 }

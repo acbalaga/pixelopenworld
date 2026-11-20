@@ -8,7 +8,7 @@ import { fillScatter } from './fill/scatter';
 import { fillCliffs, fillTerrain } from './fill/terrain';
 import { Grid, Protect } from './grid';
 import { parseRegionSpec } from './schema';
-import { checkSpawnClearance, placeZoneSpawners } from './zones';
+import { checkRoamerRoutes, checkSpawnClearance, placeZoneSpawners } from './zones';
 
 export type StampLibrary = Readonly<Record<string, StampV2>>;
 /** Baked files by path under `baked/world/`. */
@@ -139,7 +139,7 @@ export function bakeRegion(rawSpec: unknown, stamps: StampLibrary): WorldFiles {
   fillScatter(spec, g);
   // 4. Zone spawners on what is open, then the spawn check (no fights picked near a road or wall).
   placeZoneSpawners(spec, g);
-  const spawnProblems = checkSpawnClearance(spec, g);
+  const spawnProblems = [...checkSpawnClearance(spec, g), ...checkRoamerRoutes(spec, g)];
   if (spawnProblems.length > 0) throw new BakeError(src, 'zones', spawnProblems.join('; '));
 
   const out: WorldFiles = new Map();

@@ -11,6 +11,7 @@ import { WAKE_IDS } from '../../src/content/world/wake';
 import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion, type WorldFiles } from '../../tools/bake-world/bake';
 import { rosterSpawnerKinds } from '../../src/content/creatures/zoneSpawners';
+import { ROAMERS } from '../../src/content/creatures/roamers';
 import { ROSTERS } from '../../src/content/world/rosters';
 import {
   MIN_LANDMARK_HEIGHT,
@@ -312,5 +313,23 @@ describe('Dawnmeadow spawn zones (M4-05)', () => {
       ],
     };
     expect(() => bakeRegion(bad, STAMPS)).toThrow(/within 12 tiles/);
+  });
+});
+
+describe('Hollowhorn route check (M4-05)', () => {
+  it('bakes with its spawner placed, and the bake rejects a route over bad ground', () => {
+    expect(objects.some((o) => o.kind === 'spawner.hollowhorn')).toBe(true);
+    const def = ROAMERS['creature.hollowhorn']!;
+    const stops = def.stops;
+    try {
+      // A stop in the cairn ring, inside the 12 tile margin of its stones.
+      (def as { stops: unknown }).stops = stops.map((s, i) =>
+        i === 1 ? { ...s, x: 44, y: 44 } : s,
+      );
+      expect(() => bakeRegion(DAWNMEADOW, STAMPS)).toThrow(/creature\.hollowhorn route at/);
+    } finally {
+      (def as { stops: unknown }).stops = stops;
+    }
+    expect(() => bakeRegion(DAWNMEADOW, STAMPS)).not.toThrow();
   });
 });
