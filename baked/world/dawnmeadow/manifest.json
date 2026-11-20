@@ -1,7 +1,7 @@
 {
   "version": 1,
   "region": "dawnmeadow",
-  "hash": "15aebe01545b4866",
+  "hash": "92a6774bdb7d0ed4",
   "seed": 20260101,
   "chunks": {
     "w": 12,
@@ -85,7 +85,7 @@
       "file": "chunk-0-1.bin",
       "cx": 0,
       "cy": 1,
-      "hash": "1d91f1830b283516"
+      "hash": "e2ae379546efb1cb"
     },
     {
       "file": "chunk-1-1.bin",
@@ -97,19 +97,19 @@
       "file": "chunk-2-1.bin",
       "cx": 2,
       "cy": 1,
-      "hash": "48ec32b1365a1052"
+      "hash": "da6f4949679be320"
     },
     {
       "file": "chunk-3-1.bin",
       "cx": 3,
       "cy": 1,
-      "hash": "03183613e2e9948d"
+      "hash": "f243200419506517"
     },
     {
       "file": "chunk-4-1.bin",
       "cx": 4,
       "cy": 1,
-      "hash": "485eedbe6a9b905f"
+      "hash": "23aacdc366e5b212"
     },
     {
       "file": "chunk-5-1.bin",
@@ -121,13 +121,13 @@
       "file": "chunk-6-1.bin",
       "cx": 6,
       "cy": 1,
-      "hash": "b56234176f65cb0b"
+      "hash": "55decd01bfc9b3f2"
     },
     {
       "file": "chunk-7-1.bin",
       "cx": 7,
       "cy": 1,
-      "hash": "5e94dc9e99a73759"
+      "hash": "0cd88b151d0c0930"
     },
     {
       "file": "chunk-8-1.bin",
@@ -157,49 +157,49 @@
       "file": "chunk-0-2.bin",
       "cx": 0,
       "cy": 2,
-      "hash": "65cd88bd9677ad83"
+      "hash": "c1e934cf8735e5a1"
     },
     {
       "file": "chunk-1-2.bin",
       "cx": 1,
       "cy": 2,
-      "hash": "18389f710da91572"
+      "hash": "df1e68904cccd294"
     },
     {
       "file": "chunk-2-2.bin",
       "cx": 2,
       "cy": 2,
-      "hash": "048a1849a7704a74"
+      "hash": "d2fed49aaf8f7aff"
     },
     {
       "file": "chunk-3-2.bin",
       "cx": 3,
       "cy": 2,
-      "hash": "8b71cca2bc41c274"
+      "hash": "0c4bd2c39e72499d"
     },
     {
       "file": "chunk-4-2.bin",
       "cx": 4,
       "cy": 2,
-      "hash": "187ca7cb27948262"
+      "hash": "b4a76d0e3e1171d0"
     },
     {
       "file": "chunk-5-2.bin",
       "cx": 5,
       "cy": 2,
-      "hash": "283ec5385dd48ec0"
+      "hash": "020447aa0436068a"
     },
     {
       "file": "chunk-6-2.bin",
       "cx": 6,
       "cy": 2,
-      "hash": "6fcb5c326ae17d79"
+      "hash": "09365ec93ee1601e"
     },
     {
       "file": "chunk-7-2.bin",
       "cx": 7,
       "cy": 2,
-      "hash": "9d2e57e6e1046378"
+      "hash": "6a5c581b6fcc644d"
     },
     {
       "file": "chunk-8-2.bin",
@@ -211,7 +211,7 @@
       "file": "chunk-9-2.bin",
       "cx": 9,
       "cy": 2,
-      "hash": "b09c6fda2fc9dd71"
+      "hash": "b1c50b64bf9fa4b3"
     },
     {
       "file": "chunk-10-2.bin",
@@ -229,37 +229,37 @@
       "file": "chunk-0-3.bin",
       "cx": 0,
       "cy": 3,
-      "hash": "c67d974f5f630eff"
+      "hash": "701561ee6a044c13"
     },
     {
       "file": "chunk-1-3.bin",
       "cx": 1,
       "cy": 3,
-      "hash": "9351e4b52f9fddab"
+      "hash": "d217706db8e5e545"
     },
     {
       "file": "chunk-2-3.bin",
       "cx": 2,
       "cy": 3,
-      "hash": "9dd73f98ee1216f6"
+      "hash": "704f9ec83e4ad3a3"
     },
     {
       "file": "chunk-3-3.bin",
       "cx": 3,
       "cy": 3,
-      "hash": "7db41e24bbd248d6"
+      "hash": "4ece61e0f3195448"
     },
     {
       "file": "chunk-4-3.bin",
       "cx": 4,
       "cy": 3,
-      "hash": "9efaeb58ef2fabd1"
+      "hash": "0b4dc5c2e725ace6"
     },
     {
       "file": "chunk-5-3.bin",
       "cx": 5,
       "cy": 3,
-      "hash": "8b03fd1d7da7074a"
+      "hash": "1d59a938408aeeaf"
     },
     {
       "file": "chunk-6-3.bin",
@@ -283,13 +283,13 @@
       "file": "chunk-9-3.bin",
       "cx": 9,
       "cy": 3,
-      "hash": "a06ba3ceaa5c1bd0"
+      "hash": "98a3ef0fa86c828a"
     },
     {
       "file": "chunk-10-3.bin",
       "cx": 10,
       "cy": 3,
-      "hash": "cdeb8cd1b69c62c0"
+      "hash": "2594ec7c35bb4a02"
     },
     {
       "file": "chunk-11-3.bin",
@@ -307,37 +307,37 @@
       "file": "chunk-1-4.bin",
       "cx": 1,
       "cy": 4,
-      "hash": "07bb4992dbfecb9e"
+      "hash": "68730e73675c9d21"
     },
     {
       "file": "chunk-2-4.bin",
       "cx": 2,
       "cy": 4,
-      "hash": "e828e6819350bac8"
+      "hash": "a053a651ce10be24"
     },
     {
       "file": "chunk-3-4.bin",
       "cx": 3,
       "cy": 4,
-      "hash": "ddeed9938b18f6f8"
+      "hash": "8b966e1f2aaceff5"
     },
     {
       "file": "chunk-4-4.bin",
       "cx": 4,
       "cy": 4,
-      "hash": "7140d84d95af2166"
+      "hash": "a49207daad8ec532"
     },
     {
       "file": "chunk-5-4.bin",
       "cx": 5,
       "cy": 4,
-      "hash": "b402ea26bdf62a58"
+      "hash": "d3d3688c38096150"
     },
     {
       "file": "chunk-6-4.bin",
       "cx": 6,
       "cy": 4,
-      "hash": "0a30039397ea96c6"
+      "hash": "15ff8d4feb2fe5fb"
     },
     {
       "file": "chunk-7-4.bin",
@@ -349,19 +349,19 @@
       "file": "chunk-8-4.bin",
       "cx": 8,
       "cy": 4,
-      "hash": "264cb8a360ba1a5d"
+      "hash": "6b3ab3183b57104f"
     },
     {
       "file": "chunk-9-4.bin",
       "cx": 9,
       "cy": 4,
-      "hash": "c9add778d76aafcc"
+      "hash": "d0bad1a5fd4548f8"
     },
     {
       "file": "chunk-10-4.bin",
       "cx": 10,
       "cy": 4,
-      "hash": "3ee1834ff34d4d4a"
+      "hash": "11f3b31ae854f6ec"
     },
     {
       "file": "chunk-11-4.bin",
@@ -379,7 +379,7 @@
       "file": "chunk-1-5.bin",
       "cx": 1,
       "cy": 5,
-      "hash": "a41c8b32879c242f"
+      "hash": "6fa504c51e1c358b"
     },
     {
       "file": "chunk-2-5.bin",
@@ -397,7 +397,7 @@
       "file": "chunk-4-5.bin",
       "cx": 4,
       "cy": 5,
-      "hash": "e7a763c6a4da9c46"
+      "hash": "0b2adb2960ed8dac"
     },
     {
       "file": "chunk-5-5.bin",
@@ -421,19 +421,19 @@
       "file": "chunk-8-5.bin",
       "cx": 8,
       "cy": 5,
-      "hash": "a9de70019dc75dc3"
+      "hash": "36cc57244d5d79a5"
     },
     {
       "file": "chunk-9-5.bin",
       "cx": 9,
       "cy": 5,
-      "hash": "1ca7434f051c39e0"
+      "hash": "8ba65cce5b9e4f77"
     },
     {
       "file": "chunk-10-5.bin",
       "cx": 10,
       "cy": 5,
-      "hash": "66a4961f74ae7ab7"
+      "hash": "4846a0771c7eeab4"
     },
     {
       "file": "chunk-11-5.bin",
@@ -451,25 +451,25 @@
       "file": "chunk-1-6.bin",
       "cx": 1,
       "cy": 6,
-      "hash": "725c73de08bd148c"
+      "hash": "5c10511579e5be34"
     },
     {
       "file": "chunk-2-6.bin",
       "cx": 2,
       "cy": 6,
-      "hash": "4157312762f81fdc"
+      "hash": "10ad96238b47dda7"
     },
     {
       "file": "chunk-3-6.bin",
       "cx": 3,
       "cy": 6,
-      "hash": "cd612bad09150e26"
+      "hash": "5a7211add943fbad"
     },
     {
       "file": "chunk-4-6.bin",
       "cx": 4,
       "cy": 6,
-      "hash": "ac63cb0c1f287c2b"
+      "hash": "08be3426e2b99a17"
     },
     {
       "file": "chunk-5-6.bin",
@@ -499,13 +499,13 @@
       "file": "chunk-9-6.bin",
       "cx": 9,
       "cy": 6,
-      "hash": "84b812953aca452c"
+      "hash": "3b43dedc50b15c35"
     },
     {
       "file": "chunk-10-6.bin",
       "cx": 10,
       "cy": 6,
-      "hash": "170a485639894b46"
+      "hash": "de57afa41eea9ee5"
     },
     {
       "file": "chunk-11-6.bin",
@@ -517,43 +517,43 @@
       "file": "chunk-0-7.bin",
       "cx": 0,
       "cy": 7,
-      "hash": "9461f21135fdebee"
+      "hash": "9edb42db070c6c80"
     },
     {
       "file": "chunk-1-7.bin",
       "cx": 1,
       "cy": 7,
-      "hash": "53b8010701701aff"
+      "hash": "66b698aab0d3fe1d"
     },
     {
       "file": "chunk-2-7.bin",
       "cx": 2,
       "cy": 7,
-      "hash": "519be17ff44fff03"
+      "hash": "cb4353214f5e2f10"
     },
     {
       "file": "chunk-3-7.bin",
       "cx": 3,
       "cy": 7,
-      "hash": "5532ea3177d8134a"
+      "hash": "6394fb52a3edf954"
     },
     {
       "file": "chunk-4-7.bin",
       "cx": 4,
       "cy": 7,
-      "hash": "499bc274d0152b47"
+      "hash": "b1cd4b35c00ab4ff"
     },
     {
       "file": "chunk-5-7.bin",
       "cx": 5,
       "cy": 7,
-      "hash": "b0339db303b13f09"
+      "hash": "b48fa761949626b3"
     },
     {
       "file": "chunk-6-7.bin",
       "cx": 6,
       "cy": 7,
-      "hash": "3f5c36de06e0681d"
+      "hash": "0fd74ee3f629485d"
     },
     {
       "file": "chunk-7-7.bin",
@@ -571,13 +571,13 @@
       "file": "chunk-9-7.bin",
       "cx": 9,
       "cy": 7,
-      "hash": "0a29270686875293"
+      "hash": "a48407bbdb36fb6d"
     },
     {
       "file": "chunk-10-7.bin",
       "cx": 10,
       "cy": 7,
-      "hash": "9a0341d52c09a76a"
+      "hash": "71f48ead2ddc3d31"
     },
     {
       "file": "chunk-11-7.bin",
@@ -589,49 +589,49 @@
       "file": "chunk-0-8.bin",
       "cx": 0,
       "cy": 8,
-      "hash": "1f89a9a6bbb97b89"
+      "hash": "3dc090d31313c890"
     },
     {
       "file": "chunk-1-8.bin",
       "cx": 1,
       "cy": 8,
-      "hash": "7bf1bb48176f9e46"
+      "hash": "fd620c911e919e57"
     },
     {
       "file": "chunk-2-8.bin",
       "cx": 2,
       "cy": 8,
-      "hash": "bb9a2a1e5b99285f"
+      "hash": "f42e6a775ac7c850"
     },
     {
       "file": "chunk-3-8.bin",
       "cx": 3,
       "cy": 8,
-      "hash": "ced5be16ede1aabb"
+      "hash": "d34145dfa1ad5e7d"
     },
     {
       "file": "chunk-4-8.bin",
       "cx": 4,
       "cy": 8,
-      "hash": "f9d3043aa74494de"
+      "hash": "83022e3b412e8e1d"
     },
     {
       "file": "chunk-5-8.bin",
       "cx": 5,
       "cy": 8,
-      "hash": "f5f28998a55a5d92"
+      "hash": "9bd64dcfa152b5a0"
     },
     {
       "file": "chunk-6-8.bin",
       "cx": 6,
       "cy": 8,
-      "hash": "930ae10cd74322a1"
+      "hash": "2110a8edef01d19c"
     },
     {
       "file": "chunk-7-8.bin",
       "cx": 7,
       "cy": 8,
-      "hash": "0493c009556b2f10"
+      "hash": "5721450eb9c37237"
     },
     {
       "file": "chunk-8-8.bin",
@@ -643,13 +643,13 @@
       "file": "chunk-9-8.bin",
       "cx": 9,
       "cy": 8,
-      "hash": "3e5127bd3f6924f9"
+      "hash": "86468a3a95958bf5"
     },
     {
       "file": "chunk-10-8.bin",
       "cx": 10,
       "cy": 8,
-      "hash": "f8ccd40606d73309"
+      "hash": "2b0ddc7fd66d3182"
     },
     {
       "file": "chunk-11-8.bin",
@@ -667,37 +667,37 @@
       "file": "chunk-1-9.bin",
       "cx": 1,
       "cy": 9,
-      "hash": "7ad56ef63f0ba8c5"
+      "hash": "edb0af7b2bec8a9d"
     },
     {
       "file": "chunk-2-9.bin",
       "cx": 2,
       "cy": 9,
-      "hash": "34ac4675a0257193"
+      "hash": "dcefc126c3351d24"
     },
     {
       "file": "chunk-3-9.bin",
       "cx": 3,
       "cy": 9,
-      "hash": "4a5383fb66d7d580"
+      "hash": "d6341087f6b7d52b"
     },
     {
       "file": "chunk-4-9.bin",
       "cx": 4,
       "cy": 9,
-      "hash": "7b15545826cdc02f"
+      "hash": "85c15362cd66a870"
     },
     {
       "file": "chunk-5-9.bin",
       "cx": 5,
       "cy": 9,
-      "hash": "0401580eef92de6e"
+      "hash": "9ade7c3a1cf32949"
     },
     {
       "file": "chunk-6-9.bin",
       "cx": 6,
       "cy": 9,
-      "hash": "16c6a9ee6e09a89f"
+      "hash": "b16fef72e01deeb5"
     },
     {
       "file": "chunk-7-9.bin",
@@ -709,13 +709,13 @@
       "file": "chunk-8-9.bin",
       "cx": 8,
       "cy": 9,
-      "hash": "bc3257d24e746d74"
+      "hash": "9cf48eb9f8147325"
     },
     {
       "file": "chunk-9-9.bin",
       "cx": 9,
       "cy": 9,
-      "hash": "e2011bb7f690b8a6"
+      "hash": "ab72fbd7d2ea6e31"
     },
     {
       "file": "chunk-10-9.bin",
@@ -745,13 +745,13 @@
       "file": "chunk-2-10.bin",
       "cx": 2,
       "cy": 10,
-      "hash": "75bb0325508e905f"
+      "hash": "20e2ad0d2bfa2a4e"
     },
     {
       "file": "chunk-3-10.bin",
       "cx": 3,
       "cy": 10,
-      "hash": "42f967b5c923fc13"
+      "hash": "4dc841586d655911"
     },
     {
       "file": "chunk-4-10.bin",
@@ -775,13 +775,13 @@
       "file": "chunk-7-10.bin",
       "cx": 7,
       "cy": 10,
-      "hash": "39949e3f882020fa"
+      "hash": "8f5f63f9d8cbae33"
     },
     {
       "file": "chunk-8-10.bin",
       "cx": 8,
       "cy": 10,
-      "hash": "150b7aaf624e1488"
+      "hash": "af9afe2f39cdcb0d"
     },
     {
       "file": "chunk-9-10.bin",
@@ -1254,5 +1254,1744 @@
       "y": 49
     }
   ],
-  "zones": []
+  "zones": [
+    {
+      "id": "cairnmoor_0_1",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 32
+        },
+        {
+          "x": 31,
+          "y": 32
+        },
+        {
+          "x": 31,
+          "y": 63
+        },
+        {
+          "x": 0,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_1_1",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 32
+        },
+        {
+          "x": 63,
+          "y": 32
+        },
+        {
+          "x": 63,
+          "y": 63
+        },
+        {
+          "x": 32,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_2_1",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 32
+        },
+        {
+          "x": 95,
+          "y": 32
+        },
+        {
+          "x": 95,
+          "y": 63
+        },
+        {
+          "x": 64,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_3_1",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 32
+        },
+        {
+          "x": 127,
+          "y": 32
+        },
+        {
+          "x": 127,
+          "y": 63
+        },
+        {
+          "x": 96,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_4_1",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 32
+        },
+        {
+          "x": 159,
+          "y": 32
+        },
+        {
+          "x": 159,
+          "y": 63
+        },
+        {
+          "x": 128,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_6_1",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 32
+        },
+        {
+          "x": 223,
+          "y": 32
+        },
+        {
+          "x": 223,
+          "y": 63
+        },
+        {
+          "x": 192,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_7_1",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 224,
+          "y": 32
+        },
+        {
+          "x": 255,
+          "y": 32
+        },
+        {
+          "x": 255,
+          "y": 63
+        },
+        {
+          "x": 224,
+          "y": 63
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_0_2",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 64
+        },
+        {
+          "x": 31,
+          "y": 64
+        },
+        {
+          "x": 31,
+          "y": 95
+        },
+        {
+          "x": 0,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_1_2",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 64
+        },
+        {
+          "x": 63,
+          "y": 64
+        },
+        {
+          "x": 63,
+          "y": 95
+        },
+        {
+          "x": 32,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_2_2",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 64
+        },
+        {
+          "x": 95,
+          "y": 64
+        },
+        {
+          "x": 95,
+          "y": 95
+        },
+        {
+          "x": 64,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_3_2",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 64
+        },
+        {
+          "x": 127,
+          "y": 64
+        },
+        {
+          "x": 127,
+          "y": 95
+        },
+        {
+          "x": 96,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_4_2",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 64
+        },
+        {
+          "x": 159,
+          "y": 64
+        },
+        {
+          "x": 159,
+          "y": 95
+        },
+        {
+          "x": 128,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_5_2",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 64
+        },
+        {
+          "x": 191,
+          "y": 64
+        },
+        {
+          "x": 191,
+          "y": 95
+        },
+        {
+          "x": 160,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_6_2",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 64
+        },
+        {
+          "x": 223,
+          "y": 64
+        },
+        {
+          "x": 223,
+          "y": 95
+        },
+        {
+          "x": 192,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_7_2",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 224,
+          "y": 64
+        },
+        {
+          "x": 255,
+          "y": 64
+        },
+        {
+          "x": 255,
+          "y": 95
+        },
+        {
+          "x": 224,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_9_2",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 64
+        },
+        {
+          "x": 319,
+          "y": 64
+        },
+        {
+          "x": 319,
+          "y": 95
+        },
+        {
+          "x": 288,
+          "y": 95
+        }
+      ]
+    },
+    {
+      "id": "fernside_0_3",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 96
+        },
+        {
+          "x": 31,
+          "y": 96
+        },
+        {
+          "x": 31,
+          "y": 127
+        },
+        {
+          "x": 0,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "fernside_1_3",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 96
+        },
+        {
+          "x": 63,
+          "y": 96
+        },
+        {
+          "x": 63,
+          "y": 127
+        },
+        {
+          "x": 32,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "cairnmoor_2_3",
+      "roster": "roster.dm_cairnmoor",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 96
+        },
+        {
+          "x": 95,
+          "y": 96
+        },
+        {
+          "x": 95,
+          "y": 127
+        },
+        {
+          "x": 64,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_3",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 96
+        },
+        {
+          "x": 127,
+          "y": 96
+        },
+        {
+          "x": 127,
+          "y": 127
+        },
+        {
+          "x": 96,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_4_3",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 96
+        },
+        {
+          "x": 159,
+          "y": 96
+        },
+        {
+          "x": 159,
+          "y": 127
+        },
+        {
+          "x": 128,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_5_3",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 96
+        },
+        {
+          "x": 191,
+          "y": 96
+        },
+        {
+          "x": 191,
+          "y": 127
+        },
+        {
+          "x": 160,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "stonecrop_6_3",
+      "roster": "roster.dm_stonecrop",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 96
+        },
+        {
+          "x": 223,
+          "y": 96
+        },
+        {
+          "x": 223,
+          "y": 127
+        },
+        {
+          "x": 192,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_9_3",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 96
+        },
+        {
+          "x": 319,
+          "y": 96
+        },
+        {
+          "x": 319,
+          "y": 127
+        },
+        {
+          "x": 288,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_10_3",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 96
+        },
+        {
+          "x": 351,
+          "y": 96
+        },
+        {
+          "x": 351,
+          "y": 127
+        },
+        {
+          "x": 320,
+          "y": 127
+        }
+      ]
+    },
+    {
+      "id": "fernside_1_4",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 128
+        },
+        {
+          "x": 63,
+          "y": 128
+        },
+        {
+          "x": 63,
+          "y": 159
+        },
+        {
+          "x": 32,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "fernside_2_4",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 128
+        },
+        {
+          "x": 95,
+          "y": 128
+        },
+        {
+          "x": 95,
+          "y": 159
+        },
+        {
+          "x": 64,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_4",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 128
+        },
+        {
+          "x": 127,
+          "y": 128
+        },
+        {
+          "x": 127,
+          "y": 159
+        },
+        {
+          "x": 96,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_4_4",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 128
+        },
+        {
+          "x": 159,
+          "y": 128
+        },
+        {
+          "x": 159,
+          "y": 159
+        },
+        {
+          "x": 128,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "commons_5_4",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 128
+        },
+        {
+          "x": 191,
+          "y": 128
+        },
+        {
+          "x": 191,
+          "y": 159
+        },
+        {
+          "x": 160,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "commons_6_4",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 128
+        },
+        {
+          "x": 223,
+          "y": 128
+        },
+        {
+          "x": 223,
+          "y": 159
+        },
+        {
+          "x": 192,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_8_4",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 256,
+          "y": 128
+        },
+        {
+          "x": 287,
+          "y": 128
+        },
+        {
+          "x": 287,
+          "y": 159
+        },
+        {
+          "x": 256,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_9_4",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 128
+        },
+        {
+          "x": 319,
+          "y": 128
+        },
+        {
+          "x": 319,
+          "y": 159
+        },
+        {
+          "x": 288,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_10_4",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 128
+        },
+        {
+          "x": 351,
+          "y": 128
+        },
+        {
+          "x": 351,
+          "y": 159
+        },
+        {
+          "x": 320,
+          "y": 159
+        }
+      ]
+    },
+    {
+      "id": "fernside_1_5",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 160
+        },
+        {
+          "x": 63,
+          "y": 160
+        },
+        {
+          "x": 63,
+          "y": 191
+        },
+        {
+          "x": 32,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "fernside_2_5",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 160
+        },
+        {
+          "x": 95,
+          "y": 160
+        },
+        {
+          "x": 95,
+          "y": 191
+        },
+        {
+          "x": 64,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_5",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 160
+        },
+        {
+          "x": 127,
+          "y": 160
+        },
+        {
+          "x": 127,
+          "y": 191
+        },
+        {
+          "x": 96,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "commons_4_5",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 160
+        },
+        {
+          "x": 159,
+          "y": 160
+        },
+        {
+          "x": 159,
+          "y": 191
+        },
+        {
+          "x": 128,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_8_5",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 256,
+          "y": 160
+        },
+        {
+          "x": 287,
+          "y": 160
+        },
+        {
+          "x": 287,
+          "y": 191
+        },
+        {
+          "x": 256,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_9_5",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 160
+        },
+        {
+          "x": 319,
+          "y": 160
+        },
+        {
+          "x": 319,
+          "y": 191
+        },
+        {
+          "x": 288,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_10_5",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 160
+        },
+        {
+          "x": 351,
+          "y": 160
+        },
+        {
+          "x": 351,
+          "y": 191
+        },
+        {
+          "x": 320,
+          "y": 191
+        }
+      ]
+    },
+    {
+      "id": "fernside_1_6",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 192
+        },
+        {
+          "x": 63,
+          "y": 192
+        },
+        {
+          "x": 63,
+          "y": 223
+        },
+        {
+          "x": 32,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_2_6",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 192
+        },
+        {
+          "x": 95,
+          "y": 192
+        },
+        {
+          "x": 95,
+          "y": 223
+        },
+        {
+          "x": 64,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_6",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 192
+        },
+        {
+          "x": 127,
+          "y": 192
+        },
+        {
+          "x": 127,
+          "y": 223
+        },
+        {
+          "x": 96,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "commons_4_6",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 192
+        },
+        {
+          "x": 159,
+          "y": 192
+        },
+        {
+          "x": 159,
+          "y": 223
+        },
+        {
+          "x": 128,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_8_6",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 256,
+          "y": 192
+        },
+        {
+          "x": 287,
+          "y": 192
+        },
+        {
+          "x": 287,
+          "y": 223
+        },
+        {
+          "x": 256,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "millbrook_fields_9_6",
+      "roster": "roster.dm_millbrook_fields",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 192
+        },
+        {
+          "x": 319,
+          "y": 192
+        },
+        {
+          "x": 319,
+          "y": 223
+        },
+        {
+          "x": 288,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_10_6",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 192
+        },
+        {
+          "x": 351,
+          "y": 192
+        },
+        {
+          "x": 351,
+          "y": 223
+        },
+        {
+          "x": 320,
+          "y": 223
+        }
+      ]
+    },
+    {
+      "id": "fernside_0_7",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 224
+        },
+        {
+          "x": 31,
+          "y": 224
+        },
+        {
+          "x": 31,
+          "y": 255
+        },
+        {
+          "x": 0,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "fernside_1_7",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 224
+        },
+        {
+          "x": 63,
+          "y": 224
+        },
+        {
+          "x": 63,
+          "y": 255
+        },
+        {
+          "x": 32,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_2_7",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 224
+        },
+        {
+          "x": 95,
+          "y": 224
+        },
+        {
+          "x": 95,
+          "y": 255
+        },
+        {
+          "x": 64,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_7",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 224
+        },
+        {
+          "x": 127,
+          "y": 224
+        },
+        {
+          "x": 127,
+          "y": 255
+        },
+        {
+          "x": 96,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_4_7",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 224
+        },
+        {
+          "x": 159,
+          "y": 224
+        },
+        {
+          "x": 159,
+          "y": 255
+        },
+        {
+          "x": 128,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "commons_5_7",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 224
+        },
+        {
+          "x": 191,
+          "y": 224
+        },
+        {
+          "x": 191,
+          "y": 255
+        },
+        {
+          "x": 160,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "commons_6_7",
+      "roster": "roster.dm_commons",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 224
+        },
+        {
+          "x": 223,
+          "y": 224
+        },
+        {
+          "x": 223,
+          "y": 255
+        },
+        {
+          "x": 192,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_9_7",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 224
+        },
+        {
+          "x": 319,
+          "y": 224
+        },
+        {
+          "x": 319,
+          "y": 255
+        },
+        {
+          "x": 288,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_10_7",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 224
+        },
+        {
+          "x": 351,
+          "y": 224
+        },
+        {
+          "x": 351,
+          "y": 255
+        },
+        {
+          "x": 320,
+          "y": 255
+        }
+      ]
+    },
+    {
+      "id": "fernside_0_8",
+      "roster": "roster.dm_fernside",
+      "polygon": [
+        {
+          "x": 0,
+          "y": 256
+        },
+        {
+          "x": 31,
+          "y": 256
+        },
+        {
+          "x": 31,
+          "y": 287
+        },
+        {
+          "x": 0,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_1_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 256
+        },
+        {
+          "x": 63,
+          "y": 256
+        },
+        {
+          "x": 63,
+          "y": 287
+        },
+        {
+          "x": 32,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_2_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 256
+        },
+        {
+          "x": 95,
+          "y": 256
+        },
+        {
+          "x": 95,
+          "y": 287
+        },
+        {
+          "x": 64,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 256
+        },
+        {
+          "x": 127,
+          "y": 256
+        },
+        {
+          "x": 127,
+          "y": 287
+        },
+        {
+          "x": 96,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_4_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 256
+        },
+        {
+          "x": 159,
+          "y": 256
+        },
+        {
+          "x": 159,
+          "y": 287
+        },
+        {
+          "x": 128,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_5_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 256
+        },
+        {
+          "x": 191,
+          "y": 256
+        },
+        {
+          "x": 191,
+          "y": 287
+        },
+        {
+          "x": 160,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_6_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 256
+        },
+        {
+          "x": 223,
+          "y": 256
+        },
+        {
+          "x": 223,
+          "y": 287
+        },
+        {
+          "x": 192,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_7_8",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 224,
+          "y": 256
+        },
+        {
+          "x": 255,
+          "y": 256
+        },
+        {
+          "x": 255,
+          "y": 287
+        },
+        {
+          "x": 224,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_9_8",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 256
+        },
+        {
+          "x": 319,
+          "y": 256
+        },
+        {
+          "x": 319,
+          "y": 287
+        },
+        {
+          "x": 288,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_10_8",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 320,
+          "y": 256
+        },
+        {
+          "x": 351,
+          "y": 256
+        },
+        {
+          "x": 351,
+          "y": 287
+        },
+        {
+          "x": 320,
+          "y": 287
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_1_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 32,
+          "y": 288
+        },
+        {
+          "x": 63,
+          "y": 288
+        },
+        {
+          "x": 63,
+          "y": 319
+        },
+        {
+          "x": 32,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_2_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 288
+        },
+        {
+          "x": 95,
+          "y": 288
+        },
+        {
+          "x": 95,
+          "y": 319
+        },
+        {
+          "x": 64,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 288
+        },
+        {
+          "x": 127,
+          "y": 288
+        },
+        {
+          "x": 127,
+          "y": 319
+        },
+        {
+          "x": 96,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_4_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 128,
+          "y": 288
+        },
+        {
+          "x": 159,
+          "y": 288
+        },
+        {
+          "x": 159,
+          "y": 319
+        },
+        {
+          "x": 128,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_5_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 160,
+          "y": 288
+        },
+        {
+          "x": 191,
+          "y": 288
+        },
+        {
+          "x": 191,
+          "y": 319
+        },
+        {
+          "x": 160,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_6_9",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 192,
+          "y": 288
+        },
+        {
+          "x": 223,
+          "y": 288
+        },
+        {
+          "x": 223,
+          "y": 319
+        },
+        {
+          "x": 192,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_8_9",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 256,
+          "y": 288
+        },
+        {
+          "x": 287,
+          "y": 288
+        },
+        {
+          "x": 287,
+          "y": 319
+        },
+        {
+          "x": 256,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_9_9",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 288,
+          "y": 288
+        },
+        {
+          "x": 319,
+          "y": 288
+        },
+        {
+          "x": 319,
+          "y": 319
+        },
+        {
+          "x": 288,
+          "y": 319
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_2_10",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 64,
+          "y": 320
+        },
+        {
+          "x": 95,
+          "y": 320
+        },
+        {
+          "x": 95,
+          "y": 351
+        },
+        {
+          "x": 64,
+          "y": 351
+        }
+      ]
+    },
+    {
+      "id": "hollow_downs_3_10",
+      "roster": "roster.dm_hollow_downs",
+      "polygon": [
+        {
+          "x": 96,
+          "y": 320
+        },
+        {
+          "x": 127,
+          "y": 320
+        },
+        {
+          "x": 127,
+          "y": 351
+        },
+        {
+          "x": 96,
+          "y": 351
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_7_10",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 224,
+          "y": 320
+        },
+        {
+          "x": 255,
+          "y": 320
+        },
+        {
+          "x": 255,
+          "y": 351
+        },
+        {
+          "x": 224,
+          "y": 351
+        }
+      ]
+    },
+    {
+      "id": "reedmouth_8_10",
+      "roster": "roster.dm_reedmouth",
+      "polygon": [
+        {
+          "x": 256,
+          "y": 320
+        },
+        {
+          "x": 287,
+          "y": 320
+        },
+        {
+          "x": 287,
+          "y": 351
+        },
+        {
+          "x": 256,
+          "y": 351
+        }
+      ]
+    }
+  ]
 }

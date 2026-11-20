@@ -943,7 +943,7 @@ export class MenuSheet {
             },
           }
         : {
-            label: S.actions[a],
+            label: a === 'use' ? d.useLabel : S.actions[a],
             key: `act-${a}`,
             primary: true,
             onClick: () => this.deps.send({ type: a, slot }),

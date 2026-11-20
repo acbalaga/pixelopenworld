@@ -8,6 +8,7 @@ import { fillScatter } from './fill/scatter';
 import { fillCliffs, fillTerrain } from './fill/terrain';
 import { Grid, Protect } from './grid';
 import { parseRegionSpec } from './schema';
+import { checkSpawnClearance, placeZoneSpawners } from './zones';
 
 export type StampLibrary = Readonly<Record<string, StampV2>>;
 /** Baked files by path under `baked/world/`. */
@@ -136,6 +137,10 @@ export function bakeRegion(rawSpec: unknown, stamps: StampLibrary): WorldFiles {
   for (const z of spec.zones)
     for (const p of z.polygon) inRegion(g, src, `zones ${z.id}`, p, 'a polygon point');
   fillScatter(spec, g);
+  // 4. Zone spawners on what is open, then the spawn check (no fights picked near a road or wall).
+  placeZoneSpawners(spec, g);
+  const spawnProblems = checkSpawnClearance(spec, g);
+  if (spawnProblems.length > 0) throw new BakeError(src, 'zones', spawnProblems.join('; '));
 
   const out: WorldFiles = new Map();
   const dir = `${spec.id}/`;
@@ -146,7 +151,7 @@ export function bakeRegion(rawSpec: unknown, stamps: StampLibrary): WorldFiles {
     chunkList.push({ file: fileName(c.cx, c.cy), cx: c.cx, cy: c.cy, hash: sha(bytes) });
   }
 
-  // 4. Interiors: their own chunk sets, numbered from (0, 0) in their own space.
+  // 5. Interiors: their own chunk sets, numbered from (0, 0) in their own space.
   const interiors = spec.interiors.map((it) => {
     const stamp = stampOf(stamps, it.stamp, `${src}`, `interiors ${it.id}`, { x: 0, y: 0 });
     const r = resolveStamp(stamp);

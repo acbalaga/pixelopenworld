@@ -10,6 +10,8 @@ import { HEARTHFORD, TOWN_PARTS } from '../../src/content/world/stamps/hearthfor
 import { WAKE_IDS } from '../../src/content/world/wake';
 import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion, type WorldFiles } from '../../tools/bake-world/bake';
+import { rosterSpawnerKinds } from '../../src/content/creatures/zoneSpawners';
+import { ROSTERS } from '../../src/content/world/rosters';
 import {
   MIN_LANDMARK_HEIGHT,
   MIN_STREET,
@@ -271,5 +273,44 @@ describe('the region checks', () => {
       wakePoints: [{ id: 'w1', x: 20, y: 370 }, ...DAWNMEADOW.wakePoints.slice(1)],
     };
     expect(validateRegion(wet, files).some((e) => e.includes('wake point w1'))).toBe(true);
+  });
+});
+
+describe('Dawnmeadow spawn zones (M4-05)', () => {
+  const zoneSpawns = objects.filter((o) => /^spawner\.z[abc]_/.test(o.kind));
+
+  it('places creatures in every zone of section 3, at each zone step, by day and by night', () => {
+    for (const r of Object.values(ROSTERS).filter((x) => x.id.startsWith('roster.dm_'))) {
+      const kinds = new Set(rosterSpawnerKinds(r.id));
+      const here = zoneSpawns.filter((o) => kinds.has(o.kind));
+      expect(
+        here.some((o) => SPAWNERS[o.kind]?.when === 'day'),
+        `${r.id} by day`,
+      ).toBe(true);
+      expect(
+        here.some((o) => SPAWNERS[o.kind]?.when === 'night'),
+        `${r.id} by night`,
+      ).toBe(true);
+    }
+    // The Commons, where a new character first walks, has its day roster: hares, sparrows, Mosslings.
+    for (const c of ['meadow_hare', 'hedge_sparrow', 'mossling'])
+      expect(
+        zoneSpawns.some((o) => o.kind === `spawner.za_d_${c}`),
+        c,
+      ).toBe(true);
+    expect(zoneSpawns.length).toBeGreaterThan(100);
+  });
+
+  it('keeps hostile and territorial spawns 12 tiles from wake points, roads and walls', () => {
+    // The check runs inside the bake, so a clean bake is the pass. A boar planted near a wake point fails it.
+    const w = DAWNMEADOW.wakePoints[0]!;
+    const bad: RegionSpec = {
+      ...DAWNMEADOW,
+      placements: [
+        ...DAWNMEADOW.placements,
+        { kind: 'spawner.zb_d_bramble_boar', x: w.x + 3, y: w.y },
+      ],
+    };
+    expect(() => bakeRegion(bad, STAMPS)).toThrow(/within 12 tiles/);
   });
 });

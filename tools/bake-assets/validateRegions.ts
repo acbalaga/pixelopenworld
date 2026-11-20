@@ -3,6 +3,28 @@ import { NODES } from '../../src/content/items/recipes';
 import { FIXTURES } from '../../src/content/world/fixtures';
 import { REGIONS, type RegionDef } from '../../src/content/world/regions';
 import { SLICE_MAP } from '../../src/content/world/slice-map';
+import { readFileSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { decodeChunk } from '../../src/sim/world/chunk';
+
+/** Every object kind on the baked Dawnmeadow overworld (POW-M4-04), read from `baked/world/`. */
+export function bakedDawnmeadowKinds(): string[] {
+  const dir = join(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    'baked',
+    'world',
+    'dawnmeadow',
+  );
+  const out: string[] = [];
+  for (const n of readdirSync(dir))
+    if (/^chunk-\d+-\d+\.bin$/.test(n))
+      for (const o of decodeChunk(new Uint8Array(readFileSync(join(dir, n)))).objects)
+        out.push(o.kind);
+  return out;
+}
 
 /**
  * Regions and supply (POW-M3-12). Every gathering node kind, creature spawner kind and chest with
@@ -17,7 +39,11 @@ export function validateRegions(
   chests: readonly string[] = Object.values(FIXTURES)
     .filter((f) => f.type === 'chest' && f.loot && !f.dungeon)
     .map((f) => f.kind),
-  placed: readonly string[] = (SLICE_MAP.objects ?? []).map((o) => o.kind),
+  // Dawnmeadow's first map (the slice) and its baked overworld together.
+  placed: readonly string[] = [
+    ...(SLICE_MAP.objects ?? []).map((o) => o.kind),
+    ...bakedDawnmeadowKinds(),
+  ],
 ): string[] {
   const errors: string[] = [];
   const homes = new Map<string, string[]>();

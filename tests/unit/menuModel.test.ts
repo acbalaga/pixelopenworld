@@ -16,6 +16,7 @@ import {
   characterView,
   clockView,
   itemActions,
+  useLabel,
   itemDetail,
   itemName,
   skillsView,
@@ -131,10 +132,22 @@ describe('bag view and item actions', () => {
     expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['use', 'drop']);
     expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'drop']);
   });
+  it('labels Use by what the item is: Eat food, Read scrolls and manuals, Use gadgets', () => {
+    expect(useLabel(ITEMS['item.dish_bread']!)).toBe('Eat');
+    expect(useLabel(ITEMS['item.scroll_sword_iron']!)).toBe('Read');
+    expect(useLabel(ITEMS['item.manual_lunge']!)).toBe('Read');
+    const gadget = Object.values(ITEMS).find((d) => d.gadget && d.gadget !== 'lantern');
+    if (gadget) expect(useLabel(gadget)).toBe('Use');
+  });
   it('shows an item detail from the slot, and nothing for an empty slot', () => {
     const { s, me } = rig();
     const d = itemDetail(s, me, 0)!;
-    expect(d).toMatchObject({ name: 'Bread', category: 'Food', actions: ['use', 'drop'] });
+    expect(d).toMatchObject({
+      name: 'Bread',
+      category: 'Food',
+      actions: ['use', 'drop'],
+      useLabel: 'Eat',
+    });
     expect(d.description.length).toBeGreaterThan(5);
     expect(d.qty).toBe('Carrying 1');
     expect(itemDetail(s, me, 5)).toBeNull();
