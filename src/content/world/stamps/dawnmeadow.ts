@@ -53,10 +53,9 @@ function millbrook(): StampV2 {
   b.fence(1, 1, 10, 1);
   b.fence(1, 5, 10, 5);
   // A scarecrow with a crow on it beside the field, and a mound of turned earth (M4-20). The
-  // crate under the mill is a stand-in for the Undermill's firebricks until M4-11.
+  // firebricks that stood under the mill are in the Undermill now (M4-11).
   b.place('fixture.scarecrow', 12, 3);
   b.place('fixture.crow_mound', 13, 12);
-  b.place('fixture.chest_firebrick', 11, 13);
   b.building(13, 22, 4, 4, { roof: 'thatch', door: 1, label: 'farm three shed' });
   return b.toStamp('millbrook');
 }

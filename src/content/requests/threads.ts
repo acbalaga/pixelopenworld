@@ -1,5 +1,14 @@
+import { UNDERMILL_BUILT } from '../world/dungeons/undermill';
 import type { RequestObjective } from './types';
 import type { AuthoredRequest } from './dawnmeadow';
+
+/** Reach the Undermill's wheel hall from the entry (no race: the time allowed is generous). */
+const WHEEL_HALL: RequestObjective = {
+  kind: 'reach',
+  room: UNDERMILL_BUILT.roomId('u2'),
+  from: UNDERMILL_BUILT.portal('u1', 'u2'),
+  withinTicks: 3600,
+};
 
 /**
  * Dawnmeadow's Threads (POW-M4-12, regions/01-dawnmeadow section 10): longer jobs of about 45
@@ -131,17 +140,17 @@ export const THREAD_STAGES: readonly AuthoredRequest[] = [
       row: 't1',
       giver: 'npc.miller',
       title: 'Mill: the sluice',
-      ask: 'The sluice boards have rotted through. Eight oak planks, or ash, cut true, and the water will turn the wheel the way it used to.',
+      ask: 'The sluice boards have rotted through. Go down to the wheel hall under the mill and see what is left of them, then bring eight oak planks, or ash, cut true, and the water will turn the wheel the way it used to.',
       ways: [
         {
           id: 'oak',
           label: 'Bring oak planks',
-          steps: [deliver('item.oak_plank', 8, 'npc.miller')],
+          steps: [WHEEL_HALL, deliver('item.oak_plank', 8, 'npc.miller')],
         },
         {
           id: 'ash',
           label: 'Bring ash planks',
-          steps: [deliver('item.ash_plank', 8, 'npc.miller')],
+          steps: [WHEEL_HALL, deliver('item.ash_plank', 8, 'npc.miller')],
         },
       ],
       reward: { coin: 50, renown: 1 },

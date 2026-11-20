@@ -55,6 +55,8 @@ export const REGIONS: readonly RegionDef[] = [
         // The Rootway (M4-21).
         'spawner.rw_glowcap',
         'spawner.rw_bramblehide',
+        // The Undermill (M4-11).
+        'spawner.um_eel',
         // The mini-dungeons (M4-11).
         ...DUNGEON_SPAWNS.map((k) => `spawner.${k}`),
         // Zone spawners (M4-05): every kind Dawnmeadow's rosters can place.

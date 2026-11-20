@@ -117,7 +117,8 @@ export function elementHitsWorld(state: SimState, element: string, at: Vec): num
   if (!isElement(element)) return 0;
   let n = 0;
   // Breakable walls answer to Stone and Ember hits.
-  if (element === 'stone' || element === 'ember') n += hitFixtures(state, element, at);
+  if (element === 'stone' || element === 'ember' || element === 'tide')
+    n += hitFixtures(state, element, at);
   for (const id of query(state.entities, 'fixture', 'pos')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;

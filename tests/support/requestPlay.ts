@@ -7,11 +7,15 @@ import { countItem, give } from '../../src/sim/items';
 import { requestState, startNode } from '../../src/sim/journal';
 import type { Command } from '../../src/sim/kernel/commands';
 import type { SimEvent } from '../../src/sim/kernel/events';
-import { Dir, type Direction } from '../../src/sim/kernel/fixed';
+import { Dir, SUBPX, type Direction } from '../../src/sim/kernel/fixed';
 import { renownIn } from '../../src/sim/renown';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { destroy } from '../../src/sim/kernel/entities';
+import { emit } from '../../src/sim/kernel/events';
+import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
+import { requestsSystem } from '../../src/sim/systems/requests';
 
 const OPEN = {
   solidAt: (tx: number, ty: number): number => (tx < 0 || ty < 0 || tx > 60 || ty > 60 ? 1 : 0),
@@ -139,6 +143,22 @@ export function playWay(r: Rig, a: AuthoredRequest, wayId: string): void {
       pools.foc = pools.focMax;
       r.run(2, { type: 'technique', slot: 1, phase: 'press', aim: null });
       r.run(100);
+    } else if (o.kind === 'reach') {
+      // Touch the door, then come through it into the room, as the Trials code watches for.
+      const at = r.s.entities.comps.pos[r.me]!;
+      const door = spawnFixture(
+        r.s,
+        o.from,
+        Math.floor(at.x / SUBPX / 16),
+        Math.floor((at.y / SUBPX - 1) / 16),
+      );
+      // The request system alone: a full step would take the portal, which has nowhere to lead here.
+      r.s.events.list.length = 0;
+      r.s.tick++;
+      requestsSystem(r.s);
+      emit(r.s.events, { type: 'roomChanged', who: r.me, from: 'room.outside', to: o.room });
+      requestsSystem(r.s);
+      destroy(r.s.entities, door);
     } else throw new Error(`unhandled step ${o.kind}`);
   }
 }
