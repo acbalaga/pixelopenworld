@@ -71,6 +71,8 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.burnt_mess.desc': 'Something went wrong in the pot. You can still eat it.',
   'item.old_key.name': 'Old Key',
   'item.old_key.desc': 'The teeth are worn smooth.',
+  'item.foreman_key.name': "Foreman's Key",
+  'item.foreman_key.desc': 'A heavy iron key on a loop of chain, stamped with a pick.',
   'item.mill_key.name': 'Mill Key',
   'item.mill_key.desc': 'A brass key green with damp, stamped with a wheel.',
   'item.root_key.name': 'Root Key',

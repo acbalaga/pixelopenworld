@@ -97,8 +97,6 @@ function stonecrop(): StampV2 {
   b.place('npc.foreman', 14, 10);
   b.object(17, 17, 'tile.rock');
   b.place('fixture.tablet', 16, 17);
-  // A crate for the Deeps' firebricks, a stand-in until M4-11 (M4-20).
-  b.place('fixture.chest_firebrick', 19, 18);
   return b.toStamp('stonecrop');
 }
 

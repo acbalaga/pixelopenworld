@@ -163,3 +163,35 @@ describe('scripted run through the Undermill', () => {
     expect(where()).toBe('room.region');
   });
 });
+
+describe('scripted run through Stonecrop Deeps', () => {
+  it('in at the mouth, through every edge with the key, out at the exit', async () => {
+    const { DEEPS_BUILT } = await import('../../src/content/world/dungeons/deeps');
+    const { give } = await import('../../src/sim/items');
+    const m = DEEPS_BUILT;
+    const s = createDemoState(5, 0);
+    s.region = 'dawnmeadow';
+    s.tick = 10_000;
+    s.world = grid;
+    s.stream = newStream(grid, false);
+    const f = feetAt(2, 2);
+    const me = createAvatar(s, f.x, f.y);
+    give(s, me, 'item.foreman_key', 1, 'seed');
+    const where = (): string | undefined => {
+      const p = s.entities.comps.pos[me]!;
+      return roomAt(Math.floor(p.x / 256 / 16), Math.floor((p.y / 256 - 1) / 16), 'dawnmeadow')?.id;
+    };
+    const stand = (t: { x: number; y: number }): void => {
+      s.entities.comps.pos[me] = { x: px(t.x * 16 + 8), y: px(t.y * 16 + 8) };
+      for (let i = 0; i < 3; i++) stepWorld(s, me, { commands: [] } as never);
+    };
+    stand(m.spec.mouth.at);
+    expect(where()).toBe(m.roomId('d1'));
+    for (const e of m.def.edges) {
+      stand(m.regionTile(e.from, e.at));
+      expect(where(), `${e.from} to ${e.to}`).toBe(m.roomId(e.to));
+    }
+    stand(m.regionTile('d1', m.spec.mouth.exit));
+    expect(where()).toBe('room.region');
+  });
+});

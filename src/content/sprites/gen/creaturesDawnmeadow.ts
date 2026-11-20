@@ -530,6 +530,13 @@ export function dawnmeadowCreatureSprites(): SpriteDef[] {
     // The Undermill's boss: a long eel in the colors of deep water.
     leechMaker('creature.millrace_eel', [12, 13, 14, 15]),
     leechMaker('creature.root_grub'),
+    // The Deeps' boss: a clockwork digger, a rubblet built big with a furnace glow.
+    figureMaker('creature.foremans_engine', {
+      figure: 'rubblet',
+      body: STONE,
+      accent: FIRE,
+      size: 24,
+    }),
     figureMaker('creature.rubblet', { figure: 'rubblet', body: STONE, accent: STONE }),
     birdMaker('creature.crag_hawk', {
       size: 20,

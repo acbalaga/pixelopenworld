@@ -113,6 +113,8 @@ export interface FixtureDef {
    * sluice switch is on, and high otherwise, or while the named basin has been filled by a Tide hit.
    */
   water?: { sluice: string; when: 'low' | 'high'; basin?: string };
+  /** Switch: the avatar must have at least this many points in the skill to throw it. */
+  needs?: { skill: string; points: number };
   /** Gate: shut except while the tide is out (m4). No plate needed. */
   tide?: 'low';
   /** Vent: every `period` ticks it shows for `telegraph` ticks, then bursts, hurting an avatar within `radius` px. */

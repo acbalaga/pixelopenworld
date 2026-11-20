@@ -834,6 +834,33 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 8,
     shape: { kind: 'arc', reach: 26, cos256: 100 },
   },
+  /** The Foreman's Engine rams along its rail: a long dash with a long tell. */
+  'attack.engine_ram': {
+    id: 'attack.engine_ram',
+    family: 'creature',
+    windup: 34,
+    active: 10,
+    recover: 32,
+    mult: 150,
+    stagger: 0,
+    knock: 24,
+    shape: { kind: 'line', reach: 20, halfWidth: 16 },
+    dash: 150,
+    heavy: true,
+  },
+  /** It vents steam in a ring. The ground marker is the circle. */
+  'attack.engine_steam': {
+    id: 'attack.engine_steam',
+    family: 'creature',
+    windup: 26,
+    active: 3,
+    recover: 24,
+    mult: 120,
+    stagger: 0,
+    knock: 16,
+    shape: { kind: 'circle', radius: 46 },
+    heavy: true,
+  },
   /** The Millrace Eel snaps at what stands at the lip of the channel. */
   'attack.eel_snap': {
     id: 'attack.eel_snap',

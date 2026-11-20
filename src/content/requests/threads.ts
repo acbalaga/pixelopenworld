@@ -322,12 +322,12 @@ export const THREAD_STAGES: readonly AuthoredRequest[] = [
       row: 't3',
       giver: 'npc.foreman',
       title: 'Strike: what is below',
-      ask: 'Something has been dropping rubble down there on purpose, and the crew will not go until it stops. Put down four rubblets, or light the way so they can see it for themselves: six flasks of lantern oil.',
+      ask: 'Something has been dropping rubble down there on purpose, and the crew will not go until it stops. It is the old digger, the Engine, deep in the Deeps. Stop it, by breaking it or by jamming its gears, or light the way so they can see it for themselves: six flasks of lantern oil.',
       ways: [
         {
           id: 'defeat',
-          label: 'Put the Rubblets down',
-          steps: [{ kind: 'defeat', creature: 'creature.rubblet', count: 4 }],
+          label: "Stop the Foreman's Engine, broken or jammed",
+          steps: [{ kind: 'defeat', creature: 'creature.foremans_engine', count: 1 }],
         },
         {
           id: 'oil',
