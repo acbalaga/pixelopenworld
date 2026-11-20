@@ -335,7 +335,15 @@ function crabMaker(id: string, look: CrabLook): Maker {
 }
 
 /** A leech: a long segmented slug that humps along. */
-function leechMaker(id: string): Maker {
+function leechMaker(
+  id: string,
+  tones: readonly [number, number, number, number] = [
+    ROSE[1],
+    FUR_RUST[1],
+    FUR_RUST[2],
+    FUR_RUST[3],
+  ],
+): Maker {
   return {
     id,
     size: 16,
@@ -351,9 +359,9 @@ function leechMaker(id: string): Maker {
         const t = i / (len - 1);
         const rise = Math.round(Math.sin(t * Math.PI) * (3 + hump));
         const y = 12 - rise - (p.rear && i > len / 2 ? 2 : 0);
-        const tone = i % 3 === 0 ? ROSE[1] : i % 3 === 1 ? FUR_RUST[1] : FUR_RUST[2];
+        const tone = i % 3 === 0 ? tones[0] : i % 3 === 1 ? tones[1] : tones[2];
         im.rect(x0 + i, y - tall, x0 + i, 12, tone);
-        im.set(x0 + i, y - tall, FUR_RUST[3]);
+        im.set(x0 + i, y - tall, tones[3]);
       }
       if (p.view !== 'up') {
         const hx = p.view === 'right' ? x0 + len - 1 : 8;
@@ -519,6 +527,8 @@ export function dawnmeadowCreatureSprites(): SpriteDef[] {
     figureMaker('creature.barrow_bones', { figure: 'bones', body: BONE, accent: STONE }),
     crabMaker('creature.reed_crab', { body: FIRE, claw: [21, 22, 23, 23] }),
     leechMaker('creature.marsh_leech'),
+    // The Undermill's boss: a long eel in the colors of deep water.
+    leechMaker('creature.millrace_eel', [12, 13, 14, 15]),
     leechMaker('creature.root_grub'),
     figureMaker('creature.rubblet', { figure: 'rubblet', body: STONE, accent: STONE }),
     birdMaker('creature.crag_hawk', {

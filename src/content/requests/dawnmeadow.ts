@@ -1,4 +1,5 @@
 import { REQUEST_BALANCE as RB } from '../balance/requests';
+import { UNDERMILL_BUILT } from '../world/dungeons/undermill';
 import { THREAD_STAGES } from './threads';
 import type { RequestDef, RequestObjective } from './types';
 
@@ -410,6 +411,37 @@ export const AUTHORED: readonly AuthoredRequest[] = [
     },
   },
   {
+    key: 'grist_sluice',
+    row: 'r6',
+    giver: 'npc.miller',
+    title: 'Grist and sluice',
+    ask: 'There is a wheel under the mill that used to set the water. I have not been down in years. Go to the wheel hall, see if the wheel still turns, and tell me.',
+    ways: [
+      {
+        id: 'visit',
+        label: 'Reach the wheel hall under the mill',
+        steps: [
+          {
+            kind: 'reach',
+            room: UNDERMILL_BUILT.roomId('u2'),
+            from: UNDERMILL_BUILT.portal('u1', 'u2'),
+            withinTicks: 3600,
+          },
+        ],
+      },
+    ],
+    reward: { coin: 70, renown: 2 },
+    estMinutes: 15,
+    talk: {
+      offer: 'Is anything wrong under the mill?',
+      remind: 'About the wheel.',
+      accepted:
+        'The door is on the path south of the mill. Mind the crabs. Water gets in everywhere.',
+      progress: 'The wheel hall. Go down and look, then come and tell me.',
+      report: 'Still there, you say. Good. That is more than I hoped. Take this.',
+    },
+  },
+  {
     key: 'wasps_orchard',
     row: 'r12',
     giver: 'npc.farmer',
@@ -466,6 +498,7 @@ export function authoredDefs(): Record<string, RequestDef> {
 export function authoredStrings(): Record<string, string> {
   const out: Record<string, string> = {
     'dlg.c_work': 'Is there any work for me?',
+    'dlg.c_more': 'Anything else?',
     'dlg.rq.work': 'There is always something. Ask.',
   };
   for (const a of EVERY) {

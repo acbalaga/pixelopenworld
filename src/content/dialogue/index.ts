@@ -1004,11 +1004,24 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
     });
     if (flows.length > 0) {
       for (const f of flows) Object.assign(nodes, f.nodes);
+      // A giver with more than three jobs shows the rest on a second page (at most 6 choices a node).
+      const first = flows.slice(0, 3);
+      const rest = flows.slice(3);
       nodes['work'] = {
         id: 'work',
         text: 'dlg.rq.work',
-        choices: [...flows.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
+        choices: [
+          ...first.flatMap((f) => [f.offer, f.remind]),
+          ...(rest.length > 0 ? [{ text: 'dlg.c_more', next: 'work2' }] : []),
+          { text: 'dlg.c_bye', next: null },
+        ],
       };
+      if (rest.length > 0)
+        nodes['work2'] = {
+          id: 'work2',
+          text: 'dlg.rq.work',
+          choices: [...rest.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
+        };
       entries.unshift(...flows.map((f) => f.ready));
       doors.push({ text: 'dlg.c_work', next: 'work' });
     }

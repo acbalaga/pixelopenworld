@@ -46,7 +46,7 @@ export type FixtureType =
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
 
 /** Kinds of hit that break a wall: a heavy weapon swing, a Stone hit, an Ember hit. */
-export type HitKind = 'heavy' | 'stone' | 'ember';
+export type HitKind = 'heavy' | 'stone' | 'ember' | 'tide';
 
 /** A side of a door, for a shortcut that opens from one side only. */
 export type Side = 'N' | 'E' | 'S' | 'W';
@@ -108,6 +108,11 @@ export interface FixtureDef {
   opensFrom?: Side;
   /** Portal: arriving costs this percent of maximum Health (never the last point). A drop. */
   fall?: number;
+  /**
+   * Gate: opens and shuts with the water level (the Undermill). The level is low while the named
+   * sluice switch is on, and high otherwise, or while the named basin has been filled by a Tide hit.
+   */
+  water?: { sluice: string; when: 'low' | 'high'; basin?: string };
   /** Gate: shut except while the tide is out (m4). No plate needed. */
   tide?: 'low';
   /** Vent: every `period` ticks it shows for `telegraph` ticks, then bursts, hurting an avatar within `radius` px. */

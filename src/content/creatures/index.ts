@@ -1,5 +1,6 @@
 import { DAWNMEADOW_CREATURES } from './dawnmeadow';
 import { ROOTWAY_CREATURES } from './rootway';
+import { UNDERMILL_CREATURES } from './undermill';
 import type { CreatureDef, SpawnerDef } from './types';
 import { zoneSpawners } from './zoneSpawners';
 import { dungeonSpawners } from './dungeonSpawners';
@@ -8,6 +9,7 @@ import { dungeonSpawners } from './dungeonSpawners';
 export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   ...DAWNMEADOW_CREATURES,
   ...ROOTWAY_CREATURES,
+  ...UNDERMILL_CREATURES,
   /** The par common enemy (design/04): time to kill 4 to 8 seconds. A Chaser. */
   'creature.mossling': {
     id: 'creature.mossling',
@@ -326,6 +328,15 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     respawn: 600,
     radius: 0,
     daily: true,
+  },
+  'spawner.um_eel': {
+    kind: 'spawner.um_eel',
+    creature: 'creature.millrace_eel',
+    cap: 1,
+    respawn: 1,
+    radius: 0,
+    daily: true,
+    boss: 'boss.millrace_eel',
   },
   'spawner.old_bramblehide': {
     kind: 'spawner.old_bramblehide',

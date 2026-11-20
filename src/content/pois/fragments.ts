@@ -27,7 +27,7 @@ export const FRAGMENT_SLOTS: readonly FragmentSlot[] = [
   inside('dm_f05', 'dungeon.m5'), // the chapel crypt
   inside('dm_f06', 'dungeon.m10'), // the Shepherd's Barrow
   inside('dm_f07', 'dungeon.rootway'), // Rootway R9
-  later('dm_f08'), // the Undermill cistern
+  inside('dm_f08', 'dungeon.undermill'), // the Undermill cistern
   later('dm_f09'), // Stonecrop Deeps, the sealed vein
   later('dm_f10'), // the Thornwall keep, upper room
   open('dm_f11', 150, 266), // the stone circle

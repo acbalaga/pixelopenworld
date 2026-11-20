@@ -222,6 +222,31 @@ function tides(state: SimState): void {
   }
 }
 
+/** True if any fixture of this kind is open (a switch on, a basin filled). */
+function anyOpen(state: SimState, kind: string): boolean {
+  for (const id of query(state.entities, 'fixture')) {
+    const f = getComp(state.entities, id, 'fixture');
+    if (f?.kind === kind && f.open) return true;
+  }
+  return false;
+}
+
+/** Water gates stand open when the water is at the level they want. Low water: a sluice is on. */
+function waters(state: SimState): void {
+  for (const id of query(state.entities, 'fixture')) {
+    const f = getComp(state.entities, id, 'fixture');
+    const w = f ? FIXTURES[f.kind]?.water : undefined;
+    if (!f || !w) continue;
+    const high = !anyOpen(state, w.sluice) || (w.basin !== undefined && anyOpen(state, w.basin));
+    const open = w.when === 'high' ? high : !high;
+    if (f.open === open) continue;
+    f.open = open;
+    const body = getComp(state.entities, id, 'body');
+    if (body) body.solid = !open;
+    emit(state.events, { type: open ? 'gateOpened' : 'gateClosed', id });
+  }
+}
+
 /** Vents burst on their cycle, once, and hurt every avatar within reach. */
 function vents(state: SimState): void {
   for (const id of query(state.entities, 'fixture', 'pos')) {
@@ -246,6 +271,7 @@ function vents(state: SimState): void {
 export function dungeonSystem(state: SimState): void {
   arenas(state);
   tides(state);
+  waters(state);
   vents(state);
   delving(state);
 }

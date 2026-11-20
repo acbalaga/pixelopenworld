@@ -834,6 +834,32 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 8,
     shape: { kind: 'arc', reach: 26, cos256: 100 },
   },
+  /** The Millrace Eel snaps at what stands at the lip of the channel. */
+  'attack.eel_snap': {
+    id: 'attack.eel_snap',
+    family: 'creature',
+    windup: 16,
+    active: 3,
+    recover: 18,
+    mult: 110,
+    stagger: 0,
+    knock: 14,
+    shape: { kind: 'arc', reach: 34, cos256: 90 },
+    heavy: true,
+  },
+  /** It whips its length along the channel: a long, narrow line with a long tell. */
+  'attack.eel_lash': {
+    id: 'attack.eel_lash',
+    family: 'creature',
+    windup: 30,
+    active: 4,
+    recover: 26,
+    mult: 130,
+    stagger: 0,
+    knock: 20,
+    shape: { kind: 'line', reach: 76, halfWidth: 9 },
+    heavy: true,
+  },
   /** A Root Grub bites as it comes up. */
   'attack.grub_bite': {
     id: 'attack.grub_bite',
