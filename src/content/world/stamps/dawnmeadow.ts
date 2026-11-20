@@ -34,6 +34,8 @@ function millbrook(): StampV2 {
   b.rect(10, 19, 14, 2, Terrain.Dirt);
   b.rect(2, 19, 8, 2, Terrain.Dirt);
   // The barn, and three farms with fenced fields.
+  b.place('npc.miller', 6, 20);
+  b.place('npc.farmer', 21, 6);
   b.building(3, 22, 9, 6, { roof: 'thatch', door: 4, label: 'barn' });
   b.building(18, 1, 7, 5, { roof: 'thatch', door: 3, label: 'farm one' });
   b.field(16, 7, 11, 5);
@@ -73,6 +75,7 @@ function reedmouth(): StampV2 {
   // The jetty runs out into the water.
   b.rect(11, 8, 3, 9, Terrain.Planks);
   b.place('fixture.waystone', 12, 15);
+  b.place('npc.fisher', 12, 10);
   return b.toStamp('reedmouth');
 }
 
@@ -92,6 +95,7 @@ function stonecrop(): StampV2 {
   b.object(13, 2, 'tile.crate');
   b.object(13, 3, 'tile.barrel');
   b.place('fixture.waystone', 22, 15);
+  b.place('npc.foreman', 14, 10);
   b.object(17, 17, 'tile.rock');
   b.place('fixture.tablet', 16, 17);
   // A crate for the Deeps' firebricks, a stand-in until M4-11 (M4-20).

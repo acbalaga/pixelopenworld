@@ -6,6 +6,17 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   ...TRIAL_STRINGS,
   ...REQUEST_STRINGS,
   'dlg.c_bye': 'Goodbye.',
+  'dlg.carpenter.greet':
+    'Planks, beams, a good axe handle. If it is wood and it is wrong, bring it here.',
+  'dlg.tinker.greet': 'Springs and clips and things that go click. Mind the bench, it bites.',
+  'dlg.miller.greet': 'Flour by the sack and grain by the cart. The wheel does the thinking.',
+  'dlg.farmer.greet': 'Dad says I should be in for supper. The barley says otherwise.',
+  'dlg.fisher.greet': 'Quiet today. The fish are listening, so keep your voice down.',
+  'dlg.foreman.greet': 'Stone does not move itself. Stand back from the lip and we will get along.',
+  'dlg.hermit.greet': 'Far enough from town to hear the wind think. What brings you up here?',
+  'dlg.reeve.greet':
+    'Welcome to Hearthford. If something is wrong in the town, it ends up on my table sooner or later.',
+
   'dlg.c_accept': 'I will see to it.',
   'dlg.c_later': 'Not right now.',
   'dlg.c_test': 'I want to be tested.',

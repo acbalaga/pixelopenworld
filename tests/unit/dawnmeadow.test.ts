@@ -12,6 +12,7 @@ import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion, type WorldFiles } from '../../tools/bake-world/bake';
 import { rosterSpawnerKinds } from '../../src/content/creatures/zoneSpawners';
 import { ROAMERS } from '../../src/content/creatures/roamers';
+import { PEOPLE } from '../../src/content/people';
 import { ROSTERS } from '../../src/content/world/rosters';
 import {
   MIN_LANDMARK_HEIGHT,
@@ -331,5 +332,29 @@ describe('Hollowhorn route check (M4-05)', () => {
       (def as { stops: unknown }).stops = stops;
     }
     expect(() => bakeRegion(DAWNMEADOW, STAMPS)).not.toThrow();
+  });
+});
+
+describe('Dawnmeadow people (M4-12)', () => {
+  it('places each of the sixteen named people once, and each stands on open ground', () => {
+    const grid = new Map<string, Uint8Array>();
+    for (const [name, v] of files) if (name.endsWith('.bin')) grid.set(name, v as Uint8Array);
+    const npcs = objects.filter((o) => o.kind.startsWith('npc.'));
+    for (const id of Object.keys(PEOPLE))
+      expect(
+        npcs.filter((o) => o.kind === id),
+        id,
+      ).toHaveLength(1);
+    expect(npcs).toHaveLength(Object.keys(PEOPLE).length);
+    // Each stands on a tile nothing solid occupies.
+    for (const o of npcs) {
+      const c = decodeChunk(
+        grid.get(
+          `dawnmeadow/chunk-${Math.floor(o.x / CHUNK_TILES)}-${Math.floor(o.y / CHUNK_TILES)}.bin`,
+        )!,
+      );
+      const i = (o.y % CHUNK_TILES) * CHUNK_TILES + (o.x % CHUNK_TILES);
+      expect(c.collision[i], `${o.kind} at ${o.x}, ${o.y}`).toBe(0);
+    }
   });
 });
