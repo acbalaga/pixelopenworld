@@ -448,10 +448,6 @@ describe('Dawnmeadow people (M4-12)', () => {
       );
     };
     for (const [id, p] of Object.entries(PLACES)) {
-      if (id.startsWith('cairnmoor.')) {
-        expect(p.spot, id).toBeUndefined();
-        continue;
-      }
       expect(p.spot, id).toBeDefined();
       const { rect, slots } = p.spot!;
       if (p.part) expect(rect, id).toEqual(part(p.part));

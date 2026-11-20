@@ -45,8 +45,9 @@ describe('people keep their schedules (M4-12)', () => {
     }
   });
 
-  it('leave a person where they are when their place has no standing tiles yet', () => {
-    expect(slotFor('npc.hermit', 'cairnmoor.well')).toBeNull();
+  it('puts Old Fen at his well by day and his shelter by night', () => {
+    expect(slotFor('npc.hermit', 'cairnmoor.well')).not.toBeNull();
+    expect(slotFor('npc.hermit', 'cairnmoor.shelter')).not.toBeNull();
   });
 
   it('never move a person while they, or the place they are bound for, are on screen', () => {

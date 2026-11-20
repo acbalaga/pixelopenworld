@@ -274,7 +274,25 @@ function scarecrowLine(): StampV2 {
   return b.toStamp('poi_scarecrow_line');
 }
 
+/** Old Fen's well on Cairnmoor: a thatched shelter, and a well ringed with stones. The open ground in front is where he stands. */
+function hermitWell(): StampV2 {
+  const b = new StampBuilder(14, 6);
+  b.rect(0, 3, 14, 3, Terrain.Dirt);
+  b.building(0, 0, 5, 3, { roof: 'thatch', door: 2, label: 'shelter' });
+  b.ground(10, 1, Terrain.Water);
+  for (const [x, y] of [
+    [9, 1],
+    [11, 1],
+    [10, 0],
+    [10, 2],
+  ] as const)
+    b.object(x, y, 'tile.rock');
+  b.object(13, 1, 'tile.bush_dry_0');
+  return b.toStamp('poi_hermit_well');
+}
+
 export const POI_STAMPS: StampV2[] = [
+  hermitWell(),
   idol(),
   treeShrine(),
   vista(),

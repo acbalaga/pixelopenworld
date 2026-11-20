@@ -468,5 +468,72 @@ const m8 = mini({
   ],
 });
 
+// ---- m9 Hermit's Well: rings going down, and a hermit's notes on the way (Deciphering). ----
+const M9 = 'dungeon.m9';
+const m9 = mini({
+  n: 'm9',
+  exit: { x: 7, y: 8 },
+  rooms: [
+    room('w1', 1, 6, 14, 10, {
+      objects: [
+        { x: 3, y: 3, kind: 'fixture.m9_note_a' },
+        { x: 10, y: 5, kind: 'spawner.dg_moor_wisp' },
+      ],
+      extra: { start: { x: 7, y: 7 } },
+    }),
+    room('w2', 2, 6, 12, 10, {
+      objects: [
+        { x: 3, y: 3, kind: 'fixture.m9_note_b' },
+        { x: 8, y: 5, kind: 'spawner.dg_moor_wisp' },
+        { x: 9, y: 3, kind: 'fixture.m9_note_c' },
+      ],
+    }),
+    room('w3', 3, 6, 10, 8, {
+      objects: [
+        { x: 5, y: 3, kind: 'fixture.m9_chest' },
+        { x: 3, y: 3, kind: 'fixture.m9_note_d' },
+        // A fragment slot, empty (DM-F13). Lore arrives in M10.
+        { x: 7, y: 5, kind: 'marker.fragment.dm_f13' },
+      ],
+    }),
+  ],
+  edges: [open('w1', 'w2', [12, 4], [1, 4]), open('w2', 'w3', [10, 6], [1, 4])],
+  minutes: 10,
+  parts: [
+    ...['a', 'b', 'c', 'd'].map((k): FixtureDef => ({
+      kind: `fixture.m9_note_${k}`,
+      type: 'tablet',
+      sprite: 'prop.tablet',
+      size: 12,
+    })),
+    chest(M9, 'fixture.m9_chest', { items: [{ item: 'item.herbed_skewer', qty: 2 }], coin: 45 }),
+  ],
+});
+
+// ---- m12 Lamp Tower: the way up is dark until the lamp at the top is lit. ----
+const M12 = 'dungeon.m12';
+const m12 = mini({
+  n: 'm12',
+  exit: { x: 5, y: 8 },
+  rooms: [
+    room('l1', 0, 7, 12, 10, {
+      objects: [{ x: 4, y: 3, kind: 'spawner.dg_crag_hawk' }],
+      extra: { start: { x: 5, y: 7 } },
+    }),
+    room('l2', 1, 7, 12, 10, {
+      objects: [
+        { x: 6, y: 2, kind: 'fixture.torch' },
+        { x: 4, y: 5, kind: 'spawner.dg_thornling_scout' },
+        { x: 9, y: 6, kind: 'fixture.m12_chest' },
+      ],
+      extra: { dark: true },
+    }),
+  ],
+  edges: [open('l1', 'l2', [10, 1], [10, 8])],
+  parts: [
+    chest(M12, 'fixture.m12_chest', { items: [{ item: 'item.lantern_oil', qty: 2 }], coin: 40 }),
+  ],
+});
+
 /** The mini-dungeons so far. */
-export const MINIS = [m1, m2, m3, m4, m5, m6, m7, m8, m10, m11] as const;
+export const MINIS = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12] as const;

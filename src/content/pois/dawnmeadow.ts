@@ -55,6 +55,8 @@ export const DAWNMEADOW_POIS: readonly PoiDef[] = [
   poi('scarecrow_line', 'puzzle', 301, 106, {
     stamp: { id: 'poi_scarecrow_line', x: 301, y: 105 },
   }),
+  // Old Fen's well, with the Hermit's Well (m9) under it.
+  poi('old_fen_well', 'hermit', 8, 86, { stamp: { id: 'poi_hermit_well', x: 2, y: 82 } }),
   // The Cairnmoor ring stands already (a stamp of its own), so its vista is a point in it.
   poi('cairnmoor_ring', 'vista', 47, 49),
 ];

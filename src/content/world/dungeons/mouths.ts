@@ -32,5 +32,7 @@ export const MOUTHS: Readonly<Record<string, MouthSite>> = {
   m10: site('dg_mouth_tomb', 125, 301),
   m4: site('dg_mouth_arch', 313, 266),
   m8: site('dg_mouth_arch', 199, 60),
+  m9: site('dg_mouth_arch', 25, 87),
+  m12: site('dg_mouth_tower', 227, 41),
   m11: site('dg_mouth_arch', 204, 294),
 };
