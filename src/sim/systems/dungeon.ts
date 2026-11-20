@@ -15,7 +15,9 @@ import { destroy, getComp, isAlive, query, type EntityId } from '../kernel/entit
 import { emit } from '../kernel/events';
 import { SUBPX, type Vec } from '../kernel/fixed';
 import { int } from '../kernel/rng';
+import { drain } from '../statuses';
 import type { SimState } from '../state';
+import { tideLow } from '../time';
 
 const TILE = 16;
 
@@ -207,8 +209,43 @@ function delving(state: SimState): void {
   }
 }
 
+/** Tide gates stand open while the tide is out and shut while it is in. */
+function tides(state: SimState): void {
+  const low = tideLow(state.worldTick);
+  for (const id of query(state.entities, 'fixture')) {
+    const f = getComp(state.entities, id, 'fixture');
+    if (!f || FIXTURES[f.kind]?.tide !== 'low' || f.open === low) continue;
+    f.open = low;
+    const body = getComp(state.entities, id, 'body');
+    if (body) body.solid = !low;
+    emit(state.events, { type: low ? 'gateOpened' : 'gateClosed', id });
+  }
+}
+
+/** Vents burst on their cycle, once, and hurt every avatar within reach. */
+function vents(state: SimState): void {
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    const f = getComp(state.entities, id, 'fixture');
+    const v = f ? FIXTURES[f.kind]?.vent : undefined;
+    const p = getComp(state.entities, id, 'pos');
+    if (!v || !p) continue;
+    // A vent's own place in the cycle comes from where it stands, so a row of them is not in step.
+    const t = (state.tick + ((p.x >> 8) * 7 + (p.y >> 8) * 13)) % v.period;
+    f!.open = t >= v.telegraph && t < v.telegraph + v.active;
+    if (t !== v.telegraph) continue;
+    for (const a of query(state.entities, 'avatar', 'pos')) {
+      if (!alive(state, a)) continue;
+      const q = getComp(state.entities, a, 'pos');
+      if (q && len({ x: (q.x - p.x) / SUBPX, y: (q.y - p.y) / SUBPX }) <= v.radius)
+        drain(state, a, v.damage, id, 'hazard');
+    }
+  }
+}
+
 /** Once per tick, after the fixtures system. */
 export function dungeonSystem(state: SimState): void {
   arenas(state);
+  tides(state);
+  vents(state);
   delving(state);
 }

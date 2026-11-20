@@ -24,10 +24,10 @@ const grid = new TileWorld();
 for (const [name, v] of files)
   if (/^dawnmeadow\/chunk-\d+-\d+\.bin$/.test(name)) grid.set(decodeChunk(v as Uint8Array));
 
-describe('Dawnmeadow mini-dungeons, first batch (M4-11)', () => {
-  it('are eight, each a mini with a region, an estimate and its own rooms', () => {
+describe('Dawnmeadow mini-dungeons (M4-11)', () => {
+  it('are ten, each a mini with a region, an estimate and its own rooms', () => {
     expect(MINIS.map((m) => m.def.id)).toEqual(
-      ['m1', 'm2', 'm3', 'm5', 'm6', 'm7', 'm10', 'm11'].map((n) => `dungeon.${n}`),
+      ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm10', 'm11'].map((n) => `dungeon.${n}`),
     );
     for (const m of MINIS) {
       expect(m.def.mini, m.def.id).toBe(true);

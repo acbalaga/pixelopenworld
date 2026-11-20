@@ -6,6 +6,7 @@ import {
   type Season,
   type Weather,
 } from '../content/balance/time';
+import { TIDE } from '../content/balance/dungeons';
 import { roomAt } from '../content/world/rooms';
 import { weatherFor } from '../content/world/weather';
 import type { SimState } from './state';
@@ -111,4 +112,9 @@ export function weatherAt(state: SimState, x: number, y: number): Weather {
 export function worldTickAt(trustedNowMs: number, epochMs: number): number {
   const ms = trustedNowMs - epochMs;
   return ms > 0 ? Math.floor((ms * TIME.ticksPerMinute) / 60_000) : 0;
+}
+
+/** True while the tide is out (POW-M4-11): the first `lowMinutes` of every `periodMinutes`. */
+export function tideLow(tick: number): boolean {
+  return minuteOfDay(tick) % TIDE.periodMinutes < TIDE.lowMinutes;
 }

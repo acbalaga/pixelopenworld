@@ -37,6 +37,8 @@ export type FixtureType =
   | 'arena'
   | 'ledge'
   | 'rest'
+  /** A heat vent: bursts on a cycle and hurts whoever stands near it (m8). */
+  | 'vent'
   /** A thing that records being used and does nothing else (a scarecrow, a mound of earth). */
   | 'site';
 
@@ -106,6 +108,10 @@ export interface FixtureDef {
   opensFrom?: Side;
   /** Portal: arriving costs this percent of maximum Health (never the last point). A drop. */
   fall?: number;
+  /** Gate: shut except while the tide is out (m4). No plate needed. */
+  tide?: 'low';
+  /** Vent: every `period` ticks it shows for `telegraph` ticks, then bursts, hurting an avatar within `radius` px. */
+  vent?: { radius: number; telegraph: number; active: number; period: number; damage: number };
   /** Gate: an arena door. It stands open until the arena starts, shuts while it is live, opens when cleared. */
   arenaDoor?: boolean;
   /** Arena trigger: the avatar this close (px) starts it. The doors are the gate kinds named. */

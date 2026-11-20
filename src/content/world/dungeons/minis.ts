@@ -396,5 +396,77 @@ const m11 = mini({
   ],
 });
 
-/** The first batch of mini-dungeons. */
-export const MINIS = [m1, m2, m3, m5, m6, m7, m10, m11] as const;
+// ---- m4 Smugglers' Cove: a cave that floods twice a day. The inner gate is open only at low tide. ----
+const M4 = 'dungeon.m4';
+const m4 = mini({
+  n: 'm4',
+  exit: { x: 7, y: 8 },
+  rooms: [
+    room('cv1', 0, 5, 14, 10, {
+      // A closet at the east end behind the tide gate.
+      walls: [...column(10, 1, 3), ...column(10, 5, 8)],
+      objects: [
+        { x: 4, y: 3, kind: 'spawner.dgp_reed_crab' },
+        { x: 10, y: 4, kind: 'fixture.m4_tide_gate' },
+      ],
+      extra: { start: { x: 7, y: 7 } },
+    }),
+    room('cv2', 1, 5, 12, 10, {
+      objects: [
+        { x: 4, y: 4, kind: 'spawner.dg_marsh_leech' },
+        { x: 8, y: 6, kind: 'spawner.dg_reed_crab' },
+        { x: 6, y: 3, kind: 'fixture.m4_chest' },
+      ],
+    }),
+  ],
+  edges: [open('cv1', 'cv2', [12, 4], [1, 4])],
+  parts: [
+    {
+      kind: 'fixture.m4_tide_gate',
+      type: 'gate',
+      sprite: 'prop.gate',
+      size: 16,
+      tide: 'low',
+    },
+    chest(M4, 'fixture.m4_chest', { items: [{ item: 'item.fish_river', qty: 2 }], coin: 40 }),
+  ],
+});
+
+// ---- m8 Abandoned Kiln: vents that burst on a cycle. ----
+const M8 = 'dungeon.m8';
+const vent = (kind: string): FixtureDef => ({
+  kind,
+  type: 'vent',
+  sprite: 'prop.plate',
+  vent: { radius: 36, telegraph: 45, active: 12, period: 150, damage: 40 },
+});
+const m8 = mini({
+  n: 'm8',
+  exit: { x: 7, y: 8 },
+  rooms: [
+    room('kn1', 3, 5, 14, 10, {
+      objects: [
+        { x: 4, y: 3, kind: 'spawner.dg_rubblet' },
+        { x: 6, y: 5, kind: 'fixture.m8_vent' },
+        { x: 9, y: 4, kind: 'fixture.m8_vent' },
+      ],
+      extra: { start: { x: 7, y: 7 } },
+    }),
+    room('kn2', 0, 6, 14, 10, {
+      objects: [
+        { x: 5, y: 3, kind: 'fixture.m8_vent' },
+        { x: 8, y: 5, kind: 'fixture.m8_vent' },
+        { x: 10, y: 3, kind: 'spawner.dgp_rubblet' },
+        { x: 11, y: 7, kind: 'fixture.m8_chest' },
+      ],
+    }),
+  ],
+  edges: [open('kn1', 'kn2', [12, 4], [1, 4])],
+  parts: [
+    vent('fixture.m8_vent'),
+    chest(M8, 'fixture.m8_chest', { items: [{ item: 'item.coal', qty: 4 }], coin: 40 }),
+  ],
+});
+
+/** The mini-dungeons so far. */
+export const MINIS = [m1, m2, m3, m4, m5, m6, m7, m8, m10, m11] as const;

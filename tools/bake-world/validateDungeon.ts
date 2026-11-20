@@ -50,7 +50,7 @@ function grid(room: DungeonRoom, edges: readonly DungeonEdge[]): Grid {
     if (def.type === 'block') blocks.push(i);
     else if (def.type === 'plate' && (def.holds ?? ['block']).includes('block')) plates.push(i);
     else if (def.type === 'portal' || def.type === 'arrival') mark(noPush, o.x, o.y, r.w, r.h);
-    else if (SOLID_TYPES.has(def.type) && !def.arenaDoor) walk[i] = false;
+    else if (SOLID_TYPES.has(def.type) && !def.arenaDoor && !def.tide) walk[i] = false;
   }
   for (const e of edges) {
     if (e.from === room.id) mark(noPush, e.at.x, e.at.y, r.w, r.h);
