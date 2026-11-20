@@ -20,6 +20,8 @@ export interface AuthoredTrial {
   /** The player's button in the giver's test menu. */
   button: string;
   estMinutes: number;
+  /** A recipe the giver teaches when they set the test. */
+  learn?: string;
 }
 
 export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
@@ -168,6 +170,173 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
     hint: 'Old Fen wants a good stretch of country walked and drawn on the map.',
     button: 'The mapping test.',
     estMinutes: 8,
+  },
+  {
+    skill: 'skill.heavy_arms',
+    giver: 'npc.smith',
+    objective: { kind: 'defeat', creature: 'creature.downs_ram', count: 2, only: { weapon: 'heavy' } },
+    intro:
+      'A heavy weapon does the work if you let it. Put down two rams on the downs with nothing but one, and I will say you can swing it.',
+    hint: 'Tobin wants two Downs Rams put down with a heavy weapon.',
+    button: 'The heavy test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.archery',
+    giver: 'npc.guard',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.meadow_hare',
+      count: 3,
+      only: { weapon: 'archery' },
+    },
+    intro:
+      'A hare does not wait to be aimed at. Take three in the commons with a bow or a sling and I will believe your eye.',
+    hint: 'Orla wants three Meadow Hares brought down with a bow or sling.',
+    button: 'The marksman test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.unarmed',
+    giver: 'npc.farmer',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.mossling',
+      count: 3,
+      only: { weapon: 'unarmed' },
+    },
+    intro:
+      'You do not always have a tool in your hand. Drive off three Mosslings with your fists, and I will not argue.',
+    hint: 'Tamsin wants three Mosslings put down bare handed.',
+    button: 'The scrapping test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.tide',
+    giver: 'npc.fisher',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.reed_crab',
+      count: 3,
+      only: { element: 'tide' },
+    },
+    intro:
+      'Water has a temper, and the delta shows it. Wash three crabs off my jetty with the tide and you will know it too.',
+    hint: 'Nessa wants three Reed Crabs put down with Tide magic.',
+    button: 'The tide test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.gale',
+    giver: 'npc.miller',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.hedge_sparrow',
+      count: 3,
+      only: { element: 'gale' },
+    },
+    intro:
+      'The sails turn on wind, and so do the sparrows that nest in them. Bring three down with a gust of your own.',
+    hint: 'Aldo wants three Hedge Sparrows brought down with Gale magic.',
+    button: 'The wind test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.stone',
+    giver: 'npc.foreman',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.rubblet',
+      count: 3,
+      only: { element: 'stone' },
+    },
+    intro:
+      'Rock answers rock. The rubble nesters will not go quietly, so break three of them with a stone of your own.',
+    hint: 'Garrick wants three Rubblets put down with Stone magic.',
+    button: 'The stonework test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.mending',
+    giver: 'npc.herbalist',
+    objective: { kind: 'perform', action: 'technique', technique: 'technique.mending_mend', count: 3 },
+    intro:
+      'Mending is care that you can do while someone is watching. Mend yourself three times, properly, and I will watch.',
+    hint: 'Ilse wants Mend cast three times.',
+    button: 'The mending test.',
+    estMinutes: 5,
+  },
+  {
+    skill: 'skill.hexing',
+    giver: 'npc.scholar',
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.mossling',
+      count: 3,
+      only: { element: 'hex' },
+    },
+    intro:
+      'A hex is a small unkindness, aimed. Lay one on three Mosslings and see them off, and we will talk about the rest.',
+    hint: 'Wren wants three Mosslings put down with Hex.',
+    button: 'The hexing test.',
+    estMinutes: 6,
+  },
+  {
+    skill: 'skill.performance',
+    giver: 'npc.cook',
+    objective: {
+      kind: 'perform',
+      action: 'technique',
+      technique: 'technique.performance_hum',
+      count: 3,
+    },
+    intro: 'A song is only a song once it is finished. Hum through three in my hearing, start to end.',
+    hint: 'Hesper wants three songs finished, start to end.',
+    button: 'The singing test.',
+    estMinutes: 5,
+  },
+  {
+    skill: 'skill.delving',
+    giver: 'npc.hermit',
+    // From the fork to the stump room, the long way round: dark, a gate and a fight between.
+    objective: {
+      kind: 'reach',
+      room: rootwayRoomId('r6'),
+      from: rootwayPortal('r1', 'r2'),
+      withinTicks: 12 * 60 * 30,
+    },
+    intro:
+      'Going down is easy. Knowing what you are walking into is the skill. Go in at the oak, get through to the room with the stumps, and come back with all your parts.',
+    hint: 'Old Fen wants the Rootway crossed from the fork to the stump room within twelve minutes.',
+    button: 'The delving test.',
+    estMinutes: 10,
+  },
+  {
+    skill: 'skill.smithing',
+    giver: 'npc.smith',
+    objective: { kind: 'craft', recipe: 'recipe.sword_iron', minQuality: 1 },
+    intro:
+      'Smelt it, strike it, and bring me an iron sword that is better than common. I will show you the recipe. The rest is your hands.',
+    hint: 'Tobin wants an iron sword made at the anvil, Fine or better.',
+    button: 'The smithing test.',
+    estMinutes: 8,
+    learn: 'recipe.sword_iron',
+  },
+  {
+    skill: 'skill.athletics',
+    giver: 'npc.farmer',
+    // From the Waystone in the square to the great oak's cave mouth, about 130 tiles, on foot.
+    objective: {
+      kind: 'reach',
+      room: rootwayRoomId('r1'),
+      from: 'fixture.waystone',
+      withinTicks: 50 * 30,
+    },
+    intro:
+      'The cave under the great oak is a long way from the Waystone in the square. Start from the stone and be at the mouth in fifty seconds. Run, do not stroll.',
+    hint: 'Tamsin wants a run from the Waystone in the square to the cave under the great oak.',
+    button: 'The running test.',
+    estMinutes: 3,
   },
 ];
 

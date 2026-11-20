@@ -205,6 +205,19 @@ export function advanceTracked(
         finish(t, o.count);
       }
       return;
+    case 'techniqueUsed':
+      // A self technique with no attack and no song to finish (Mend) counts when it is cast.
+      if (e.who !== who) return;
+      for (const t of list) {
+        const { o, p } = t;
+        if (o.kind !== 'perform' || o.action !== 'technique' || o.technique !== e.technique)
+          continue;
+        const tech = TECHNIQUES[o.technique];
+        if (!tech || tech.attack || tech.channel) continue;
+        p.n++;
+        finish(t, o.count);
+      }
+      return;
     case 'perform':
       // A song finished. It counts for the objective that names it.
       if (e.who !== who) return;
