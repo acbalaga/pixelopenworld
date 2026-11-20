@@ -480,22 +480,21 @@ function bowLayer(b: BodyType, p: Pose): Img {
   return im;
 }
 
-/** Wraps: cloth bound round the knuckles, with the end of the strap trailing on a strike. */
+/** Wraps: the fist itself, recolored red so bare hands read as bound. Two pixels a hand, no extra shape. */
 function wrapsLayer(b: BodyType, p: Pose): Img {
   const im = new Img(24, 32);
   const [hx, hy] = hands(b, p).main;
   const side = p.dir === 'right';
   const cx = side ? hx + 1 : hx + 2;
   const reach = p.stance === 'strike' ? 3 : 0;
-  im.rect(cx - 1 + reach, hy - 1, cx + 1 + reach, hy + 1, 3);
-  im.rect(cx - 1 + reach, hy + 1, cx + 1 + reach, hy + 1, 2);
-  im.set(cx + reach, hy - 1, 31);
-  if (p.stance === 'strike') im.rect(cx - 3, hy + 1, cx - 2, hy + 2, 2);
+  im.rect(cx - 1 + reach, hy, cx + reach, hy + 1, 21);
+  im.set(cx - 1 + reach, hy + 1, 20);
+  im.set(cx + reach, hy + 1, 20);
   if (!side) {
-    // The other hand, on the off arm, so both fists read as wrapped.
+    // The other hand, on the off arm.
     const [ox, oy] = hands(b, p).off;
-    im.rect(ox - 2, oy - 1, ox, oy + 1, 3);
-    im.rect(ox - 2, oy + 1, ox, oy + 1, 2);
+    im.rect(ox - 1, oy, ox, oy + 1, 21);
+    im.rect(ox - 1, oy + 1, ox, oy + 1, 20);
   }
   return im;
 }
