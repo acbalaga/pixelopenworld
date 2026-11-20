@@ -9,6 +9,7 @@ import {
   unregisterTrial,
   type TrialDef,
 } from '../../src/content/skills';
+import { AUTHORED_TRIALS } from '../../src/content/skills/dawnmeadowTrials';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnEnemy } from '../../src/sim/combat/enemy';
 import { fightId, inFight } from '../../src/sim/fight';
@@ -442,7 +443,12 @@ describe('every authored Trial has a scripted run', () => {
       trialsSystem(s);
     },
   };
-  it.each(Object.keys(TRIALS))('%s', (id) => {
+  // Dawnmeadow's own rank 15 Trials (M4-12) have their scripted runs in dawnmeadowTrials.test.ts.
+  const authored = new Set(
+    AUTHORED_TRIALS.map((t) => `trial.${t.skill.replace(/^skill\./, '')}.15`),
+  );
+  const m3 = Object.keys(TRIALS).filter((id) => !authored.has(id));
+  it.each(m3)('%s', (id) => {
     const script = SCRIPTS[id];
     expect(script, `${id} has no scripted run`).toBeDefined();
     const { s, me } = world();
@@ -452,8 +458,8 @@ describe('every authored Trial has a scripted run', () => {
     expect(trialPassed(sk(s, me), t.skill, t.threshold)).toBe(true);
   });
   it('the eight rank 15 Trials are authored with strings and a giver', () => {
-    expect(Object.keys(TRIALS)).toHaveLength(8);
-    for (const t of Object.values(TRIALS)) {
+    expect(m3).toHaveLength(8);
+    for (const t of m3.map((id) => TRIALS[id]!)) {
       expect(t.threshold).toBe(15);
       expect(trialCount(t.objective)).toBeGreaterThan(0);
     }

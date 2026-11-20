@@ -56,8 +56,10 @@ export function mostShown(choices: readonly Choice[]): number {
   const seen = new Set<string>();
   let n = 0;
   for (const c of choices) {
-    const only = c.if?.length === 1 ? c.if[0] : undefined;
-    if (only && 'request' in only && (only.is === 'none' || only.is === 'active')) {
+    // The request whose state decides whether this choice shows: its offer (not yet taken) or its
+    // reminder (under way). The two never show together, whatever else the offer needs.
+    const only = c.if?.find((k) => 'request' in k && (k.is === 'none' || k.is === 'active'));
+    if (only && 'request' in only) {
       if (seen.has(only.request)) continue;
       seen.add(only.request);
     }

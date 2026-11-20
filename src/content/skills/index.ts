@@ -1,3 +1,4 @@
+import { authoredTrialDefs } from './dawnmeadowTrials';
 import { MAP_BALANCE } from '../balance/map';
 import type { SkillDef, TrialDef } from './types';
 
@@ -352,6 +353,9 @@ export const TRIALS: Record<string, TrialDef> = {
     estMinutes: 3,
   },
 };
+
+// Dawnmeadow's rank 15 Trials for the skills the first map did not test (M4-12).
+Object.assign(TRIALS, authoredTrialDefs());
 
 /** Adds or replaces a skill. For content that loads later, and for tests. */
 export function registerSkill(def: SkillDef): void {

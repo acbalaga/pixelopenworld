@@ -79,17 +79,22 @@ export type TrialObjective =
       untouched?: boolean;
       /** The whole count must fall inside this many ticks from the first kill. */
       withinTicks?: number;
+      /** Only kills made in these phases of the day (a night watch). */
+      phases?: DayPhase[];
     }
   | { kind: 'gather'; item?: string; tag?: string; count: number; phases?: DayPhase[] }
   | {
       kind: 'perform';
-      action: 'perfectDodge' | 'parry' | 'technique';
+      /** `haggle` is a better price won at a counter, `sleepOutdoors` a night under the sky, `readManual` a technique read from a book. */
+      action: 'perfectDodge' | 'parry' | 'technique' | 'haggle' | 'sleepOutdoors' | 'readManual';
       technique?: string;
       count: number;
       /** All within one fight (see `src/sim/fight.ts`). */
       inOneFight?: boolean;
     }
   | { kind: 'craft'; recipe: string; minQuality: Quality }
+  /** Uncover this many 4 by 4 tile blocks of the map (Cartography). */
+  | { kind: 'explore'; blocks: number }
   /** Feed creatures by hand (M4-05 feeding). A creature kind, or any. */
   | { kind: 'feed'; creature?: string; count: number }
   | { kind: 'deliver'; item: string; qty: number; minQuality?: Quality; to: string }

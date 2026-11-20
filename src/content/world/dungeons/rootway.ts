@@ -276,6 +276,16 @@ function inward(roomId: string, t: { x: number; y: number }): [number, number] {
 
 const kindOf = (n: number, side: 'a' | 'b'): string => `fixture.rw_e${n}${side}`;
 
+/** The portal fixture that takes the avatar from room `from` into room `to`, as a Trial can name it. */
+export function rootwayPortal(from: string, to: string): string {
+  const i = EDGES.findIndex((e) => e.from === from && e.to === to);
+  if (i < 0) throw new Error(`no Rootway edge ${from} to ${to}`);
+  return kindOf(i, 'a');
+}
+
+/** The id the avatar's room has while it stands in a Rootway room. */
+export const rootwayRoomId = (room: string): string => `${ID}.${room}`;
+
 /** The region tile the outside mouth stands on, at the great oak on Hollow Downs. */
 export const ROOTWAY_MOUTH = { x: 119, y: 250 } as const;
 /** The exit portal in the mouth room. */
