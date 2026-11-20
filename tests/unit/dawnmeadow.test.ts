@@ -179,7 +179,7 @@ describe('Hearthford', () => {
     }
   });
 
-  it('keeps the ten manual chests as stand-ins', () => {
+  it('holds the ten manual chests: eight at their places of interest, two in the Rootway', () => {
     expect(objects.filter((o) => o.kind.startsWith('fixture.chest_manual_'))).toHaveLength(10);
   });
 });
@@ -275,6 +275,55 @@ describe('the region checks', () => {
       wakePoints: [{ id: 'w1', x: 20, y: 370 }, ...DAWNMEADOW.wakePoints.slice(1)],
     };
     expect(validateRegion(wet, files).some((e) => e.includes('wake point w1'))).toBe(true);
+  });
+});
+
+describe('the discoverable check (M4-11)', () => {
+  const land = (spec: RegionSpec): string[] =>
+    validateRegion(spec, files).filter((e) => e.includes('chunk'));
+
+  it('rejects a land chunk with nothing to find that is not listed as pending', () => {
+    const unlisted: RegionSpec = {
+      ...DAWNMEADOW,
+      pendingDiscoverables: (DAWNMEADOW.pendingDiscoverables ?? []).slice(1),
+    };
+    const first = (DAWNMEADOW.pendingDiscoverables ?? [])[0]!;
+    expect(land(unlisted).some((e) => e.includes(`chunk ${first} holds no discoverable`))).toBe(
+      true,
+    );
+  });
+
+  it('rejects a pending chunk that has something now, and a pending chunk that is sea', () => {
+    const stale: RegionSpec = {
+      ...DAWNMEADOW,
+      // Hearthford's own chunk, and open sea.
+      pendingDiscoverables: [...(DAWNMEADOW.pendingDiscoverables ?? []), '5,5', '0,11'],
+    };
+    const bad = land(stale);
+    expect(bad.some((e) => e.includes('chunk 5,5') && e.includes('remove it'))).toBe(true);
+    expect(bad.some((e) => e.includes('chunk 0,11') && e.includes('not land'))).toBe(true);
+  });
+
+  it('counts a point of interest: one placed in a pending chunk takes it off the list', () => {
+    const key = (DAWNMEADOW.pendingDiscoverables ?? [])[0]!;
+    const [cx, cy] = key.split(',').map(Number) as [number, number];
+    const withPoi: RegionSpec = {
+      ...DAWNMEADOW,
+      pois: [...(DAWNMEADOW.pois ?? []), { id: 'poi.test', x: cx * 32 + 3, y: cy * 32 + 3 }],
+    };
+    expect(land(withPoi).some((e) => e.includes(`chunk ${key}`) && e.includes('remove it'))).toBe(
+      true,
+    );
+  });
+
+  it('rejects a point of interest that stands in water or in rock', () => {
+    const wet: RegionSpec = {
+      ...DAWNMEADOW,
+      pois: [...(DAWNMEADOW.pois ?? []), { id: 'poi.wet', x: 20, y: 370 }],
+    };
+    expect(
+      validateRegion(wet, files).some((e) => e.includes('poi.wet') && e.includes('open')),
+    ).toBe(true);
   });
 });
 

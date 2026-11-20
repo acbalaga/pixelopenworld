@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { DIALOGUES, NPCS } from '../../src/content/dialogue';
 import { AUTHORED_TRIALS } from '../../src/content/skills/dawnmeadowTrials';
 import { SKILLS, TRIALS } from '../../src/content/skills';
+import { TECHNIQUES } from '../../src/content/combat/techniques';
 import { DIALOGUE_STRINGS } from '../../src/content/strings/dialogue';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
+import { spawnEnemy } from '../../src/sim/combat/enemy';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { trialPassed } from '../../src/sim/skills';
 import { createDemoState, type SimState } from '../../src/sim/state';
@@ -36,9 +38,9 @@ const passed = (s: SimState, me: number, skill: string): boolean =>
   trialPassed(s.entities.comps.skills[me]!, skill, 15);
 
 describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
-  it('are fourteen, for fourteen different skills that exist, each a rank 15 Trial of its own', () => {
-    expect(AUTHORED_TRIALS).toHaveLength(14);
-    expect(new Set(AUTHORED_TRIALS.map((t) => t.skill)).size).toBe(14);
+  it('are twenty six, for twenty six different skills that exist, each a rank 15 Trial of its own', () => {
+    expect(AUTHORED_TRIALS).toHaveLength(26);
+    expect(new Set(AUTHORED_TRIALS.map((t) => t.skill)).size).toBe(26);
     for (const t of AUTHORED_TRIALS) {
       expect(SKILLS[t.skill], t.skill).toBeDefined();
       const def = TRIALS[`trial.${name(t.skill)}.15`]!;
@@ -65,6 +67,20 @@ describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
       'mining',
       'survival',
       'cartography',
+      // The two the first map gave to the wrong people, now with Tobin and Tamsin.
+      'smithing',
+      'athletics',
+      // The ten that had no Dawnmeadow trainer (the PR 110 query).
+      'heavy_arms',
+      'archery',
+      'unarmed',
+      'tide',
+      'gale',
+      'stone',
+      'mending',
+      'hexing',
+      'performance',
+      'delving',
     ];
     for (const n of named) expect(TRIALS[`trial.${n}.15`], n).toBeDefined();
   });
@@ -116,6 +132,44 @@ describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
         feed(s, { type: 'revealed', who: me, blocks: o.blocks - 1 });
         expect(passed(s, me, t.skill)).toBe(false);
         feed(s, { type: 'revealed', who: me, blocks: 1 });
+      } else if (o.kind === 'defeat') {
+        const tag = o.only?.weapon ?? o.only?.element ?? 'blades';
+        const kill = (tg: string): SimEvent => {
+          const foe = spawnEnemy(s, o.creature!, 400, 300);
+          s.entities.comps.fighter[foe]!.state = 'dead';
+          return {
+            type: 'damageDealt',
+            src: me,
+            dst: foe,
+            amount: 3,
+            crit: false,
+            bonus: false,
+            heavy: false,
+            tag: tg,
+          };
+        };
+        // A kill made with something else does not count, however many there are.
+        for (let i = 0; i < o.count; i++) feed(s, kill('wrong'));
+        expect(passed(s, me, t.skill), 'the wrong weapon').toBe(false);
+        for (let i = 0; i < o.count; i++) {
+          expect(passed(s, me, t.skill)).toBe(false);
+          feed(s, kill(tag));
+        }
+      } else if (o.kind === 'perform' && o.action === 'technique') {
+        const attackless = !TECHNIQUES[o.technique!]!.attack;
+        const song = Boolean(TECHNIQUES[o.technique!]!.channel);
+        for (let i = 0; i < o.count; i++) {
+          expect(passed(s, me, t.skill)).toBe(false);
+          // A song counts when it finishes, a self cast when it is cast, an attack when it starts.
+          feed(
+            s,
+            song
+              ? { type: 'perform', who: me, technique: o.technique! }
+              : attackless
+                ? { type: 'techniqueUsed', who: me, technique: o.technique! }
+                : { type: 'attackStarted', id: me, attack: TECHNIQUES[o.technique!]!.attack! },
+          );
+        }
       } else if (o.kind === 'perform') {
         const ev = (): SimEvent =>
           o.action === 'parry'

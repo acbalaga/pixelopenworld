@@ -80,6 +80,11 @@ export interface District {
   h: number;
 }
 
+/** A point of interest, as the bake checks see it (POW-M4-11). */
+export interface PoiPoint extends TilePoint {
+  id: string;
+}
+
 export interface RegionSpec {
   id: string;
   /** Seeds every fill generator. */
@@ -105,6 +110,14 @@ export interface RegionSpec {
   waystones: readonly NamedPoint[];
   /** Hub districts and streets, for the bake checks (optional). */
   districts?: readonly District[];
+  /** Points of interest, for the discoverable checks (optional). */
+  pois?: readonly PoiPoint[];
+  /**
+   * Land chunks, as `cx,cy`, that hold no discoverable yet. The bake fails for a chunk that has
+   * none and is not listed, and for a listed chunk that has one, so the list only shrinks. It is
+   * empty when POW-M4-11 is done.
+   */
+  pendingDiscoverables?: readonly string[];
   /** Landmarks tall enough to see from afar, with their height in tiles. Checked by the bake. */
   landmarkHeights?: Readonly<Record<string, number>>;
 }

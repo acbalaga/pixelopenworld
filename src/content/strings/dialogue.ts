@@ -58,13 +58,10 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
     'A little bread for the road, and I will show you how to be a shape in the dark.',
   'dlg.pilgrim.c_hide': 'A piece of bread for the lesson.',
   'dlg.pilgrim.taught': 'Stay low. Stay still. Let it look past you.',
-  'dlg.pilgrim.tests': 'Which road shall we try?',
-  'dlg.pilgrim.c_athletics': 'Test my legs.',
 
   'dlg.brin.greet': 'Welcome to the counter. Looking, buying, or selling?',
   'dlg.brin.again': 'Back again, {address}. What will it be?',
   'dlg.brin.c_shop': 'Show me what you have.',
-  'dlg.brin.c_test': 'I want to be tested at the anvil.',
   'dlg.brin.c_anvil': 'Anything I can do for the shop?',
   'dlg.brin.c_anvil_remind': 'About the metal.',
   'dlg.brin.anvil_accepted': 'Ore or ingots, I do not mind which. Bring it to the counter.',

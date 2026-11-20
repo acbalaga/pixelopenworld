@@ -158,5 +158,77 @@ export function validateRegion(spec: RegionSpec, files: WorldFiles): string[] {
         ),
       );
   }
+
+  errors.push(...validateDiscoverables(spec));
+  errors.push(...validatePois(spec, baked));
   return errors;
+}
+
+/** A point of interest stands on open ground. */
+function validatePois(spec: RegionSpec, baked: Baked): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const p of spec.pois ?? []) {
+    if (seen.has(p.id)) out.push(`${spec.id}: point of interest ${p.id} is listed twice`);
+    seen.add(p.id);
+    if (baked.collision(p.x, p.y) !== Solid.None)
+      out.push(`${spec.id}: ${p.id} at ${p.x}, ${p.y} is not open ground`);
+  }
+  return out;
+}
+
+/** Settlement stamps, which count as a discoverable for the chunk they stand in. */
+const SETTLEMENT_STAMPS = new Set(['hearthford', 'millbrook', 'reedmouth', 'stonecrop']);
+
+/**
+ * Every land chunk holds at least one discoverable (regions/01 section 12): a point of interest,
+ * a node cluster (two or more nodes), a settlement, a Waystone or a landmark. Sea, the true wall
+ * of the Crown and the underground rows are not land. A chunk with none must be listed in
+ * `pendingDiscoverables`, and a listed one that has one must come off the list.
+ */
+function validateDiscoverables(spec: RegionSpec): string[] {
+  if (!spec.pois) return [];
+  const rows = Math.min(spec.chunks.h, Math.floor(spec.biomes.length / 4));
+  const cell = (cx: number, cy: number, x: number, y: number): [string, string] => [
+    spec.biomes[cy * 4 + y]?.[cx * 4 + x] ?? 'x',
+    spec.elevation[cy * 4 + y]?.[cx * 4 + x] ?? '0',
+  ];
+  const isLand = (cx: number, cy: number): boolean => {
+    let dry = 0;
+    for (let y = 0; y < 4; y++)
+      for (let x = 0; x < 4; x++) {
+        const [b, e] = cell(cx, cy, x, y);
+        if (spec.biomeLegend[b] !== 'sea' && Number(e) < 3) dry++;
+      }
+    return dry >= 8;
+  };
+  const where = (p: { x: number; y: number }): string =>
+    `${Math.floor(p.x / CHUNK_TILES)},${Math.floor(p.y / CHUNK_TILES)}`;
+  const has = new Map<string, number>();
+  const bump = (k: string, n = 1): void => void has.set(k, (has.get(k) ?? 0) + n);
+  for (const p of spec.pois ?? []) bump(where(p), 2);
+  for (const p of [...spec.waystones, ...spec.landmarks]) bump(where(p), 2);
+  for (const pl of spec.placements) {
+    if (pl.stamp !== undefined && SETTLEMENT_STAMPS.has(pl.stamp)) bump(where(pl), 2);
+    else if (pl.kind.startsWith('node.')) bump(where(pl));
+  }
+  const pending = new Set(spec.pendingDiscoverables ?? []);
+  const out: string[] = [];
+  for (let cy = 0; cy < rows; cy++)
+    for (let cx = 0; cx < spec.chunks.w; cx++) {
+      if (!isLand(cx, cy)) continue;
+      const key = `${cx},${cy}`;
+      const ok = (has.get(key) ?? 0) >= 2;
+      if (!ok && !pending.has(key))
+        out.push(`${spec.id}: chunk ${key} holds no discoverable, and is not listed as pending`);
+      if (ok && pending.has(key))
+        out.push(
+          `${spec.id}: chunk ${key} holds a discoverable now, so remove it from pendingDiscoverables`,
+        );
+    }
+  for (const key of pending) {
+    const [cx, cy] = key.split(',').map(Number) as [number, number];
+    if (!isLand(cx, cy)) out.push(`${spec.id}: pending chunk ${key} is not land`);
+  }
+  return out;
 }

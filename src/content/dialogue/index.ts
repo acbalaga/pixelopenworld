@@ -457,19 +457,8 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
         do: [{ setFlag: 'met_brin' }],
         choices: [
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
-          {
-            text: 'dlg.brin.c_test',
-            next: 'offer_smithing',
-            if: [{ trial: 'trial.smithing.15', is: 'passed', not: true }],
-            do: [{ offerTrial: 'trial.smithing.15' }, { learnRecipe: 'recipe.sword_iron' }],
-          },
           { text: 'dlg.c_bye', next: null },
         ],
-      },
-      offer_smithing: {
-        id: 'offer_smithing',
-        text: 'trial.smithing.15.intro',
-        next: null,
       },
       again: {
         id: 'again',
@@ -478,12 +467,6 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
           { text: 'dlg.brin.c_shop', next: null, do: [{ openShop: 'shop.brin' }] },
           anvil.offer,
           anvil.remind,
-          {
-            text: 'dlg.brin.c_test',
-            next: 'offer_smithing',
-            if: [{ trial: 'trial.smithing.15', is: 'passed', not: true }],
-            do: [{ offerTrial: 'trial.smithing.15' }, { learnRecipe: 'recipe.sword_iron' }],
-          },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -855,21 +838,7 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
         choices: [
           deep.offer,
           deep.remind,
-          { text: 'dlg.c_test', next: 'tests' },
           { text: 'dlg.pilgrim.c_lesson', next: 'lesson' },
-          { text: 'dlg.c_bye', next: null },
-        ],
-      },
-      tests: {
-        id: 'tests',
-        text: 'dlg.pilgrim.tests',
-        choices: [
-          {
-            text: 'dlg.pilgrim.c_athletics',
-            next: 'offer_athletics',
-            if: [{ trial: 'trial.athletics.15', is: 'passed', not: true }],
-            do: [{ offerTrial: 'trial.athletics.15' }],
-          },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -885,7 +854,6 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
         ],
       },
       taught: { id: 'taught', text: 'dlg.pilgrim.taught', next: null },
-      offer_athletics: { id: 'offer_athletics', text: 'trial.athletics.15.intro', next: null },
     },
   },
   'npc.carpenter': {
@@ -994,6 +962,14 @@ const WORK_HOSTS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /**
+ * Where a giver's "Could you test me?" door goes when it is not where the work door goes: a node
+ * of their own that has room for it (Hesper's menu is full, so hers sits with her lessons).
+ */
+const TEST_HOSTS: Readonly<Record<string, readonly string[]>> = {
+  'npc.cook': ['lesson'],
+};
+
+/**
  * Adds Dawnmeadow's authored requests and Trials (M4-12) to their givers. A request gets a turn-in
  * entry and a place on the work node; a Trial gets a place on the test node. Each node is reached
  * from a door on the node the giver's menu starts at.
@@ -1009,6 +985,7 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
     const nodes: Record<string, DialogueNode> = { ...d.nodes };
     const entries = [...d.entries];
     const doors: Choice[] = [];
+    const testDoors: Choice[] = [];
 
     const mine = EVERY.filter((a) => a.giver === npc);
     const flows = mine.map((a) => {
@@ -1047,7 +1024,7 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
           text: `dlg.rq.t_${name}`,
           next: `rq_offer_${name}`,
           if: [{ trial, is: 'passed', not: true }],
-          do: [{ offerTrial: trial }],
+          do: [{ offerTrial: trial }, ...(t.learn ? [{ learnRecipe: t.learn }] : [])],
         });
       }
       nodes['rq_tests'] = {
@@ -1055,16 +1032,21 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
         text: 'dlg.rq.tests',
         choices: [...choices, { text: 'dlg.c_bye', next: null }],
       };
-      doors.push({ text: 'dlg.c_tests', next: 'rq_tests' });
+      (TEST_HOSTS[npc] ? testDoors : doors).push({ text: 'dlg.c_tests', next: 'rq_tests' });
     }
 
-    for (const h of WORK_HOSTS[npc] ?? ['greet']) {
-      const n = nodes[h];
-      if (!n?.choices) continue;
-      // Before the last choice, which is the way out.
-      const at = n.choices.length - 1;
-      nodes[h] = { ...n, choices: [...n.choices.slice(0, at), ...doors, ...n.choices.slice(at)] };
-    }
+    const addDoors = (hosts: readonly string[], list: readonly Choice[]): void => {
+      if (list.length === 0) return;
+      for (const h of hosts) {
+        const n = nodes[h];
+        if (!n?.choices) continue;
+        // Before the last choice, which is the way out.
+        const at = n.choices.length - 1;
+        nodes[h] = { ...n, choices: [...n.choices.slice(0, at), ...list, ...n.choices.slice(at)] };
+      }
+    };
+    addDoors(WORK_HOSTS[npc] ?? ['greet'], doors);
+    addDoors(TEST_HOSTS[npc] ?? WORK_HOSTS[npc] ?? ['greet'], testDoors);
     out[npc] = { ...d, entries, nodes };
   }
   return out;

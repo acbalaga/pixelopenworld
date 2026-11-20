@@ -1,3 +1,5 @@
+import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
+import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
 import { ROOTWAY_MOUTH, rootwayPlacements } from '../../dungeons/rootway';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
@@ -186,15 +188,9 @@ const placements: Placement[] = [
   at('fixture.withered_vine', 206, 146),
   at('fixture.hidden_niche', 210, 146),
 
-  // The manual chests, stand-ins until POW-M4-11 and POW-M4-21 place each in its own spot.
-  at('fixture.chest_manual_lunge', 140, 215),
-  at('fixture.chest_manual_light_feet', 125, 200),
-  at('fixture.chest_manual_kindling', 230, 235),
-  at('fixture.chest_manual_splash', 205, 240),
-  at('fixture.chest_manual_gust', 140, 150),
-  at('fixture.chest_manual_stone_fist', 230, 200),
-  at('fixture.chest_manual_mend', 178, 150),
-  at('fixture.chest_manual_road_songs', 150, 175),
+  // The manual chests, each at the place of interest that holds it (POW-M4-11). The two in the
+  // Rootway are placed by its own rooms.
+  ...DAWNMEADOW_POIS.flatMap((p) => (p.manual ? [at(poiChest(p.manual), p.x, p.y)] : [])),
 
   // Gathering nodes round the Commons and the rises.
   at('node.oak_tree', 150, 160),
@@ -309,6 +305,8 @@ export const DAWNMEADOW: RegionSpec = {
   wakePoints: WAKE_IDS.map((id) => ({ id, ...DAWNMEADOW_WAKE_POINTS[id] })),
   waystones: WAYSTONES['dawnmeadow'] ?? [],
   districts,
+  pois: DAWNMEADOW_POIS.map((p) => ({ id: p.id, x: p.x, y: p.y })),
+  pendingDiscoverables: DAWNMEADOW_PENDING_DISCOVERABLES,
   landmarkHeights: { mill_sails: 16, bell_tower: 10, quarry_crane: 14 },
 };
 
