@@ -21,7 +21,8 @@ Every region is produced by a "world" ticket and a "content" ticket.
 Size: L Depends: M7 complete Status: DRAFT (design authority)
 
 Goal: region design documents for Whisperwood, Saltreach, and Ironvale in `docs/design/regions/`, following the Dawnmeadow pattern, and READY specs for M8.
-Acceptance: owner approves each region doc.
+Scope note: Dawnmeadow sets no rank 30 Trials (planning decision on PR #111). Across the three regions and POW-M8-09, every wired skill gets a rank 30 Trial giver. Each region doc's people table names which, and its pacing table has a rank 30 line.
+Acceptance: owner approves each region doc. A check over the Trial data: every wired skill has a rank 30 Trial.
 
 ### POW-M8-02 Whisperwood: world
 

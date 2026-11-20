@@ -178,7 +178,7 @@ Exit: a one-way drop from R8 to the downs near the entrance (as the M1 cave's wa
 
 Non-combat route: R3b and a Stealth or Athletics pass through R5 (a crack in the wall at Athletics 10 skips the arena). The boss is still fought or, for this cave only, can be fled past to the drop once Phase 2 begins (no boss reward, the den chest stays shut).
 
-Tuning acceptance (POW-M4-21): fight-sim win rate for the bare kit under 20%, for the target loadout 65 to 80%.
+Tuning acceptance (POW-M4-21): fight-sim win rate for the bare kit under 20%, for the target loadout 65 to 80%, read as the two hard fights (R5, R8) with a rest at R7. The 12 to 18 minutes is a person's first clear, checked in the Gate G4 playtest, not a bot time (a perfect bot run is about 6 minutes).
 
 ### The Undermill
 
@@ -221,26 +221,30 @@ Return secret: the keep's upper room, reached only by the Fernside climb from ou
 
 About 15 named people. Schedules, homes and likes are authored now (POW-M4-12). Friendship arrives in M6.
 
-| Name    | Role                     | Home / work                    | Teaches or tests                                                                          |
-| ------- | ------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| Brin    | Shopkeeper               | Market street                  | Bartering Trial 15                                                                        |
-| Tobin   | Smith                    | Smithy                         | Smithing Trial 15, teaches Overhead                                                       |
-| Mara    | Outfitter and tailor     | Tailor                         | Tailoring Trial 15                                                                        |
-| Ilse    | Herbalist and apothecary | Apothecary                     | Foraging and Alchemy Trials 15                                                            |
-| Hesper  | Innkeeper and cook       | Inn                            | Cooking Trial 15, teaches Hum of Courage                                                  |
-| Orla    | Gate guard               | Guard yard, west gate          | Blades, Polearms, Shieldcraft, Evasion Trials 15, teaches Polearm Lunge, Aimed Shot, Bash |
-| Wren    | Scholar                  | Rune house                     | Teaches the six band 0 spells, Enchanting and Deciphering Trials 15                       |
-| Pilgrim | Wanderer                 | Square by day, chapel at night | Teaches Hide, Stealth Trial 15                                                            |
-| Pell    | Carpenter                | Carpentry                      | Woodworking and Logging Trials 15                                                         |
-| Juniper | Tinker                   | Tinker's shed                  | Tinkering Trial 15                                                                        |
-| Aldo    | Miller                   | Millbrook mill                 | Requests, the Undermill                                                                   |
-| Tamsin  | Farmer's daughter        | Millbrook farm                 | Requests, Athletics Trial 15                                                              |
-| Nessa   | Fisher                   | Reedmouth                      | Fishing Trial 15                                                                          |
-| Garrick | Quarry foreman           | Stonecrop                      | Mining Trial 15, the Deeps                                                                |
-| Old Fen | Hermit                   | Cairnmoor, the well            | Survival Trial 15, Cartography (when wired)                                               |
-| Edda    | Reeve of Hearthford      | Bell tower house               | Threads, Renown                                                                           |
+| Name    | Role                     | Home / work                    | Teaches or tests                                                                                   |
+| ------- | ------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| Brin    | Shopkeeper               | Market street                  | Bartering Trial 15                                                                                 |
+| Tobin   | Smith                    | Smithy                         | Smithing and Heavy Arms Trials 15, teaches Overhead                                                |
+| Mara    | Outfitter and tailor     | Tailor                         | Tailoring Trial 15                                                                                 |
+| Ilse    | Herbalist and apothecary | Apothecary                     | Alchemy and Mending Trials 15                                                                      |
+| Hesper  | Innkeeper and cook       | Inn                            | Cooking, Foraging and Performance Trials 15, teaches Hum of Courage                                |
+| Orla    | Gate guard               | Guard yard, west gate          | Blades, Polearms, Archery, Shieldcraft, Evasion Trials 15, teaches Polearm Lunge, Aimed Shot, Bash |
+| Wren    | Scholar                  | Rune house                     | Teaches the six band 0 spells, Ember, Hexing, Enchanting and Deciphering Trials 15                 |
+| Pilgrim | Wanderer                 | Square by day, chapel at night | Teaches Hide, Stealth Trial 15                                                                     |
+| Pell    | Carpenter                | Carpentry                      | Woodworking and Logging Trials 15                                                                  |
+| Juniper | Tinker                   | Tinker's shed                  | Tinkering Trial 15                                                                                 |
+| Aldo    | Miller                   | Millbrook mill                 | Requests, the Undermill, Gale Trial 15                                                             |
+| Tamsin  | Farmer's daughter        | Millbrook farm                 | Requests, Athletics and Unarmed Trials 15                                                          |
+| Nessa   | Fisher                   | Reedmouth                      | Fishing and Tide Trials 15                                                                         |
+| Garrick | Quarry foreman           | Stonecrop                      | Mining and Stone Trials 15, the Deeps                                                              |
+| Old Fen | Hermit                   | Cairnmoor, the well            | Survival, Cartography and Delving Trials 15                                                        |
+| Edda    | Reeve of Hearthford      | Bell tower house               | Threads, Renown                                                                                    |
 
-The M3 givers (Orla, Wren, Hesper, Brin, the Pilgrim) keep their ids, Trials and requests when they move (POW-M4-12).
+The M3 givers (Orla, Wren, Hesper, Brin, the Pilgrim) keep their ids, Trials and requests when they move (POW-M4-12). The Smithing Trial is Tobin's and the Athletics Trial is Tamsin's (moved from Brin and the Pilgrim in PR #111).
+
+Every wired skill has a rank 15 Trial here: 32 in all. Rank 30 Trials are not set in Dawnmeadow. Each later region's trainers set them (M8), so the step from 15 to 30 is one of the reasons to go west.
+
+People follow their schedules by moving only while off screen: when an NPC's slot changes, it moves to its new place the next time the player cannot see either spot. Nobody walks the streets yet. Each named place has a tile rectangle in the region spec.
 
 ## 10. Requests and Threads
 
@@ -305,7 +309,7 @@ Three (POW-M4-20). None is posted, hinted in a UI string, or marked on the map. 
 | Puzzles  | 6     | A stone circle that hums at dusk, a lever pond, a sundial, a hedge maze, a bell stone, a scarecrow line                                                          |
 | Oddities | 4     | The "Kindling" manual in a burnt-out shed, the Old Mill loft (Light Feet manual), the inn cellar songsheet, the guardhouse notes (Lunge manual)                  |
 
-The bake check (POW-M4-11) requires every land chunk to hold at least one discoverable: a POI, a node cluster, a secret, a vista or a settlement.
+The bake check (POW-M4-11) requires every land chunk to hold at least one discoverable: a POI, a node cluster, a secret, a vista or a settlement. A node cluster is two or more gathering nodes in the chunk, of kinds that suit its biome. The 30 POIs, the dungeons and the secrets cover the places worth a detour; node clusters cover the rest of the land (about 80 chunks), and they are where the region's gathering lives.
 
 ## 13. Secrets and lore slots
 
@@ -328,16 +332,18 @@ Lore fragment slots (content arrives in M10, POW-M4-11 places empty markers): DM
 
 Planning estimates. `tools/pacing-ledger` (POW-M4-12) sums the authored `estMinutes` and fails CI if Dawnmeadow drops under budget.
 
-| Source                         | Count | Minutes each | Minutes                |
-| ------------------------------ | ----- | ------------ | ---------------------- |
-| Dungeons                       | 4     | 15 to 40     | 120                    |
-| Mini-dungeons                  | 12    | 8            | 96                     |
-| Points of interest             | 30    | 4            | 120                    |
-| Requests                       | 25    | about 10     | 260                    |
-| Threads                        | 5     | 45           | 225                    |
-| Rank 15 Trials                 | 22    | 6            | 132                    |
-| Singulars                      | 3     | 30           | 90                     |
-| Field boss, Waystones, roaming |       |              | 90                     |
-| **Authored total**             |       |              | **1,133 (about 19 h)** |
+| Source                        | Count | Minutes each | Minutes                |
+| ----------------------------- | ----- | ------------ | ---------------------- |
+| Dungeons                      | 4     | 15 to 40     | 120                    |
+| Mini-dungeons                 | 12    | 8            | 96                     |
+| Points of interest            | 30    | 4            | 120                    |
+| Requests                      | 25    | about 10     | 260                    |
+| Threads                       | 5     | 45           | 225                    |
+| Rank 15 Trials                | 32    | 6            | 192                    |
+| Singulars                     | 3     | 30           | 90                     |
+| Field boss, Waystones, routes |       |              | 90                     |
+| **Authored total**            |       |              | **1,193 (about 20 h)** |
+
+The last line is Hollowhorn (30), the six Waystones (5 each, 30) and the two harder routes west, the Fernside climb and the badger tunnels (15 each, 30).
 
 First pass target (about 6 hours): wake, Hearthford, the Rootway, a handful of requests, one Thread, one more dungeon, the pass. Regional 100% target (about 20 hours): the authored total plus skill time toward the Trials.

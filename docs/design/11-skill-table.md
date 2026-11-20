@@ -1,6 +1,6 @@
 # 11 Skill table
 
-The full list of the 36 skills from design/03: how each earns XP, and what it grants at the first two rank bands. Written by POW-M3-01. Techniques at rank 30 and above are authored with the tier 3 to 5 content that needs them (M8, M9) and are listed here only as a theme.
+The full list of the 36 skills from design/03: how each earns XP, and what it grants at the first two rank bands. Written by POW-M3-01. Techniques at rank 30 and above are authored with the tier 3 to 5 content that needs them (M8, M9) and are listed here only as a theme. Rank 15 Trials are all set in Dawnmeadow (regions/01 section 9). Rank 30 Trials are set by the trainers of the later regions (M8), never in Dawnmeadow.
 
 ## Reading the table
 

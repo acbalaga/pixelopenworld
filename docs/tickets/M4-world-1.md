@@ -397,8 +397,8 @@ Scope:
 - The M3 satchel request (r8 in the region doc) points at the Rootway.
 - Fight-sim scenarios: the bare kit (wooden dagger, rags, one bread) and the target loadout (any weapon at 8, crafted tier 1 armor, three dishes) through R5 and R8.
 
-Save: the old cave's solved puzzle and opened chests migrate to the matching Rootway rooms (R6 and its chest). Schema bump if POW-M4-03's deltas are not merged yet.
-Acceptance: dungeon validator passes. Scripted clears by both routes (R3a and R3b). Fight-sim win rate under 20% for the bare kit and 65 to 80% for the target loadout through R8 (report in the PR). Scripted clear time 12 to 18 minutes for the bot at the target loadout. Phone screenshots of R2, R4 unlit and lit, R5 with the gate down, and R8 phase 2.
+Save: none needed. The slice-to-Dawnmeadow migration (schema 23) already dropped the old cave's state, so nothing carries to R6 (planning decision on PR #106).
+Acceptance: dungeon validator passes. Scripted clears by both routes (R3a and R3b). Fight-sim win rate under 20% for the bare kit and 65 to 80% for the target loadout through R8 (report in the PR), read as R5 and R8 with a rest at R7. The 12 to 18 minute first clear is a playtest target for a person, checked at Gate G4, not a bot time (planning decision on PR #106). Phone screenshots of R2, R4 unlit and lit, R5 with the gate down, and R8 phase 2.
 
 ### POW-M4-11 Dawnmeadow dungeons, bosses, points of interest
 
@@ -407,7 +407,19 @@ Refs: regions/01-dawnmeadow (sections 7, 8, 12, 13), design/02-world (Freedom of
 
 Goal: the region's authored challenges.
 Scope: the Undermill, Stonecrop Deeps and Thornwall Pass (the Rootway is POW-M4-21), 12 mini-dungeons, 30 POIs, the Hedge Warden with the Keeper's Bells resolution, each dungeon's return-visit secret, the six region secrets, the badger tunnel route west. The remaining manuals move from their POW-M4-15 stand-in spots to their region places. Bake check: every land chunk has at least one discoverable (POI, node cluster, secret, vista or settlement), build fails otherwise. Bake check: at least a fifth of the region's secrets list a non-combat skill route. Lore fragment slots DM-F01 to DM-F18 as empty markers at the positions listed (content arrives in M10).
-Acceptance: dungeon validator passes for all. Scripted clears for each dungeon. The Hedge Warden beaten both ways in scenario tests. Both harder routes west (Fernside climb, badger tunnels) reach Whisperwood's edge in scripted runs. Coverage checks pass.
+
+Done in part 1 (PR #111): POI data in `src/content/pois/`, the eight manual places, the discoverable bake check with a pending list (`src/content/pois/pending.ts`) that may only shrink.
+
+Also in scope (planning decisions on PRs #109 to #111):
+
+- **Node clusters.** Every land chunk still on the pending list gets a cluster of two or more gathering nodes of kinds that suit its biome, as placements in the region spec. The pending list is empty when the ticket is done.
+- **The requests and Thread that wait on this ticket's places** (POW-M4-12 authored the rest): r2 Rats in the Cellar (m1), r6 Grist and Sluice (the Undermill), r12 Wasps in the Orchard (m11), r13 Nessa's Net, r15 Cart Wheels, r17 Readings for Wren, r18 The Bell Tower Clock, r20 The Pilgrim's Errand, r21 Barrow Lights, r22 Stock for the Stalls, and t4 Wren's Missing Pages. New objective kinds `sell` (r22) and `carry` (r20), written once in `advanceTracked`. Each lands in the part that builds what it needs.
+- **Tighten the Threads told with stand-ins** once their places exist: the Mill's sluice stage goes through the Undermill, and the Quarry Strike's last stage is the Deeps (the Engine, or the Tinkering 15 jam). Same ids, so no save change.
+- **The inn songsheet** moves from the inn yard into m1 (the inn cellar) when m1 is built.
+- **The firebrick stand-ins** (POW-M4-20) move to the Undermill and the Deeps when they are built.
+- `estMinutes` on the two harder routes west (Fernside climb, badger tunnels: 15 each), counted under the ledger's last line.
+
+Acceptance: dungeon validator passes for all. Scripted clears for each dungeon. The Hedge Warden beaten both ways in scenario tests. Both harder routes west (Fernside climb, badger tunnels) reach Whisperwood's edge in scripted runs. Coverage checks pass, with the pending discoverable list empty. Every request and the Thread above completes in a scenario test.
 
 ### POW-M4-20 Singulars framework and Dawnmeadow's first three
 
@@ -435,5 +447,5 @@ Size: L Depends: POW-M4-04, M3-11 Status: READY
 Refs: regions/01-dawnmeadow (sections 9, 10, 14), design/05-life-systems (Requests, Relationships), design/10-content-budget (Verification)
 
 Goal: the region is inhabited, and its hours are counted.
-Scope: the 16 named people in section 9 with schedules (day, night, weather), homes and likes (friendship itself arrives in M6, the data is authored now). 25 authored requests and 5 Threads from section 10, at least 8 with a non-combat solution. The rank 15 Trials for every wired skill that M3 did not author (M3 authored Blades, Polearms, Evasion, Ember, Athletics, Foraging, Smithing, Cooking), and rank 30 Trials for skills whose trainers live here. Move the M3 slice givers (Orla, Wren, Hesper, Brin, the Pilgrim) into their districts without breaking their Trials, requests or teaching lines (POW-M4-15). `estMinutes` on every authored content item, including Singulars, dungeons and POIs. `tools/pacing-ledger` sums by category and region, writes a report, and fails CI under budget. `docs/ops/gate-g4.md` owner checklist, including a replay of every playtest finding (F1 to F8) on the phone.
-Acceptance: ledger report shows Dawnmeadow at or above budget. NPC schedule tests. Every M3 Trial and request still completes after the move (scenario tests). Owner action: play G4 with the checklist.
+Scope: the 16 named people in section 9 with schedules (day, night, weather), homes and likes (friendship itself arrives in M6, the data is authored now). 25 authored requests and 5 Threads from section 10, at least 8 with a non-combat solution. The rank 15 Trials for every wired skill: 32 in all (done in PRs #110 and #111). Rank 30 Trials are not in this ticket; the trainers of the M8 regions set them. Move the M3 slice givers (Orla, Wren, Hesper, Brin, the Pilgrim) into their districts without breaking their Trials, requests or teaching lines (POW-M4-15). `estMinutes` on every authored content item, including Singulars, dungeons and POIs. `tools/pacing-ledger` sums by category and region, writes a report, and fails CI under budget. **Schedule movement:** an NPC whose schedule slot changes moves to its new place the next time neither spot is on screen. No walking. Shops, Trials, requests and teaching stay reachable (an NPC is found at its place for the current phase and weather). Each named place in `content/people/places.ts` gets a tile rectangle in the region spec (Millbrook, Reedmouth, Stonecrop, Cairnmoor; the well and shelter on Cairnmoor are placed with m9). `docs/ops/gate-g4.md` owner checklist, including a replay of every playtest finding (F1 to F8) on the phone, and these tuning checks carried from PRs #106 to #111: the Rootway first clear (12 to 18 minutes for a person), the Athletics run (50 s), the Cartography Trial (120 blocks), request coin against shop prices, and how far the Millbrook, Reedmouth, Stonecrop and Cairnmoor givers sit from town.
+Acceptance: ledger report shows Dawnmeadow at or above budget, and the PR that finishes this ticket and POW-M4-11 switches `enforceBudget` on for Dawnmeadow. NPC schedule tests, including one that an NPC never moves while on screen and one that each giver is found at its scheduled place. Every M3 Trial and request still completes after the move (scenario tests). Owner action: play G4 with the checklist.
