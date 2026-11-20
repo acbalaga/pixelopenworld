@@ -156,6 +156,13 @@ function react(
   if (def.archetype === 'swarm' && ai.state === 'notice') alertSwarm(state, id, def, target);
 }
 
+/** True for a guard that was hit within `guardHealAfterTicks`: it does not heal yet (design query, M4-05). */
+function guardHurtRecently(state: SimState, id: EntityId, def: CreatureDef): boolean {
+  if (def.archetype !== 'guard') return false;
+  const last = getComp(state.entities, id, 'stagger')?.lastHit ?? -1000;
+  return state.tick - last < TP.guardHealAfterTicks;
+}
+
 /** True if a guard's target stands farther than the tether from the guard's home. */
 function beyondTether(state: SimState, def: CreatureDef, target: EntityId, homePx: Vec): boolean {
   const at = centerPx(state, target);
@@ -369,6 +376,9 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
 
   switch (ai.state) {
     case 'idle': {
+      // A guard that was kept hurt on its way home mends once it has been left alone a while.
+      if (def.archetype === 'guard' && pools.hp < pools.hpMax && !guardHurtRecently(state, id, def))
+        pools.hp = pools.hpMax;
       if (ai.provoked && ai.target !== null && targetOk) {
         enter(ai, 'notice');
         emit(state.events, { type: 'noticed', id, target: ai.target });
@@ -553,7 +563,7 @@ function step(state: SimState, id: EntityId, mayAttack: boolean): void {
     case 'leash': {
       walk(state, id, { x: homePx.x - me.x, y: homePx.y - me.y }, Math.round(speed * 1.2));
       if (toHome <= 3) {
-        pools.hp = pools.hpMax;
+        if (!guardHurtRecently(state, id, def)) pools.hp = pools.hpMax;
         const s = getComp(state.entities, id, 'stagger');
         if (s) s.cur = 0;
         ai.cooldowns.fill(0);

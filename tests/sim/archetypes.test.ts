@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
+import { TEMPERAMENT as TP } from '../../src/content/balance/temperament';
 import { ARCHETYPE as AR } from '../../src/content/balance/archetypes';
 import { ATTACKS } from '../../src/content/combat/attacks';
 import { CREATURES } from '../../src/content/creatures';
@@ -168,6 +169,58 @@ describe('guard', () => {
     a.run(200);
     const p = a.s.entities.comps.pos[m]!;
     expect(Math.abs(p.x / 256 - (ME.x + 50))).toBeLessThan(6);
+  });
+});
+
+describe('guard recovery (M4-05)', () => {
+  it('does not heal on the way home while it is still being hit, and mends once left alone', () => {
+    const a = arena();
+    const m = spawnCreature(a.s, GUARD, ME.x + 50, ME.y);
+    a.run(40);
+    const pools = a.s.entities.comps.pools[m]!;
+    pools.hp = Math.floor(pools.hpMax / 2);
+    // The avatar backs off past the tether, and the guard is hit from there as it turns for home.
+    a.s.entities.comps.pos[a.me]!.x = px(ME.x - 60);
+    a.run(20);
+    expect(ai(a, m).target).toBeNull();
+    const chip = (): void => {
+      a.s.entities.comps.stagger[m]!.lastHit = a.s.tick;
+    };
+    for (let i = 0; i < 120; i++) {
+      chip();
+      a.run(1);
+    }
+    // Home by now, and still hurt: the chip kept it from recovering.
+    expect(Math.abs(a.s.entities.comps.pos[m]!.x / 256 - (ME.x + 50))).toBeLessThan(6);
+    expect(pools.hp).toBe(Math.floor(pools.hpMax / 2));
+    // Left alone for the delay, it mends.
+    a.run(TP.guardHealAfterTicks + 5);
+    expect(pools.hp).toBe(pools.hpMax);
+  });
+
+  it('a guard left alone still heals to full on reaching home', () => {
+    const a = arena();
+    const m = spawnCreature(a.s, GUARD, ME.x + 50, ME.y);
+    a.run(40);
+    const pools = a.s.entities.comps.pools[m]!;
+    pools.hp = 1;
+    a.s.entities.comps.pos[a.me]!.x = px(ME.x - 60);
+    a.run(300);
+    expect(pools.hp).toBe(pools.hpMax);
+  });
+
+  it('other kinds still heal to full on a reset, hit or not', () => {
+    const a = arena();
+    const m = spawnCreature(a.s, GROUND, ME.x + 50, ME.y);
+    a.run(10);
+    const pools = a.s.entities.comps.pools[m]!;
+    pools.hp = 1;
+    a.s.entities.comps.stagger[m]!.lastHit = a.s.tick;
+    a.s.entities.comps.ai[m]!.state = 'leash';
+    // The avatar is well out of notice, so nothing pulls it back into a fight.
+    a.s.entities.comps.pos[a.me]!.x = px(ME.x - 400);
+    a.run(400);
+    expect(pools.hp).toBe(pools.hpMax);
   });
 });
 
