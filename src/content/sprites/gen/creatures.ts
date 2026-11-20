@@ -370,6 +370,20 @@ const fogcap = bloomMaker('creature.fogcap', {
   head: WATER,
   inner: [13, 14, 15, 15],
 });
+// ---- The Rootway (M4-21): a glowing cap in the dark, and the boss's young.
+const glowcap = bloomMaker('creature.glowcap', {
+  stem: WOOD,
+  head: [44, 45, 46, 47],
+  inner: [46, 47, 47, 47],
+});
+const boarlet = boarMaker('creature.boarlet', 20, 0.9, {
+  body: WOOD,
+  bristle: FOLIAGE,
+  snout: ROSE,
+  eye: 22,
+  berry: 21,
+  tusk: 3,
+});
 const cinderback = boarMaker('creature.cinderback_boar', 32, 1.5, {
   body: STONE,
   bristle: FIRE,
@@ -418,7 +432,18 @@ const dummy: Maker = {
 /** Every creature sprite. */
 export function creatureSprites(): SpriteDef[] {
   return [
-    ...[mossling, spitbloom, boar, bramblehide, thornling, fogcap, cinderback, dummy].map(sprite),
+    ...[
+      mossling,
+      spitbloom,
+      boar,
+      bramblehide,
+      thornling,
+      fogcap,
+      cinderback,
+      dummy,
+      glowcap,
+      boarlet,
+    ].map(sprite),
     ...dawnmeadowCreatureSprites(),
   ];
 }

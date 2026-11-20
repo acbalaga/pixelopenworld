@@ -519,6 +519,7 @@ export function dawnmeadowCreatureSprites(): SpriteDef[] {
     figureMaker('creature.barrow_bones', { figure: 'bones', body: BONE, accent: STONE }),
     crabMaker('creature.reed_crab', { body: FIRE, claw: [21, 22, 23, 23] }),
     leechMaker('creature.marsh_leech'),
+    leechMaker('creature.root_grub'),
     figureMaker('creature.rubblet', { figure: 'rubblet', body: STONE, accent: STONE }),
     birdMaker('creature.crag_hawk', {
       size: 20,

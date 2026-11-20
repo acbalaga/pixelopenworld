@@ -54,3 +54,59 @@ test('the mouth leads into the Rootway and its rooms draw', async ({ page }) => 
   expect(problems.console).toEqual([]);
   expect(problems.pageErrors).toEqual([]);
 });
+
+// Part two: the screenshots the ticket asks for, on a phone. R2, R4 unlit and lit, R5 with the
+// gate down, and R8 in phase 2. They need the creatures on (foes are off in the test above).
+test('the fork, the dark gallery lit and unlit, the snare gate and the den in phase two', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  const at = (room: string, x: number, y: number): string => {
+    const t = regionTile(room, { x, y });
+    return `${t.x},${t.y}`;
+  };
+  const shot = async (name: string): Promise<void> => {
+    const png = await page.screenshot();
+    expect(png.length, name).toBeGreaterThan(8_000);
+    if (process.env.POW_EVIDENCE) {
+      mkdirSync(DIR, { recursive: true });
+      await page.screenshot({ path: join(DIR, `${name}.png`) });
+    }
+  };
+  const go = async (room: string, x: number, y: number): Promise<void> => {
+    await page.goto(
+      `/?region=dawnmeadow&at=${at(room, x, y)}&nosave=1&time=day&weather=clear&kit=dev`,
+    );
+    await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
+  };
+
+  await go('r2', 6, 4);
+  await page.waitForTimeout(800);
+  await shot('r2-fork-phone');
+
+  // The dark gallery: only telegraphs show. A lantern lights a radius.
+  await go('r4', 10, 6);
+  await page.waitForTimeout(900);
+  await shot('r4-unlit-phone');
+  await page.evaluate(() =>
+    (window as never as { __pow: { wear(i: string): void } }).__pow.wear('item.lantern'),
+  );
+  await page.waitForTimeout(900);
+  await shot('r4-lit-phone');
+
+  // The snare chamber: stepping into it drops the gate behind the avatar and the grubs come up.
+  await go('r5', 8, 8);
+  await page.waitForTimeout(2200);
+  await shot('r5-gate-down-phone');
+
+  // The den, with the boss below half Health: boarlets and roots.
+  await go('r8', 10, 9);
+  await page.waitForTimeout(600);
+  await page.evaluate(() =>
+    (window as never as { __pow: { foeHp(p: number): void } }).__pow.foeHp(40),
+  );
+  await page.waitForTimeout(2600);
+  await shot('r8-phase-2-phone');
+  expect(problems.console).toEqual([]);
+  expect(problems.pageErrors).toEqual([]);
+});

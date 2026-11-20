@@ -33,7 +33,8 @@
     "fight-sim": "tsx tools/fight-sim/index.ts",
     "doll-sheet": "tsx tools/doll-sheet/index.ts",
     "sim-bot": "tsx tools/sim-bot/index.ts",
-    "balance:ci": "tsx tools/fight-sim/index.ts --seeds 20 --check --no-write && tsx tools/sim-bot/index.ts --minutes 20 --cap 120 --check --no-write"
+    "balance:ci": "tsx tools/fight-sim/index.ts --seeds 20 --check --no-write && tsx tools/fight-sim/rootway.ts --seeds 40 --check --no-write && tsx tools/sim-bot/index.ts --minutes 20 --cap 120 --check --no-write",
+    "fight-sim:rootway": "tsx tools/fight-sim/rootway.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",

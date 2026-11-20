@@ -32,8 +32,17 @@ export interface HealthGate {
   until: string;
 }
 
+/** Creatures a phase calls when it begins: `count` of `creature`, in a ring `radius` tiles from the boss. */
+export interface Summon {
+  creature: string;
+  count: number;
+  radius: number;
+}
+
 export interface BossPhase {
   enter: PhaseTrigger;
+  /** Called once, on entering the phase. */
+  summon?: Summon;
   /** The pattern of this phase, repeated. Empty leaves the creature's own attacks in charge. */
   pattern: readonly PatternStep[];
   hazards?: readonly Hazard[];

@@ -687,6 +687,19 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     shape: { kind: 'line', reach: 18, halfWidth: 14 },
     dash: 140,
     heavy: true,
+  } /** Old Bramblehide's charge in the Rootway: a full second of pawing before it runs (a long tell). */,
+  'attack.bramble_charge': {
+    id: 'attack.bramble_charge',
+    family: 'creature',
+    windup: 36,
+    active: 10,
+    recover: 34,
+    mult: 140,
+    stagger: 0,
+    knock: 22,
+    shape: { kind: 'line', reach: 18, halfWidth: 14 },
+    dash: 140,
+    heavy: true,
   },
   /** Phase two: it rears and slams. The ground marker is the circle. */
   'attack.boss_slam': {
@@ -820,6 +833,43 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     stagger: 0,
     knock: 8,
     shape: { kind: 'arc', reach: 26, cos256: 100 },
+  },
+  /** A Root Grub bites as it comes up. */
+  'attack.grub_bite': {
+    id: 'attack.grub_bite',
+    family: 'creature',
+    windup: 12,
+    active: 2,
+    recover: 14,
+    mult: 100,
+    stagger: 0,
+    knock: 6,
+    shape: { kind: 'arc', reach: 22, cos256: 100 },
+  },
+  /** A Glowcap's spore. Its wind-up glows in the dark: the telegraph is what a player can see there. */
+  'attack.glowcap_spore': {
+    id: 'attack.glowcap_spore',
+    family: 'creature',
+    windup: 16,
+    active: 1,
+    recover: 14,
+    mult: 90,
+    stagger: 0,
+    knock: 6,
+    shape: { kind: 'line', reach: 0, halfWidth: 0 },
+    projectile: { speed: 3.2, ttl: 44, element: 'none' },
+  },
+  /** A boarlet's nip. */
+  'attack.boarlet_nip': {
+    id: 'attack.boarlet_nip',
+    family: 'creature',
+    windup: 12,
+    active: 2,
+    recover: 12,
+    mult: 90,
+    stagger: 0,
+    knock: 8,
+    shape: { kind: 'arc', reach: 20, cos256: 100 },
   },
   /** A thornling scout's jab. Tier 2 minimum is 329 ms, so 12 ticks. */
   'attack.thorn_jab': {

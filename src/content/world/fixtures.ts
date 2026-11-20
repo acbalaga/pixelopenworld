@@ -68,6 +68,8 @@ export interface FixtureDef {
   arrive?: readonly [number, number];
   /** Door: the item that opens it. The key is used up. */
   key?: string;
+  /** Chest: stays shut until the avatar holds this journal flag (a boss's `cleared:` flag). */
+  needsFlag?: string;
   /** Gate: the plate kind that opens it. A gate stays open once opened. */
   plate?: string;
   /** Block: the gate it is solving for, and the room that resets it. Open gate means solved. */

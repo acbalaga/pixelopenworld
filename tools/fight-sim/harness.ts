@@ -2,6 +2,8 @@ import { ATTACKS, WEAPONS } from '../../src/content/combat/attacks';
 import { TECHNIQUES } from '../../src/content/combat/techniques';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnCreature } from '../../src/sim/combat/enemy';
+import { spawnBoss } from '../../src/sim/systems/boss';
+import { query } from '../../src/sim/kernel/entities';
 import { applyStep } from '../../src/sim/systems/spawner';
 import { assign, learnTechnique } from '../../src/sim/combat/techniques';
 import { equip, give } from '../../src/sim/items';
@@ -132,6 +134,59 @@ function fightOnce(
   start: FightStart,
   step?: 'a' | 'b' | 'c',
 ): FightResult {
+  return runScript({
+    build,
+    tier,
+    rank,
+    seed,
+    start,
+    encounters: [{ creature, count, ...(step ? { step } : {}) }],
+  });
+}
+
+/** One thing to fight in a script: `count` of a creature, or a boss, at a zone step. */
+export interface Encounter {
+  creature: string;
+  count: number;
+  step?: 'a' | 'b' | 'c';
+  /** A boss id (`creatures/bosses`): the fight uses its phases, and the boss is the one to bring down. */
+  boss?: string;
+  /** Before this encounter the avatar rests at a rest point: Health, Stamina and Focus back to full. */
+  restBefore?: boolean;
+}
+
+/** What a script starts with. `bare` is the kit a new character wakes with. */
+export interface ScriptOptions {
+  build: Build;
+  tier: 1 | 2;
+  rank: number;
+  seed: number;
+  start: FightStart;
+  encounters: Encounter[];
+  /** `bare`: the wooden dagger, ragged clothes and one bread, and rank 0. Default `build`. */
+  kit?: 'build' | 'bare';
+  /** Pieces of bread carried (default 6). */
+  food?: number;
+  /** Armor worn over the build's own (the tier 1 gear a character has crafted). */
+  armor?: string[];
+}
+
+/** A script's outcome: how far it got, and the cost. `ttk` is the seconds of the whole script. */
+export interface ScriptResult extends FightResult {
+  /** Encounters brought down. */
+  won: number;
+  /** Seconds each took, in order. */
+  seconds: number[];
+}
+
+/**
+ * Runs encounters one after another in one fight: Health, food and the avatar's place carry over,
+ * and the next encounter begins once the last one is down. The single fight above is the one
+ * encounter case.
+ */
+export function runScript(o: ScriptOptions): ScriptResult {
+  const { build, tier, rank, seed, start, encounters } = o;
+  let creature = encounters[0]!.creature;
   const s = createDemoState(seed, 0);
   // Time-to-kill targets are for clear weather. Weather has its own tests (M4-09).
   s.weatherOverride = 'clear';
@@ -144,28 +199,62 @@ function fightOnce(
   tick({ type: 'scheme', scheme: 'classic' });
   tick({ type: 'move', dir: E });
   tick({ type: 'move', dir: null });
-  const spells = dress(s, me, build, tier, rank);
-  give(s, me, FOOD, 6, 'start');
-  const potion = build.potion?.[tier];
+  const bare = o.kit === 'bare';
+  const spells = bare ? [] : dress(s, me, build, tier, rank);
+  for (const piece of o.armor ?? []) {
+    give(s, me, piece, 1, 'start');
+    const inv = s.entities.comps.inventory[me]!;
+    equip(
+      s,
+      me,
+      inv.slots.findIndex((x) => x?.item === piece),
+    );
+  }
+  if (o.armor) {
+    recomputePools(s, me);
+    const p = s.entities.comps.pools[me]!;
+    p.hp = p.hpMax;
+  }
+  // The bare kit keeps the one bread a new character carries.
+  if (!bare) give(s, me, FOOD, o.food ?? 6, 'start');
+  const potion = bare ? undefined : build.potion?.[tier];
   if (potion) give(s, me, potion, 6, 'start');
   // The seed varies how the fight starts: how far the creatures stand (14 to 22 px) and how long
   // the player waits before the first swing (0 to 9 ticks), so a run is a spread, not one number.
   const j = Math.imul(seed ^ 0x9e3779b9, 2654435761) >>> 0;
   const gap = 14 + (j % 9);
   const wait = (j >>> 8) % 10;
-  const foes: number[] = [];
-  for (let k = 0; k < count; k++) {
-    const dy = (k - (count - 1) / 2) * 20;
-    const id = spawnCreature(s, creature, 30 * 16 + 8 + gap + (k % 2) * 10, 30 * 16 + 14 + dy, -1);
-    if (step) applyStep(s, id, step);
-    foes.push(id);
-    // Engaged: already on the avatar, as the par numbers assume.
-    const brain = s.entities.comps.ai[id];
-    if (start === 'engaged' && brain) {
-      brain.provoked = true;
-      brain.target = me;
+  const here = (id: number): { x: number; y: number } => {
+    const p = s.entities.comps.pos[id]!;
+    return { x: p.x / 256, y: p.y / 256 };
+  };
+  let foes: number[] = [];
+  let enc = 0;
+  const seconds: number[] = [];
+  let encStart = 0;
+  /** Puts the next encounter's creatures a little way east of the avatar. */
+  const spawnWave = (e: Encounter): void => {
+    creature = e.creature;
+    foes = [];
+    // The first stands where it always has; later ones come at the avatar from where it is.
+    const at = enc === 0 ? { x: 30 * 16 + 8, y: 30 * 16 + 14 } : here(me);
+    for (let k = 0; k < e.count; k++) {
+      const dy = (k - (e.count - 1) / 2) * 20;
+      const x = Math.round(at.x) + gap + (k % 2) * 10;
+      const y = Math.round(at.y) + dy;
+      const id = e.boss ? spawnBoss(s, e.boss, x, y) : spawnCreature(s, e.creature, x, y, -1);
+      if (e.step) applyStep(s, id, e.step);
+      foes.push(id);
+      // Engaged: already on the avatar, as the par numbers assume.
+      const brain = s.entities.comps.ai[id];
+      if (start === 'engaged' && brain) {
+        brain.provoked = true;
+        brain.target = me;
+      }
     }
-  }
+    encStart = s.tick;
+  };
+  spawnWave(encounters[0]!);
   for (let i = 0; i < wait; i++) tick();
   const pools = s.entities.comps.pools[me]!;
   const startHp = pools.hp;
@@ -197,10 +286,13 @@ function fightOnce(
   let died = false;
   let eaten = 0;
   const max = MAX_SECONDS * TPS;
-  const here = (id: number): { x: number; y: number } => {
-    const p = s.entities.comps.pos[id]!;
-    return { x: p.x / 256, y: p.y / 256 };
-  };
+  const hostile = (): number[] =>
+    query(s.entities, 'fighter', 'combatant', 'pos', 'ai').filter(
+      (id) =>
+        s.entities.alive[id] === true &&
+        s.entities.comps.fighter[id]?.team === 1 &&
+        s.entities.comps.fighter[id]?.state !== 'dead',
+    );
   // An id can be reused by a drop once a creature is gone, so it must still be that creature.
   const alive = (id: number): boolean =>
     s.entities.alive[id] === true &&
@@ -209,8 +301,20 @@ function fightOnce(
   for (let i = 0; i < max; i++) {
     const live = foes.filter(alive);
     if (live.length === 0) {
-      ttk = (s.tick - t0) / TPS;
-      break;
+      seconds.push((s.tick - encStart) / TPS);
+      enc++;
+      if (enc >= encounters.length) {
+        ttk = (s.tick - t0) / TPS;
+        break;
+      }
+      const next = encounters[enc]!;
+      if (next.restBefore) {
+        pools.hp = pools.hpMax;
+        pools.sta = pools.staMax;
+        pools.foc = pools.focMax;
+      }
+      spawnWave(next);
+      continue;
     }
     if (s.entities.comps.fighter[me]?.state === 'dead') {
       died = true;
@@ -218,10 +322,12 @@ function fightOnce(
     }
     const cmds: Command[] = [];
     const mp = here(me);
-    // The nearest creature is the one fought.
-    let foe = live[0] as number;
+    // The nearest creature is the one fought: whatever hostile stands near, a boss's young too.
+    const near = hostile();
+    const targets = near.length > 0 ? near : live;
+    let foe = targets[0] as number;
     let best = Infinity;
-    for (const id of live) {
+    for (const id of targets) {
       const p = here(id);
       const d = Math.hypot(p.x - mp.x, p.y - mp.y);
       if (d < best) {
@@ -317,6 +423,8 @@ function fightOnce(
     focSpent: Math.round(focSpent / 10),
     died,
     eaten,
+    won: enc,
+    seconds,
   };
 }
 

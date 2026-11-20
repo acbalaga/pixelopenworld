@@ -51,6 +51,9 @@ export const REGIONS: readonly RegionDef[] = [
         'spawner.bramble_boar',
         'spawner.old_bramblehide',
         'spawner.hollowhorn',
+        // The Rootway (M4-21).
+        'spawner.rw_glowcap',
+        'spawner.rw_bramblehide',
         // Zone spawners (M4-05): every kind Dawnmeadow's rosters can place.
         ...[
           ...new Set(

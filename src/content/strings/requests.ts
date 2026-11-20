@@ -22,7 +22,7 @@ export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
 
   'request.cave_boar.title': 'The boar by the cave',
   'request.cave_boar.ask':
-    'A Bramble Boar has taken the cave mouth. Put it down. Or slip past it unseen: a patrol dropped a satchel in the first cave room, and I want it back.',
+    'A Bramble Boar has taken the Rootway, the cave under the great oak on the downs. Put it down. Or slip past it unseen: a patrol dropped a satchel in the Narrow Crawl, and I want it back.',
   'request.cave_boar.defeat': 'Put the Bramble Boar down',
   'request.cave_boar.hide': 'Slip past it and fetch the satchel',
 
@@ -45,7 +45,7 @@ export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
   'request.deep_room.sing': 'Finish the Hum of Courage',
 
   // What a flag step says in the log. Never a place on a map.
-  'flag.satchel_taken.step': 'Take the satchel from the first cave room',
+  'flag.satchel_taken.step': 'Take the satchel from the Narrow Crawl',
 
   // Steps, filled from the objective. `{what}` is a name from the content strings.
   'request.step.defeat': 'Defeat {n} {what}',

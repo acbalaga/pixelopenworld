@@ -205,6 +205,11 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   const def = f ? FIXTURES[f.kind] : undefined;
   const a = getComp(state.entities, who, 'avatar');
   if (!f || !def?.loot || f.open) return;
+  // A chest a boss guards stays shut for anyone who has not brought the boss down.
+  if (def.needsFlag && !getComp(state.entities, who, 'journal')?.flags.includes(def.needsFlag)) {
+    emit(state.events, { type: 'doorLocked', id, who, key: def.needsFlag });
+    return;
+  }
   f.open = true;
   for (const l of def.loot.items) give(state, who, l.item, l.qty, 'chest');
   if (a && def.loot.coin) earnCoin(state, who, def.loot.coin, 'chest');

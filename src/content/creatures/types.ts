@@ -123,6 +123,8 @@ export interface SpawnerDef {
   radius: number;
   /** Dungeon enemies: once all are down they return on the next in-game day, at dawn, not on a timer (M4-08). */
   daily?: boolean;
+  /** A boss spawner: makes this boss (`creatures/bosses`) in place of the plain creature. */
+  boss?: string;
   /** Zone spawners (M4-05): the step whose multipliers scale what it makes. */
   step?: 'a' | 'b' | 'c';
   /** Zone spawners: fills only by day (dawn, day) or only by night (dusk, night). Absent: always. */
