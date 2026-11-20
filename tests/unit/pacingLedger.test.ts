@@ -40,8 +40,8 @@ describe('the pacing ledger (M4-12)', () => {
     });
     expect(row('singulars').minutes).toBe(30);
     expect(d!.minutes).toBe(50);
-    // Dawnmeadow's budget is the 1,133 minutes of regions/01 section 14.
-    expect(d!.budgetMinutes).toBe(1133);
+    // Dawnmeadow's budget is the 1,193 minutes of regions/01 section 14.
+    expect(d!.budgetMinutes).toBe(1193);
     expect(d!.rows.map((r) => r.category)).toEqual([...PACING_ORDER]);
   });
 
@@ -67,10 +67,10 @@ describe('the pacing ledger (M4-12)', () => {
     short.push(item('extra', 'requests', 500));
     const bad = check(sum(short), floor).join('\n');
     expect(bad).toMatch(/pois is 119 minutes, under its budget of 120/);
-    expect(bad).not.toMatch(/under its budget of 1133/);
+    expect(bad).not.toMatch(/under its budget of 1193/);
     // Short in total.
     expect(check(sum([item('a', 'requests', 5)]), floor).join()).toMatch(
-      /under its budget of 1133/,
+      /under its budget of 1193/,
     );
   });
 

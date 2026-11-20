@@ -29,7 +29,7 @@ export const PACING_LABELS: Readonly<Record<PacingCategory, string>> = {
   threads: 'Threads',
   trials15: 'Rank 15 Trials',
   singulars: 'Singulars',
-  extras: 'Field boss, Waystones, roaming',
+  extras: 'Field boss, Waystones, routes',
 };
 
 /** Order the report lists the categories in. */
@@ -47,14 +47,14 @@ export const PACING_ORDER: readonly PacingCategory[] = [
 export const PACING_BUDGETS: Readonly<
   Record<string, Readonly<Record<PacingCategory, PacingBudget>>>
 > = {
-  // regions/01-dawnmeadow section 14: 1,133 minutes, about 19 hours.
+  // regions/01-dawnmeadow section 14: 1,193 minutes, about 20 hours.
   dawnmeadow: {
     dungeons: { count: 4, minutes: 120 },
     miniDungeons: { count: 12, minutes: 96 },
     pois: { count: 30, minutes: 120 },
     requests: { count: 25, minutes: 260 },
     threads: { count: 5, minutes: 225 },
-    trials15: { count: 22, minutes: 132 },
+    trials15: { count: 32, minutes: 192 },
     singulars: { count: 3, minutes: 90 },
     extras: { count: 0, minutes: 90 },
   },
