@@ -15,7 +15,7 @@ export function validateRegions(
   nodes: readonly string[] = Object.keys(NODES),
   spawners: readonly string[] = Object.keys(SPAWNERS),
   chests: readonly string[] = Object.values(FIXTURES)
-    .filter((f) => f.type === 'chest' && f.loot)
+    .filter((f) => f.type === 'chest' && f.loot && !f.dungeon)
     .map((f) => f.kind),
   placed: readonly string[] = (SLICE_MAP.objects ?? []).map((o) => o.kind),
 ): string[] {

@@ -57,7 +57,7 @@ export function travelBlock(state: SimState, who: EntityId, stone: string): Trav
   if (!state.map.waystones.includes(stoneKey(region, stone))) return 'unattuned';
   const tx = Math.floor(pos.x / SUBPX / TILE);
   const ty = Math.floor((pos.y / SUBPX - 1) / TILE);
-  const room = roomAt(tx, ty);
+  const room = roomAt(tx, ty, region);
   // Any room that is not open ground (the cave, a dungeon's rooms) counts as a dungeon.
   if (room && (!room.outdoors || dungeonOfRoom(room.id))) return 'dungeon';
   if (f.state !== 'idle' || state.tick - pools.lastCombat < C.pools.hpRegenDelay) return 'combat';

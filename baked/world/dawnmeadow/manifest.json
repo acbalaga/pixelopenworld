@@ -1,11 +1,11 @@
 {
   "version": 1,
   "region": "dawnmeadow",
-  "hash": "cc03cab807efd7fd",
+  "hash": "15aebe01545b4866",
   "seed": 20260101,
   "chunks": {
     "w": 12,
-    "h": 12
+    "h": 16
   },
   "bridgeTiles": 26,
   "files": [
@@ -337,7 +337,7 @@
       "file": "chunk-6-4.bin",
       "cx": 6,
       "cy": 4,
-      "hash": "39aa41f9713a2bcc"
+      "hash": "0a30039397ea96c6"
     },
     {
       "file": "chunk-7-4.bin",
@@ -535,7 +535,7 @@
       "file": "chunk-3-7.bin",
       "cx": 3,
       "cy": 7,
-      "hash": "5c791c2089df6593"
+      "hash": "5532ea3177d8134a"
     },
     {
       "file": "chunk-4-7.bin",
@@ -547,7 +547,7 @@
       "file": "chunk-5-7.bin",
       "cx": 5,
       "cy": 7,
-      "hash": "25f0e9dacbfba5a6"
+      "hash": "b0339db303b13f09"
     },
     {
       "file": "chunk-6-7.bin",
@@ -872,6 +872,294 @@
       "cx": 11,
       "cy": 11,
       "hash": "f3bf816b16c07afb"
+    },
+    {
+      "file": "chunk-0-12.bin",
+      "cx": 0,
+      "cy": 12,
+      "hash": "0eeddcb4efa9f956"
+    },
+    {
+      "file": "chunk-1-12.bin",
+      "cx": 1,
+      "cy": 12,
+      "hash": "63217d3df0e5104a"
+    },
+    {
+      "file": "chunk-2-12.bin",
+      "cx": 2,
+      "cy": 12,
+      "hash": "91b154c3c73a8738"
+    },
+    {
+      "file": "chunk-3-12.bin",
+      "cx": 3,
+      "cy": 12,
+      "hash": "c2fb75cd0e314a57"
+    },
+    {
+      "file": "chunk-4-12.bin",
+      "cx": 4,
+      "cy": 12,
+      "hash": "a847262e076927d1"
+    },
+    {
+      "file": "chunk-5-12.bin",
+      "cx": 5,
+      "cy": 12,
+      "hash": "dd8e13fe4bc6c75e"
+    },
+    {
+      "file": "chunk-6-12.bin",
+      "cx": 6,
+      "cy": 12,
+      "hash": "1f1e68eb6d6c99bf"
+    },
+    {
+      "file": "chunk-7-12.bin",
+      "cx": 7,
+      "cy": 12,
+      "hash": "b4896e7538de544e"
+    },
+    {
+      "file": "chunk-8-12.bin",
+      "cx": 8,
+      "cy": 12,
+      "hash": "ab4e748506478020"
+    },
+    {
+      "file": "chunk-9-12.bin",
+      "cx": 9,
+      "cy": 12,
+      "hash": "13b462e2f04a23e9"
+    },
+    {
+      "file": "chunk-10-12.bin",
+      "cx": 10,
+      "cy": 12,
+      "hash": "a42ff54c7e667f9c"
+    },
+    {
+      "file": "chunk-11-12.bin",
+      "cx": 11,
+      "cy": 12,
+      "hash": "f2b29a7cc2a060f5"
+    },
+    {
+      "file": "chunk-0-13.bin",
+      "cx": 0,
+      "cy": 13,
+      "hash": "755139b246787e52"
+    },
+    {
+      "file": "chunk-1-13.bin",
+      "cx": 1,
+      "cy": 13,
+      "hash": "159797740b782cd6"
+    },
+    {
+      "file": "chunk-2-13.bin",
+      "cx": 2,
+      "cy": 13,
+      "hash": "6c507933170755f9"
+    },
+    {
+      "file": "chunk-3-13.bin",
+      "cx": 3,
+      "cy": 13,
+      "hash": "57d2f58704cd1e9b"
+    },
+    {
+      "file": "chunk-4-13.bin",
+      "cx": 4,
+      "cy": 13,
+      "hash": "f8bfa16bd278d2fb"
+    },
+    {
+      "file": "chunk-5-13.bin",
+      "cx": 5,
+      "cy": 13,
+      "hash": "dc17d7f3a9a47a20"
+    },
+    {
+      "file": "chunk-6-13.bin",
+      "cx": 6,
+      "cy": 13,
+      "hash": "937abe3a34028322"
+    },
+    {
+      "file": "chunk-7-13.bin",
+      "cx": 7,
+      "cy": 13,
+      "hash": "777ddd26cf15ff16"
+    },
+    {
+      "file": "chunk-8-13.bin",
+      "cx": 8,
+      "cy": 13,
+      "hash": "95509829284830fe"
+    },
+    {
+      "file": "chunk-9-13.bin",
+      "cx": 9,
+      "cy": 13,
+      "hash": "373c240a4fb8ae3b"
+    },
+    {
+      "file": "chunk-10-13.bin",
+      "cx": 10,
+      "cy": 13,
+      "hash": "567a486e819ed8d3"
+    },
+    {
+      "file": "chunk-11-13.bin",
+      "cx": 11,
+      "cy": 13,
+      "hash": "7ed527d17de8db45"
+    },
+    {
+      "file": "chunk-0-14.bin",
+      "cx": 0,
+      "cy": 14,
+      "hash": "7efa81d8fb1c61da"
+    },
+    {
+      "file": "chunk-1-14.bin",
+      "cx": 1,
+      "cy": 14,
+      "hash": "4d6bf62fd79e1023"
+    },
+    {
+      "file": "chunk-2-14.bin",
+      "cx": 2,
+      "cy": 14,
+      "hash": "528b99acfaee56fb"
+    },
+    {
+      "file": "chunk-3-14.bin",
+      "cx": 3,
+      "cy": 14,
+      "hash": "956c3cb4c89b9399"
+    },
+    {
+      "file": "chunk-4-14.bin",
+      "cx": 4,
+      "cy": 14,
+      "hash": "13790df7d4e94425"
+    },
+    {
+      "file": "chunk-5-14.bin",
+      "cx": 5,
+      "cy": 14,
+      "hash": "709f2e9c3b2e9f8a"
+    },
+    {
+      "file": "chunk-6-14.bin",
+      "cx": 6,
+      "cy": 14,
+      "hash": "30e91cf16a48fa4c"
+    },
+    {
+      "file": "chunk-7-14.bin",
+      "cx": 7,
+      "cy": 14,
+      "hash": "d871db8f22edfd38"
+    },
+    {
+      "file": "chunk-8-14.bin",
+      "cx": 8,
+      "cy": 14,
+      "hash": "399062ecbbda3161"
+    },
+    {
+      "file": "chunk-9-14.bin",
+      "cx": 9,
+      "cy": 14,
+      "hash": "e3340b94815612eb"
+    },
+    {
+      "file": "chunk-10-14.bin",
+      "cx": 10,
+      "cy": 14,
+      "hash": "c003fcdacbfc2470"
+    },
+    {
+      "file": "chunk-11-14.bin",
+      "cx": 11,
+      "cy": 14,
+      "hash": "a19318fc6cc0086b"
+    },
+    {
+      "file": "chunk-0-15.bin",
+      "cx": 0,
+      "cy": 15,
+      "hash": "6c8ac8106af8f38d"
+    },
+    {
+      "file": "chunk-1-15.bin",
+      "cx": 1,
+      "cy": 15,
+      "hash": "a3afe8bde85f38c4"
+    },
+    {
+      "file": "chunk-2-15.bin",
+      "cx": 2,
+      "cy": 15,
+      "hash": "6765c407e32503de"
+    },
+    {
+      "file": "chunk-3-15.bin",
+      "cx": 3,
+      "cy": 15,
+      "hash": "d269f8512e8c1122"
+    },
+    {
+      "file": "chunk-4-15.bin",
+      "cx": 4,
+      "cy": 15,
+      "hash": "b523ad0031be2a41"
+    },
+    {
+      "file": "chunk-5-15.bin",
+      "cx": 5,
+      "cy": 15,
+      "hash": "a4fa3bdc452b8107"
+    },
+    {
+      "file": "chunk-6-15.bin",
+      "cx": 6,
+      "cy": 15,
+      "hash": "62a5a97233adeef1"
+    },
+    {
+      "file": "chunk-7-15.bin",
+      "cx": 7,
+      "cy": 15,
+      "hash": "42cfb54ea76dc6e6"
+    },
+    {
+      "file": "chunk-8-15.bin",
+      "cx": 8,
+      "cy": 15,
+      "hash": "8ffdb61719f02cb6"
+    },
+    {
+      "file": "chunk-9-15.bin",
+      "cx": 9,
+      "cy": 15,
+      "hash": "2fb3878f102b2b90"
+    },
+    {
+      "file": "chunk-10-15.bin",
+      "cx": 10,
+      "cy": 15,
+      "hash": "0e09838df95711ad"
+    },
+    {
+      "file": "chunk-11-15.bin",
+      "cx": 11,
+      "cy": 15,
+      "hash": "04e5e6296a153dba"
     }
   ],
   "interiors": [],

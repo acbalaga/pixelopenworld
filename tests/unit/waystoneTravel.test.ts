@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROOMS } from '../../src/content/world/rooms';
+import { roomsOf } from '../../src/content/world/rooms';
 import { WAYSTONES } from '../../src/content/world/waystones';
 import { validateSave } from '../../src/save/integrity';
 import { ChunkSource, type RegionManifest } from '../../src/platform/world/chunkSource';
@@ -19,8 +19,8 @@ const stones = WAYSTONES['dawnmeadow']!;
 
 describe('travel is blocked inside a dungeon', () => {
   it('refuses from a dungeon room and allows it outside', () => {
-    const room = ROOMS.find((r) => !r.outdoors);
-    expect(room, 'the slice cave is a closed room').toBeDefined();
+    const room = roomsOf('dawnmeadow').find((r) => !r.outdoors);
+    expect(room, 'the Rootway is a set of closed rooms').toBeDefined();
     const s = createDemoState(3, 0);
     s.region = 'dawnmeadow';
     s.tick = 10_000;

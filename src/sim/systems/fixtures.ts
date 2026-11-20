@@ -82,6 +82,21 @@ function fixtureOfKind(state: SimState, kind: string): EntityId | null {
   return null;
 }
 
+/**
+ * Where a portal's destination fixture stands: the live fixture if its chunk is in, else the tile
+ * its definition names, provided that tile's chunk has been streamed in (M4-21). Null while it has
+ * not, so the avatar never lands in ground that is not there.
+ */
+function portalTarget(state: SimState, kind: string): { x: number; y: number } | null {
+  const live = fixtureOfKind(state, kind);
+  if (live !== null) return getComp(state.entities, live, 'pos') ?? null;
+  const at = FIXTURES[kind]?.at;
+  if (!at) return null;
+  const stream = state.stream;
+  if (stream && !stream.source.chunk(Math.floor(at.x / 32), Math.floor(at.y / 32))) return null;
+  return { x: px(at.x * TILE + 8), y: px(at.y * TILE + TILE) };
+}
+
 /** Fixtures that currently block, as boxes in sub-pixel units. */
 function solidBodies(state: SimState, except: EntityId): Box[] {
   const out: Box[] = [];
@@ -99,8 +114,14 @@ function overlap(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
-function roomOfPos(x: number, y: number): string {
-  return roomAt(Math.floor(x / SUBPX / TILE), Math.floor((y / SUBPX - 1) / TILE))?.id ?? 'none';
+function roomOfPos(state: SimState, x: number, y: number): string {
+  return (
+    roomAt(
+      Math.floor(x / SUBPX / TILE),
+      Math.floor((y / SUBPX - 1) / TILE),
+      state.region ?? 'slice',
+    )?.id ?? 'none'
+  );
 }
 
 /** Puts a block back where it started. */
@@ -228,7 +249,11 @@ export function canSleepOutdoors(state: SimState, who: EntityId): boolean {
   const p = getComp(state.entities, who, 'pos');
   if (!p || getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
   if (bedNear(state, who) !== null) return false;
-  const room = roomAt(Math.floor(p.x / SUBPX / TILE), Math.floor((p.y / SUBPX - 1) / TILE));
+  const room = roomAt(
+    Math.floor(p.x / SUBPX / TILE),
+    Math.floor((p.y / SUBPX - 1) / TILE),
+    state.region ?? 'slice',
+  );
   return !room || !!room.outdoors;
 }
 
@@ -425,12 +450,11 @@ export function fixturesSystem(state: SimState): void {
         Math.abs(q.y - (p.y - px(TILE / 2))) / SUBPX > W.portalRadius
       )
         continue;
-      const destId = fixtureOfKind(state, def.to);
-      const dest = destId === null ? undefined : FIXTURES[def.to];
-      const dp = destId === null ? undefined : getComp(state.entities, destId, 'pos');
+      const dest = FIXTURES[def.to];
+      const dp = portalTarget(state, def.to);
       if (!dest || !dp) continue;
       const off = dest.arrive ?? [0, 0];
-      const from = roomOfPos(q.x, q.y);
+      const from = roomOfPos(state, q.x, q.y);
       q.x = dp.x + px(off[0]);
       q.y = dp.y - px(TILE / 2) + px(off[1]);
       const v = getComp(state.entities, a, 'vel');
@@ -439,7 +463,7 @@ export function fixturesSystem(state: SimState): void {
         v.y = 0;
       }
       if (def.fall) fall(state, a, def.fall);
-      const to = roomOfPos(q.x, q.y);
+      const to = roomOfPos(state, q.x, q.y);
       if (to !== from) {
         resetRoom(state, to);
         emit(state.events, { type: 'roomChanged', who: a, from, to });

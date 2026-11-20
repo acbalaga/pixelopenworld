@@ -490,7 +490,8 @@ const BAG_ORDER: readonly BagFilter[] = ['gear', 'tools', 'food', 'materials', '
 /** What can be done with an item from the Bag: eat food, wear gear, and drop anything. */
 export function itemActions(def: ItemDef): ItemAction[] {
   const out: ItemAction[] = [];
-  if (def.food || def.teaches || def.manual || (def.gadget && def.gadget !== 'lantern')) out.push('use');
+  if (def.food || def.teaches || def.manual || (def.gadget && def.gadget !== 'lantern'))
+    out.push('use');
   if (def.equip) out.push('equip');
   out.push('drop');
   return out;

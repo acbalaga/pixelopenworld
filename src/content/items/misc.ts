@@ -6,6 +6,8 @@ export const MISC_ITEMS: readonly ItemDef[] = [
   // Money and odds and ends. Coin is held as a number, not in a slot.
   item('item.coin', 'currency', { value: 1, stack: 9999 }),
   item('item.old_key', 'misc', { value: 0, stack: 1 }),
+  // The Rootway's key (M4-21): a knot of dried root, found behind the stump gates. Borrowed icon.
+  item('item.root_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
   item('item.river_pebble', 'misc', { value: 1 }),
   item('item.crow_feather', 'misc', { value: 2 }),
   item('item.bone_shard', 'misc', { value: 2 }),

@@ -109,7 +109,11 @@ function outdoorsNight(state: SimState, who: EntityId): void {
   const p = getComp(state.entities, who, 'pos');
   if (!s || !p || getComp(state.entities, who, 'fighter')?.state === 'dead') return;
   if (dayPhase(state.worldTick) !== 'night') return;
-  const room = roomAt(Math.floor(p.x / SUBPX / TILE), Math.floor((p.y / SUBPX - 1) / TILE));
+  const room = roomAt(
+    Math.floor(p.x / SUBPX / TILE),
+    Math.floor((p.y / SUBPX - 1) / TILE),
+    state.region ?? 'slice',
+  );
   if (!room?.outdoors) return;
   s.nightAcc += 1;
   while (s.nightAcc >= TIME.hourTicks) {
