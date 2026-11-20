@@ -28,5 +28,6 @@ export const POI_STRINGS: Readonly<Record<string, string>> = {
   'poi.hedge_maze': 'Hedge maze',
   'poi.bell_stone': 'Bell stone',
   'poi.scarecrow_line': 'Scarecrow line',
+  'poi.old_fen_well': "Old Fen's well",
   'poi.cairnmoor_ring': 'Cairnmoor ring',
 };

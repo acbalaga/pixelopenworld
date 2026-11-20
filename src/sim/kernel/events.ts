@@ -147,6 +147,7 @@ export type SimEvent =
   | { type: 'doorOpened'; id: number; who: number }
   | { type: 'doorLocked'; id: number; who: number; key: string }
   | { type: 'gateOpened'; id: number }
+  | { type: 'gateClosed'; id: number }
   | { type: 'plateChanged'; id: number; pressed: boolean }
   | { type: 'blockPushed'; id: number }
   | { type: 'blockReset'; id: number }

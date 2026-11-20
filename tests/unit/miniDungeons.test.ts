@@ -24,10 +24,12 @@ const grid = new TileWorld();
 for (const [name, v] of files)
   if (/^dawnmeadow\/chunk-\d+-\d+\.bin$/.test(name)) grid.set(decodeChunk(v as Uint8Array));
 
-describe('Dawnmeadow mini-dungeons, first batch (M4-11)', () => {
-  it('are eight, each a mini with a region, an estimate and its own rooms', () => {
+describe('Dawnmeadow mini-dungeons (M4-11)', () => {
+  it('are twelve, each a mini with a region, an estimate and its own rooms', () => {
     expect(MINIS.map((m) => m.def.id)).toEqual(
-      ['m1', 'm2', 'm3', 'm5', 'm6', 'm7', 'm10', 'm11'].map((n) => `dungeon.${n}`),
+      ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'm12'].map(
+        (n) => `dungeon.${n}`,
+      ),
     );
     for (const m of MINIS) {
       expect(m.def.mini, m.def.id).toBe(true);
@@ -36,6 +38,7 @@ describe('Dawnmeadow mini-dungeons, first batch (M4-11)', () => {
       expect(m.def.estMinutes).toBeLessThanOrEqual(10);
       expect(m.def.rooms.length).toBeGreaterThanOrEqual(2);
       expect(m.def.rooms.length).toBeLessThanOrEqual(3);
+      expect(m.def.estMinutes).toBeLessThanOrEqual(10);
     }
     expect(new Set(BUILT_DUNGEONS.map((d) => d.def.id)).size).toBe(BUILT_DUNGEONS.length);
   });

@@ -207,4 +207,22 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [178, 267],
     ],
   },
+  'cairnmoor.well': {
+    rect: { x: 9, y: 85, w: 7, h: 3 },
+    slots: [
+      [12, 86],
+      [14, 86],
+      [10, 87],
+      [15, 87],
+    ],
+  },
+  'cairnmoor.shelter': {
+    rect: { x: 2, y: 85, w: 7, h: 2 },
+    slots: [
+      [4, 86],
+      [6, 86],
+      [3, 87],
+      [8, 87],
+    ],
+  },
 };

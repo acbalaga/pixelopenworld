@@ -28,7 +28,7 @@ describe('Dawnmeadow points of interest (M4-11)', () => {
       by('hermit'),
       by('puzzle'),
       by('oddity'),
-    ]).toEqual([6, 6, 4, 3, 6, 4]);
+    ]).toEqual([6, 6, 4, 4, 6, 4]);
   });
 
   it('place each stamp a POI names, and stand the POI on an open tile of it', () => {
@@ -72,7 +72,7 @@ describe('Dawnmeadow points of interest (M4-11)', () => {
   });
 
   it('each has a name, a kind, an estimate and a place inside the region', () => {
-    expect(pois.length).toBeGreaterThanOrEqual(29);
+    expect(pois.length).toBeGreaterThanOrEqual(30);
     for (const p of pois) {
       expect(POI_STRINGS[p.id], p.id).toBeTruthy();
       expect(POI_STRINGS[p.id], p.id).not.toMatch(/[—–]/);

@@ -32,7 +32,7 @@ export const FRAGMENT_SLOTS: readonly FragmentSlot[] = [
   later('dm_f10'), // the Thornwall keep, upper room
   open('dm_f11', 150, 266), // the stone circle
   open('dm_f12', 46, 50), // the Cairnmoor ring
-  later('dm_f13'), // Hermit's Well, the bottom
+  inside('dm_f13', 'dungeon.m9'), // Hermit's Well, the bottom
   open('dm_f14', 203, 239), // the sundial
   open('dm_f15', 60, 38), // the lit window sightline
   open('dm_f16', 309, 264), // the beached boat

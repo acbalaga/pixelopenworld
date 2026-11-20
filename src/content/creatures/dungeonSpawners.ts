@@ -21,6 +21,11 @@ export const DUNGEON_SPAWNS: readonly string[] = [
   'dg_rubblet',
   'dgp_rubblet',
   'dgp_thistle_wasp',
+  'dg_moor_wisp',
+  'dg_crag_hawk',
+  'dgp_reed_crab',
+  'dg_reed_crab',
+  'dg_marsh_leech',
 ];
 
 /** The first map's creatures, which dungeons borrow too. */
