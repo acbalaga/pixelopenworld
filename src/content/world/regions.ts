@@ -1,3 +1,4 @@
+import { DUNGEON_SPAWNS } from '../creatures/dungeonSpawners';
 import { rosterSpawnerKinds } from '../creatures/zoneSpawners';
 import { MANUALS } from '../items/manuals';
 import { ROSTERS } from './rosters';
@@ -54,6 +55,8 @@ export const REGIONS: readonly RegionDef[] = [
         // The Rootway (M4-21).
         'spawner.rw_glowcap',
         'spawner.rw_bramblehide',
+        // The mini-dungeons (M4-11).
+        ...DUNGEON_SPAWNS.map((k) => `spawner.${k}`),
         // Zone spawners (M4-05): every kind Dawnmeadow's rosters can place.
         ...[
           ...new Set(

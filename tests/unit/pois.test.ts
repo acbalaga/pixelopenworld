@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DUNGEONS } from '../../src/content/world/dungeons';
 import { STAMPS } from '../../src/content/world/stamps';
 import {
   HEDGE_MAZE_CENTER,
@@ -92,6 +93,16 @@ describe('Dawnmeadow points of interest (M4-11)', () => {
       ).toBe(true);
       const chest = poiChest(p.manual!);
       expect(FIXTURES[chest], chest).toBeDefined();
+      if (p.inDungeon) {
+        // In the dungeon's rooms, once, and not out in the open.
+        expect(DAWNMEADOW.placements.filter((pl) => pl.kind === chest)).toHaveLength(0);
+        const d = DUNGEONS[p.inDungeon]!;
+        const held = d.rooms.flatMap((r) =>
+          (STAMPS[r.stamp.id]!.objects ?? []).filter((o) => o.kind === chest),
+        );
+        expect(held, chest).toHaveLength(1);
+        continue;
+      }
       const placed = DAWNMEADOW.placements.filter((pl) => pl.kind === chest);
       expect(placed, chest).toHaveLength(1);
       expect([placed[0]!.x, placed[0]!.y]).toEqual([p.x, p.y]);

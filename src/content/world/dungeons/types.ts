@@ -54,4 +54,6 @@ export interface DungeonDef {
   /** The region it belongs to, and minutes a first clear takes, for the pacing ledger (M4-12). */
   region?: string;
   estMinutes?: number;
+  /** A mini-dungeon: counted under its own line in the pacing ledger (regions/01 section 8). */
+  mini?: true;
 }

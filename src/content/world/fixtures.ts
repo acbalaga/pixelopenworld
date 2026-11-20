@@ -4,7 +4,7 @@
  */
 
 import { MANUALS } from '../items/manuals';
-import { rootwayFixtures, rootwayParts } from './dungeons/rootway';
+import { BUILT_DUNGEONS } from './dungeons/registry';
 import type { ElementId } from '../combat/statuses';
 
 /** What an element hit does to a fixture (M3-09). */
@@ -458,7 +458,11 @@ const MANUAL_CHESTS: readonly FixtureDef[] = MANUALS.filter((m) => m.via !== 'si
 
 /** Every fixture kind. */
 export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries(
-  [...LIST, ...MANUAL_CHESTS, ...rootwayFixtures(), ...rootwayParts()].map((f) => [f.kind, f]),
+  [
+    ...LIST,
+    ...MANUAL_CHESTS,
+    ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
+  ].map((f) => [f.kind, f]),
 );
 
 /** A named rectangle of the world, in tiles (x1 and y1 exclusive). The camera snaps to it. */

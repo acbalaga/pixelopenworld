@@ -56,7 +56,7 @@ export function collectItems(): { items: LedgerItem[]; problems: string[] } {
   for (const s of Object.values(SINGULARS)) add(s.id, s.region, 'singulars', s.estMinutes);
   // Dungeons with a region (the sample used by the framework tests has none).
   for (const d of Object.values(DUNGEONS))
-    if (d.region) add(d.id, d.region, 'dungeons', d.estMinutes);
+    if (d.region) add(d.id, d.region, d.mini ? 'miniDungeons' : 'dungeons', d.estMinutes);
   for (const p of Object.values(POIS)) add(p.id, p.region, 'pois', p.estMinutes);
   for (const r of Object.values(ROAMERS)) add(r.creature, r.region, 'extras', r.estMinutes);
   for (const [region, stones] of Object.entries(WAYSTONES))

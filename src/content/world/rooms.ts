@@ -1,4 +1,4 @@
-import { rootwayRooms } from './dungeons/rootway';
+import { BUILT_DUNGEONS } from './dungeons/registry';
 import type { RoomDef } from './fixtures';
 
 /**
@@ -45,7 +45,8 @@ export function roomsOf(region: string): readonly RoomDef[] {
     y1: region === 'dawnmeadow' ? 16 * 32 : 4096,
     outdoors: true,
   };
-  const rooms = region === 'dawnmeadow' ? [...rootwayRooms(), open] : [open];
+  const rooms =
+    region === 'dawnmeadow' ? [...BUILT_DUNGEONS.flatMap((d) => d.rooms()), open] : [open];
   return (REGION_ROOMS[region] = rooms);
 }
 

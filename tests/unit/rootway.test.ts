@@ -68,7 +68,9 @@ describe('the Rootway graph', () => {
     }
     // Open ground elsewhere in Dawnmeadow, and the Rootway's coordinates are rock on the slice.
     expect(roomAt(190, 190, 'dawnmeadow')?.outdoors).toBe(true);
-    expect(roomsOf('dawnmeadow').filter((r) => !r.outdoors)).toHaveLength(10);
+    expect(
+      roomsOf('dawnmeadow').filter((r) => !r.outdoors && r.id.startsWith('dungeon.rootway.')),
+    ).toHaveLength(10);
   });
 
   it('places every fixture and portal it names, and every portal leads to a marker or a portal', () => {

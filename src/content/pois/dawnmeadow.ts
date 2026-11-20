@@ -24,9 +24,11 @@ export const DAWNMEADOW_POIS: readonly PoiDef[] = [
   // Oddities.
   poi('burnt_shed', 'oddity', 230, 235, { manual: 'item.manual_kindling' }),
   poi('mill_loft', 'oddity', 282, 112, { manual: 'item.manual_light_feet' }),
-  // The inn cellar is mini-dungeon m1 (a later part of M4-11). Until it stands, the songsheet is
-  // in a chest at the back of the inn yard, by the cellar door's place.
-  poi('inn_songsheet', 'oddity', 168, 216, { manual: 'item.manual_road_songs' }),
+  // The inn cellar is mini-dungeon m1: the hatch in the inn yard, the songsheet in the second room.
+  poi('inn_songsheet', 'oddity', 179, 215, {
+    manual: 'item.manual_road_songs',
+    inDungeon: 'dungeon.m1',
+  }),
   poi('guardhouse_notes', 'oddity', 176, 200, { manual: 'item.manual_lunge' }),
   // Shrines, vistas, wrecks, hermits and puzzles with a shape of their own (stamps/pois.ts).
   poi('roadside_idol', 'shrine', 134, 187, { stamp: { id: 'poi_idol', x: 133, y: 185 } }),

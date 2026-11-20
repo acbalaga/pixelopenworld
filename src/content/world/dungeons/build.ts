@@ -28,6 +28,17 @@ export interface RoomSpec {
   wall?: string;
 }
 
+/** A second way between a room and the open world (a back door). Both ends are portals. */
+export interface DoorSpec {
+  room: string;
+  /** The tile in the room that leads out. */
+  tile: { x: number; y: number };
+  /** The region tile of the portal outside, and the fixture kinds of the two ends. */
+  at: { x: number; y: number };
+  kind: string;
+  outKind: string;
+}
+
 export interface DungeonSpec {
   /** `dungeon.<name>`. */
   id: string;
@@ -35,6 +46,8 @@ export interface DungeonSpec {
   prefix: string;
   /** Region tile of grid cell (0, 0). */
   origin: { x: number; y: number };
+  /** Tiles in a grid cell. 32 by default; small rooms use 16 and pack four to a chunk. */
+  cell?: number;
   rooms: readonly RoomSpec[];
   edges: readonly DungeonEdge[];
   /** The way in from outside: the region tile of the mouth, and the tile in the entrance room that leads out. */
@@ -44,7 +57,9 @@ export interface DungeonSpec {
     kind: string;
     exitKind: string;
   };
-  def: Pick<DungeonDef, 'skills' | 'entrance' | 'boss' | 'region' | 'estMinutes'>;
+  def: Pick<DungeonDef, 'skills' | 'entrance' | 'boss' | 'region' | 'estMinutes' | 'mini'>;
+  /** Back doors to the open world, besides the mouth. */
+  doors?: readonly DoorSpec[];
   /** The rooms' own puzzle fixtures, doors, gates and chests. */
   parts?: readonly FixtureDef[];
 }
@@ -84,7 +99,8 @@ export function defineDungeon(spec: DungeonSpec) {
 
   const roomOrigin = (id: string): { x: number; y: number } => {
     const s = specOf(id);
-    return { x: spec.origin.x + s.col * CELL + 2, y: spec.origin.y + s.row * CELL + 2 };
+    const c = spec.cell ?? CELL;
+    return { x: spec.origin.x + s.col * c + 2, y: spec.origin.y + s.row * c + 2 };
   };
   const regionTile = (room: string, t: { x: number; y: number }): { x: number; y: number } => {
     const o = roomOrigin(room);
@@ -152,6 +168,18 @@ export function defineDungeon(spec: DungeonSpec) {
       },
       { kind: spec.mouth.exitKind, type: 'portal', to: spec.mouth.kind, arrive: [0, 24], at: exit },
     );
+    for (const d of spec.doors ?? []) {
+      out.push(
+        {
+          kind: d.kind,
+          type: 'portal',
+          to: d.outKind,
+          arrive: [0, 24],
+          at: regionTile(d.room, d.tile),
+        },
+        { kind: d.outKind, type: 'portal', to: d.kind, arrive: inward(d.room, d.tile), at: d.at },
+      );
+    }
     return out;
   };
 
@@ -178,6 +206,7 @@ export function defineDungeon(spec: DungeonSpec) {
       if (e.to === r.id) mine.push({ ...e.arrive, kind: kindOf(i, 'b') });
     });
     if (r.id === spec.def.entrance) mine.push({ ...spec.mouth.exit, kind: spec.mouth.exitKind });
+    for (const d of spec.doors ?? []) if (d.room === r.id) mine.push({ ...d.tile, kind: d.kind });
     return { ...r.stamp, objects: [...(r.stamp.objects ?? []), ...mine] };
   });
 
@@ -189,9 +218,16 @@ export function defineDungeon(spec: DungeonSpec) {
       ...roomOrigin(r.id),
     }));
 
+  /** Objects the region spec places in the open world: the mouth portal and the back doors' outer ends. */
+  const outside = (): { kind: string; x: number; y: number }[] => [
+    { kind: spec.mouth.kind, ...spec.mouth.at },
+    ...(spec.doors ?? []).map((d) => ({ kind: d.outKind, ...d.at })),
+  ];
+
   return {
     spec,
     def,
+    outside,
     roomOrigin,
     regionTile,
     portal,

@@ -1,7 +1,8 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
 import { DAWNMEADOW_CLUSTERS } from './clusters';
-import { ROOTWAY_MOUTH, rootwayPlacements } from '../../dungeons/rootway';
+import { MOUTHS } from '../../dungeons/mouths';
+import { BUILT_DUNGEONS } from '../../dungeons/registry';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
 import { WAYSTONES } from '../../waystones';
@@ -177,9 +178,11 @@ const placements: Placement[] = [
   stamp('cliff_window', 56, 22),
   stamp('far_den', 330, 262),
 
-  // The Rootway (M4-21): ten rooms under the region, and its mouth at the great oak.
-  ...rootwayPlacements().map((r) => stamp(r.stamp, r.x, r.y)),
-  at('fixture.rootway_mouth', ROOTWAY_MOUTH.x, ROOTWAY_MOUTH.y),
+  // The Rootway (M4-21) and the mini-dungeons (M4-11): their rooms under the region, and their
+  // mouths, with a stamp to mark each mini-dungeon's.
+  ...BUILT_DUNGEONS.flatMap((d) => d.placements().map((r) => stamp(r.stamp, r.x, r.y))),
+  ...BUILT_DUNGEONS.flatMap((d) => d.outside().map((o) => at(o.kind, o.x, o.y))),
+  ...Object.values(MOUTHS).flatMap((m) => (m.stamp ? [stamp(m.stamp, m.x, m.y)] : [])),
 
   // The practice field outside the north gate: the M3 element set pieces, moved from the square.
   at('fixture.brush_wall', 176, 146),
@@ -191,7 +194,9 @@ const placements: Placement[] = [
 
   // The manual chests, each at the place of interest that holds it (POW-M4-11). The two in the
   // Rootway are placed by its own rooms.
-  ...DAWNMEADOW_POIS.flatMap((p) => (p.manual ? [at(poiChest(p.manual), p.x, p.y)] : [])),
+  ...DAWNMEADOW_POIS.flatMap((p) =>
+    p.manual && !p.inDungeon ? [at(poiChest(p.manual), p.x, p.y)] : [],
+  ),
   // The places of interest that have a shape of their own.
   ...DAWNMEADOW_POIS.flatMap((p) => (p.stamp ? [stamp(p.stamp.id, p.stamp.x, p.stamp.y)] : [])),
 

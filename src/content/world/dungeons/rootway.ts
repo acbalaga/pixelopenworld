@@ -310,6 +310,7 @@ const D = defineDungeon({
   parts: partsList(),
 });
 
+export const ROOTWAY_BUILT = D;
 export const ROOTWAY: DungeonDef = D.def;
 
 /** Tile of a room's top left in the region. */
