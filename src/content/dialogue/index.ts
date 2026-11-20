@@ -1,4 +1,5 @@
 import { COLD_OVEN_FLAGS } from '../singulars';
+import { AUTHORED } from '../requests/dawnmeadow';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
 export type * from './types';
@@ -443,7 +444,7 @@ const lesson = (
 const asked = { request: 'request.clear_pests' } as const;
 const pods = { request: 'request.ember_pods' } as const;
 
-export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
+const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
   'npc.shopkeeper': {
     npc: 'npc.shopkeeper',
     entries: [anvil.ready, { if: [{ flag: 'met_brin' }], node: 'again' }, { node: 'greet' }],
@@ -975,3 +976,58 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
     },
   },
 };
+
+/**
+ * Where each giver's "Is there any work for me?" goes: the nodes a returning player lands on. The
+ * old givers keep their own request choices; the hub is one more door.
+ */
+const WORK_HOSTS: Readonly<Record<string, readonly string[]>> = {
+  'npc.shopkeeper': ['greet', 'again'],
+  'npc.smith': ['greet', 'again'],
+  'npc.outfitter': ['greet', 'again'],
+  'npc.herbalist': ['greet', 'again'],
+  'npc.cook': ['greet', 'again'],
+  'npc.guard': ['ask', 'after'],
+  'npc.scholar': ['ask', 'after'],
+  'npc.pilgrim': ['two'],
+};
+
+/**
+ * Adds Dawnmeadow's authored requests (M4-12) to their givers: a turn-in entry for each, and a
+ * work node that offers them, reached from the node the giver's menu starts at.
+ */
+function withAuthoredRequests(base: Readonly<Record<string, Dialogue>>): Record<string, Dialogue> {
+  const out: Record<string, Dialogue> = { ...base };
+  const givers = [...new Set(AUTHORED.map((a) => a.giver))];
+  for (const npc of givers) {
+    const d = base[npc];
+    if (!d) continue;
+    const flows = AUTHORED.filter((a) => a.giver === npc).map((a) =>
+      requestFlow(a.key, `request.${a.key}`, 'rq', `request.${a.key}.ask`),
+    );
+    const nodes: Record<string, DialogueNode> = { ...d.nodes };
+    for (const f of flows) Object.assign(nodes, f.nodes);
+    nodes['work'] = {
+      id: 'work',
+      text: 'dlg.rq.work',
+      choices: [...flows.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
+    };
+    const hosts = WORK_HOSTS[npc] ?? ['greet'];
+    const door: Choice = { text: 'dlg.c_work', next: 'work' };
+    for (const h of hosts) {
+      const n = nodes[h];
+      if (!n?.choices) continue;
+      // Before the last choice, which is the way out.
+      const at = n.choices.length - 1;
+      nodes[h] = { ...n, choices: [...n.choices.slice(0, at), door, ...n.choices.slice(at)] };
+    }
+    out[npc] = {
+      ...d,
+      entries: [...flows.map((f) => f.ready), ...d.entries],
+      nodes,
+    };
+  }
+  return out;
+}
+
+export const DIALOGUES: Readonly<Record<string, Dialogue>> = withAuthoredRequests(BASE_DIALOGUES);

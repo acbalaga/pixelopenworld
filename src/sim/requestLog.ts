@@ -57,6 +57,12 @@ export function objectiveText(o: RequestObjective): string {
         ? fill(T['request.step.defeat.one'] as string, { what })
         : fill(T['request.step.defeat'] as string, { n: o.count, what: `${what}s` });
     }
+    case 'feed': {
+      const what = o.creature ? (CREATURES[o.creature]?.name ?? o.creature) : 'creatures';
+      return o.count === 1
+        ? fill(T['request.step.feed.one'] as string, { what })
+        : fill(T['request.step.feed'] as string, { n: o.count, what: `${what}s` });
+    }
     case 'gather':
       return fill(T['request.step.gather'] as string, {
         n: o.count,

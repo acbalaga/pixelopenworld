@@ -1,9 +1,11 @@
+import { authoredStrings } from '../requests/dawnmeadow';
 /**
  * Request text (M3-11): titles at most 24 characters, the asker's own words, one line per way to
  * finish, and the templates the log and the board fill in. Plain voices, nothing about the
  * world's hidden layer. No em dashes.
  */
 export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
+  ...authoredStrings(),
   // Pests in the meadow (the first request).
   'request.clear_pests.title': 'Pests in the meadow',
   'request.clear_pests.ask':
@@ -56,6 +58,8 @@ export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
   'request.step.perform': 'Finish {what}',
   'request.step.perform.n': 'Do {what} {n} times',
   'request.step.talk': 'Speak with {who}',
+  'request.step.feed': 'Feed {n} {what}',
+  'request.step.feed.one': 'Feed the {what}',
   'request.step.other': 'Do the next thing',
   'request.step.done': 'Done',
   'request.step.progress': '{n} of {max}',
