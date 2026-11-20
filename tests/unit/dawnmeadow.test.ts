@@ -12,7 +12,7 @@ import { CHUNK_TILES, decodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion, type WorldFiles } from '../../tools/bake-world/bake';
 import { rosterSpawnerKinds } from '../../src/content/creatures/zoneSpawners';
 import { ROAMERS } from '../../src/content/creatures/roamers';
-import { PEOPLE } from '../../src/content/people';
+import { PEOPLE, PLACES } from '../../src/content/people';
 import { ROSTERS } from '../../src/content/world/rosters';
 import {
   MIN_LANDMARK_HEIGHT,
@@ -404,6 +404,38 @@ describe('Dawnmeadow people (M4-12)', () => {
       );
       const i = (o.y % CHUNK_TILES) * CHUNK_TILES + (o.x % CHUNK_TILES);
       expect(c.collision[i], `${o.kind} at ${o.x}, ${o.y}`).toBe(0);
+    }
+  });
+
+  it("gives every named place a rectangle and open standing tiles, bar the two awaiting the Hermit's Well", () => {
+    const solid = (x: number, y: number): boolean => {
+      const c = decodeChunk(
+        files.get(
+          `dawnmeadow/chunk-${Math.floor(x / CHUNK_TILES)}-${Math.floor(y / CHUNK_TILES)}.bin`,
+        ) as Uint8Array,
+      );
+      return (
+        c.collision[(y % CHUNK_TILES) * CHUNK_TILES + (x % CHUNK_TILES)] !== 0 ||
+        objects.some((o) => o.x === x && o.y === y)
+      );
+    };
+    for (const [id, p] of Object.entries(PLACES)) {
+      if (id.startsWith('cairnmoor.')) {
+        expect(p.spot, id).toBeUndefined();
+        continue;
+      }
+      expect(p.spot, id).toBeDefined();
+      const { rect, slots } = p.spot!;
+      if (p.part) expect(rect, id).toEqual(part(p.part));
+      expect(slots.length, id).toBeGreaterThanOrEqual(3);
+      for (const [x, y] of slots) {
+        expect(solid(x, y), `${id} slot ${x},${y}`).toBe(false);
+        // In the place, or in the rows just in front of a building.
+        expect(x, id).toBeGreaterThanOrEqual(rect.x - 1);
+        expect(x, id).toBeLessThanOrEqual(rect.x + rect.w);
+        expect(y, id).toBeGreaterThanOrEqual(rect.y);
+        expect(y, id).toBeLessThanOrEqual(rect.y + rect.h + 2);
+      }
     }
   });
 });

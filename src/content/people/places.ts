@@ -1,3 +1,5 @@
+import { PLACE_SPOTS, type PlaceSpot } from './placeSpots';
+
 /**
  * Where people spend their hours (POW-M4-12, regions/01-dawnmeadow sections 4 and 9). A place is a
  * named spot in a settlement or the countryside. Hearthford's places are the parts of its layout
@@ -11,6 +13,8 @@ export interface PlaceDef {
   indoors: boolean;
   /** The stamp part that makes up a Hearthford place. Absent for the rest. */
   part?: string;
+  /** Its tile rectangle and standing tiles in the region. Absent until the place is built. */
+  spot?: PlaceSpot;
 }
 
 const hearth = (id: string, part: string, indoors: boolean): PlaceDef => ({
@@ -49,5 +53,8 @@ export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
     at('cairnmoor.well', 'cairnmoor', false),
     at('cairnmoor.shelter', 'cairnmoor', true),
     at('wayside.chapel', 'wayside', true),
-  ].map((p) => [p.id, p]),
+  ].map((p) => {
+    const spot = PLACE_SPOTS[p.id];
+    return [p.id, spot ? { ...p, spot } : p];
+  }),
 );
