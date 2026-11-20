@@ -1,3 +1,4 @@
+import { pointsOf } from '../skills';
 import { attune, stoneOfFixture } from './waystones';
 import { wakePointAt } from './singulars';
 import { STATUSES } from '../../content/combat/statuses';
@@ -197,6 +198,10 @@ function useSwitch(state: SimState, who: EntityId, id: EntityId): void {
   const def = f ? FIXTURES[f.kind] : undefined;
   if (!f || !def) return;
   if (def.latch && f.open) return;
+  if (def.needs && pointsOf(state, who, def.needs.skill) < def.needs.points) {
+    emit(state.events, { type: 'doorLocked', id, who, key: def.needs.skill });
+    return;
+  }
   f.open = !f.open;
   emit(state.events, { type: 'switchChanged', id, on: f.open });
 }
