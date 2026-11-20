@@ -3,6 +3,7 @@ import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { NPCS } from '../../src/content/dialogue';
 import { NODES } from '../../src/content/items/recipes';
 import { FIXTURES } from '../../src/content/world/fixtures';
+import { DAWNMEADOW_CLUSTERS } from '../../src/content/world/regions/dawnmeadow/clusters';
 import { DAWNMEADOW, TOWN_ORIGIN } from '../../src/content/world/regions/dawnmeadow/spec';
 import type { RegionSpec } from '../../src/content/world/regions/types';
 import { STAMPS } from '../../src/content/world/stamps';
@@ -281,13 +282,41 @@ describe('the region checks', () => {
 describe('the discoverable check (M4-11)', () => {
   const land = (spec: RegionSpec): string[] =>
     validateRegion(spec, files).filter((e) => e.includes('chunk'));
+  // The region as it stood before the node clusters: the chunks they cover are pending again.
+  const clusterChunks = [
+    ...new Set(
+      DAWNMEADOW_CLUSTERS.map(
+        (c) => `${Math.floor(c.x / CHUNK_TILES)},${Math.floor(c.y / CHUNK_TILES)}`,
+      ),
+    ),
+  ];
+  const bare: RegionSpec = {
+    ...DAWNMEADOW,
+    placements: DAWNMEADOW.placements.filter((p) => !DAWNMEADOW_CLUSTERS.includes(p)),
+    pendingDiscoverables: clusterChunks,
+  };
+
+  it('finds nothing pending in the region: every land chunk holds a discoverable', () => {
+    expect(DAWNMEADOW.pendingDiscoverables ?? []).toEqual([]);
+    expect(land(DAWNMEADOW)).toEqual([]);
+    expect(land(bare)).toEqual([]);
+    expect(clusterChunks.length).toBeGreaterThan(60);
+  });
+
+  it('puts a cluster of at least two nodes of different kinds in each chunk it covers', () => {
+    for (const key of clusterChunks) {
+      const here = DAWNMEADOW_CLUSTERS.filter(
+        (c) => `${Math.floor(c.x / CHUNK_TILES)},${Math.floor(c.y / CHUNK_TILES)}` === key,
+      );
+      expect(here.length, key).toBeGreaterThanOrEqual(2);
+      expect(new Set(here.map((c) => c.kind)).size, key).toBeGreaterThanOrEqual(2);
+      for (const c of here) expect(NODES[c.kind], c.kind).toBeDefined();
+    }
+  });
 
   it('rejects a land chunk with nothing to find that is not listed as pending', () => {
-    const unlisted: RegionSpec = {
-      ...DAWNMEADOW,
-      pendingDiscoverables: (DAWNMEADOW.pendingDiscoverables ?? []).slice(1),
-    };
-    const first = (DAWNMEADOW.pendingDiscoverables ?? [])[0]!;
+    const unlisted: RegionSpec = { ...bare, pendingDiscoverables: clusterChunks.slice(1) };
+    const first = clusterChunks[0]!;
     expect(land(unlisted).some((e) => e.includes(`chunk ${first} holds no discoverable`))).toBe(
       true,
     );
@@ -297,7 +326,7 @@ describe('the discoverable check (M4-11)', () => {
     const stale: RegionSpec = {
       ...DAWNMEADOW,
       // Hearthford's own chunk, and open sea.
-      pendingDiscoverables: [...(DAWNMEADOW.pendingDiscoverables ?? []), '5,5', '0,11'],
+      pendingDiscoverables: ['5,5', '0,11'],
     };
     const bad = land(stale);
     expect(bad.some((e) => e.includes('chunk 5,5') && e.includes('remove it'))).toBe(true);
@@ -305,10 +334,10 @@ describe('the discoverable check (M4-11)', () => {
   });
 
   it('counts a point of interest: one placed in a pending chunk takes it off the list', () => {
-    const key = (DAWNMEADOW.pendingDiscoverables ?? [])[0]!;
+    const key = clusterChunks[0]!;
     const [cx, cy] = key.split(',').map(Number) as [number, number];
     const withPoi: RegionSpec = {
-      ...DAWNMEADOW,
+      ...bare,
       pois: [...(DAWNMEADOW.pois ?? []), { id: 'poi.test', x: cx * 32 + 3, y: cy * 32 + 3 }],
     };
     expect(land(withPoi).some((e) => e.includes(`chunk ${key}`) && e.includes('remove it'))).toBe(

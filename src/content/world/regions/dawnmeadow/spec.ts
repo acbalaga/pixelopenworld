@@ -1,5 +1,6 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
+import { DAWNMEADOW_CLUSTERS } from './clusters';
 import { ROOTWAY_MOUTH, rootwayPlacements } from '../../dungeons/rootway';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
@@ -208,6 +209,9 @@ const placements: Placement[] = [
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
+
+  // A node cluster in every land chunk with no other discoverable (POW-M4-11).
+  ...DAWNMEADOW_CLUSTERS,
 ];
 
 const { biomes, elevation } = masks();
