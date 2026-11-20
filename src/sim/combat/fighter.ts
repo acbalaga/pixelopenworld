@@ -89,13 +89,23 @@ export function foes(state: SimState, team: 0 | 1): EntityId[] {
   return out;
 }
 
-/** Nearest foe inside `reach` px and the arc around `facing` (cos * 256), or null. */
+/** True if a fed creature is calm now: it starts nothing, and Flow's auto swing leaves it be (M4-05). */
+export function isCalm(state: SimState, id: EntityId): boolean {
+  const until = getComp(state.entities, id, 'ai')?.calmUntil;
+  return until !== undefined && state.worldTick < until;
+}
+
+/**
+ * Nearest foe inside `reach` px and the arc around `facing` (cos * 256), or null. `skip` leaves
+ * out foes the caller does not want (a calm creature is not a target for an automatic swing).
+ */
 export function nearestInArc(
   state: SimState,
   who: EntityId,
   facing: Vec,
   reach: number,
   cos256: number,
+  skip?: (id: EntityId) => boolean,
 ): EntityId | null {
   const f = getComp(state.entities, who, 'fighter');
   const me = centerPx(state, who);
@@ -103,6 +113,7 @@ export function nearestInArc(
   let best: EntityId | null = null;
   let bestD = Infinity;
   for (const id of foes(state, f.team)) {
+    if (skip?.(id)) continue;
     const c = centerPx(state, id);
     if (!c) continue;
     const d = { x: c.x - me.x, y: c.y - me.y };

@@ -21,6 +21,7 @@ import { knows } from '../../sim/combat/techniques';
 import { fill, TRIAL_STRINGS } from '../../content/strings/skills';
 import { NPCS } from '../../content/dialogue';
 import { AFFIXES, parseAffix } from '../../content/items/affixes';
+import { feedTarget } from '../../sim/creatureFeed';
 import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { isAwake, masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
@@ -154,7 +155,7 @@ export interface SkillFamilyView {
   rows: SkillRowView[];
 }
 
-export type ItemAction = 'use' | 'equip' | 'drop';
+export type ItemAction = 'use' | 'equip' | 'feed' | 'drop';
 
 export type BagFilterId = 'all' | BagFilter;
 export type BagSortId = 'type' | 'tier' | 'value' | 'newest';
@@ -506,6 +507,17 @@ export function useLabel(def: ItemDef): string {
   return UI_STRINGS.useVerb.use;
 }
 
+/** Puts Feed before Drop in an item's actions when a creature in reach would take it. */
+function withFeed(actions: ItemAction[], can: boolean): ItemAction[] {
+  if (!can) return actions;
+  const i = actions.indexOf('drop');
+  return [
+    ...actions.slice(0, i < 0 ? actions.length : i),
+    'feed',
+    ...actions.slice(i < 0 ? actions.length : i),
+  ];
+}
+
 export function itemDetail(state: SimState, who: number, slot: number): ItemDetailView | null {
   const s = state.entities.comps.inventory[who]?.slots[slot];
   const def = s ? ITEMS[s.item] : undefined;
@@ -543,7 +555,8 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
     category: UI_STRINGS.categories[def.category],
     value: fill(UI_STRINGS.detailValue, { n: def.value }),
     qty: fill(UI_STRINGS.detailStack, { n: s.qty }),
-    actions: itemActions(def),
+    // Feed is offered while a creature in front would take it, so it comes and goes as one walks.
+    actions: withFeed(itemActions(def), feedTarget(state, who, s.item) !== null),
     useLabel: useLabel(def),
     lines,
     broken,

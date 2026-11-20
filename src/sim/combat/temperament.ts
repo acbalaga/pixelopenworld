@@ -109,6 +109,8 @@ function mark(state: SimState, id: number, src: number): void {
   const ai = getComp(state.entities, id, 'ai');
   const def = ai ? CREATURES[ai.creature] : undefined;
   const f = getComp(state.entities, id, 'fighter');
+  // A hit ends the calm of a fed creature, whatever its temperament.
+  if (ai) delete ai.calmUntil;
   // Passive creatures never fight back. Skittish ones run when hit, and fight only when cornered.
   if (!ai || !def || def.temperament === 'passive' || def.temperament === 'skittish') return;
   if (f?.state === 'dead') return;

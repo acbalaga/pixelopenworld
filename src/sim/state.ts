@@ -385,6 +385,11 @@ export interface Ai {
   provoked?: boolean;
   /** Skirmisher: it struck, and backs off once the strike is done. */
   skirm?: boolean;
+  /**
+   * Fed (M4-05): until this world tick it notices nothing and starts nothing. A hit ends it.
+   * Absent means not calm, so saves from before load as they are.
+   */
+  calmUntil?: number;
 }
 
 /** Keeps `cap` of a creature alive near its position. */

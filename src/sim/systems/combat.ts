@@ -8,6 +8,7 @@ import {
   cardinalOf,
   centerPx,
   newFighter,
+  isCalm,
   nearestInArc,
   pxPos,
   resolveSwing,
@@ -132,10 +133,14 @@ function autoAttack(state: SimState, id: EntityId): void {
   const locked = f.lock !== null ? centerPx(state, f.lock) : null;
   const me = centerPx(state, id);
   let point = null as { x: number; y: number } | null;
+  // A creature that has been fed is left alone: Flow does not swing at a friend (M4-05).
+  if (f.lock !== null && isCalm(state, f.lock)) return;
   if (locked && me && len({ x: locked.x - me.x, y: locked.y - me.y }) <= w.reach + 6)
     point = locked;
   else if (f.lock === null) {
-    const t = nearestInArc(state, id, dirStep(a.facing), w.reach, C.flowArcCos256);
+    const t = nearestInArc(state, id, dirStep(a.facing), w.reach, C.flowArcCos256, (o) =>
+      isCalm(state, o),
+    );
     point = t === null ? null : centerPx(state, t);
   }
   if (point) startAttack(state, id, w.auto, point);

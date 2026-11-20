@@ -37,6 +37,8 @@ export type Command =
   | { type: 'store'; dir: 'in' | 'out'; slot: number }
   /** Eat or use the item in bag slot `slot`. */
   | { type: 'use'; slot: number }
+  /** Feed the item in bag slot `slot` to the creature in front (M4-05). */
+  | { type: 'feed'; slot: number }
   /**
    * Craft from these ingredient units (1 to 4) at the station in front. A known or unknown
    * recipe of the station's craft starts the manual step. No recipe is a failed craft.
@@ -170,6 +172,7 @@ export function validateCommand(raw: unknown): Validated {
       return { ok: true, command: { type: 'interact' } };
     case 'equip':
     case 'use':
+    case 'feed':
     case 'drop':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };

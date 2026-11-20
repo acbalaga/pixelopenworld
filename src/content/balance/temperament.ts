@@ -4,6 +4,8 @@ export const TEMPERAMENT = {
   warnMinTicksTier1: 30,
   /** How long a skittish creature runs after it notices. */
   fleeTicks: 90,
+  /** Feeding a creature (M4-05): how near the avatar must be, and how long a fed creature stays calm. */
+  feed: { reachPx: 28, calmTicks: 1800 },
   /** A creature this many tiers above the avatar's proven tier steps one rung more aggressive. */
   tierGap: 2,
   /** Rank at which a Trial proves a tier: the first threshold in `balance/skills`, tier 1. */
