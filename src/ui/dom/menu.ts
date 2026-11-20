@@ -35,6 +35,7 @@ import {
 } from '../menu/model';
 import { MAP_STRINGS } from '../../content/strings/map';
 import { MapPane, type MapPaneDeps } from './mapPane';
+import { bestiaryView } from '../menu/bestiaryModel';
 import { chronicleLines } from '../menu/singularModel';
 
 export const TAB_IDS = [
@@ -381,7 +382,7 @@ export class MenuSheet {
       case 'skills':
         return JSON.stringify([skillsView(state, who), trialLog(state, who), closed]);
       case 'chronicle':
-        return JSON.stringify(chronicleLines(state, who));
+        return JSON.stringify([chronicleLines(state, who), bestiaryView(state, who)]);
       case 'bag':
         return JSON.stringify([
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
@@ -465,18 +466,37 @@ export class MenuSheet {
 
   // ---- Chronicle ----
 
-  /** What the avatar has found and finished, in its own words. For now: the Singulars it has done. */
+  /** What the avatar has found and finished, in its own words: Singulars done, and the Bestiary. */
   private renderChronicle(): void {
     const { state, who } = this.deps.read();
     const lines = chronicleLines(state, who);
+    const bestiary = bestiaryView(state, who);
     put(this.body, header(S.tabs.chronicle));
-    if (lines.length === 0) {
+    if (lines.length === 0 && bestiary.rows.length === 0) {
       put(this.body, emptyState(S.chronicleEmpty));
       return;
     }
-    const ul = el('ul', 'pow-chronicle');
-    for (const t of lines) put(ul, el('li', 'pow-chronicle-line', t));
-    put(this.body, ul);
+    if (lines.length > 0) {
+      const ul = el('ul', 'pow-chronicle');
+      for (const t of lines) put(ul, el('li', 'pow-chronicle-line', t));
+      put(this.body, ul);
+    }
+    if (bestiary.rows.length > 0) {
+      put(this.body, header(S.bestiary.title), el('p', 'pow-bestiary-count', bestiary.count));
+      const ul = el('ul', 'pow-bestiary');
+      for (const r of bestiary.rows) {
+        const li = el('li', 'pow-bestiary-row');
+        put(
+          li,
+          el('span', 'pow-bestiary-name', r.name),
+          el('span', 'pow-bestiary-line', r.kills),
+          ...(r.befriended ? [el('span', 'pow-bestiary-line', S.bestiary.befriended)] : []),
+          el('span', 'pow-bestiary-line', r.temperament),
+        );
+        put(ul, li);
+      }
+      put(this.body, ul);
+    }
   }
 
   // ---- Map ----

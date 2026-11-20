@@ -463,6 +463,19 @@ export interface Journal {
   pinned: string | null;
   /** Progress in Singulars (M4-20), by id. A Singular the avatar has not touched has no entry. */
   singulars: Record<string, SingularProgress>;
+  /** What the avatar has learned of each kind of creature (M4-05), by creature id. */
+  bestiary: Record<string, BestiaryEntry>;
+}
+
+/**
+ * One Bestiary entry. Kills are not stored here: the ledger counts them. An entry shows once the
+ * avatar has killed or befriended the kind, and says only the temperaments it has seen the kind act on.
+ */
+export interface BestiaryEntry {
+  /** Temperaments the kind has acted on in front of the avatar, in the order seen. */
+  temperaments: string[];
+  /** The kind has been fed, soothed or otherwise made a friend of. */
+  befriended?: boolean;
 }
 
 /**
