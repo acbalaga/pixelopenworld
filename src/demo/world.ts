@@ -879,6 +879,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let fadeAt = arriveAt;
   const born = (now: number): number => (fly ? 1 : Math.min(1, (now - arriveAt) / MATERIALIZE_MS));
   const W_STR = UI_STRINGS.world;
+  let lastGatherQty = 1;
 
   const avatar = state.entities.comps.avatar[who];
   const apos = state.entities.comps.pos[who];
@@ -1442,6 +1443,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               key: e.item,
               amount: e.qty,
             });
+          else if (e.type === 'gatherResolved' && e.id === who) lastGatherQty = e.qty;
+          else if (e.type === 'gathered' && e.id === who)
+            notices.toast(
+              (e.tag === 'fishing' ? W_STR.caught : W_STR.gathered)
+                .replace('{n}', String(lastGatherQty))
+                .replace('{item}', itemName(e.item)),
+              `gather.${e.item}`,
+            );
+          else if (e.type === 'denied' && e.id === who)
+            notices.toast(
+              {
+                cooldown: W_STR.deniedCooldown,
+                stamina: W_STR.deniedStamina,
+                focus: W_STR.deniedFocus,
+                requires: W_STR.deniedRequires,
+                locked: W_STR.deniedLocked,
+              }[e.reason],
+              `denied.${e.reason}`,
+            );
           else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') {
             openedAt.set(e.id, performance.now());
@@ -2003,6 +2023,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             'small',
             icon,
           );
+          if (cooling && slot !== undefined) {
+            // The cooldown drains down the button: dark over what is still cooling.
+            const total = TECHNIQUES[afight.slots[slot] as string]?.cooldown ?? 0;
+            const left = afight.cooldowns[slot] ?? 0;
+            const frac = total > 0 ? Math.min(1, left / total) : 1;
+            const hh = Math.round(rect.h * frac);
+            renderer.drawRect(Layer.Hud, rect.x, rect.y + rect.h - hh, rect.w, hh, DARK, 0.55);
+          }
         }
       }
       // The save glyph: a small disk in the bottom right corner for a moment after each save.

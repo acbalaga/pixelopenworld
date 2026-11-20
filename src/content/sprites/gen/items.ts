@@ -444,14 +444,27 @@ function pie(name: string, crust: Ramp, fill: Ramp): SpriteDef {
   });
 }
 
+/** A fish seen from the side, head to the left: body, belly, forked tail, dorsal fin, gill and eye. */
+function fishShape(im: Img, c: Ramp, belly: number): void {
+  im.rect(4, 3, 6, 3, c[1]);
+  im.rect(3, 4, 8, 4, c[3]);
+  im.rect(2, 5, 8, 6, c[2]);
+  im.rect(3, 7, 8, 7, belly);
+  im.rect(4, 8, 7, 8, c[1]);
+  im.set(1, 6, c[2]);
+  // Forked tail.
+  im.rect(9, 5, 9, 6, c[1]);
+  im.set(10, 4, c[1]);
+  im.set(10, 5, c[1]);
+  im.set(10, 7, c[1]);
+  im.set(10, 8, c[1]);
+  // Gill and eye.
+  im.rect(4, 5, 4, 7, c[1]);
+  im.set(2, 5, 0);
+}
+
 function fish(name: string, c: Ramp): SpriteDef {
-  return icon(name, (im) => {
-    im.rect(2, 5, 8, 7, c[2]);
-    im.rect(3, 4, 7, 4, c[3]);
-    im.rect(3, 8, 7, 8, c[1]);
-    im.rect(9, 4, 10, 8, c[1]);
-    im.set(3, 5, STONE[0]);
-  });
+  return icon(name, (im) => fishShape(im, c, c[3]));
 }
 
 export const ITEM_ICONS: readonly SpriteDef[] = [
@@ -645,18 +658,8 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
     im.set(6, 5, STEEL[2]);
     im.set(7, 3, STONE[3]);
   }),
-  icon('fish_river', (im) => {
-    im.rect(2, 5, 8, 7, WATER[2]);
-    im.rect(2, 5, 8, 5, WATER[3]);
-    im.rect(8, 4, 10, 8, WATER[1]);
-    im.set(3, 6, STONE[3]);
-  }),
-  icon('fish_silver', (im) => {
-    im.rect(2, 5, 8, 7, STEEL[1]);
-    im.rect(2, 5, 8, 5, STEEL[2]);
-    im.rect(8, 4, 10, 8, STEEL[0]);
-    im.set(3, 6, GOLD[3]);
-  }),
+  icon('fish_river', (im) => fishShape(im, WATER, CREAM[3])),
+  icon('fish_silver', (im) => fishShape(im, STEEL, CREAM[3])),
   // Gathering nodes as they stand in the world.
   icon('node_vein_copper', (im) => {
     im.rect(1, 3, 10, 10, STONE[1]);
