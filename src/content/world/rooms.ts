@@ -1,3 +1,4 @@
+import { rootwayRooms } from './dungeons/rootway';
 import type { RoomDef } from './fixtures';
 
 /**
@@ -25,8 +26,31 @@ export const CAVE_ROOMS: readonly RoomDef[] = [
 
 export const ROOMS: readonly RoomDef[] = [OUTDOORS, ...CAVE_ROOMS];
 
-/** The room containing a tile, or null in the rock between rooms. */
-export function roomAt(tx: number, ty: number): RoomDef | null {
-  for (const r of ROOMS) if (tx >= r.x0 && tx < r.x1 && ty >= r.y0 && ty < r.y1) return r;
+const REGION_ROOMS: Record<string, readonly RoomDef[]> = {};
+
+/**
+ * The rooms of a region (M4-21). The slice has its square and its cave. Dawnmeadow has the
+ * Rootway's rooms, and everything else in it is open ground. Another region is open ground all
+ * over. Rooms come before the open ground, so a room wins where they overlap.
+ */
+export function roomsOf(region: string): readonly RoomDef[] {
+  if (region === 'slice') return ROOMS;
+  const cached = REGION_ROOMS[region];
+  if (cached) return cached;
+  const open: RoomDef = {
+    id: 'room.region',
+    x0: 0,
+    y0: 0,
+    x1: region === 'dawnmeadow' ? 12 * 32 : 4096,
+    y1: region === 'dawnmeadow' ? 16 * 32 : 4096,
+    outdoors: true,
+  };
+  const rooms = region === 'dawnmeadow' ? [...rootwayRooms(), open] : [open];
+  return (REGION_ROOMS[region] = rooms);
+}
+
+/** The room containing a tile, or null in the rock between rooms. The region defaults to the slice. */
+export function roomAt(tx: number, ty: number, region = 'slice'): RoomDef | null {
+  for (const r of roomsOf(region)) if (tx >= r.x0 && tx < r.x1 && ty >= r.y0 && ty < r.y1) return r;
   return null;
 }

@@ -83,7 +83,11 @@ export function currentWeather(state: SimState): Weather {
  * any room that is not under open sky (caves, dungeons, houses).
  */
 export function weatherAt(state: SimState, x: number, y: number): Weather {
-  const room = roomAt(Math.floor(x / 256 / 16), Math.floor((y / 256 - 1) / 16));
+  const room = roomAt(
+    Math.floor(x / 256 / 16),
+    Math.floor((y / 256 - 1) / 16),
+    state.region ?? 'slice',
+  );
   return room && !room.outdoors ? 'clear' : currentWeather(state);
 }
 

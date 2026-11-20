@@ -67,7 +67,7 @@ import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
 import { FIXTURES } from '../content/world/fixtures';
 import { litFor } from '../sim/systems/dungeon';
-import { roomAt as sliceRoomAt, OUTDOORS } from '../content/world/rooms';
+import { roomAt as regionRoomAt, OUTDOORS } from '../content/world/rooms';
 import { UI_STRINGS } from '../content/strings/ui';
 import { PATHS } from '../content/paths';
 import { PATH_STRINGS } from '../content/strings/paths';
@@ -814,7 +814,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (k < steps) frame = `opening_${k}`;
           else openedAt.delete(id);
         }
-      } else frame = 'base';
+      } else if (def.type === 'torch') frame = f.open ? 'lit' : 'base';
+      else frame = 'base';
       const layer =
         def.type === 'plate' ||
         (def.type === 'door' && frame === 'open') ||
@@ -849,6 +850,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const ROOM_PX = TILE_PX;
   // The slice's rooms (the square and the cave) exist only on the slice. Any other region is one
   // open room as big as the region, until its own interiors and dungeons register (M4-11).
+  let nextPortalScan = 0;
   const regionRoom: typeof OUTDOORS = {
     id: 'room.region',
     x0: 0,
@@ -858,7 +860,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     outdoors: true,
   };
   const roomAt = (tx: number, ty: number): typeof OUTDOORS | null =>
-    regionId === 'slice' ? sliceRoomAt(tx, ty) : regionRoom;
+    regionRoomAt(tx, ty, regionId) ?? (regionId === 'slice' ? null : regionRoom);
   const startPos = state.entities.comps.pos[who];
   let room =
     (restored && startPos
@@ -1535,6 +1537,21 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
       }
       streamer.update(chunkOfPx(pxX), chunkOfPx(pxY));
+      // A portal whose far side is in a chunk that is not loaded (the Rootway, under the region)
+      // gets that ground loaded while the avatar is still near it, so the step through is instant.
+      if (now > nextPortalScan) {
+        nextPortalScan = now + 250;
+        for (const id of state.entities.comps.fixture.keys()) {
+          const f = state.entities.comps.fixture[id];
+          const p = state.entities.comps.pos[id];
+          const def = f ? FIXTURES[f.kind] : undefined;
+          const to = def?.type === 'portal' && def.to ? FIXTURES[def.to]?.at : undefined;
+          if (!to || !p || Math.hypot(p.x / 256 - pxX, p.y / 256 - pxY) > 160) continue;
+          void streamer
+            .preload(Math.floor(to.x / CHUNK_TILES), Math.floor(to.y / CHUNK_TILES))
+            .catch(() => {});
+        }
+      }
       camera.follow(pxX, pxY - 14, dt);
       const shake = feedback.shake(now);
       renderer.begin(camera.x + shake.x, camera.y + shake.y);
@@ -1556,6 +1573,28 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         );
         drawFixtures(now);
         drawClouds(now);
+        // In a closed room, whatever lies past its walls (the sea over the Rootway, rock) is not
+        // drawn: four bands of black cover the rest of the view.
+        if (!room.outdoors) {
+          const x0 = room.x0 * ROOM_PX;
+          const y0 = room.y0 * ROOM_PX;
+          const x1 = room.x1 * ROOM_PX;
+          const y1 = room.y1 * ROOM_PX;
+          const vx1 = camera.x + renderer.width;
+          const vy1 = camera.y + renderer.height;
+          const band = (x: number, y: number, w: number, h: number): void => {
+            if (w > 0 && h > 0) renderer.drawRect(Layer.Overhead, x, y, w, h, DARK);
+          };
+          band(camera.x, camera.y, renderer.width, y0 - camera.y);
+          band(camera.x, y1, renderer.width, vy1 - y1);
+          band(
+            camera.x,
+            Math.max(y0, camera.y),
+            x0 - camera.x,
+            Math.min(y1, vy1) - Math.max(y0, camera.y),
+          );
+          band(x1, Math.max(y0, camera.y), vx1 - x1, Math.min(y1, vy1) - Math.max(y0, camera.y));
+        }
       }
       // People: they stand still and turn to face you when you are close.
       for (const id of dark ? [] : state.entities.comps.npc.keys()) {

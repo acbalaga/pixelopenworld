@@ -26,7 +26,7 @@ export default defineConfig({
     },
     {
       name: 'dev-tools',
-      testMatch: /(devtools|sliceRun|streaming|weather|dawnmeadow|waystone)\.spec\.ts/,
+      testMatch: /(devtools|sliceRun|streaming|weather|dawnmeadow|waystone|rootway)\.spec\.ts/,
       use: { baseURL: DEV },
     },
   ],

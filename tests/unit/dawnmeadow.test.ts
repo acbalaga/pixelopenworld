@@ -45,9 +45,10 @@ const where = (kind: string) => objects.filter((o) => o.kind === kind);
 
 describe('the Dawnmeadow spec', () => {
   it('is 12 by 12 chunks with the counts the region doc gives', () => {
-    expect(DAWNMEADOW.chunks).toEqual({ w: 12, h: 12 });
-    expect(DAWNMEADOW.biomes).toHaveLength(48);
-    expect(DAWNMEADOW.elevation).toHaveLength(48);
+    // 12 by 12 of land and sea, and 4 more rows underground for the Rootway (M4-21).
+    expect(DAWNMEADOW.chunks).toEqual({ w: 12, h: 16 });
+    expect(DAWNMEADOW.biomes).toHaveLength(64);
+    expect(DAWNMEADOW.elevation).toHaveLength(64);
     expect(DAWNMEADOW.waystones).toHaveLength(6);
     expect(DAWNMEADOW.wakePoints.map((w) => w.id)).toEqual([...WAKE_IDS]);
     expect(DAWNMEADOW.landmarks.map((l) => l.id).sort()).toEqual([
@@ -76,7 +77,7 @@ describe('the Dawnmeadow spec', () => {
     const again = bakeRegion(DAWNMEADOW, STAMPS);
     expect([...again.keys()]).toEqual([...files.keys()]);
     for (const [n, v] of files) expect(again.get(n), n).toEqual(v);
-    expect([...files.keys()].filter((n) => n.endsWith('.bin'))).toHaveLength(144);
+    expect([...files.keys()].filter((n) => n.endsWith('.bin'))).toHaveLength(192);
   });
 
   it('every object it places is something the game knows', () => {
@@ -86,7 +87,9 @@ describe('the Dawnmeadow spec', () => {
         (o.kind.startsWith('node.') && NODES[o.kind]) ||
         (o.kind.startsWith('npc.') && NPCS[o.kind]) ||
         (o.kind.startsWith('spawner.') && SPAWNERS[o.kind]) ||
-        o.kind === 'prop.camp_pot';
+        o.kind === 'prop.camp_pot' ||
+        // Empty lore slots (DM-F07 and the rest): markers for M10.
+        o.kind.startsWith('marker.');
       expect(known, `${o.kind} at ${o.x}, ${o.y}`).toBeTruthy();
     }
     for (const s of Object.values(SPAWNERS)) expect(CREATURES[s.creature]).toBeDefined();

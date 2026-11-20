@@ -1,3 +1,4 @@
+import { ROOTWAY_MOUTH, rootwayPlacements } from '../../dungeons/rootway';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
 import { WAYSTONES } from '../../waystones';
@@ -45,6 +46,9 @@ const BIOME_OF: Record<string, string> = {
 };
 
 /** Elevation by sketch letter. The Crown is a true wall; the rises and the moor step up. */
+/** Chunk rows in the region: 12 of land and sea, and 4 underground for the Rootway (M4-21). */
+const ROWS = 16;
+
 const HEIGHT_OF: Record<string, string> = { '^': '3', C: '1', c: '1', s: '1', S: '1', T: '1' };
 
 /** A small stable hash, for the ragged edges between chunks. */
@@ -64,7 +68,9 @@ function masks(): { biomes: string[]; elevation: string[] } {
     (CHUNKS[Math.max(0, Math.min(11, cy))] as string)[Math.max(0, Math.min(11, cx))] as string;
   const biomes: string[] = [];
   const elevation: string[] = [];
-  for (let y = 0; y < 48; y++) {
+  // Rows 12 to 15 are underground: the Rootway's rooms stand in the rock below the sea, which
+  // takes the sea's letter, so no one can walk to them.
+  for (let y = 0; y < ROWS * 4; y++) {
     let b = '';
     let e = '';
     for (let x = 0; x < 48; x++) {
@@ -124,6 +130,10 @@ const placements: Placement[] = [
   stamp('cliff_window', 56, 22),
   stamp('far_den', 330, 262),
 
+  // The Rootway (M4-21): ten rooms under the region, and its mouth at the great oak.
+  ...rootwayPlacements().map((r) => stamp(r.stamp, r.x, r.y)),
+  at('fixture.rootway_mouth', ROOTWAY_MOUTH.x, ROOTWAY_MOUTH.y),
+
   // The practice field outside the north gate: the M3 element set pieces, moved from the square.
   at('fixture.brush_wall', 176, 146),
   at('fixture.fire_barrier', 180, 146),
@@ -134,7 +144,6 @@ const placements: Placement[] = [
 
   // The manual chests, stand-ins until POW-M4-11 and POW-M4-21 place each in its own spot.
   at('fixture.chest_manual_lunge', 140, 215),
-  at('fixture.chest_manual_palm', 160, 230),
   at('fixture.chest_manual_light_feet', 125, 200),
   at('fixture.chest_manual_kindling', 230, 235),
   at('fixture.chest_manual_splash', 205, 240),
@@ -142,7 +151,6 @@ const placements: Placement[] = [
   at('fixture.chest_manual_stone_fist', 230, 200),
   at('fixture.chest_manual_mend', 178, 150),
   at('fixture.chest_manual_road_songs', 150, 175),
-  at('fixture.chest_manual_hide', 212, 150),
 
   // Gathering nodes round the Commons and the rises.
   at('node.oak_tree', 150, 160),
@@ -167,7 +175,7 @@ const { biomes, elevation } = masks();
 export const DAWNMEADOW: RegionSpec = {
   id: 'dawnmeadow',
   seed: 20260101,
-  chunks: { w: 12, h: 12 },
+  chunks: { w: 12, h: ROWS },
   biomeLegend: {
     m: 'meadow',
     d: 'downs',

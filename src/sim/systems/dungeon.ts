@@ -8,7 +8,7 @@ import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import { STATUS_BALANCE as SB } from '../../content/balance/status';
 import { DUNGEONS, dungeonOfRoom } from '../../content/world/dungeons';
 import { FIXTURES, type HitKind, type RoomDef } from '../../content/world/fixtures';
-import { ROOMS } from '../../content/world/rooms';
+import { roomsOf } from '../../content/world/rooms';
 import { spawnCreature } from '../combat/enemy';
 import { len } from '../combat/geometry';
 import { destroy, getComp, isAlive, query, type EntityId } from '../kernel/entities';
@@ -56,7 +56,11 @@ function roomAtPx(rooms: readonly RoomDef[], x: number, y: number): RoomDef | nu
  * one is lit while a torch burns in it or the avatar holds a lantern in the off hand. In the
  * dark the renderer shows nothing but telegraph markers.
  */
-export function litFor(state: SimState, who: EntityId, rooms: readonly RoomDef[] = ROOMS): boolean {
+export function litFor(
+  state: SimState,
+  who: EntityId,
+  rooms: readonly RoomDef[] = roomsOf(state.region ?? 'slice'),
+): boolean {
   const p = getComp(state.entities, who, 'pos');
   const room = p ? roomAtPx(rooms, p.x, p.y) : null;
   if (!room?.dark) return true;

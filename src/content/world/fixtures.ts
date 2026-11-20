@@ -4,6 +4,7 @@
  */
 
 import { MANUALS } from '../items/manuals';
+import { rootwayFixtures, rootwayParts } from './dungeons/rootway';
 import type { ElementId } from '../combat/statuses';
 
 /** What an element hit does to a fixture (M3-09). */
@@ -107,6 +108,13 @@ export interface FixtureDef {
   arenaDoor?: boolean;
   /** Arena trigger: the avatar this close (px) starts it. The doors are the gate kinds named. */
   arena?: { radius: number; doors: readonly string[]; waves: readonly ArenaWave[] };
+  /** A fixture that belongs to one dungeon's own rooms. The region supply check leaves it out (M4-21). */
+  dungeon?: string;
+  /**
+   * The region tile the fixture stands on, for fixtures in a fixed place that a portal leads to.
+   * It lets a portal find its destination before that chunk has been streamed in (M4-21).
+   */
+  at?: { x: number; y: number };
   /** Chest: what is inside. `coin` is carried coin. */
   loot?: { items: readonly { item: string; qty: number }[]; coin?: number };
 }
@@ -448,7 +456,7 @@ const MANUAL_CHESTS: readonly FixtureDef[] = MANUALS.filter((m) => m.via !== 'si
 
 /** Every fixture kind. */
 export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries(
-  [...LIST, ...MANUAL_CHESTS].map((f) => [f.kind, f]),
+  [...LIST, ...MANUAL_CHESTS, ...rootwayFixtures(), ...rootwayParts()].map((f) => [f.kind, f]),
 );
 
 /** A named rectangle of the world, in tiles (x1 and y1 exclusive). The camera snaps to it. */

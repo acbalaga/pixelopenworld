@@ -659,6 +659,21 @@ function bedroll(): SpriteDef {
   return toSprite('prop.bedroll', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/** A wall torch on a stand: dark until Ember lights it (M4-08 art, added with the Rootway). */
+function torchProp(): SpriteDef {
+  const base = new Img(16, 16);
+  base.rect(7, 6, 8, 14, WOOD[1]);
+  base.rect(5, 12, 10, 14, WOOD[2]);
+  base.rect(6, 4, 9, 6, METAL[1]);
+  const lit = new Img(16, 16);
+  lit.rect(7, 6, 8, 14, WOOD[1]);
+  lit.rect(5, 12, 10, 14, WOOD[2]);
+  lit.rect(6, 4, 9, 6, METAL[1]);
+  lit.rect(6, 1, 9, 4, FIRE[2]);
+  lit.rect(7, 0, 8, 2, GOLD[3]);
+  return toSprite('prop.torch', 'core', ORIGIN_FEET, { base: outlined(base), lit: outlined(lit) });
+}
+
 /** A scarecrow on a post with a crow perched on its arm (M4-20). */
 function scarecrow(): SpriteDef {
   const im = new Img(16, 16);
@@ -855,5 +870,6 @@ export function worldSprites(): SpriteDef[] {
     snareProp(),
     scarecrow(),
     crowMound(),
+    torchProp(),
   ];
 }
