@@ -32,8 +32,8 @@ export const WORLD_TUNABLES = {
 export const SPAWNS = {
   steps: {
     a: { hpPct: 100, powerPct: 100 },
-    b: { hpPct: 125, powerPct: 115 },
-    c: { hpPct: 150, powerPct: 130 },
+    b: { hpPct: 110, powerPct: 110 },
+    c: { hpPct: 120, powerPct: 120 },
   },
   /** No hostile or territorial spawner within this many tiles of a wake point, road or wall. */
   clearTiles: 12,
