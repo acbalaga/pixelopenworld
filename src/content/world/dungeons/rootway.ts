@@ -11,25 +11,12 @@
  */
 import type { FixtureDef, RoomDef } from '../fixtures';
 import type { StampV2 } from '../../../sim/world/stamp';
-import { Terrain, tilesetId } from '../tileset';
-import type { DungeonDef, DungeonEdge, DungeonRoom } from './types';
+import { CELL, defineDungeon, type RoomSpec } from './build';
+import type { DungeonDef, DungeonEdge } from './types';
 
-/** Tiles in one grid cell, and where the Rootway's grid starts in the region (tiles). */
-const CELL = 32;
+/** Where the Rootway's grid starts in the region (tiles). */
 export const ROOTWAY_ORIGIN = { x: 4 * CELL, y: 12 * CELL } as const;
 const ID = 'dungeon.rootway';
-
-interface RoomSpec {
-  id: string;
-  col: number;
-  row: number;
-  w: number;
-  h: number;
-  /** Extra wall tiles inside the room. */
-  walls?: readonly (readonly [number, number])[];
-  objects?: readonly { x: number; y: number; kind: string }[];
-  extra?: Partial<DungeonRoom>;
-}
 
 const column = (x: number, y0: number, y1: number): [number, number][] =>
   Array.from({ length: y1 - y0 + 1 }, (_v, i) => [x, y0 + i]);
@@ -211,141 +198,11 @@ const EDGES: readonly DungeonEdge[] = [
   },
 ];
 
-function room(s: RoomSpec): DungeonRoom {
-  const walls = new Set((s.walls ?? []).map(([x, y]) => `${x},${y}`));
-  const rows = Array.from({ length: s.h }, (_r, y) =>
-    Array.from({ length: s.w }, (_c, x) =>
-      x === 0 || y === 0 || x === s.w - 1 || y === s.h - 1 || walls.has(`${x},${y}`) ? '#' : '.',
-    ).join(''),
-  );
-  return {
-    id: s.id,
-    stamp: {
-      version: 2,
-      id: `rootway_${s.id}`,
-      legend: {
-        '.': { ground: Terrain.Cave },
-        '#': { ground: Terrain.Cave, object: tilesetId('tile.cave_wall_top') },
-      },
-      layers: {
-        ground: rows.map((r) => '.'.repeat(r.length)),
-        object: rows.map((r) => [...r].map((c) => (c === '#' ? '#' : ' ')).join('')),
-      },
-      objects: s.objects ?? [],
-    },
-    ...s.extra,
-  };
-}
-
-const roomOf = (id: string): RoomSpec => SPECS.find((s) => s.id === id) as RoomSpec;
-
-export const ROOTWAY: DungeonDef = {
-  id: ID,
-  // Skills a character at this cave's tier has. Heavy Arms is for the secret only.
-  skills: ['skill.stealth', 'skill.athletics', 'skill.heavy_arms'],
-  entrance: 'r1',
-  boss: 'boss.old_bramblehide',
-  // The design's first-clear target for the target loadout is 12 to 18 minutes (regions/01).
-  region: 'dawnmeadow',
-  estMinutes: 15,
-  rooms: SPECS.map(room),
-  edges: EDGES,
-};
-
-/** Tile of a room's top left in the region. */
-export function roomOrigin(id: string): { x: number; y: number } {
-  const s = roomOf(id);
-  return { x: ROOTWAY_ORIGIN.x + s.col * CELL + 2, y: ROOTWAY_ORIGIN.y + s.row * CELL + 2 };
-}
-
-/** Where a tile of a room is in the region. */
-export function regionTile(roomId: string, t: { x: number; y: number }): { x: number; y: number } {
-  const o = roomOrigin(roomId);
-  return { x: o.x + t.x, y: o.y + t.y };
-}
-
-/** The way a portal at a room's ring faces: a step into the room, in px. */
-function inward(roomId: string, t: { x: number; y: number }): [number, number] {
-  const s = roomOf(roomId);
-  if (t.y === 1) return [0, 22];
-  if (t.y === s.h - 2) return [0, -22];
-  if (t.x === 1) return [22, 0];
-  if (t.x === s.w - 2) return [-22, 0];
-  return [0, 22];
-}
-
-const kindOf = (n: number, side: 'a' | 'b'): string => `fixture.rw_e${n}${side}`;
-
-/** The portal fixture that takes the avatar from room `from` into room `to`, as a Trial can name it. */
-export function rootwayPortal(from: string, to: string): string {
-  const i = EDGES.findIndex((e) => e.from === from && e.to === to);
-  if (i < 0) throw new Error(`no Rootway edge ${from} to ${to}`);
-  return kindOf(i, 'a');
-}
-
-/** The id the avatar's room has while it stands in a Rootway room. */
-export const rootwayRoomId = (room: string): string => `${ID}.${room}`;
-
 /** The region tile the outside mouth stands on, at the great oak on Hollow Downs. */
 export const ROOTWAY_MOUTH = { x: 119, y: 250 } as const;
-/** The exit portal in the mouth room. */
-const EXIT_TILE = { x: 8, y: 8 };
-
-/**
- * Portals and arrival markers for every edge, the mouth and the exit, as fixtures. Each carries
- * `at`, the region tile it stands on, so a portal can send the avatar to ground that has not been
- * streamed in yet.
- */
-export function rootwayFixtures(): FixtureDef[] {
-  const out: FixtureDef[] = [];
-  EDGES.forEach((e, i) => {
-    const a = regionTile(e.from, e.at);
-    const b = regionTile(e.to, e.arrive);
-    const both = e.kind === 'open' || e.kind === 'locked';
-    // The way in: a portal in `from`, landing at the other end.
-    out.push({
-      kind: kindOf(i, 'a'),
-      type: 'portal',
-      to: kindOf(i, 'b'),
-      arrive: inward(e.to, e.arrive),
-      at: a,
-      ...(e.kind === 'oneWay' ? { fall: 10 } : {}),
-    });
-    // The other end: a portal back for a two way edge, a marker for a one way one.
-    out.push(
-      both
-        ? {
-            kind: kindOf(i, 'b'),
-            type: 'portal',
-            to: kindOf(i, 'a'),
-            arrive: inward(e.from, e.at),
-            at: b,
-          }
-        : { kind: kindOf(i, 'b'), type: 'arrival', arrive: inward(e.to, e.arrive), at: b },
-    );
-  });
-  const exit = regionTile('r1', EXIT_TILE);
-  out.push(
-    {
-      kind: 'fixture.rootway_mouth',
-      type: 'portal',
-      to: 'fixture.rootway_exit',
-      arrive: inward('r1', EXIT_TILE),
-      at: ROOTWAY_MOUTH,
-    },
-    {
-      kind: 'fixture.rootway_exit',
-      type: 'portal',
-      to: 'fixture.rootway_mouth',
-      arrive: [0, 24],
-      at: exit,
-    },
-  );
-  return out;
-}
 
 /** The fixture kinds of the rooms' own puzzles, doors, gates and chests. */
-export function rootwayParts(): FixtureDef[] {
+function partsList(): FixtureDef[] {
   const stump = (k: 'a' | 'b'): FixtureDef => ({
     kind: `fixture.rw_stump_${k}`,
     type: 'block',
@@ -429,38 +286,55 @@ export function rootwayParts(): FixtureDef[] {
   ];
 }
 
-/** The camera rooms, in region tiles. The dark and reset flags come from the room graph. */
-export function rootwayRooms(): RoomDef[] {
-  return SPECS.map((s) => {
-    const o = roomOrigin(s.id);
-    return {
-      id: `${ID}.${s.id}`,
-      x0: o.x,
-      y0: o.y,
-      x1: o.x + s.w,
-      y1: o.y + s.h,
-      ...(s.extra?.dark ? { dark: true as const } : {}),
-      ...(s.extra?.reset ? { reset: true as const } : {}),
-    };
-  });
-}
-
-/** The room stamps, with each room's portals and markers added, by stamp id. */
-export const ROOTWAY_STAMPS: readonly StampV2[] = ROOTWAY.rooms.map((r) => {
-  const mine: { x: number; y: number; kind: string }[] = [];
-  EDGES.forEach((e, i) => {
-    if (e.from === r.id) mine.push({ ...e.at, kind: kindOf(i, 'a') });
-    if (e.to === r.id) mine.push({ ...e.arrive, kind: kindOf(i, 'b') });
-  });
-  if (r.id === 'r1') mine.push({ ...EXIT_TILE, kind: 'fixture.rootway_exit' });
-  return { ...r.stamp, objects: [...(r.stamp.objects ?? []), ...mine] };
+const D = defineDungeon({
+  id: ID,
+  prefix: 'rw',
+  origin: ROOTWAY_ORIGIN,
+  rooms: SPECS,
+  edges: EDGES,
+  mouth: {
+    at: ROOTWAY_MOUTH,
+    exit: { x: 8, y: 8 },
+    kind: 'fixture.rootway_mouth',
+    exitKind: 'fixture.rootway_exit',
+  },
+  def: {
+    // Skills a character at this cave's tier has. Heavy Arms is for the secret only.
+    skills: ['skill.stealth', 'skill.athletics', 'skill.heavy_arms'],
+    entrance: 'r1',
+    boss: 'boss.old_bramblehide',
+    // The design's first-clear target for the target loadout is 12 to 18 minutes (regions/01).
+    region: 'dawnmeadow',
+    estMinutes: 15,
+  },
+  parts: partsList(),
 });
 
+export const ROOTWAY: DungeonDef = D.def;
+
+/** Tile of a room's top left in the region. */
+export const roomOrigin = D.roomOrigin;
+
+/** Where a tile of a room is in the region. */
+export const regionTile = D.regionTile;
+
+/** The portal fixture that takes the avatar from room `from` into room `to`, as a Trial can name it. */
+export const rootwayPortal = D.portal;
+
+/** The id the avatar's room has while it stands in a Rootway room. */
+export const rootwayRoomId = D.roomId;
+
+/** Portals and arrival markers for every edge, the mouth and the exit, as fixtures. */
+export const rootwayFixtures = D.fixtures;
+
+/** The fixture kinds of the rooms' own puzzles, doors, gates and chests. */
+export const rootwayParts = D.parts;
+
+/** The camera rooms, in region tiles. */
+export const rootwayRooms = (): RoomDef[] => D.rooms();
+
+/** The room stamps, with each room's portals and markers added, by stamp id. */
+export const ROOTWAY_STAMPS: readonly StampV2[] = D.stamps;
+
 /** Where each room stamp goes, for the region spec. */
-export function rootwayPlacements(): { kind: string; stamp: string; x: number; y: number }[] {
-  return ROOTWAY.rooms.map((r) => ({
-    kind: `rootway_${r.id}`,
-    stamp: `rootway_${r.id}`,
-    ...roomOrigin(r.id),
-  }));
-}
+export const rootwayPlacements = D.placements;
