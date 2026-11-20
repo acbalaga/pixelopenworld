@@ -11,6 +11,7 @@ import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
 import { FIXTURES } from '../../content/world/fixtures';
+import { SINGULARS } from '../../content/singulars';
 import type { ItemSource } from '../../sim/ledger';
 
 /** The item a failed cook makes. */
@@ -45,6 +46,14 @@ function build(): Map<string, Set<ItemSource>> {
       for (const e of effects) if ('give' in e) add(e.give, 'dialogue');
     }
   }
+  // Singular gifts and rewards (M4-20).
+  for (const def of Object.values(SINGULARS))
+    for (const e of [
+      ...(def.trigger.then ?? []),
+      ...def.steps.flatMap((s) => s.then ?? []),
+      ...def.reward,
+    ])
+      if ('give' in e) add(e.give, 'singular');
   // Both kits can come from `start`. The exact kit is checked against the one the save began with.
   for (const kit of [ITEMS_BALANCE.starter, ITEMS_BALANCE.starterV1]) {
     for (const s of kit.bag) add(s.item, 'start');

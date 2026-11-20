@@ -3,6 +3,7 @@ import { ITEMS_BALANCE } from '../../content/balance/items';
 import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
 import { REQUESTS } from '../../content/requests';
 import { RECIPES } from '../../content/items/recipes';
+import { SINGULARS } from '../../content/singulars';
 import { ITEMS } from '../../content/items';
 import { buyPrice, lowestBuy } from '../../sim/economy';
 import { MAX_STANDING_COIN } from '../../sim/requestGen';
@@ -76,9 +77,32 @@ export function ledgerRules(v: View): Reason[] {
   for (const [technique, via] of Object.entries(journal.learnedVia ?? {})) {
     if (via !== 'manual') continue;
     const copies = Object.values(ITEMS).filter((i) => i.manual?.technique === technique);
-    const found = copies.reduce((a, i) => a + (ledger.itemsMade.chest?.[i.id] ?? 0), 0);
+    const found = copies.reduce(
+      (a, i) =>
+        a + (ledger.itemsMade.chest?.[i.id] ?? 0) + (ledger.itemsMade.singular?.[i.id] ?? 0),
+      0,
+    );
     if (found < 1) fail('MANUAL_READ_UNSOURCED', technique);
   }
+
+  // Singular gifts (M4-20): no more than the steps the avatar has finished, and the reward only
+  // once the Singular is done.
+  const allowed: Record<string, number> = {};
+  for (const def of Object.values(SINGULARS)) {
+    const p = journal.singulars?.[def.id];
+    if (!p) continue;
+    const stages = [def.trigger, ...def.steps];
+    // `step` is the index of the step in hand, so the trigger and `step` steps are behind it.
+    const behind = p.done ? stages.length : p.step + 1;
+    for (const s of stages.slice(0, behind))
+      for (const e of s.then ?? [])
+        if ('give' in e) allowed[e.give] = (allowed[e.give] ?? 0) + e.qty;
+    if (p.done)
+      for (const e of def.reward) if ('give' in e) allowed[e.give] = (allowed[e.give] ?? 0) + e.qty;
+  }
+  for (const [item, n] of Object.entries(ledger.itemsMade.singular ?? {}))
+    if (n > (allowed[item] ?? 0))
+      fail('SINGULAR_REWARD_UNEARNED', `${item} made ${n}, earned ${allowed[item] ?? 0}`);
 
   // Loot needs kills of something that drops it, in numbers that could have dropped it.
   for (const [item, n] of Object.entries(ledger.itemsMade.loot ?? {})) {

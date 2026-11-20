@@ -298,8 +298,8 @@ describe('item set', () => {
     const n = (f: (i: (typeof all)[number]) => boolean) => all.filter(f).length;
     expect(n((i) => i.tool !== undefined)).toBe(10);
     expect(n((i) => i.category === 'material')).toBe(44);
-    expect(n((i) => i.category === 'consumable')).toBe(29);
-    expect(n((i) => i.equip?.slot === 'accessory')).toBe(6);
+    expect(n((i) => i.category === 'consumable')).toBe(30);
+    expect(n((i) => i.equip?.slot === 'accessory')).toBe(8);
     expect(n((i) => i.equip?.slot === 'off' && !!i.equip.doll?.offHand)).toBe(4);
     expect(ITEMS['item.flute_reed']?.equip?.slot).toBe('off');
   });

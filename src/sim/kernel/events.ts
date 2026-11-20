@@ -171,6 +171,21 @@ export type SimEvent =
   | { type: 'waystoneSet'; id: number; who: number }
   /** The avatar uncovered `blocks` blocks of the map for the first time (M4-06). */
   | { type: 'revealed'; who: number; blocks: number }
+  /** An item left the bag onto the ground at `x`, `y` (px). `pickup` is the entity it became (M4-20). */
+  | { type: 'itemDropped'; who: number; item: string; qty: number; pickup: number }
+  /** An item came into the bag from the world, from any source but the Singulars' own gifts (M4-20). */
+  | { type: 'itemGained'; who: number; item: string; qty: number }
+  /** The avatar bedded down outdoors. `wake` is the wake point it was at, or null. */
+  | { type: 'sleptOutdoors'; who: number; wake: string | null }
+  /** The avatar used a world fixture of a kind that only records the use (a mound of earth). */
+  | { type: 'fixtureUsed'; id: number; who: number; kind: string }
+  /** A dialogue set a flag. */
+  | { type: 'flagSet'; who: number; flag: string }
+  /** A Singular fired (`step` 0) or finished a step. Shown as a banner, never named before. */
+  | { type: 'singularStep'; who: number; id: string; step: number }
+  | { type: 'singularDone'; who: number; id: string }
+  /** The avatar finished a Singular. M5 reads this to tell the world. */
+  | { type: 'worldFirst'; who: number; id: string }
   /** A Waystone was touched for the first time (M4-07). */
   | { type: 'waystoneAttuned'; who: number; region: string; stone: string }
   /** The avatar travelled between Waystones. */

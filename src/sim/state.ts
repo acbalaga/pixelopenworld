@@ -461,6 +461,21 @@ export interface Journal {
   tradeCoin: Record<string, number>;
   /** The request shown on the HUD, or null for the first one under way. */
   pinned: string | null;
+  /** Progress in Singulars (M4-20), by id. A Singular the avatar has not touched has no entry. */
+  singulars: Record<string, SingularProgress>;
+}
+
+/**
+ * Where the avatar stands in a Singular. `step` is -1 until the trigger fires, then the index of
+ * the step in hand, and `steps.length` once done. `counters` holds what the step in hand has
+ * counted (and, for the trigger, what it counted before it fired).
+ */
+export interface SingularProgress {
+  step: number;
+  counters: Record<string, string[]>;
+  startedDay: number;
+  done: boolean;
+  doneDay?: number;
 }
 
 /** One request the avatar has taken (M3-11). */

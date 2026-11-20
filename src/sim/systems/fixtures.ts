@@ -1,4 +1,6 @@
 import { attune, stoneOfFixture } from './waystones';
+import { wakePointAt } from './singulars';
+import { STATUSES } from '../../content/combat/statuses';
 import { offerFromFixture } from './trials';
 import { WORLD_TUNABLES as W } from '../../content/balance/world';
 import { FIXTURES } from '../../content/world/fixtures';
@@ -210,9 +212,32 @@ export function bedNear(state: SimState, who: EntityId): EntityId | null {
 /** Sleeping on the bedroll: Rested for a night's length. */
 export function sleep(state: SimState, who: EntityId): boolean {
   const id = bedNear(state, who);
-  if (id === null || getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
+  if (getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
+  if (id === null) return sleepOutdoors(state, who);
   if (!applyStatus(state, who, 'rested', -1)) return false;
   emit(state.events, { type: 'slept', id, who });
+  return true;
+}
+
+/**
+ * Bedding down on open ground (M4-20). Not in a closed room, and not on a bedroll's account: it
+ * gives no Rested of its own. The Wayfarer's Cloak makes it half a bedroll's rest. The place is
+ * the wake point the avatar is at, if any, which is all a Singular reads.
+ */
+export function canSleepOutdoors(state: SimState, who: EntityId): boolean {
+  const p = getComp(state.entities, who, 'pos');
+  if (!p || getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
+  if (bedNear(state, who) !== null) return false;
+  const room = roomAt(Math.floor(p.x / SUBPX / TILE), Math.floor((p.y / SUBPX - 1) / TILE));
+  return !room || !!room.outdoors;
+}
+
+function sleepOutdoors(state: SimState, who: EntityId): boolean {
+  if (!canSleepOutdoors(state, who)) return false;
+  const inv = getComp(state.entities, who, 'inventory');
+  if (inv?.equipment.accessory?.item === 'item.wayfarers_cloak')
+    applyStatus(state, who, 'rested', -1, { ticks: Math.floor(STATUSES.rested.ticks / 2) });
+  emit(state.events, { type: 'sleptOutdoors', who, wake: wakePointAt(state, who) });
   return true;
 }
 
@@ -284,6 +309,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return;
     case 'waystone':
       return useWaystone(state, who, target);
+    case 'site':
+      emit(state.events, { type: 'fixtureUsed', id: target, who, kind: f.kind });
+      return;
     case 'storage':
       emit(state.events, { type: 'storageOpened', id: target, who });
       return;

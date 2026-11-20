@@ -6,7 +6,13 @@ import { item } from './define';
  * read. Reading uses it up. The skill awakens if it was dormant. Each is the second source of a
  * technique, found in a chest. Copies can exist, so losing or selling one is not a loss.
  */
-export const MANUALS: readonly { id: string; technique: string; skill: string }[] = [
+export const MANUALS: readonly {
+  id: string;
+  technique: string;
+  skill: string;
+  /** `singular`: given by a Singular, so it has no chest (M4-20). */
+  via?: 'singular';
+}[] = [
   { id: 'item.manual_lunge', technique: 'technique.blades_lunge', skill: 'skill.blades' },
   { id: 'item.manual_palm', technique: 'technique.unarmed_palm', skill: 'skill.unarmed' },
   {
@@ -25,6 +31,13 @@ export const MANUALS: readonly { id: string; technique: string; skill: string }[
     skill: 'skill.performance',
   },
   { id: 'item.manual_hide', technique: 'technique.stealth_hide', skill: 'skill.stealth' },
+  // The second source of Hex is the end of The Crow's Due (design/11).
+  {
+    id: 'item.manual_hex',
+    technique: 'technique.hexing_hex',
+    skill: 'skill.hexing',
+    via: 'singular',
+  },
 ];
 
 export const MANUAL_ITEMS: readonly ItemDef[] = MANUALS.map((m) =>

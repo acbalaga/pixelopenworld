@@ -247,6 +247,9 @@ function outdoors(g: Grid, objects: Obj[]): void {
   // Manuals in chests (M4-15): stand-in spots outside the square until M4-11 and M4-21 place them.
   for (const [manual, at] of Object.entries(MANUAL_SPOTS))
     object(g, at.x, at.y, `fixture.chest_${manual.replace(/^item\./, '')}`, objects);
+  // A crate of firebricks: a stand-in on the slice map for the Rootway, the Deeps and the Undermill
+  // (M4-20), which the validator reads as Dawnmeadow's supply until they are built.
+  object(g, 31, 29, 'fixture.chest_firebrick', objects);
   // Where a new character wakes (M4-14). The sim picks one with the `start` stream.
   for (const id of WAKE_IDS) object(g, WAKE_POINTS[id].x, WAKE_POINTS[id].y, `wake.${id}`, objects);
   object(g, 47, 37, 'fixture.waystone', objects);

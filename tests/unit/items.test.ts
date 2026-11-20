@@ -20,7 +20,7 @@ describe('item content', () => {
   // M3-12 added 19 recipes and 6 Whisperwood node kinds, so every item can be obtained.
   it('the set has about 140 items, 100 recipes and thirteen node kinds', () => {
     expect(Object.keys(ITEMS).length).toBeGreaterThanOrEqual(110);
-    expect(Object.keys(RECIPES)).toHaveLength(100);
+    expect(Object.keys(RECIPES)).toHaveLength(101);
     expect(Object.keys(NODES)).toHaveLength(13);
     const count = (c: string) => Object.values(ITEMS).filter((i) => i.category === c).length;
     expect(

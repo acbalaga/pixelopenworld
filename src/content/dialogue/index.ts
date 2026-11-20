@@ -1,3 +1,4 @@
+import { COLD_OVEN_FLAGS } from '../singulars';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
 export type * from './types';
@@ -376,12 +377,35 @@ export const DIALOGUES: Readonly<Record<string, Dialogue>> = {
         ],
       },
       taught: { id: 'taught', text: 'dlg.tobin.taught', next: null },
+      // The Cold Oven (M4-20). Offered only once the Singular's own step has set its flag.
+      bricks: {
+        id: 'bricks',
+        text: 'dlg.tobin.bricks',
+        choices: [
+          {
+            text: 'dlg.tobin.c_bricks_set',
+            next: 'bricks_done',
+            if: [
+              { skill: 'skill.smithing', atLeast: 10 },
+              { item: 'item.firebrick', atLeast: 1 },
+            ],
+            do: [{ takeItem: 'item.firebrick', qty: 1 }, { setFlag: COLD_OVEN_FLAGS.set }],
+          },
+          { text: 'dlg.c_bye', next: null },
+        ],
+      },
+      bricks_done: { id: 'bricks_done', text: 'dlg.tobin.bricks_done', next: null },
       again: {
         id: 'again',
         text: 'dlg.tobin.again',
         choices: [
           { text: 'dlg.tobin.c_shop', next: null, do: [{ openShop: 'shop.tobin' }] },
           { text: 'dlg.tobin.c_lesson', next: 'lesson' },
+          {
+            text: 'dlg.tobin.c_bricks',
+            next: 'bricks',
+            if: [{ flag: COLD_OVEN_FLAGS.bricks }, { flag: COLD_OVEN_FLAGS.set, not: true }],
+          },
           { text: 'dlg.c_bye', next: null },
         ],
       },

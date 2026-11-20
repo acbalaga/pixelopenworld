@@ -159,6 +159,14 @@ const LIST: readonly RecipeDef[] = [
     ['item.sunwort'],
     ['item.dew_vial'],
   ]),
+  make(
+    'cooking',
+    POT,
+    2,
+    'item.bakers_loaf',
+    [['item.flax_fiber', 2], ['item.salt'], ['item.dewmint']],
+    'find',
+  ),
   make('cooking', POT, 1, 'item.dish_bread', [['item.flax_fiber', 2], ['item.salt']]),
   make('cooking', POT, 2, 'item.silver_chowder', [
     ['item.fish_silver'],

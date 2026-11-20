@@ -32,6 +32,7 @@ export const REASON_CODES = [
   'RENOWN_RANGE',
   'TICK_PLAYTIME_MISMATCH',
   'MAP_STATE',
+  'SINGULAR_STATE',
   // Ledger: what the avatar holds does not reconcile with what the sim recorded.
   'COIN_RECONCILE',
   'XP_EXCEEDS_EARNED',
@@ -46,6 +47,7 @@ export const REASON_CODES = [
   'ECHO_EXCEEDS_DROPPED',
   'START_KIT_MISMATCH',
   'MANUAL_READ_UNSOURCED',
+  'SINGULAR_REWARD_UNEARNED',
   // Plausibility: the totals are not possible in the recorded time.
   'COIN_IMPLAUSIBLE',
   'XP_IMPLAUSIBLE',

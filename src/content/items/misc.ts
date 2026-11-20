@@ -52,6 +52,25 @@ export const MISC_ITEMS: readonly ItemDef[] = [
     gadget: 'lantern',
     equip: { slot: 'off' },
   }),
+  // Singular rewards and parts (M4-20). Icons are borrowed until art for them is drawn.
+  item('item.crow_feather_charm', 'misc', {
+    value: 0,
+    stack: 1,
+    bag: 'gear',
+    icon: 'icon.crow_feather',
+    equip: { slot: 'accessory' },
+    noWear: true,
+  }),
+  item('item.wayfarers_cloak', 'misc', {
+    value: 0,
+    stack: 1,
+    bag: 'gear',
+    icon: 'icon.belt_leather',
+    equip: { slot: 'accessory' },
+    noWear: true,
+  }),
+  item('item.bakers_peel', 'misc', { value: 0, stack: 1, icon: 'icon.whetstone' }),
+  item('item.firebrick', 'misc', { value: 0, stack: 4, icon: 'icon.clay' }),
   item('item.thread_spool', 'misc', { value: 5 }),
   item('item.chalk_stub', 'misc', { value: 2 }),
 ];

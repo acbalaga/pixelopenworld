@@ -50,7 +50,10 @@ export function applyEffect(state: SimState, who: EntityId, e: Effect): void {
   const j = getComp(state.entities, who, 'journal');
   if (!j) return;
   if ('setFlag' in e) {
-    if (!j.flags.includes(e.setFlag)) j.flags.push(e.setFlag);
+    if (!j.flags.includes(e.setFlag)) {
+      j.flags.push(e.setFlag);
+      emit(state.events, { type: 'flagSet', who, flag: e.setFlag });
+    }
   } else if ('give' in e) give(state, who, e.give, e.qty, 'dialogue');
   else if ('learnRecipe' in e) learnRecipe(state, who, e.learnRecipe);
   else if ('offerTrial' in e) offerTrial(state, who, e.offerTrial);

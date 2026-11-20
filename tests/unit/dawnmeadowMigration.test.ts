@@ -95,7 +95,12 @@ describe('schema 22 to 23 migration (the move to Dawnmeadow)', () => {
       'deeds',
       'paths',
     ] as const)
-      expect(after.entities.comps[k][b], k).toEqual(before.entities.comps[k][a]);
+      // Schema 26 gives every journal an empty `singulars`.
+      expect(after.entities.comps[k][b], k).toEqual(
+        k === 'journal'
+          ? { ...before.entities.comps[k][a], singulars: {} }
+          : before.entities.comps[k][a],
+      );
     expect(after.entities.comps.avatar[b]!.coin).toBe(before.entities.comps.avatar[a]!.coin);
     expect(after.ledger).toEqual(before.ledger);
     const verdict = validateSave(now);

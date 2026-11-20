@@ -24,6 +24,13 @@ export const FOOD_ITEMS: readonly ItemDef[] = [
     quality: true,
     food: { hp: 35, sta: 250, foc: 100, fed: { ticks: 5 * T, hpMax: 20, staMax: 150, focMax: 50 } },
   }),
+  // The Baker's Peel's recipe, with no other source (M4-20).
+  item('item.bakers_loaf', 'consumable', {
+    value: 20,
+    quality: true,
+    icon: 'icon.dish_bread',
+    food: { hp: 20, sta: 200, foc: 0, fed: { ticks: 4 * T, hpMax: 15, staMax: 100, focMax: 0 } },
+  }),
   item('item.dish_bread', 'consumable', {
     value: 6,
     quality: true,

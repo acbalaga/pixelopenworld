@@ -1,3 +1,4 @@
+import { SINGULARS } from '../../content/singulars';
 import { MAP_BALANCE } from '../../content/balance/map';
 import { WAYSTONES } from '../../content/world/waystones';
 import { RUMORS } from '../../content/world/rumors';
@@ -291,6 +292,19 @@ export function consistency(v: View): Reason[] {
   }
   if (new Set(map.rumors).size !== map.rumors.length || map.rumors.some((r) => !RUMORS[r]))
     fail('MAP_STATE', 'rumors');
+
+  // Singulars (M4-20): known ids, a step within range, done only when past the last.
+  for (const [id, p] of Object.entries(journal.singulars ?? {})) {
+    const def = SINGULARS[id];
+    const ok =
+      !!def &&
+      Number.isInteger(p.step) &&
+      p.step >= -1 &&
+      p.step <= def.steps.length &&
+      p.done === (p.step === def.steps.length) &&
+      Object.values(p.counters).every((c) => Array.isArray(c) && c.length <= 64);
+    if (!ok) fail('SINGULAR_STATE', id.slice(0, 40));
+  }
 
   // Statuses: known ids, one of each on a unit, and no longer than the longest a meal or a spell gives.
   const longest = Math.max(

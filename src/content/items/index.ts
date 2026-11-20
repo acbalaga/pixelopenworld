@@ -26,5 +26,19 @@ const LIST: readonly ItemDef[] = [
   ...MANUAL_ITEMS,
 ];
 
+/** Things a crow likes (M4-20). Tagged here so the item tables stay as they were. */
+const SHINY = new Set([
+  'item.ring_copper',
+  'item.ring_silver',
+  'item.charm_sun',
+  'item.copper_ingot',
+  'item.iron_ingot',
+  'item.quartz',
+  'item.river_pebble',
+  'item.bell_charm',
+]);
+
 /** Every item by id. */
-export const ITEMS: Record<string, ItemDef> = Object.fromEntries(LIST.map((d) => [d.id, d]));
+export const ITEMS: Record<string, ItemDef> = Object.fromEntries(
+  LIST.map((d) => [d.id, SHINY.has(d.id) ? { ...d, shiny: true as const } : d]),
+);

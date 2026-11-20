@@ -25,6 +25,7 @@ import { gearStats, isBroken } from '../../sim/items';
 import { statusesOf, visibleStatuses } from '../../sim/statuses';
 import { isAwake, masteryName, pendingTrial, trialPassed, xpToNext } from '../../sim/skills';
 import { calendarOf, dayPhase, weatherOn } from '../../sim/time';
+import { canSleepOutdoors } from '../../sim/systems/fixtures';
 import type { SimState } from '../../sim/state';
 
 /**
@@ -569,6 +570,16 @@ export interface ClockView {
   label: string;
   /** Hours and minutes of the in-game day, 24 hour. A placeholder until the calendar ticket. */
   hhmm: string;
+}
+
+/**
+ * Whether the Character tab offers to bed down where the avatar stands: out in the open, between
+ * dusk and dawn, with no bed near and nothing fighting it (M4-20). The same rest a bedroll gives
+ * is not on offer, only the ground.
+ */
+export function canRestOutdoors(state: SimState, who: number): boolean {
+  const phase = dayPhase(state.worldTick);
+  return (phase === 'dusk' || phase === 'night') && canSleepOutdoors(state, who);
 }
 
 /** The HUD clock. The 48 minute cycle maps to 24 hours starting at dawn (05:00). */

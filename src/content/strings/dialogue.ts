@@ -63,6 +63,11 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
 
   'dlg.tobin.greet': 'Tools and blades. Everything here has been hit with a hammer at least once.',
   'dlg.tobin.again': 'Back at the anvil. What do you need?',
+  'dlg.tobin.c_bricks': 'I found these firebricks. Do you know what they are for?',
+  'dlg.tobin.bricks':
+    'Oven bricks. Good ones, the old make. They want setting true, and a steady hand to do it.',
+  'dlg.tobin.c_bricks_set': 'Let me hold the hammer. We will set them together.',
+  'dlg.tobin.bricks_done': 'There. Square and tight. Whoever owned that oven would be glad of it.',
   'dlg.tobin.c_shop': 'Let me see the steel.',
   'dlg.mara.greet': 'Cloth, leather, a bit of mail. I can fit you in a minute.',
   'dlg.mara.again': 'Back for another fitting?',
