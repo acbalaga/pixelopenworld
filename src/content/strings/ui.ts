@@ -94,7 +94,9 @@ export const UI_STRINGS = {
   detailNone: 'Choose an item to see what it does.',
   detailValue: 'Worth {n} coin',
   detailStack: 'Carrying {n}',
-  actions: { use: 'Eat', equip: 'Wear', drop: 'Hold to drop' },
+  actions: { use: 'Use', equip: 'Wear', drop: 'Hold to drop' },
+  /** The Use button, by what the item is: food is eaten, scrolls and manuals are read. */
+  useVerb: { eat: 'Eat', read: 'Read', use: 'Use' },
   dropping: 'Keep holding to drop',
   /** Item quality, by number. The glyph sits in the corner of the slot (never color alone). */
   quality: ['Common', 'Fine', 'Superior', 'Masterwork'],

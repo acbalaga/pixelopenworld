@@ -2,7 +2,7 @@ import { ROOTWAY_MOUTH, rootwayPlacements } from '../../dungeons/rootway';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
 import { WAYSTONES } from '../../waystones';
-import type { District, Placement, RegionSpec } from '../types';
+import type { District, Placement, RegionSpec, SpawnZone } from '../types';
 
 /*
  * Dawnmeadow (POW-M4-04, regions/01-dawnmeadow). 12 x 12 chunks. This file is authoritative for
@@ -24,6 +24,46 @@ const CHUNKS = [
   '~~dd~~~RR~~~',
   '~~~~~~~~~~~~',
 ];
+
+/**
+ * Spawn zones by sketch letter (regions/01 section 3). Settlements (H, M, S), the river, the pass,
+ * the coast road, the cliffs and the sea have none.
+ */
+const ZONE_OF: Record<string, { id: string; roster: string }> = {
+  h: { id: 'commons', roster: 'roster.dm_commons' },
+  m: { id: 'millbrook_fields', roster: 'roster.dm_millbrook_fields' },
+  d: { id: 'hollow_downs', roster: 'roster.dm_hollow_downs' },
+  R: { id: 'reedmouth', roster: 'roster.dm_reedmouth' },
+  s: { id: 'stonecrop', roster: 'roster.dm_stonecrop' },
+  F: { id: 'fernside', roster: 'roster.dm_fernside' },
+  C: { id: 'cairnmoor', roster: 'roster.dm_cairnmoor' },
+  c: { id: 'cairnmoor', roster: 'roster.dm_cairnmoor' },
+};
+
+/** One square zone per sketch chunk that has a roster, named for its zone and chunk. */
+function zones(): SpawnZone[] {
+  const out: SpawnZone[] = [];
+  const t = 32;
+  CHUNKS.forEach((row, cy) => {
+    for (let cx = 0; cx < row.length; cx++) {
+      const z = ZONE_OF[row[cx] as string];
+      if (!z) continue;
+      const x0 = cx * t;
+      const y0 = cy * t;
+      out.push({
+        id: `${z.id}_${cx}_${cy}`,
+        roster: z.roster,
+        polygon: [
+          { x: x0, y: y0 },
+          { x: x0 + t - 1, y: y0 },
+          { x: x0 + t - 1, y: y0 + t - 1 },
+          { x: x0, y: y0 + t - 1 },
+        ],
+      });
+    }
+  });
+  return out;
+}
 
 /** Biome by sketch letter. */
 const BIOME_OF: Record<string, string> = {
@@ -255,7 +295,7 @@ export const DAWNMEADOW: RegionSpec = {
     },
   ],
   placements,
-  zones: [],
+  zones: zones(),
   interiors: [],
   landmarks: [
     { id: 'mill_sails', x: 277, y: 99 },

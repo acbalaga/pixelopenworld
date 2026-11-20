@@ -23,3 +23,30 @@ export const WORLD_TUNABLES = {
   /** Interact needs the avatar idle. Waystones restore all pools. */
   waystoneHeals: true,
 } as const;
+
+/**
+ * Spawn zones (POW-M4-05, regions/01-dawnmeadow section 3). Difficulty rises with distance from
+ * Hearthford in three steps inside a tier. A zone creature's Health and Power are its data values
+ * times its step's percent.
+ */
+export const SPAWNS = {
+  steps: {
+    a: { hpPct: 100, powerPct: 100 },
+    b: { hpPct: 125, powerPct: 115 },
+    c: { hpPct: 150, powerPct: 130 },
+  },
+  /** No hostile or territorial spawner within this many tiles of a wake point, road or wall. */
+  clearTiles: 12,
+  /** Creatures that never start a fight (skittish, curious, passive) may stand this close instead. */
+  calmClearTiles: 4,
+  /** Zone spawners stand on a lattice this many tiles apart, each nudged by up to `jitterTiles`. */
+  spacingTiles: 24,
+  jitterTiles: 5,
+  /** A zone spawner keeps this many alive; a pack or flock creature keeps `packCap`. */
+  cap: 2,
+  packCap: 3,
+  /** Ticks between respawns once below the cap. */
+  respawn: 900,
+  /** Spawns within this many px of the spawner. */
+  radius: 48,
+} as const;

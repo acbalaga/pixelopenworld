@@ -1,4 +1,6 @@
+import { rosterSpawnerKinds } from '../creatures/zoneSpawners';
 import { MANUALS } from '../items/manuals';
+import { ROSTERS } from './rosters';
 /**
  * Regions and what each must supply (design/02, POW-M3-12). The slice is the first map: it is
  * Dawnmeadow's home ground, and it prepares a character for the regions outside it. Everything
@@ -48,6 +50,14 @@ export const REGIONS: readonly RegionDef[] = [
         'spawner.spitbloom',
         'spawner.bramble_boar',
         'spawner.old_bramblehide',
+        // Zone spawners (M4-05): every kind Dawnmeadow's rosters can place.
+        ...[
+          ...new Set(
+            Object.keys(ROSTERS)
+              .filter((id) => id.startsWith('roster.dm_'))
+              .flatMap(rosterSpawnerKinds),
+          ),
+        ],
       ],
       chests: [
         'fixture.chest_key',

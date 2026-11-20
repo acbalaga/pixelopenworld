@@ -187,6 +187,8 @@ export interface ItemDetailView {
   value: string;
   qty: string;
   actions: ItemAction[];
+  /** The label for the Use action: Eat for food, Read for scrolls and manuals, Use otherwise. */
+  useLabel: string;
   /** Extra lines under the description: quality, durability, broken, maker, affixes, stats. */
   lines: string[];
   broken: boolean;
@@ -497,6 +499,13 @@ export function itemActions(def: ItemDef): ItemAction[] {
   return out;
 }
 
+/** The verb on the Use button for this item. */
+export function useLabel(def: ItemDef): string {
+  if (def.food) return UI_STRINGS.useVerb.eat;
+  if (def.teaches || def.manual) return UI_STRINGS.useVerb.read;
+  return UI_STRINGS.useVerb.use;
+}
+
 export function itemDetail(state: SimState, who: number, slot: number): ItemDetailView | null {
   const s = state.entities.comps.inventory[who]?.slots[slot];
   const def = s ? ITEMS[s.item] : undefined;
@@ -535,6 +544,7 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
     value: fill(UI_STRINGS.detailValue, { n: def.value }),
     qty: fill(UI_STRINGS.detailStack, { n: s.qty }),
     actions: itemActions(def),
+    useLabel: useLabel(def),
     lines,
     broken,
   };

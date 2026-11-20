@@ -1,5 +1,6 @@
 import { DAWNMEADOW_CREATURES } from './dawnmeadow';
 import type { CreatureDef, SpawnerDef } from './types';
+import { zoneSpawners } from './zoneSpawners';
 
 /** The tier 1 creatures and the cave miniboss. Telegraph times come from their attacks. */
 export const CREATURES: Readonly<Record<string, CreatureDef>> = {
@@ -243,6 +244,8 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
 
 /** Spawners as they appear in map data (`spawner.*` object kinds). */
 export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
+  // Zone spawners (M4-05), made from the rosters: `spawner.z<step>_<d|n>_<creature>`.
+  ...zoneSpawners(),
   'spawner.mossling': {
     kind: 'spawner.mossling',
     creature: 'creature.mossling',
