@@ -72,4 +72,6 @@ export interface SingularDef {
   steps: readonly SingularStep[];
   /** Given when the last step completes. */
   reward: readonly SingularEffect[];
+  /** Minutes it takes a player who finds it, for the pacing ledger (M4-12). */
+  estMinutes: number;
 }

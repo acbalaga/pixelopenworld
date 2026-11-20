@@ -245,6 +245,9 @@ export const ROOTWAY: DungeonDef = {
   skills: ['skill.stealth', 'skill.athletics', 'skill.heavy_arms'],
   entrance: 'r1',
   boss: 'boss.old_bramblehide',
+  // The design's first-clear target for the target loadout is 12 to 18 minutes (regions/01).
+  region: 'dawnmeadow',
+  estMinutes: 15,
   rooms: SPECS.map(room),
   edges: EDGES,
 };

@@ -21,6 +21,7 @@ export const SINGULARS: Readonly<Record<string, SingularDef>> = Object.fromEntri
       {
         id: 'singular.crows_due',
         region: 'dawnmeadow',
+        estMinutes: 30,
         // A shiny thing left for the crow on the scarecrow at Millbrook, on three different days.
         trigger: {
           id: 'trigger',
@@ -52,6 +53,7 @@ export const SINGULARS: Readonly<Record<string, SingularDef>> = Object.fromEntri
       {
         id: 'singular.eight_beds',
         region: 'dawnmeadow',
+        estMinutes: 30,
         // Bed down outdoors at three different wake points, a night each.
         trigger: {
           id: 'trigger',
@@ -75,6 +77,7 @@ export const SINGULARS: Readonly<Record<string, SingularDef>> = Object.fromEntri
       {
         id: 'singular.cold_oven',
         region: 'dawnmeadow',
+        estMinutes: 30,
         // The old cook pot in the empty house on the market street, at dawn, three times.
         trigger: {
           id: 'trigger',

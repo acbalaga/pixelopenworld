@@ -51,4 +51,7 @@ export interface DungeonDef {
   edges: readonly DungeonEdge[];
   /** The boss, by boss id (`creatures/bosses`). Its defeat or resolution clears the dungeon. */
   boss?: string;
+  /** The region it belongs to, and minutes a first clear takes, for the pacing ledger (M4-12). */
+  region?: string;
+  estMinutes?: number;
 }
