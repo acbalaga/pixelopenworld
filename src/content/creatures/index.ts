@@ -2,6 +2,7 @@ import { DAWNMEADOW_CREATURES } from './dawnmeadow';
 import { ROOTWAY_CREATURES } from './rootway';
 import type { CreatureDef, SpawnerDef } from './types';
 import { zoneSpawners } from './zoneSpawners';
+import { dungeonSpawners } from './dungeonSpawners';
 
 /** The tier 1 creatures and the cave miniboss. Telegraph times come from their attacks. */
 export const CREATURES: Readonly<Record<string, CreatureDef>> = {
@@ -248,6 +249,8 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
 export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
   // Zone spawners (M4-05), made from the rosters: `spawner.z<step>_<d|n>_<creature>`.
   ...zoneSpawners(),
+  // Dungeon spawners (POW-M4-11): `spawner.dg_<creature>` and `spawner.dgp_<creature>`.
+  ...dungeonSpawners(),
   'spawner.mossling': {
     kind: 'spawner.mossling',
     creature: 'creature.mossling',

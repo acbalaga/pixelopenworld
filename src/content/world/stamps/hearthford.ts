@@ -144,6 +144,8 @@ function hearthford(): StampV2 {
   b.fence(3, 47, 3, 53);
   b.fence(17, 47, 17, 53);
   part('inn_yard', 'inn', 3, 47, 15, 7);
+  // The cellar hatch (mini-dungeon m1, POW-M4-11): planks in the corner of the yard.
+  b.rect(15, 51, 2, 2, Terrain.Planks);
   b.place('fixture.bed', 6, 50);
   b.place('fixture.storage', 9, 50);
   b.place('prop.camp_pot', 12, 50);

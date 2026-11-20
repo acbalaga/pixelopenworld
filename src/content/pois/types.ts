@@ -21,4 +21,8 @@ export interface PoiDef {
    * manual is a second source of its technique that can be found without a teacher.
    */
   manual?: string;
+  /** The manual's chest is in this dungeon's rooms, not out in the open (the region spec does not place one). */
+  inDungeon?: string;
+  /** A stamp that gives the place its shape, at its top left in region tiles. */
+  stamp?: { id: string; x: number; y: number };
 }

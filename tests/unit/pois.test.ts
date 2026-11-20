@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { DUNGEONS } from '../../src/content/world/dungeons';
 import { STAMPS } from '../../src/content/world/stamps';
+import {
+  HEDGE_MAZE_CENTER,
+  HEDGE_MAZE_DOOR,
+  HEDGE_MAZE_SIZE,
+  hedgeMazeRows,
+} from '../../src/content/world/stamps/pois';
 import { CHUNK_TILES, decodeChunk, Solid, tileIndex } from '../../src/sim/world/chunk';
 import { bakeRegion } from '../../tools/bake-world/bake';
 import { MANUALS } from '../../src/content/items/manuals';
@@ -12,8 +19,60 @@ import { DAWNMEADOW } from '../../src/content/world/regions/dawnmeadow/spec';
 describe('Dawnmeadow points of interest (M4-11)', () => {
   const pois = poisOf('dawnmeadow');
 
+  it("hold 29 of the 30 of the region doc, by kind, the last (Old Fen's well) coming with m9", () => {
+    const by = (k: string): number => pois.filter((p) => p.kind === k).length;
+    expect([
+      by('shrine'),
+      by('vista'),
+      by('wreck'),
+      by('hermit'),
+      by('puzzle'),
+      by('oddity'),
+    ]).toEqual([6, 6, 4, 3, 6, 4]);
+  });
+
+  it('place each stamp a POI names, and stand the POI on an open tile of it', () => {
+    for (const p of pois.filter((x) => x.stamp)) {
+      expect(STAMPS[p.stamp!.id], p.id).toBeDefined();
+      expect(
+        DAWNMEADOW.placements.some(
+          (pl) => pl.stamp === p.stamp!.id && pl.x === p.stamp!.x && pl.y === p.stamp!.y,
+        ),
+        p.id,
+      ).toBe(true);
+    }
+  });
+
+  it('cut a hedge maze with one way from its door to its centre', () => {
+    const rows = hedgeMazeRows();
+    expect(rows).toHaveLength(HEDGE_MAZE_SIZE);
+    const key = (x: number, y: number): string => `${x},${y}`;
+    const seen = new Set([key(HEDGE_MAZE_DOOR.x, HEDGE_MAZE_DOOR.y)]);
+    const queue: [number, number][] = [[HEDGE_MAZE_DOOR.x, HEDGE_MAZE_DOOR.y]];
+    for (let i = 0; i < queue.length; i++) {
+      const [x, y] = queue[i]!;
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (rows[ny]?.[nx] === '.' && !seen.has(key(nx, ny))) {
+          seen.add(key(nx, ny));
+          queue.push([nx, ny]);
+        }
+      }
+    }
+    expect(seen.has(key(HEDGE_MAZE_CENTER.x, HEDGE_MAZE_CENTER.y))).toBe(true);
+    // Every open cell is reachable: it is one maze, with no sealed pockets.
+    const open = rows.join('').split('.').length - 1;
+    expect(seen.size).toBe(open);
+  });
+
   it('each has a name, a kind, an estimate and a place inside the region', () => {
-    expect(pois.length).toBeGreaterThanOrEqual(8);
+    expect(pois.length).toBeGreaterThanOrEqual(29);
     for (const p of pois) {
       expect(POI_STRINGS[p.id], p.id).toBeTruthy();
       expect(POI_STRINGS[p.id], p.id).not.toMatch(/[—–]/);
@@ -34,6 +93,16 @@ describe('Dawnmeadow points of interest (M4-11)', () => {
       ).toBe(true);
       const chest = poiChest(p.manual!);
       expect(FIXTURES[chest], chest).toBeDefined();
+      if (p.inDungeon) {
+        // In the dungeon's rooms, once, and not out in the open.
+        expect(DAWNMEADOW.placements.filter((pl) => pl.kind === chest)).toHaveLength(0);
+        const d = DUNGEONS[p.inDungeon]!;
+        const held = d.rooms.flatMap((r) =>
+          (STAMPS[r.stamp.id]!.objects ?? []).filter((o) => o.kind === chest),
+        );
+        expect(held, chest).toHaveLength(1);
+        continue;
+      }
       const placed = DAWNMEADOW.placements.filter((pl) => pl.kind === chest);
       expect(placed, chest).toHaveLength(1);
       expect([placed[0]!.x, placed[0]!.y]).toEqual([p.x, p.y]);

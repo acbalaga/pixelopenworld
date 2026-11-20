@@ -8,7 +8,7 @@ import type { RequestDef, RequestObjective } from './types';
  * finish, and what the giver says. `requests/index.ts` turns the jobs into `RequestDef`s,
  * `strings/dawnmeadowRequests.ts` the words into strings and `dialogue` the lines into
  * conversation. The rest of the table waits on places and mechanics that are not built (the
- * mini-dungeons, hives, carvings, the tower clock): see the PR for the list.
+ * Undermill, carvings, the tower clock): see the PR for the list.
  *
  * Voice: plain, a little dry, no lore. No em dashes. Titles are at most 24 characters.
  */
@@ -384,6 +384,52 @@ export const AUTHORED: readonly AuthoredRequest[] = [
       accepted: 'Back to a wall, and do not run. They like it when you run.',
       progress: 'Two moorhounds. They are out at dusk and after.',
       report: 'Good. The moor sounds different when they are gone.',
+    },
+  },
+  {
+    key: 'rats_cellar',
+    row: 'r2',
+    giver: 'npc.cook',
+    title: 'Rats in the cellar',
+    ask: 'The grain rats have the inn cellar. The hatch is in the yard. Clear them out, and mind the barrels, they roll.',
+    ways: [
+      {
+        id: 'defeat',
+        label: 'Clear the Grain Rats from the cellar',
+        steps: [{ kind: 'defeat', creature: 'creature.grain_rat', count: 6 }],
+      },
+    ],
+    reward: { coin: 60, renown: 1 },
+    estMinutes: 10,
+    talk: {
+      offer: 'Is that scratching in the cellar?',
+      remind: 'About the rats.',
+      accepted: 'Hatch in the yard, back corner. Six of them at the least. They come in threes.',
+      progress: 'Six grain rats, in the cellar under the yard.',
+      report: 'Quiet. You are a good guest. Take this.',
+    },
+  },
+  {
+    key: 'wasps_orchard',
+    row: 'r12',
+    giver: 'npc.farmer',
+    title: 'Wasps in the orchard',
+    ask: 'Thistle wasps have taken the hive on the hill. We cannot pick near it. Clear them, and the orchard is ours again.',
+    ways: [
+      {
+        id: 'defeat',
+        label: 'Clear the Thistle Wasps from Hive Hill',
+        steps: [{ kind: 'defeat', creature: 'creature.thistle_wasp', count: 5 }],
+      },
+    ],
+    reward: { coin: 55, renown: 1 },
+    estMinutes: 10,
+    talk: {
+      offer: 'You look like you have been stung.',
+      remind: 'About the wasps.',
+      accepted: 'Hive Hill, out on the downs. Do not swing at the nest. They follow you.',
+      progress: 'Five thistle wasps, on Hive Hill.',
+      report: 'Peace at last. Here, for your trouble.',
     },
   },
 ];
