@@ -1,4 +1,5 @@
 import { REQUEST_BALANCE as RB } from '../balance/requests';
+import { authoredDefs } from './dawnmeadow';
 import type { RequestDef } from './types';
 
 export type * from './types';
@@ -9,7 +10,7 @@ const R = RB.homeRegion;
  * The authored requests of the slice (M3-11). Each has a giver, the asker's own words, and one or
  * more ways to finish it. A request is finished by any one solution.
  */
-export const REQUESTS: Readonly<Record<string, RequestDef>> = {
+const M3_REQUESTS: Readonly<Record<string, RequestDef>> = {
   'request.clear_pests': {
     id: 'request.clear_pests',
     giver: { npc: 'npc.guard' },
@@ -157,6 +158,9 @@ export const REQUESTS: Readonly<Record<string, RequestDef>> = {
     estMinutes: 8,
   },
 };
+
+/** Every authored request: the first map's (M3-11) and Dawnmeadow's table (M4-12). */
+export const REQUESTS: Readonly<Record<string, RequestDef>> = { ...M3_REQUESTS, ...authoredDefs() };
 
 /** The most coin the authored requests pay, each once. */
 export const AUTHORED_COIN_TOTAL = Object.values(REQUESTS).reduce((n, r) => n + r.reward.coin, 0);

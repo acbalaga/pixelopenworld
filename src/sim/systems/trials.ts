@@ -177,6 +177,15 @@ export function advanceTracked(
     case 'parried':
       if (e.who === who) perform(state, who, list, 'parry');
       return;
+    case 'creatureFed':
+      if (e.who !== who) return;
+      for (const t of list) {
+        const { o, p } = t;
+        if (o.kind !== 'feed' || (o.creature !== undefined && o.creature !== e.kind)) continue;
+        p.n++;
+        finish(t, o.count);
+      }
+      return;
     case 'perform':
       // A song finished. It counts for the objective that names it.
       if (e.who !== who) return;

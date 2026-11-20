@@ -90,6 +90,8 @@ export type TrialObjective =
       inOneFight?: boolean;
     }
   | { kind: 'craft'; recipe: string; minQuality: Quality }
+  /** Feed creatures by hand (M4-05 feeding). A creature kind, or any. */
+  | { kind: 'feed'; creature?: string; count: number }
   | { kind: 'deliver'; item: string; qty: number; minQuality?: Quality; to: string }
   | { kind: 'reach'; room: string; from: string; withinTicks: number };
 

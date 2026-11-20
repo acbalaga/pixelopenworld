@@ -5,7 +5,14 @@ import { REQUEST_BALANCE } from '../../src/content/balance/requests';
 import { DIALOGUES, NPCS, SHOPS } from '../../src/content/dialogue';
 import { REQUESTS } from '../../src/content/requests';
 import type { RequestDef } from '../../src/content/requests/types';
-import type { Cond, Dialogue, Effect, NpcDef, ShopDef } from '../../src/content/dialogue/types';
+import type {
+  Choice,
+  Cond,
+  Dialogue,
+  Effect,
+  NpcDef,
+  ShopDef,
+} from '../../src/content/dialogue/types';
 import { ITEMS } from '../../src/content/items';
 import { FIXTURES } from '../../src/content/world/fixtures';
 import { RECIPES } from '../../src/content/items/recipes';
@@ -41,6 +48,24 @@ const REAL: DialogueRefs = {
  * Checks dialogue, shop and request content: every node reference lands on a node, every string
  * key exists, every id an effect or condition names exists, and no text has an em dash.
  */
+/**
+ * The most choices a node can show at once. An offer and a reminder for one request test its state
+ * (not yet taken, or under way), so only one of the two is ever on screen: the pair counts once.
+ */
+export function mostShown(choices: readonly Choice[]): number {
+  const seen = new Set<string>();
+  let n = 0;
+  for (const c of choices) {
+    const only = c.if?.length === 1 ? c.if[0] : undefined;
+    if (only && 'request' in only && (only.is === 'none' || only.is === 'active')) {
+      if (seen.has(only.request)) continue;
+      seen.add(only.request);
+    }
+    n++;
+  }
+  return n;
+}
+
 export function validateDialogue(
   dialogues: Readonly<Record<string, Dialogue>> = DIALOGUES,
   refs: DialogueRefs = REAL,
@@ -107,7 +132,7 @@ export function validateDialogue(
       text(where, n.text);
       node(where, n.next);
       if (n.next !== undefined && n.choices) errors.push(`${where}: has both next and choices`);
-      if ((n.choices?.length ?? 0) > 6) errors.push(`${where}: more than 6 choices`);
+      if (mostShown(n.choices ?? []) > 6) errors.push(`${where}: more than 6 choices`);
       for (const e of n.do ?? []) {
         effect(where, e);
         if ('renown' in e) errors.push(`${where}: Renown belongs on a choice, not a node`);
@@ -188,7 +213,11 @@ export function validateDialogue(
       text(sw, sol.labelKey);
       if (sol.steps.length === 0) errors.push(`${sw}: no steps`);
       for (const o of sol.steps) {
-        if (o.kind === 'defeat' && o.creature && !refs.creatures.has(o.creature))
+        if (
+          (o.kind === 'defeat' || o.kind === 'feed') &&
+          o.creature &&
+          !refs.creatures.has(o.creature)
+        )
           errors.push(`${sw}: unknown creature ${o.creature}`);
         if ((o.kind === 'gather' || o.kind === 'deliver') && o.item && !refs.items.has(o.item))
           errors.push(`${sw}: unknown item ${o.item}`);
@@ -199,7 +228,13 @@ export function validateDialogue(
             errors.push(`${sw}: nothing sets flag ${o.flag}`);
           text(sw, `${o.flag}.step`);
         }
-        if ((o.kind === 'defeat' || o.kind === 'gather' || o.kind === 'perform') && o.count < 1)
+        if (
+          (o.kind === 'defeat' ||
+            o.kind === 'gather' ||
+            o.kind === 'perform' ||
+            o.kind === 'feed') &&
+          o.count < 1
+        )
           errors.push(`${sw}: count must be at least 1`);
       }
     }
