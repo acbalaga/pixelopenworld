@@ -22,7 +22,7 @@ export const DEVIATIONS: Readonly<Record<string, string>> = {
   'archery|creature.burrow_mole':
     'A Burrow Mole dives between strikes and an arrow cannot reach a diving target, so a bow spends most of the fight waiting for it to surface. Melee and spells punish the surface window.',
   'tide|creature.reed_crab':
-    'A guard lets go of a target past its tether, walks home and heals to full. Tide fights at range, so the crab keeps resetting (median over 60 s, spread to 160 s). Guards are meant to be fought up close. Follow-up: whether a kited guard should heal (PR for M4-05 part 3, design query).',
+    "Tide fights at range, past a guard's tether. The crab lets go and walks home, and a guard only heals if it has been left alone for 5 s (`guardHealAfterTicks`), so kiting no longer resets it, but every walk home costs the caster time (median 22 s, spread to 105 s against a 4 to 8 s band). Guards are meant to be fought up close.",
   'unarmed|creature.bramble_boar':
     'Wraps already sit at the top of the band against a Bramble Boar (8.6 s at step a). Boars in Hollow Downs are step b, which adds a tenth.',
 };

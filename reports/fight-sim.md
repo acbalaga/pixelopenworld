@@ -24,7 +24,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Blades (sword) | Burrow Mole (common) | 6.0 | 9.5 | 4 to 8 | 2 | 63 | 0 | 0.0 | 0 | ok |
 | Blades (sword) | Thistle Wasp (critter) | 1.0 | 2.2 | 1 to 4 | 0 | 8 | 0 | 0.0 | 0 | ok |
 | Blades (sword) | Barrow Bones (common) | 6.4 | 7.5 | 4 to 8 | 2 | 59 | 0 | 0.0 | 0 | ok |
-| Blades (sword) | Reed Crab (common) | 7.4 | 9.0 | 4 to 8 | 1 | 69 | 0 | 0.0 | 0 | ok |
+| Blades (sword) | Reed Crab (common) | 7.4 | 8.1 | 4 to 8 | 1 | 68 | 0 | 0.0 | 0 | ok |
 | Blades (sword) | Marsh Leech (common) | 4.6 | 5.1 | 4 to 8 | 0 | 18 | 0 | 0.0 | 0 | ok |
 | Blades (sword) | Rubblet (common) | 6.5 | 7.0 | 4 to 8 | 1 | 50 | 0 | 0.0 | 0 | ok |
 | Blades (sword) | Crag Hawk (common) | 4.3 | 4.9 | 4 to 8 | 2 | 20 | 0 | 0.0 | 0 | ok |
@@ -96,7 +96,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Archery (bow) | Burrow Mole (common) | 12.3 | 18.7 | 4 to 8 | 4 | 126 | 0 | 0.0 | 0 | listed |
 | Archery (bow) | Thistle Wasp (critter) | 2.0 | 2.4 | 1 to 4 | 0 | 29 | 0 | 0.0 | 0 | ok |
 | Archery (bow) | Barrow Bones (common) | 5.8 | 6.1 | 4 to 8 | 2 | 50 | 0 | 0.0 | 0 | ok |
-| Archery (bow) | Reed Crab (common) | 5.6 | 6.1 | 4 to 8 | 1 | 33 | 0 | 0.0 | 0 | ok |
+| Archery (bow) | Reed Crab (common) | 5.6 | 7.9 | 4 to 8 | 1 | 33 | 0 | 0.0 | 0 | ok |
 | Archery (bow) | Marsh Leech (common) | 4.7 | 4.9 | 4 to 8 | 0 | 29 | 0 | 0.0 | 0 | ok |
 | Archery (bow) | Rubblet (common) | 5.6 | 6.2 | 4 to 8 | 2 | 25 | 0 | 0.0 | 0 | ok |
 | Archery (bow) | Crag Hawk (common) | 4.4 | 4.6 | 4 to 8 | 2 | 24 | 0 | 0.0 | 0 | ok |
@@ -144,9 +144,9 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Ember (fire) | Burrow Mole (common) | 6.8 | 12.7 | 4 to 8 | 2 | 90 | 39 | 0.1 | 0 | ok |
 | Ember (fire) | Thistle Wasp (critter) | 2.2 | 2.3 | 1 to 4 | 0 | 29 | 30 | 0.0 | 0 | ok |
 | Ember (fire) | Barrow Bones (common) | 6.1 | 7.2 | 4 to 8 | 1 | 58 | 35 | 0.0 | 0 | ok |
-| Ember (fire) | Reed Crab (common) | 7.2 | 10.7 | 4 to 8 | 3 | 75 | 39 | 0.1 | 0 | ok |
+| Ember (fire) | Reed Crab (common) | 7.2 | 8.5 | 4 to 8 | 3 | 68 | 36 | 0.0 | 0 | ok |
 | Ember (fire) | Marsh Leech (common) | 4.3 | 4.4 | 4 to 8 | 0 | 25 | 30 | 0.0 | 0 | ok |
-| Ember (fire) | Rubblet (common) | 6.5 | 10.2 | 4 to 8 | 2 | 58 | 42 | 0.0 | 0 | ok |
+| Ember (fire) | Rubblet (common) | 6.5 | 8.4 | 4 to 8 | 2 | 56 | 42 | 0.0 | 0 | ok |
 | Ember (fire) | Crag Hawk (common) | 4.4 | 4.6 | 4 to 8 | 3 | 20 | 30 | 0.0 | 0 | ok |
 | Ember (fire) | Moorhound (common) | 5.5 | 6.7 | 4 to 8 | 2 | 49 | 33 | 0.0 | 0 | ok |
 | Ember (fire) | Thornling Scout (common) | 6.6 | 9.8 | 4 to 8 | 5 | 69 | 50 | 0.1 | 0 | n/a |
@@ -192,7 +192,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Stone (earth) | Burrow Mole (common) | 4.7 | 9.5 | 4 to 8 | 1 | 56 | 40 | 0.1 | 0 | ok |
 | Stone (earth) | Thistle Wasp (critter) | 1.3 | 2.3 | 1 to 4 | 0 | 4 | 35 | 0.0 | 0 | ok |
 | Stone (earth) | Barrow Bones (common) | 5.4 | 6.5 | 4 to 8 | 1 | 36 | 35 | 0.0 | 0 | ok |
-| Stone (earth) | Reed Crab (common) | 6.7 | 8.5 | 4 to 8 | 1 | 60 | 40 | 0.1 | 0 | ok |
+| Stone (earth) | Reed Crab (common) | 6.7 | 8.0 | 4 to 8 | 1 | 59 | 40 | 0.1 | 0 | ok |
 | Stone (earth) | Marsh Leech (common) | 3.2 | 3.2 | 4 to 8 | 0 | 1 | 35 | 0.0 | 0 | listed |
 | Stone (earth) | Rubblet (common) | 7.4 | 8.0 | 4 to 8 | 3 | 61 | 51 | 0.4 | 0 | ok |
 | Stone (earth) | Crag Hawk (common) | 3.2 | 3.2 | 4 to 8 | 0 | 0 | 35 | 0.0 | 0 | listed |
@@ -221,7 +221,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Blades (sword) | Burrow Mole (common) | 4.7 | 9.0 | 4 to 8 | 2 | 63 | 0 | 0.0 | 0 | n/a |
 | Blades (sword) | Thistle Wasp (critter) | 1.0 | 1.6 | 1 to 4 | 0 | 8 | 0 | 0.0 | 0 | n/a |
 | Blades (sword) | Barrow Bones (common) | 4.5 | 4.9 | 4 to 8 | 2 | 43 | 0 | 0.0 | 0 | n/a |
-| Blades (sword) | Reed Crab (common) | 5.0 | 7.6 | 4 to 8 | 1 | 53 | 0 | 0.0 | 0 | n/a |
+| Blades (sword) | Reed Crab (common) | 5.0 | 6.7 | 4 to 8 | 1 | 50 | 0 | 0.0 | 0 | n/a |
 | Blades (sword) | Marsh Leech (common) | 3.2 | 3.7 | 4 to 8 | 0 | 18 | 0 | 0.0 | 0 | n/a |
 | Blades (sword) | Rubblet (common) | 5.4 | 5.6 | 4 to 8 | 1 | 50 | 0 | 0.0 | 0 | n/a |
 | Blades (sword) | Crag Hawk (common) | 3.2 | 3.5 | 4 to 8 | 2 | 20 | 0 | 0.0 | 0 | n/a |
@@ -293,7 +293,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Archery (bow) | Burrow Mole (common) | 8.9 | 12.1 | 4 to 8 | 2 | 85 | 0 | 0.0 | 0 | n/a |
 | Archery (bow) | Thistle Wasp (critter) | 1.5 | 1.7 | 1 to 4 | 0 | 25 | 0 | 0.0 | 0 | n/a |
 | Archery (bow) | Barrow Bones (common) | 3.5 | 4.1 | 4 to 8 | 1 | 29 | 0 | 0.0 | 0 | n/a |
-| Archery (bow) | Reed Crab (common) | 3.6 | 4.1 | 4 to 8 | 1 | 25 | 0 | 0.0 | 0 | n/a |
+| Archery (bow) | Reed Crab (common) | 3.6 | 4.3 | 4 to 8 | 1 | 25 | 0 | 0.0 | 0 | n/a |
 | Archery (bow) | Marsh Leech (common) | 3.3 | 3.5 | 4 to 8 | 0 | 29 | 0 | 0.0 | 0 | n/a |
 | Archery (bow) | Rubblet (common) | 3.7 | 4.2 | 4 to 8 | 1 | 24 | 0 | 0.0 | 0 | n/a |
 | Archery (bow) | Crag Hawk (common) | 3.6 | 3.7 | 4 to 8 | 2 | 23 | 0 | 0.0 | 0 | n/a |
@@ -317,7 +317,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Unarmed (cloth wraps) | Burrow Mole (common) | 4.7 | 5.9 | 4 to 8 | 2 | 60 | 0 | 0.0 | 0 | n/a |
 | Unarmed (cloth wraps) | Thistle Wasp (critter) | 0.5 | 1.5 | 1 to 4 | 0 | 10 | 0 | 0.0 | 0 | n/a |
 | Unarmed (cloth wraps) | Barrow Bones (common) | 4.9 | 5.4 | 4 to 8 | 2 | 64 | 0 | 0.0 | 0 | n/a |
-| Unarmed (cloth wraps) | Reed Crab (common) | 4.6 | 6.1 | 4 to 8 | 2 | 56 | 0 | 0.0 | 0 | n/a |
+| Unarmed (cloth wraps) | Reed Crab (common) | 4.5 | 5.8 | 4 to 8 | 2 | 54 | 0 | 0.0 | 0 | n/a |
 | Unarmed (cloth wraps) | Marsh Leech (common) | 3.0 | 3.1 | 4 to 8 | 1 | 24 | 0 | 0.0 | 0 | n/a |
 | Unarmed (cloth wraps) | Rubblet (common) | 4.3 | 4.8 | 4 to 8 | 1 | 54 | 0 | 0.0 | 0 | n/a |
 | Unarmed (cloth wraps) | Crag Hawk (common) | 2.8 | 3.0 | 4 to 8 | 1 | 25 | 0 | 0.0 | 0 | n/a |
@@ -341,9 +341,9 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Ember (fire) | Burrow Mole (common) | 7.1 | 11.8 | 4 to 8 | 1 | 99 | 69 | 0.3 | 0 | n/a |
 | Ember (fire) | Thistle Wasp (critter) | 1.9 | 2.9 | 1 to 4 | 0 | 31 | 47 | 0.0 | 0 | n/a |
 | Ember (fire) | Barrow Bones (common) | 5.5 | 6.6 | 4 to 8 | 0 | 65 | 49 | 0.1 | 0 | n/a |
-| Ember (fire) | Reed Crab (common) | 5.3 | 9.6 | 4 to 8 | 3 | 65 | 56 | 0.1 | 0 | n/a |
+| Ember (fire) | Reed Crab (common) | 5.3 | 8.8 | 4 to 8 | 3 | 64 | 56 | 0.0 | 0 | n/a |
 | Ember (fire) | Marsh Leech (common) | 3.9 | 4.6 | 4 to 8 | 1 | 26 | 47 | 0.0 | 0 | n/a |
-| Ember (fire) | Rubblet (common) | 6.5 | 7.4 | 4 to 8 | 2 | 73 | 62 | 0.0 | 0 | n/a |
+| Ember (fire) | Rubblet (common) | 6.5 | 7.4 | 4 to 8 | 2 | 70 | 62 | 0.0 | 0 | n/a |
 | Ember (fire) | Crag Hawk (common) | 4.1 | 5.0 | 4 to 8 | 1 | 26 | 50 | 0.0 | 0 | n/a |
 | Ember (fire) | Moorhound (common) | 4.6 | 5.9 | 4 to 8 | 2 | 54 | 48 | 0.0 | 0 | n/a |
 | Ember (fire) | Thornling Scout (common) | 7.9 | 13.9 | 4 to 8 | 3 | 93 | 89 | 0.3 | 0 | ok |
@@ -361,13 +361,13 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Tide (water) | Downs Ram (common) | 6.5 | 7.8 | 4 to 8 | 2 | 58 | 65 | 0.1 | 0 | n/a |
 | Tide (water) | Grain Rat (critter) | 1.9 | 2.0 | 1 to 4 | 0 | 26 | 40 | 0.0 | 0 | n/a |
 | Tide (water) | Fox (common) | 6.0 | 8.1 | 4 to 8 | 1 | 50 | 65 | 0.2 | 0 | n/a |
-| Tide (water) | Strawman (common) | 5.7 | 8.1 | 4 to 8 | 1 | 66 | 66 | 0.3 | 0 | n/a |
+| Tide (water) | Strawman (common) | 5.7 | 8.1 | 4 to 8 | 1 | 65 | 65 | 0.3 | 0 | n/a |
 | Tide (water) | Burrow Mole (common) | 6.5 | 9.7 | 4 to 8 | 1 | 99 | 60 | 0.1 | 0 | n/a |
 | Tide (water) | Thistle Wasp (critter) | 2.3 | 2.5 | 1 to 4 | 0 | 26 | 40 | 0.0 | 0 | n/a |
 | Tide (water) | Barrow Bones (common) | 5.4 | 8.0 | 4 to 8 | 1 | 64 | 46 | 0.1 | 0 | n/a |
-| Tide (water) | Reed Crab (common) | 6.0 | 17.8 | 4 to 8 | 3 | 63 | 71 | 0.3 | 0 | n/a |
+| Tide (water) | Reed Crab (common) | 6.0 | 15.0 | 4 to 8 | 3 | 60 | 69 | 0.3 | 0 | n/a |
 | Tide (water) | Marsh Leech (common) | 3.9 | 4.1 | 4 to 8 | 0 | 28 | 40 | 0.0 | 0 | n/a |
-| Tide (water) | Rubblet (common) | 8.3 | 10.6 | 4 to 8 | 2 | 83 | 80 | 0.5 | 0 | n/a |
+| Tide (water) | Rubblet (common) | 8.3 | 10.6 | 4 to 8 | 2 | 80 | 78 | 0.5 | 0 | n/a |
 | Tide (water) | Crag Hawk (common) | 4.1 | 7.2 | 4 to 8 | 1 | 29 | 48 | 0.0 | 0 | n/a |
 | Tide (water) | Moorhound (common) | 5.5 | 6.1 | 4 to 8 | 1 | 69 | 41 | 0.0 | 0 | n/a |
 | Tide (water) | Thornling Scout (common) | 8.5 | 12.9 | 4 to 8 | 5 | 85 | 81 | 0.4 | 0 | ok |
@@ -389,7 +389,7 @@ Made by `npm run fight-sim` (POW-M3-12). Do not edit by hand. Headless fights on
 | Stone (earth) | Burrow Mole (common) | 3.7 | 9.0 | 4 to 8 | 1 | 56 | 40 | 0.0 | 0 | n/a |
 | Stone (earth) | Thistle Wasp (critter) | 0.9 | 1.8 | 1 to 4 | 0 | 4 | 35 | 0.0 | 0 | n/a |
 | Stone (earth) | Barrow Bones (common) | 3.9 | 4.3 | 4 to 8 | 1 | 28 | 35 | 0.0 | 0 | n/a |
-| Stone (earth) | Reed Crab (common) | 4.7 | 8.0 | 4 to 8 | 1 | 44 | 39 | 0.0 | 0 | n/a |
+| Stone (earth) | Reed Crab (common) | 4.7 | 7.0 | 4 to 8 | 1 | 44 | 39 | 0.0 | 0 | n/a |
 | Stone (earth) | Marsh Leech (common) | 2.8 | 2.8 | 4 to 8 | 0 | 1 | 35 | 0.0 | 0 | n/a |
 | Stone (earth) | Rubblet (common) | 5.0 | 5.7 | 4 to 8 | 1 | 38 | 39 | 0.0 | 0 | n/a |
 | Stone (earth) | Crag Hawk (common) | 2.3 | 2.3 | 4 to 8 | 0 | 0 | 35 | 0.0 | 0 | n/a |
@@ -477,5 +477,5 @@ The first map does not make a character ready by itself. These are what the outs
 - `archery|creature.old_bramblehide`: A bow stands off a boss whose reach is short, so its damage is not interrupted. Fighting from a distance is what the family is for.
 - `unarmed|creature.old_bramblehide`: Wraps give breath back on every hit, so an Unarmed fight is either a clean run (about 50 s) or a long one (over 100 s). The median sits under the band and the spread over it.
 - `archery|creature.burrow_mole`: A Burrow Mole dives between strikes and an arrow cannot reach a diving target, so a bow spends most of the fight waiting for it to surface. Melee and spells punish the surface window.
-- `tide|creature.reed_crab`: A guard lets go of a target past its tether, walks home and heals to full. Tide fights at range, so the crab keeps resetting (median over 60 s, spread to 160 s). Guards are meant to be fought up close. Follow-up: whether a kited guard should heal (PR for M4-05 part 3, design query).
+- `tide|creature.reed_crab`: Tide fights at range, past a guard's tether. The crab lets go and walks home, and a guard only heals if it has been left alone for 5 s (`guardHealAfterTicks`), so kiting no longer resets it, but every walk home costs the caster time (median 22 s, spread to 105 s against a 4 to 8 s band). Guards are meant to be fought up close.
 - `unarmed|creature.bramble_boar`: Wraps already sit at the top of the band against a Bramble Boar (8.6 s at step a). Boars in Hollow Downs are step b, which adds a tenth.

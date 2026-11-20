@@ -4,6 +4,11 @@ export const TEMPERAMENT = {
   warnMinTicksTier1: 30,
   /** How long a skittish creature runs after it notices. */
   fleeTicks: 90,
+  /**
+   * A guard heals to full on its way home only if it has not been hit for this long (5 s). A
+   * ranged fighter who keeps chipping at it from past its tether never lets it recover.
+   */
+  guardHealAfterTicks: 150,
   /** Feeding a creature (M4-05): how near the avatar must be, and how long a fed creature stays calm. */
   feed: { reachPx: 28, calmTicks: 1800 },
   /** A creature this many tiers above the avatar's proven tier steps one rung more aggressive. */
