@@ -1,3 +1,4 @@
+import { kill } from './combat/fighter';
 import { STATUS_BALANCE as B } from '../content/balance/status';
 import { REACTIONS, type ReactionDef } from '../content/combat/reactions';
 import { ELEMENT_STATUS, isElement, type ElementId } from '../content/combat/statuses';
@@ -69,6 +70,14 @@ export function elementHitsUnit(
   if (!isElement(element)) return;
   const row = REACTIONS.find((r) => r.b === element && hasStatus(state, dst, r.a));
   if (row) return react(state, dst, row, src);
+  // Mending lays the unquiet dead to rest (the Drowned Chapel Crypt).
+  if (
+    element === 'mending' &&
+    getComp(state.entities, dst, 'combatant')?.kind === 'creature.barrow_bones'
+  ) {
+    kill(state, dst);
+    return;
+  }
   const status = ELEMENT_STATUS[element];
   if (applies && status) applyStatus(state, dst, status, src);
 }

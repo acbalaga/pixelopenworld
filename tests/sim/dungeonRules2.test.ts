@@ -71,3 +71,50 @@ describe('heat vents (M4-11)', () => {
     expect(p2.hp).toBe(p2.hpMax);
   });
 });
+
+describe('the barrow, the bolt trap and the crypt (M4-11)', () => {
+  it('an urn wakes its guardians when it is opened, and not before', async () => {
+    const { interactFixture } = await import('../../src/sim/systems/fixtures');
+    const { query } = await import('../../src/sim/kernel/entities');
+    const { s, me } = world();
+    const urn = spawnFixture(s, 'fixture.m10_urn', 10, 9);
+    getComp(s.entities, me, 'avatar')!.facing = 0;
+    const bones = (): number =>
+      query(s.entities, 'combatant').filter(
+        (e) => getComp(s.entities, e, 'combatant')?.kind === 'creature.barrow_bones',
+      ).length;
+    expect(bones()).toBe(0);
+    interactFixture(s, me);
+    dungeonSystem(s);
+    expect(getComp(s.entities, urn, 'fixture')!.open).toBe(true);
+    expect(bones()).toBe(2);
+  });
+
+  it('the bolt trap hurts the avatar and a creature in its line, once a burst', async () => {
+    const { spawnCreature } = await import('../../src/sim/combat/enemy');
+    const { s, me } = world();
+    spawnFixture(s, 'fixture.m3_bolt', 10, 10);
+    const foe = spawnCreature(s, 'creature.mossling', 10 * 16 + 8, 10 * 16 + 14, -1);
+    const mine = getComp(s.entities, me, 'pools')!;
+    const theirs = getComp(s.entities, foe, 'pools')!;
+    const full = [mine.hp, theirs.hp];
+    for (let t = 0; t < 120; t++) {
+      s.tick = t;
+      dungeonSystem(s);
+    }
+    expect(mine.hp).toBeLessThan(full[0]!);
+    expect(theirs.hp).toBeLessThan(full[1]!);
+  });
+
+  it('Mending lays Barrow Bones to rest, and does nothing to a living creature', async () => {
+    const { spawnCreature } = await import('../../src/sim/combat/enemy');
+    const { elementHitsUnit } = await import('../../src/sim/elements');
+    const { s, me } = world();
+    const bones = spawnCreature(s, 'creature.barrow_bones', 200, 200, -1);
+    const moss = spawnCreature(s, 'creature.mossling', 240, 200, -1);
+    elementHitsUnit(s, moss, 'mending', me, true);
+    expect(getComp(s.entities, moss, 'fighter')!.state).not.toBe('dead');
+    elementHitsUnit(s, bones, 'mending', me, true);
+    expect(getComp(s.entities, bones, 'fighter')!.state).toBe('dead');
+  });
+});

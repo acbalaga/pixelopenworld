@@ -265,6 +265,13 @@ function vents(state: SimState): void {
       if (q && len({ x: (q.x - p.x) / SUBPX, y: (q.y - p.y) / SUBPX }) <= v.radius)
         drain(state, a, v.damage, id, 'hazard');
     }
+    if (!v.all) continue;
+    for (const c of query(state.entities, 'fighter', 'pos')) {
+      if (getComp(state.entities, c, 'avatar') || !alive(state, c)) continue;
+      const q = getComp(state.entities, c, 'pos');
+      if (q && len({ x: (q.x - p.x) / SUBPX, y: (q.y - p.y) / SUBPX }) <= v.radius)
+        drain(state, c, v.damage, id, 'hazard');
+    }
   }
 }
 
@@ -301,6 +308,18 @@ function vigils(state: SimState): void {
   }
 }
 
+/** What an opened chest wakes: the urn's guardian stands up beside it. */
+function wakings(state: SimState): void {
+  for (const e of state.events.list) {
+    if (e.type !== 'chestOpened') continue;
+    const f = getComp(state.entities, e.id, 'fixture');
+    const w = f ? FIXTURES[f.kind]?.wakes : undefined;
+    const p = getComp(state.entities, e.id, 'pos');
+    if (!w || !p) continue;
+    spawnWave(state, { x: p.x / SUBPX, y: p.y / SUBPX - TILE / 2 }, w.creature, w.count);
+  }
+}
+
 /** Once per tick, after the fixtures system. */
 export function dungeonSystem(state: SimState): void {
   arenas(state);
@@ -308,5 +327,6 @@ export function dungeonSystem(state: SimState): void {
   waters(state);
   vents(state);
   vigils(state);
+  wakings(state);
   delving(state);
 }

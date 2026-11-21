@@ -207,7 +207,7 @@ export const THORNWALL_BUILT = defineDungeon({
     entrance: 't1',
     boss: 'boss.hedge_warden',
     region: 'dawnmeadow',
-    estMinutes: 30,
+    estMinutes: 35,
   },
   doors: [
     {

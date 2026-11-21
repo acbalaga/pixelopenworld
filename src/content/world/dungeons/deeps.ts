@@ -242,7 +242,7 @@ export const DEEPS_BUILT = defineDungeon({
     entrance: 'd1',
     boss: 'boss.foremans_engine',
     region: 'dawnmeadow',
-    estMinutes: 30,
+    estMinutes: 35,
   },
   parts: PARTS,
 });

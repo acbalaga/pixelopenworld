@@ -17,6 +17,7 @@ import { REQUESTS } from '../../src/content/requests';
 import { THREADS } from '../../src/content/requests/threads';
 import { TRIALS } from '../../src/content/skills';
 import { SINGULARS } from '../../src/content/singulars';
+import { ROUTES } from '../../src/content/world/routes';
 import { DUNGEONS } from '../../src/content/world/dungeons';
 import { WAYSTONES } from '../../src/content/world/waystones';
 
@@ -58,6 +59,7 @@ export function collectItems(): { items: LedgerItem[]; problems: string[] } {
   for (const d of Object.values(DUNGEONS))
     if (d.region) add(d.id, d.region, d.mini ? 'miniDungeons' : 'dungeons', d.estMinutes);
   for (const p of Object.values(POIS)) add(p.id, p.region, 'pois', p.estMinutes);
+  for (const r of ROUTES) add(r.id, r.region, 'extras', r.estMinutes);
   for (const r of Object.values(ROAMERS)) add(r.creature, r.region, 'extras', r.estMinutes);
   for (const [region, stones] of Object.entries(WAYSTONES))
     for (const w of stones) add(`waystone.${region}.${w.id}`, region, 'extras', WAYSTONE_MINUTES);

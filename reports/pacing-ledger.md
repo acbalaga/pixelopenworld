@@ -4,16 +4,16 @@ Made by `npm run pacing` (POW-M4-12). Do not edit by hand. Sums the `estMinutes`
 
 ## dawnmeadow
 
-**1179 of 1193 minutes** (99%, 19.6 h of 19.9 h). Floor 1060. Budget enforced: not yet.
+**1224 of 1193 minutes** (103%, 20.4 h of 19.9 h). Floor 1224. Budget enforced: yes.
 
 | Category | Authored | Budget | Minutes | Budget minutes | Done |
 | --- | --- | --- | --- | --- | --- |
-| Dungeons | 4 | 4 | 105 | 120 | 88% |
+| Dungeons | 4 | 4 | 120 | 120 | 100% |
 | Mini-dungeons | 12 | 12 | 100 | 96 | 104% |
 | Points of interest | 30 | 30 | 120 | 120 | 100% |
 | Requests | 31 | 25 | 284 | 260 | 109% |
 | Threads | 5 | 5 | 225 | 225 | 100% |
 | Rank 15 Trials | 32 | 32 | 195 | 192 | 102% |
 | Singulars | 3 | 3 | 90 | 90 | 100% |
-| Field boss, Waystones, routes | 7 | n/a | 60 | 90 | 67% |
+| Field boss, Waystones, routes | 9 | n/a | 90 | 90 | 100% |
 
