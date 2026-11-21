@@ -12,12 +12,12 @@ Executors on POW-M5-03, POW-M5-04, POW-M5-05 and POW-M5-15 also read design/08-l
 
 Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this refinement. 20 and up are reserved for Gate G4 findings (D24).
 
-| Wave | Tickets                                   | Notes                                                                                     |
-| ---- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
-| A    | 20, 21, 22 (and any later G4 findings)    | Gate G4 findings. Merge before wave B starts, as the owner asked.                         |
-| B    | 02, then 03, then 04, 05, 09, then 14, 15 | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
-| G5a  | 13, then the owner check                  | 13 needs 04, 14, 05 and 15.                                                               |
-| C    | 06, then 07, 08, 12. Also 10, 11.         | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
+| Wave | Tickets                                      | Notes                                                                                     |
+| ---- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| A    | 20, 21, 22 (done), and any later G4 findings | Gate G4 findings. Merge before wave B starts, as the owner asked.                         |
+| B    | 02, then 03, then 04, 05, 09, then 14, 15    | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
+| G5a  | 13, then the owner check                     | 13 needs 04, 14, 05 and 15.                                                               |
+| C    | 06, then 07, 08, 12. Also 10, 11.            | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
 
 **Save schema bumps serialize.** Tickets 02, 06, 08, 10 and 12 each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
 
@@ -417,7 +417,7 @@ From the owner's G4 playtest on 2026-11-21. More are added here if the rest of t
 
 ### POW-M5-20 Dungeon doorways
 
-Size: S Depends: none Status: READY
+Size: S Depends: none Status: DONE (PR #126)
 Refs: design/02-world (Dungeons), docs/ops/gate-g4.md (F5)
 
 Goal: a way on inside a dungeon looks like a way on.
@@ -429,7 +429,7 @@ Acceptance: a test that every edge, the far end of every two way edge and the wa
 
 ### POW-M5-21 Quick slot for consumables
 
-Size: M Depends: none Status: READY
+Size: M Depends: none Status: DONE (PR #128)
 Refs: design/09-ui-ux (HUD, The Menu, Touch rules)
 
 Goal: eat or use a consumable in a fight without opening the Bag.
@@ -445,7 +445,7 @@ Scope:
 
 ### POW-M5-22 Technique and boss move callouts
 
-Size: S Depends: none Status: READY
+Size: S Depends: none Status: DONE (PR #127)
 Refs: design/04-combat (Bosses), design/09-ui-ux (The text rule)
 
 Goal: the player can tell which technique they threw and which big move a boss is starting.
