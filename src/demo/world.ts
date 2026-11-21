@@ -1490,6 +1490,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 stamina: W_STR.deniedStamina,
                 focus: W_STR.deniedFocus,
                 requires: W_STR.deniedRequires,
+                skill: W_STR.deniedSkill,
                 locked: W_STR.deniedLocked,
               }[e.reason],
               `denied.${e.reason}`,
