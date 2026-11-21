@@ -18,7 +18,11 @@ export type ButtonId =
   | 'swap'
   | 'dodge'
   | 'attack'
-  | 'guard';
+  | 'guard'
+  /** The quick slot: a tap uses its item (G4 playtest). */
+  | 'quick'
+  /** Steps the quick slot to its next item. Keys and pad only; touch long-presses `quick`. */
+  | 'quickNext';
 
 /**
  * One tick of abstract input. Every source (touch, keyboard, gamepad) fills this same record.
@@ -51,6 +55,10 @@ export interface InputRecord {
   bag: boolean;
   /** Swap loadout pressed this sample. */
   swap: boolean;
+  /** Use the quick slot's item this sample. */
+  quick: boolean;
+  /** Step the quick slot to its next item this sample. */
+  quickNext: boolean;
   /** Tap on the game surface outside any button. Caller converts to world position. */
   targetTap: ScreenPoint | null;
   /** Long press on a point, for detail popups where desktop would hover. */
@@ -73,6 +81,8 @@ export function emptyRecord(): InputRecord {
     menu: false,
     bag: false,
     swap: false,
+    quick: false,
+    quickNext: false,
     targetTap: null,
     longPress: null,
   };

@@ -19,6 +19,8 @@ const PAD_BUTTONS: readonly [number, ButtonId][] = [
   [4, 'context'], // left bumper
   [9, 'menu'], // start
   [8, 'bag'], // select
+  [12, 'quick'], // d-pad up
+  [13, 'quickNext'], // d-pad down
 ];
 
 /** Radial dead zone with rescale so output starts at 0 at the edge of the dead zone. */
