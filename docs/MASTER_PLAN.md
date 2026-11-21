@@ -45,6 +45,10 @@ Decisions made with the owner on 2026-11-16. Changing one needs a planning PR.
 | D21 | Messages and Menu | One message layout with fixed lanes. The Menu is rebuilt on shared panel components. Both before M5 adds chat volume.                                                                                                                                               |
 | D22 | Avatar setup      | Deeper cosmetic options plus an origin that only narrows the wake points and sets the first line. No stat, item or XP effect.                                                                                                                                       |
 | D23 | Inspirations      | Two principles from the owner's reference anime, never their content: Singulars (rare hidden questlines started by odd actions) and freedom of route (every gate has more than one way past it). Playtest fixes run first in M4, then the region work.              |
+| D24 | M5 timing         | Decided 2026-11-21 during the Gate G4 playtest. The M5 refinement is drafted while G4 runs and merges only after the G4 verdict, with G4 findings added as an M5 Wave A.                                                                                            |
+| D25 | Traveler homes    | All 240 Travelers are generated in M5 with their final home region stored. Until a home region is baked, its Travelers play in Dawnmeadow and move when M8 and M9 bake their regions. Chat never names an unbaked place.                                            |
+| D26 | Chat glyphs       | No OS emoji. Emoji-style voices use plain text emoticons plus about 12 in-house pixel glyphs drawn from repo data.                                                                                                                                                  |
+| D27 | Gate G5a          | An owner crowd check runs after POW-M5-04 and POW-M5-05 merge. Parties, guilds, duels, mail and the market do not start until it passes.                                                                                                                            |
 
 Decisions made by the design authority (owner may overrule):
 
@@ -116,14 +120,15 @@ Sequencing logic: M0 to M2 remove the technical risks (render performance on pho
 
 A milestone does not close until its gate passes. Gates are owner decisions, made on the preview build.
 
-| Gate          | Question                                                                                                    | If no                                                                           |
-| ------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| G0 (end M0)   | Does the test map hold 60 fps on a mid-range phone?                                                         | Fix renderer before any gameplay.                                               |
-| G1 (end M1)   | Is one-thumb combat fun for 20 minutes?                                                                     | Iterate controls. This gate matters most. Nothing downstream survives bad feel. |
-| G2 (end M2)   | Can a save be opened or edited by hand? Does offline play survive a week?                                   | Fix before systems multiply save complexity.                                    |
-| G4 (end M4)   | Does one region deliver its hours budget (see content budget)? Are the M3 playtest findings resolved?       | Re-plan region counts before M8.                                                |
-| G7 (end M7)   | Does automation feel earned, and does it leave the game worth playing by hand?                              | Retune gates and caps.                                                          |
-| G10 (end M10) | Can a blind playtester find the first Truth with no prompts? Can they ignore it and still have a full game? | Adjust clue density.                                                            |
+| Gate          | Question                                                                                                                         | If no                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| G0 (end M0)   | Does the test map hold 60 fps on a mid-range phone?                                                                              | Fix renderer before any gameplay.                                               |
+| G1 (end M1)   | Is one-thumb combat fun for 20 minutes?                                                                                          | Iterate controls. This gate matters most. Nothing downstream survives bad feel. |
+| G2 (end M2)   | Can a save be opened or edited by hand? Does offline play survive a week?                                                        | Fix before systems multiply save complexity.                                    |
+| G4 (end M4)   | Does one region deliver its hours budget (see content budget)? Are the M3 playtest findings resolved?                            | Re-plan region counts before M8.                                                |
+| G5a (mid M5)  | After Travelers walk and talk (M5-04, M5-05): does Hearthford feel populated, and does chat read as people, at two times of day? | Fix the crowd before parties, guilds and the market build on it.                |
+| G7 (end M7)   | Does automation feel earned, and does it leave the game worth playing by hand?                                                   | Retune gates and caps.                                                          |
+| G10 (end M10) | Can a blind playtester find the first Truth with no prompts? Can they ignore it and still have a full game?                      | Adjust clue density.                                                            |
 
 ## 7. Top risks
 
