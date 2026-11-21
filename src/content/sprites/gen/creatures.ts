@@ -180,6 +180,8 @@ const mossling = mosslingMaker('creature.mossling', { body: FOLIAGE, feet: WOOD 
 
 // ---- Spitbloom: a rooted flower that spits seeds. 16 x 16, base at (8, 14).
 interface BloomLook {
+  /** True for one that walks (the Hedge Warden creeps). */
+  walks?: boolean;
   stem: Tones4;
   head: Tones4;
   inner: Tones4;
@@ -190,7 +192,7 @@ function bloomMaker(id: string, look: BloomLook): Maker {
     id,
     size: 16,
     origin: [8, 14],
-    walks: false,
+    walks: look.walks ?? false,
     draw(p) {
       const im = new Img(16, 16);
       const sway = p.view === 'right' ? p.lunge : 0;
@@ -371,6 +373,13 @@ const fogcap = bloomMaker('creature.fogcap', {
   inner: [13, 14, 15, 15],
 });
 // ---- The Rootway (M4-21): a glowing cap in the dark, and the boss's young.
+// ---- Thornwall Pass (M4-11): the Hedge Warden, a bloom grown in briar and stone.
+const hedgeWarden = bloomMaker('creature.hedge_warden', {
+  walks: true,
+  stem: STONE,
+  head: [8, 9, 10, 11],
+  inner: [20, 21, 22, 23],
+});
 const glowcap = bloomMaker('creature.glowcap', {
   stem: WOOD,
   head: [44, 45, 46, 47],
@@ -443,6 +452,7 @@ export function creatureSprites(): SpriteDef[] {
       dummy,
       glowcap,
       boarlet,
+      hedgeWarden,
     ].map(sprite),
     ...dawnmeadowCreatureSprites(),
   ];

@@ -16,6 +16,7 @@ import { randomDoll } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
+import { BELL_ORDER } from '../content/world/dungeons/west';
 import { TECHNIQUES } from '../content/combat/techniques';
 import { BUILD_LABEL } from '../shared/version';
 import { attachInput } from '../platform/input/dom';
@@ -1524,7 +1525,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           } else if (e.type === 'mirrorOpened') mirror.open();
           else if (e.type === 'tabletRead') {
             input.sampler.keyboard.reset();
-            notices.openTablet();
+            notices.openTablet(
+              state.entities.comps.fixture[e.id]?.kind === 'fixture.tw_order'
+                ? BELL_ORDER
+                : undefined,
+            );
           }
           talk.onEvent(e);
           board.onEvent(e);

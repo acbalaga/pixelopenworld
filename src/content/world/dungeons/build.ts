@@ -37,6 +37,8 @@ export interface DoorSpec {
   at: { x: number; y: number };
   kind: string;
   outKind: string;
+  /** The in-room portal stays behind a slab until a creature of this kind falls (a way out that a boss guards). */
+  unlockedBy?: string;
 }
 
 export interface DungeonSpec {
@@ -176,6 +178,7 @@ export function defineDungeon(spec: DungeonSpec) {
           to: d.outKind,
           arrive: [0, 24],
           at: regionTile(d.room, d.tile),
+          ...(d.unlockedBy ? { unlockedBy: d.unlockedBy, sprite: 'prop.gate', size: 16 } : {}),
         },
         { kind: d.outKind, type: 'portal', to: d.kind, arrive: inward(d.room, d.tile), at: d.at },
       );

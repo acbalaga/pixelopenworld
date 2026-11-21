@@ -29,7 +29,7 @@ export const FRAGMENT_SLOTS: readonly FragmentSlot[] = [
   inside('dm_f07', 'dungeon.rootway'), // Rootway R9
   inside('dm_f08', 'dungeon.undermill'), // the Undermill cistern
   inside('dm_f09', 'dungeon.deeps'), // Stonecrop Deeps, the sealed vein
-  later('dm_f10'), // the Thornwall keep, upper room
+  inside('dm_f10', 'dungeon.thornwall'), // the Thornwall keep, upper room
   open('dm_f11', 150, 266), // the stone circle
   open('dm_f12', 46, 50), // the Cairnmoor ring
   inside('dm_f13', 'dungeon.m9'), // Hermit's Well, the bottom

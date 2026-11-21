@@ -10,11 +10,18 @@ import { MINIS } from '../../src/content/world/dungeons/minis';
 import { DAWNMEADOW } from '../../src/content/world/regions/dawnmeadow/spec';
 import { STAMPS } from '../../src/content/world/stamps';
 import { roomAt } from '../../src/content/world/rooms';
+import {
+  THORNWALL_BUILT,
+  KEEP_DOOR,
+  THORNWALL_MOUTH,
+} from '../../src/content/world/dungeons/thornwall';
+import { spawnCreature } from '../../src/sim/combat/enemy';
+import { kill } from '../../src/sim/combat/fighter';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { getComp } from '../../src/sim/kernel/entities';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
-import { interactFixture, spawnFixture } from '../../src/sim/systems/fixtures';
+import { fixturesSystem, interactFixture, spawnFixture } from '../../src/sim/systems/fixtures';
 import { Solid, decodeChunk } from '../../src/sim/world/chunk';
 import { newStream } from '../../src/sim/world/stream';
 import { TileWorld } from '../../src/sim/world/world';
@@ -157,5 +164,35 @@ describe('the closed yard at the west edge', () => {
     const { s, me } = game();
     stand(s, me, m2.regionTile(d.room, d.tile));
     expect(inYard(s, me)).toBe(true);
+  });
+
+  it('is reached through Thornwall Pass, once the Warden is down', () => {
+    const m = THORNWALL_BUILT;
+    const { s, me } = game();
+    stand(s, me, { x: THORNWALL_MOUTH.x + 1, y: THORNWALL_MOUTH.y + 1 });
+    expect(roomAt(...at(s, me), 'dawnmeadow')?.id).toBe(m.roomId('t1'));
+    for (const e of m.def.edges) {
+      stand(s, me, m.regionTile(e.from, e.at));
+      expect(roomAt(...at(s, me), 'dawnmeadow')?.id, `${e.from} to ${e.to}`).toBe(m.roomId(e.to));
+    }
+    // The way out is shut behind its slab.
+    const door = m.spec.doors![0]!;
+    const t = m.regionTile(door.room, door.tile);
+    spawnFixture(s, door.kind, t.x, t.y);
+    stand(s, me, t);
+    expect(inYard(s, me)).toBe(false);
+    // The Warden falls, and it opens.
+    const w = spawnCreature(s, 'creature.hedge_warden', 40 * 16, 40 * 16, -1);
+    kill(s, w);
+    // The fixtures system reads the death the tick it happens.
+    fixturesSystem(s);
+    stand(s, me, t);
+    expect(inYard(s, me)).toBe(true);
+  });
+
+  it("reaches the keep's upper room by a door in the Fernside climb, and no other way", () => {
+    const { s, me } = game();
+    stand(s, me, KEEP_DOOR);
+    expect(roomAt(...at(s, me), 'dawnmeadow')?.id).toBe(THORNWALL_BUILT.roomId('t7'));
   });
 });

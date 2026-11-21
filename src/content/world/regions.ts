@@ -55,6 +55,8 @@ export const REGIONS: readonly RegionDef[] = [
         // The Rootway (M4-21).
         'spawner.rw_glowcap',
         'spawner.rw_bramblehide',
+        // Thornwall Pass (M4-11).
+        'spawner.tw_warden',
         // Stonecrop Deeps (M4-11).
         'spawner.sd_engine',
         // The Undermill (M4-11).

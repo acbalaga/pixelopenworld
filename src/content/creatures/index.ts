@@ -1,6 +1,7 @@
 import { DAWNMEADOW_CREATURES } from './dawnmeadow';
 import { ROOTWAY_CREATURES } from './rootway';
 import { DEEPS_CREATURES } from './deeps';
+import { THORNWALL_CREATURES } from './thornwall';
 import { UNDERMILL_CREATURES } from './undermill';
 import type { CreatureDef, SpawnerDef } from './types';
 import { zoneSpawners } from './zoneSpawners';
@@ -12,6 +13,7 @@ export const CREATURES: Readonly<Record<string, CreatureDef>> = {
   ...ROOTWAY_CREATURES,
   ...UNDERMILL_CREATURES,
   ...DEEPS_CREATURES,
+  ...THORNWALL_CREATURES,
   /** The par common enemy (design/04): time to kill 4 to 8 seconds. A Chaser. */
   'creature.mossling': {
     id: 'creature.mossling',
@@ -330,6 +332,15 @@ export const SPAWNERS: Readonly<Record<string, SpawnerDef>> = {
     respawn: 600,
     radius: 0,
     daily: true,
+  },
+  'spawner.tw_warden': {
+    kind: 'spawner.tw_warden',
+    creature: 'creature.hedge_warden',
+    cap: 1,
+    respawn: 1,
+    radius: 0,
+    daily: true,
+    boss: 'boss.hedge_warden',
   },
   'spawner.sd_engine': {
     kind: 'spawner.sd_engine',
