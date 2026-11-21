@@ -1511,6 +1511,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             );
           else if (e.type === 'skillAwakened' && e.id === who)
             notices.toast(W_STR.awakens.replace('{skill}', SKILLS[e.skill]?.name ?? e.skill));
+          else if (e.type === 'itemStolen' && e.who === who)
+            notices.toast(W_STR.stolen.replace('{item}', itemName(e.item)), 'stolen');
+          else if (e.type === 'itemReturned' && e.who === who)
+            notices.toast(W_STR.returned.replace('{item}', itemName(e.item)), 'returned');
           else if (e.type === 'manualKnown' && e.who === who)
             notices.toast(
               W_STR.manualKnown.replace(

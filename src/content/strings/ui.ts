@@ -656,6 +656,8 @@ export const UI_STRINGS = {
     shortcut: 'Part of the wall has opened.',
     learned: 'Learned {name}.',
     awakens: '{skill} awakens',
+    stolen: 'A fox snatched your {item}.',
+    returned: 'Got your {item} back.',
     manualKnown: 'You already know {name}.',
     techniques: { 'technique.ember_bolt': 'Ember Bolt' } as Readonly<Record<string, string>>,
     chestFound: 'Found {items}.',

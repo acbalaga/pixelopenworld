@@ -181,6 +181,9 @@ export type SimEvent =
   /** The avatar uncovered `blocks` blocks of the map for the first time (M4-06). */
   | { type: 'revealed'; who: number; blocks: number }
   /** An item left the bag onto the ground at `x`, `y` (px). `pickup` is the entity it became (M4-20). */
+  /** A thief took an item from a bag (m6), or it came back. */
+  | { type: 'itemStolen'; who: number; creature: number; item: string }
+  | { type: 'itemReturned'; who: number; item: string; how: 'fell' | 'bag' | 'dropped' }
   | { type: 'itemDropped'; who: number; item: string; qty: number; pickup: number }
   /** An item came into the bag from the world, from any source but the Singulars' own gifts (M4-20). */
   | { type: 'itemGained'; who: number; item: string; qty: number }

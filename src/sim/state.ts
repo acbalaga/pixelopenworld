@@ -390,6 +390,12 @@ export interface Ai {
    * Absent means not calm, so saves from before load as they are.
    */
   calmUntil?: number;
+  /**
+   * A thief's take (m6): the stack it snatched and whose bag it came from. Absent means nothing
+   * carried, so older saves load as they are. It comes back when the thief falls or the owner is
+   * gone, so it is never lost.
+   */
+  loot?: { stack: ItemStack; owner: number; t: number };
 }
 
 /** Keeps `cap` of a creature alive near its position. */

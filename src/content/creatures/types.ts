@@ -123,6 +123,8 @@ export interface SpawnerDef {
   radius: number;
   /** Dungeon enemies: once all are down they return on the next in-game day, at dawn, not on a timer (M4-08). */
   daily?: boolean;
+  /** Its creatures snatch an item from the bag with a hit and run (POW-M4-11, m6 Fox Hollow). */
+  steals?: true;
   /** A boss spawner: makes this boss (`creatures/bosses`) in place of the plain creature. */
   boss?: string;
   /** Zone spawners (M4-05): the step whose multipliers scale what it makes. */

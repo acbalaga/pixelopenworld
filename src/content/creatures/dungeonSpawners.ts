@@ -28,6 +28,9 @@ export const DUNGEON_SPAWNS: readonly string[] = [
   'dg_marsh_leech',
 ];
 
+/** Dungeon spawners whose creatures are thieves: Fox Hollow's foxes (m6). */
+const THIEVES: readonly string[] = ['dg_fox'];
+
 /** The first map's creatures, which dungeons borrow too. */
 const BASE = [
   'creature.mossling',
@@ -51,6 +54,7 @@ export function dungeonSpawners(): Record<string, SpawnerDef> {
       respawn: 600,
       radius: pack ? 40 : 0,
       daily: true,
+      ...(THIEVES.includes(short) ? { steals: true as const } : {}),
     };
   }
   return out;
