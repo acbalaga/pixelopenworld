@@ -2076,13 +2076,25 @@ canvas {
 }
 .pow-bestiary-row {
   display: flex;
-  flex-direction: column;
-  gap: calc(var(--px) * 1);
+  flex-direction: row;
+  align-items: center;
+  gap: calc(var(--px) * 3);
   padding: calc(var(--px) * 3);
   color: var(--pal-3);
   background: var(--pal-17);
   border-left: calc(var(--px) * 1) solid var(--pal-47);
   overflow-wrap: anywhere;
+}
+.pow-bestiary-pic {
+  /* The frame is drawn at its own size and scaled up by whole pixels, so it stays crisp. */
+  image-rendering: pixelated;
+  flex: none;
+}
+.pow-bestiary-text {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+  min-width: 0;
 }
 .pow-bestiary-name {
   font-weight: bold;

@@ -155,7 +155,7 @@ function shepherdHut(): StampV2 {
 }
 function milestone(): StampV2 {
   const b = new StampBuilder(3, 3);
-  b.object(1, 1, 'tile.sign_post');
+  b.place('fixture.sign_milestone', 1, 1);
   b.object(0, 2, 'tile.rock');
   return b.toStamp('milestone');
 }
@@ -247,7 +247,7 @@ function whisperwoodEdge(): StampV2 {
     b.object(0, y, 'tile.cave_wall_top');
     b.object(15, y, 'tile.cave_wall_top');
   }
-  b.object(8, 2, 'tile.sign_post');
+  b.place('fixture.sign_edge', 8, 2);
   b.object(3, 3, 'tile.tree_pine_0_trunk');
   b.overhead(3, 3, 'tile.tree_pine_0_canopy');
   b.object(12, 3, 'tile.tree_pine_1_trunk');

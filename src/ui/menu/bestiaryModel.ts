@@ -11,6 +11,8 @@ import type { SimState } from '../../sim/state';
 
 export interface BestiaryRowView {
   id: string;
+  /** The sprite id, to draw its picture. */
+  sprite: string;
   name: string;
   kills: string;
   befriended: boolean;
@@ -40,6 +42,7 @@ export function bestiaryView(state: SimState, who: EntityId): BestiaryView {
       .filter((t): t is string => t !== undefined);
     return {
       id,
+      sprite: def.sprite,
       name: def.name,
       kills: fill(S.kills, { n: state.ledger.kills[id] ?? 0 }),
       befriended: entry?.befriended === true,

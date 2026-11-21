@@ -35,7 +35,7 @@ function treeShrine(): StampV2 {
     [5, 2],
   ] as const)
     b.detail(x, y, (x + y) % 2 ? 'tile.flower_rose_0' : 'tile.flower_violet_0');
-  b.object(3, 6, 'tile.sign_post');
+  b.place('fixture.sign_tree_shrine', 3, 6);
   return b.toStamp('poi_tree_shrine');
 }
 
@@ -45,7 +45,6 @@ function vista(): StampV2 {
   b.rect(0, 1, 5, 3, Terrain.Planks);
   b.object(0, 0, 'tile.fence_post');
   b.object(4, 0, 'tile.fence_post');
-  b.object(2, 0, 'tile.sign_post');
   b.object(0, 3, 'tile.fence_post');
   b.object(4, 3, 'tile.fence_post');
   return b.toStamp('poi_vista');

@@ -68,6 +68,8 @@ export interface MenuDeps {
   settings: SettingsStore;
   /** Paints an item or status icon (12 x 12) into a canvas. */
   drawIcon: (canvas: HTMLCanvasElement, iconId: string) => void;
+  /** Paints a creature's picture (its idle frame, facing the viewer) into a canvas, sizing it to the frame. Optional. */
+  drawCreature?: (canvas: HTMLCanvasElement, spriteId: string) => void;
   /** Paints the avatar preview into a canvas. */
   drawAvatar: (canvas: HTMLCanvasElement) => void;
   onLogOut: () => void;
@@ -486,13 +488,21 @@ export class MenuSheet {
       const ul = el('ul', 'pow-bestiary');
       for (const r of bestiary.rows) {
         const li = el('li', 'pow-bestiary-row');
+        const pic = el('canvas', 'pow-bestiary-pic');
+        pic.setAttribute('aria-hidden', 'true');
+        this.deps.drawCreature?.(pic, r.sprite);
+        // Whole-pixel scale, like every other sprite in the Menu.
+        pic.style.width = `calc(var(--px) * ${pic.width})`;
+        pic.style.height = `calc(var(--px) * ${pic.height})`;
+        const text = el('div', 'pow-bestiary-text');
         put(
-          li,
+          text,
           el('span', 'pow-bestiary-name', r.name),
           el('span', 'pow-bestiary-line', r.kills),
           ...(r.befriended ? [el('span', 'pow-bestiary-line', S.bestiary.befriended)] : []),
           el('span', 'pow-bestiary-line', r.temperament),
         );
+        put(li, this.deps.drawCreature ? pic : null, text);
         put(ul, li);
       }
       put(this.body, ul);

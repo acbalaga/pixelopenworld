@@ -400,6 +400,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return;
     case 'waystone':
       return useWaystone(state, who, target);
+    case 'sign':
+      emit(state.events, { type: 'signRead', who, id: target, kind: f.kind });
+      return;
     case 'site':
       emit(state.events, { type: 'fixtureUsed', id: target, who, kind: f.kind });
       return;

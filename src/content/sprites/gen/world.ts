@@ -234,6 +234,19 @@ function barrel(): SpriteDef {
   return toSprite('tile.barrel', 'core', ORIGIN_TILE, { base: outlined(im) });
 }
 
+/** The sign you can read: the same post, drawn as an object with its feet at the bottom. */
+function readableSign(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(7, 6, 8, 14, WOOD[1]);
+  im.rect(2, 3, 13, 8, WOOD[2]);
+  im.rect(2, 3, 13, 3, WOOD[3]);
+  im.rect(2, 8, 13, 8, WOOD[1]);
+  im.rect(4, 5, 6, 5, WOOD[0]);
+  im.rect(8, 5, 11, 5, WOOD[0]);
+  im.rect(5, 6, 10, 6, WOOD[0]);
+  return toSprite('prop.sign', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 function signpost(): SpriteDef {
   const im = new Img(16, 16);
   im.rect(7, 6, 8, 14, WOOD[1]);
@@ -842,6 +855,7 @@ export function worldSprites(): SpriteDef[] {
     crate(),
     barrel(),
     signpost(),
+    readableSign(),
     board(),
     boardProp(),
     mirrorProp(),
