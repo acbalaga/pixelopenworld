@@ -7,6 +7,7 @@
 //            Dev regions start with `dev_`.
 //   ?foes=N  number of practice creatures (default 3)
 //   ?at=x,y  start at a world tile (for screenshots)
+import { fixtureFrame } from '../render/fixtureFrame';
 import manifest from '../../baked/manifest.json';
 import coreUrl from '../../baked/atlas-core.png?url';
 import uiUrl from '../../baked/atlas-ui.png?url';
@@ -800,16 +801,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         renderer.drawSprite(Layer.Objects, atlas.animFrame(a, now), x, y);
         continue;
       }
-      let frame: string;
       // A hidden niche is drawn only once Hexing has revealed it.
       if (def.hidden && !f.revealed) continue;
-      if (def.type === 'plate' || def.type === 'switch') frame = f.open ? 'down' : 'up';
-      else if (def.type === 'element' || def.type === 'breakable')
-        frame = f.open ? 'open' : 'closed';
-      // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
-      else if (def.type === 'storage') frame = 'closed';
-      else if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
-        frame = f.open ? 'open' : 'closed';
+      let frame = fixtureFrame(def.type, f.open);
+      if (def.type === 'door' || def.type === 'gate' || def.type === 'chest') {
         // A fixture opened this session plays its opening frames first. One loaded already open
         // just shows open.
         const since = f.open ? openedAt.get(id) : undefined;
@@ -819,10 +814,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (k < steps) frame = `opening_${k}`;
           else openedAt.delete(id);
         }
-      } else if (def.type === 'torch') frame = f.open ? 'lit' : 'base';
-      else frame = 'base';
+      }
       const layer =
         def.type === 'plate' ||
+        def.type === 'vent' ||
         (def.type === 'door' && frame === 'open') ||
         (def.type === 'element' && f.open && !def.hidden)
           ? Layer.Detail
