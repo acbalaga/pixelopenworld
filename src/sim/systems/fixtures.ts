@@ -46,7 +46,6 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'snare' ||
     def.type === 'torch' ||
     def.type === 'arena' ||
-    def.type === 'ledge' ||
     def.type === 'rest' ||
     def.type === 'vent'
   )
@@ -197,6 +196,7 @@ function useSwitch(state: SimState, who: EntityId, id: EntityId): void {
   const f = getComp(state.entities, id, 'fixture');
   const def = f ? FIXTURES[f.kind] : undefined;
   if (!f || !def) return;
+  if (def.bell) return ringBell(state, who, id);
   if (def.latch && f.open) return;
   if (def.needs && pointsOf(state, who, def.needs.skill) < def.needs.points) {
     emit(state.events, { type: 'doorLocked', id, who, key: def.needs.skill });
@@ -204,6 +204,58 @@ function useSwitch(state: SimState, who: EntityId, id: EntityId): void {
   }
   f.open = !f.open;
   emit(state.events, { type: 'switchChanged', id, on: f.open });
+}
+
+/** Climbs a ledge: Athletics and Stamina buy two tiles in the direction the avatar faces. */
+function useLedge(state: SimState, who: EntityId, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  const def = f ? FIXTURES[f.kind] : undefined;
+  const pos = getComp(state.entities, who, 'pos');
+  const pools = getComp(state.entities, who, 'pools');
+  const a = getComp(state.entities, who, 'avatar');
+  if (!def?.climb || !pos || !pools || !a) return;
+  if (pointsOf(state, who, def.climb.skill) < def.climb.points) {
+    emit(state.events, { type: 'denied', id: who, reason: 'requires' });
+    return;
+  }
+  if (pools.sta < def.climb.stamina) {
+    emit(state.events, { type: 'denied', id: who, reason: 'stamina' });
+    return;
+  }
+  const step = { 0: [0, -1], 2: [1, 0], 4: [0, 1], 6: [-1, 0] }[a.facing as 0 | 2 | 4 | 6] ?? [
+    0, -1,
+  ];
+  pools.sta -= def.climb.stamina;
+  pos.x += px(step[0]! * 32);
+  pos.y += px(step[1]! * 32);
+  emit(state.events, { type: 'climbed', who, id });
+}
+
+/** Rings a bell. In turn it stays rung; out of turn it silences the whole group. */
+function ringBell(state: SimState, who: EntityId, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  const bell = f ? FIXTURES[f.kind]?.bell : undefined;
+  if (!f || !bell || f.open) return;
+  const group: { id: EntityId; order: number; open: boolean }[] = [];
+  for (const other of query(state.entities, 'fixture')) {
+    const g = getComp(state.entities, other, 'fixture');
+    const b = g ? FIXTURES[g.kind]?.bell : undefined;
+    if (g && b?.group === bell.group) group.push({ id: other, order: b.order, open: g.open });
+  }
+  const inTurn = group.every((g) => (g.order < bell.order ? g.open : !g.open || g.id === id));
+  if (inTurn) {
+    f.open = true;
+    emit(state.events, { type: 'switchChanged', id, on: true });
+    return;
+  }
+  for (const g of group) {
+    const h = getComp(state.entities, g.id, 'fixture');
+    if (h?.open) {
+      h.open = false;
+      emit(state.events, { type: 'switchChanged', id: g.id, on: false });
+    }
+  }
+  emit(state.events, { type: 'denied', id: who, reason: 'requires' });
 }
 
 function useChest(state: SimState, who: EntityId, id: EntityId): void {
@@ -340,6 +392,8 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return pushBlock(state, who, target);
     case 'switch':
       return useSwitch(state, who, target);
+    case 'ledge':
+      return useLedge(state, who, target);
     case 'tablet':
       emit(state.events, { type: 'tabletRead', id: target, who });
       return;

@@ -148,6 +148,8 @@ export type SimEvent =
   | { type: 'doorLocked'; id: number; who: number; key: string }
   | { type: 'gateOpened'; id: number }
   | { type: 'gateClosed'; id: number }
+  /** The avatar climbed a ledge (Fernside climb, the Bell Wall). */
+  | { type: 'climbed'; who: number; id: number }
   | { type: 'plateChanged'; id: number; pressed: boolean }
   | { type: 'blockPushed'; id: number }
   | { type: 'blockReset'; id: number }

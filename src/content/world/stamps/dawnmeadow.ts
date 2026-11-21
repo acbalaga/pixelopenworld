@@ -228,13 +228,35 @@ function fernsideClimb(): StampV2 {
       b.ground(x, y, route ? Terrain.Dirt : Terrain.Cave);
       if (!route) b.object(x, y, y % 3 === 2 ? 'tile.cave_wall_face' : 'tile.cave_wall_top');
     }
-  for (const y of [3, 7, 11, 15, 19, 23]) b.place('fixture.ledge', 4, y);
+  // A ledge spans the whole route, so there is no way round it.
+  for (const y of [3, 7, 11, 15, 19, 23]) for (const x of [3, 4, 5]) b.place('fixture.ledge', x, y);
   b.place('fixture.rest_point', 4, 9);
   b.place('fixture.rest_point', 4, 17);
   return b.toStamp('fernside_climb');
 }
 
+/** The closed yard at the far west where the three ways out of Dawnmeadow end (dungeons/west.ts). */
+function whisperwoodEdge(): StampV2 {
+  const b = new StampBuilder(16, 14);
+  b.rect(0, 0, 16, 14, Terrain.Dirt);
+  for (let x = 0; x < 16; x++) {
+    b.object(x, 0, 'tile.cave_wall_top');
+    b.object(x, 13, 'tile.cave_wall_top');
+  }
+  for (let y = 1; y < 13; y++) {
+    b.object(0, y, 'tile.cave_wall_top');
+    b.object(15, y, 'tile.cave_wall_top');
+  }
+  b.object(8, 2, 'tile.sign_post');
+  b.object(3, 3, 'tile.tree_pine_0_trunk');
+  b.overhead(3, 3, 'tile.tree_pine_0_canopy');
+  b.object(12, 3, 'tile.tree_pine_1_trunk');
+  b.overhead(12, 3, 'tile.tree_pine_1_canopy');
+  return b.toStamp('whisperwood_edge');
+}
+
 export const DAWNMEADOW_STAMPS: StampV2[] = [
+  whisperwoodEdge(),
   millbrook(),
   reedmouth(),
   stonecrop(),

@@ -5,6 +5,7 @@
 
 import { MANUALS } from '../items/manuals';
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { WEST_FIXTURES } from './dungeons/west';
 import type { ElementId } from '../combat/statuses';
 
 /** What an element hit does to a fixture (M3-09). */
@@ -113,6 +114,13 @@ export interface FixtureDef {
    * sluice switch is on, and high otherwise, or while the named basin has been filled by a Tide hit.
    */
   water?: { sluice: string; when: 'low' | 'high'; basin?: string };
+  /** Ledge: climbing it needs this much of the skill and costs this much Stamina, and carries the avatar two tiles on. */
+  climb?: { skill: string; points: number; stamina: number };
+  /**
+   * Switch: a bell. Bells of a group must be rung in order, 1 up. A bell rung out of turn silences
+   * the whole group, so the order has to be found.
+   */
+  bell?: { group: string; order: number };
   /** Switch: the avatar must have at least this many points in the skill to throw it. */
   needs?: { skill: string; points: number };
   /** Gate: shut except while the tide is out (m4). No plate needed. */
@@ -397,9 +405,15 @@ const LIST: readonly FixtureDef[] = [
       ],
     },
   },
-  // The Fernside climb (M4-04): a stamina ledge and a rest point along a cliff route. Placed now
-  // as data. The climbing rules (Athletics, stamina) arrive with the system that reads them.
-  { kind: 'fixture.ledge', type: 'ledge', sprite: 'prop.block', size: 12 },
+  // The Fernside climb (M4-04): a stamina ledge and a rest point along a cliff route.
+  // Athletics 25 and 30 Stamina a ledge (regions/01 section 7).
+  {
+    kind: 'fixture.ledge',
+    type: 'ledge',
+    sprite: 'prop.block',
+    size: 12,
+    climb: { skill: 'skill.athletics', points: 25, stamina: 30 },
+  },
   { kind: 'fixture.rest_point', type: 'rest', sprite: 'prop.bedroll', size: 12 },
   // Element set pieces (M3-09). One for each school, none on a route the slice needs.
   // A wall of dry brush: Ember burns it to ash, and it grows back.
@@ -474,6 +488,7 @@ export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries
   [
     ...LIST,
     ...MANUAL_CHESTS,
+    ...WEST_FIXTURES,
     ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
   ].map((f) => [f.kind, f]),
 );

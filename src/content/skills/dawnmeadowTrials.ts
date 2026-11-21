@@ -174,7 +174,12 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
   {
     skill: 'skill.heavy_arms',
     giver: 'npc.smith',
-    objective: { kind: 'defeat', creature: 'creature.downs_ram', count: 2, only: { weapon: 'heavy' } },
+    objective: {
+      kind: 'defeat',
+      creature: 'creature.downs_ram',
+      count: 2,
+      only: { weapon: 'heavy' },
+    },
     intro:
       'A heavy weapon does the work if you let it. Put down two rams on the downs with nothing but one, and I will say you can swing it.',
     hint: 'Tobin wants two Downs Rams put down with a heavy weapon.',
@@ -259,7 +264,12 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
   {
     skill: 'skill.mending',
     giver: 'npc.herbalist',
-    objective: { kind: 'perform', action: 'technique', technique: 'technique.mending_mend', count: 3 },
+    objective: {
+      kind: 'perform',
+      action: 'technique',
+      technique: 'technique.mending_mend',
+      count: 3,
+    },
     intro:
       'Mending is care that you can do while someone is watching. Mend yourself three times, properly, and I will watch.',
     hint: 'Ilse wants Mend cast three times.',
@@ -290,7 +300,8 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
       technique: 'technique.performance_hum',
       count: 3,
     },
-    intro: 'A song is only a song once it is finished. Hum through three in my hearing, start to end.',
+    intro:
+      'A song is only a song once it is finished. Hum through three in my hearing, start to end.',
     hint: 'Hesper wants three songs finished, start to end.',
     button: 'The singing test.',
     estMinutes: 5,
