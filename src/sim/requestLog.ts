@@ -46,6 +46,11 @@ export interface PostedView {
   reward: string;
 }
 
+/** Names of the places a step may send the player to, in words (no position). */
+const PLACE_NAMES: Record<string, string> = {
+  'wayside.chapel': 'the wayside chapel',
+};
+
 const itemName = (id: string): string => ITEM_STRINGS[`${id}.name`] ?? id;
 
 /** One step in plain words. A flag step names no place. */
@@ -82,6 +87,17 @@ export function objectiveText(o: RequestObjective): string {
         ? fill(T['request.step.perform'] as string, { what })
         : fill(T['request.step.perform.n'] as string, { what, n: o.count });
     }
+    case 'sell':
+      return fill(T['request.step.sell'] as string, { n: o.count });
+    case 'carry':
+      return fill(
+        T[
+          o.phases?.includes('night') ? 'request.step.carry.night' : 'request.step.carry'
+        ] as string,
+        { what: itemName(o.item), place: PLACE_NAMES[o.place] ?? '' },
+      );
+    case 'read':
+      return fill(T['request.step.read'] as string, { n: o.count });
     case 'talk':
       return fill(T['request.step.talk'] as string, { who: NPCS[o.npc]?.name ?? '' });
     case 'flag':
@@ -118,7 +134,11 @@ function waysOf(def: RequestDef, rec: RequestRecord | undefined): WayView[] {
         rec &&
         pr &&
         i === pr.step &&
-        (o.kind === 'defeat' || o.kind === 'gather' || o.kind === 'perform') &&
+        (o.kind === 'defeat' ||
+          o.kind === 'gather' ||
+          o.kind === 'perform' ||
+          o.kind === 'sell' ||
+          o.kind === 'read') &&
         pr.p.n > 0
       )
         status = fill(T['request.step.progress'] as string, {

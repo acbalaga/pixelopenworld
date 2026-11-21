@@ -73,6 +73,14 @@ export const THREADS: readonly ThreadDef[] = [
     estMinutes: 45,
   },
   {
+    id: 'thread.wren',
+    title: "Wren's Missing Pages",
+    blurb: "Pages of Wren's study were scattered over the region, and Wren wants them back.",
+    giver: 'npc.scholar',
+    stages: ['pages_wrecks', 'pages_hermits', 'pages_map'],
+    estMinutes: 45,
+  },
+  {
     id: 'thread.ledger',
     title: "The Reeve's Ledger",
     blurb: 'Edda wants a trade with Reedmouth written into the town ledger.',
@@ -438,6 +446,78 @@ export const THREAD_STAGES: readonly AuthoredRequest[] = [
         accepted: 'Let him count it himself. He trusts his own fingers.',
         progress: 'Brin has to agree to the sum.',
         report: 'Written in. Hearthford and Reedmouth, a line in the ledger at last. Take this.',
+      },
+    },
+  ]),
+  ...stages('thread.wren', [
+    {
+      key: 'pages_wrecks',
+      row: 't4',
+      giver: 'npc.scholar',
+      title: 'Pages: the wrecks',
+      ask: 'A gust took half my notes out of the study window last autumn, and they have been turning up since. Two pages in the wreckage out on the roads: a cart in a ditch, a fallen tower. Bring them back.',
+      ways: [
+        {
+          id: 'pages',
+          label: 'Bring two torn pages from the wrecks',
+          steps: [deliver('item.wren_page', 2, 'npc.scholar')],
+        },
+      ],
+      reward: { coin: 50, renown: 1 },
+      estMinutes: 15,
+      talk: {
+        offer: 'What happened to your notes?',
+        remind: 'About the pages.',
+        accepted:
+          'The cart is in a ditch on the east road, the tower fell on the commons. Look in what is left.',
+        progress: 'Two pages, from the cart and the fallen tower.',
+        report: 'Mud and all, but readable. There are more.',
+      },
+    },
+    {
+      key: 'pages_hermits',
+      row: 't4',
+      giver: 'npc.scholar',
+      title: 'Pages: the camps',
+      ask: 'Two more went to the quiet people: a burnt barn and a camp on the coast road. Whoever lives there will not mind you looking.',
+      ways: [
+        {
+          id: 'pages',
+          label: 'Bring two torn pages from the barn and the camp',
+          steps: [deliver('item.wren_page', 2, 'npc.scholar')],
+        },
+      ],
+      reward: { coin: 60, renown: 1 },
+      estMinutes: 15,
+      talk: {
+        offer: 'Any more pages?',
+        remind: 'About the next pages.',
+        accepted: 'North east, a barn that burnt, and east a camp where a traveler stopped.',
+        progress: "Two pages, from the burnt barn and the traveler's camp.",
+        report: 'Nearly the whole study. Only the map is missing.',
+      },
+    },
+    {
+      key: 'pages_map',
+      row: 't4',
+      giver: 'npc.scholar',
+      title: 'Pages: the map',
+      ask: 'The last page was a map, and nobody will find that. Draw me a new one. Walk the land until you have uncovered forty blocks of it, and I will copy what you saw.',
+      ways: [
+        {
+          id: 'map',
+          label: 'Uncover forty blocks of the map',
+          steps: [{ kind: 'explore', blocks: 40 }],
+        },
+      ],
+      reward: { coin: 130, renown: 3 },
+      estMinutes: 15,
+      talk: {
+        offer: 'And the map?',
+        remind: 'About the map.',
+        accepted: 'Wherever you have not been. The more new ground, the better the copy.',
+        progress: 'Forty new blocks of the map.',
+        report: 'Whole again. I will copy it out tonight. Take this.',
       },
     },
   ]),

@@ -36,6 +36,8 @@ export interface RequestDef {
     renown: number;
   };
   requires?: Cond[];
+  /** Items handed over when the request is taken (a letter to carry). */
+  give?: { item: string; qty: number }[];
   /** The Thread this request is a stage of (M4-12). A stage is not counted as a request by the ledger. */
   thread?: string;
   /** A finished request can be taken again after this many in-game days. */

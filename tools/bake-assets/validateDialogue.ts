@@ -183,7 +183,11 @@ export function validateDialogue(
         if ('turnIn' in e) turnedIn.add(`${d.npc}|${e.turnIn}`);
       }
   const fixtureFlags = new Set(
-    Object.values(FIXTURES).flatMap((f) => (f.setsFlag ? [f.setsFlag] : [])),
+    Object.values(FIXTURES).flatMap((f) => [
+      ...(f.setsFlag ? [f.setsFlag] : []),
+      // A vigil sets its flag when its way is met (a secret, a place a request sends you to).
+      ...(f.secret ? [f.secret.flag] : []),
+    ]),
   );
   for (const [key, r] of Object.entries(refs.requests)) {
     const label = `request ${key}`;

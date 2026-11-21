@@ -15,9 +15,9 @@ describe('Dawnmeadow requests: every way of every one finishes it (M4-12)', () =
 
 describe('Dawnmeadow requests: the table', () => {
   it('has fourteen new authored requests, each with a different id from the first map', () => {
-    expect(AUTHORED).toHaveLength(17);
+    expect(AUTHORED).toHaveLength(24);
     for (const a of AUTHORED) expect(REQUESTS[`request.${a.key}`]?.kind).toBe('authored');
-    expect(new Set(AUTHORED.map((a) => a.key)).size).toBe(17);
+    expect(new Set(AUTHORED.map((a) => a.key)).size).toBe(24);
   });
 
   it('has at least eight with a way that needs no fighting, as regions/01 asks', () => {

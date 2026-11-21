@@ -114,6 +114,14 @@ const LIST: readonly RecipeDef[] = [
     [['item.oak_plank', 2], ['item.flax_fiber']],
     'start',
   ),
+  make(
+    'woodworking',
+    BENCH,
+    1,
+    'item.cart_wheel',
+    [['item.oak_plank', 2], ['item.leather_strip']],
+    'start',
+  ),
   make('woodworking', BENCH, 1, 'item.dagger_wood', [['item.oak_plank', 2]], 'start'),
   make('woodworking', BENCH, 1, 'item.shield_wood', [['item.oak_plank', 3]], 'start'),
   make('woodworking', BENCH, 1, 'item.maul_oak', [['item.oak_plank', 3], ['item.copper_ingot']]),
@@ -175,6 +183,14 @@ const LIST: readonly RecipeDef[] = [
   ]),
   // ---- Crafting II (M3-14) ----
   // Tailoring, 12, at the loom: cloth and leather for head, body and legs at two tiers.
+  make(
+    'tailoring',
+    LOOM,
+    1,
+    'item.fishing_net',
+    [['item.wool_cloth'], ['item.flax_fiber']],
+    'start',
+  ),
   make('tailoring', LOOM, 1, 'item.cap_wool', [['item.wool_cloth']], 'start'),
   make('tailoring', LOOM, 1, 'item.trousers_wool', [['item.wool_cloth', 2]], 'start'),
   make('tailoring', LOOM, 1, 'item.outfit_wayfarer', [

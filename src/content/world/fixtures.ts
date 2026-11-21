@@ -5,6 +5,7 @@
 
 import { MANUALS } from '../items/manuals';
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { REQUEST_FIXTURES } from '../pois/requestSites';
 import { SIGN_FIXTURES } from '../pois/signs';
 import { SECRET_FIXTURES } from '../pois/secrets';
 import { WEST_FIXTURES } from './dungeons/west';
@@ -510,6 +511,7 @@ export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries
     ...WEST_FIXTURES,
     ...SECRET_FIXTURES,
     ...SIGN_FIXTURES,
+    ...REQUEST_FIXTURES,
     ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
   ].map((f) => [f.kind, f]),
 );

@@ -8,8 +8,8 @@ import { journal, kill, NIGHT_TICK, playRequest, rig, say, state } from '../supp
 const stage = (key: string) => EVERY.find((a) => a.key === key)!;
 
 describe('Dawnmeadow Threads (M4-12)', () => {
-  it('are four, each a chain of stages that is done by the minutes the ledger counts', () => {
-    expect(THREADS).toHaveLength(4);
+  it('are five, each a chain of stages that is done by the minutes the ledger counts', () => {
+    expect(THREADS).toHaveLength(5);
     for (const t of THREADS) {
       expect(t.estMinutes, t.id).toBe(45);
       const stages = t.stages.map(stage);

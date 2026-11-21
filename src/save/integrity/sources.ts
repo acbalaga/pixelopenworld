@@ -34,7 +34,11 @@ function build(): Map<string, Set<ItemSource>> {
   }
   add(BURNT, 'cook');
   for (const fail of Object.values(CRAFTING.failItem)) add(fail, 'craft');
-  for (const r of Object.values(REQUESTS)) for (const i of r.reward.items) add(i.item, 'request');
+  for (const r of Object.values(REQUESTS)) {
+    for (const i of r.reward.items) add(i.item, 'request');
+    // Items handed over when the request is taken (a letter to carry).
+    for (const i of r.give ?? []) add(i.item, 'request');
+  }
   for (const f of Object.values(FIXTURES))
     for (const i of f.loot?.items ?? []) add(i.item, 'chest');
   for (const s of Object.values(SHOPS)) for (const i of s.stock) add(i.item, 'shop');

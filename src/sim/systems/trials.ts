@@ -1,5 +1,7 @@
 import { TECHNIQUES } from '../../content/combat/techniques';
 import { FIXTURES } from '../../content/world/fixtures';
+import { RECIPES } from '../../content/items/recipes';
+import { PLACES } from '../../content/people/places';
 import { TRIALS } from '../../content/skills';
 import type { TrialObjective } from '../../content/skills/types';
 import { fightId, trackFight } from '../fight';
@@ -205,6 +207,30 @@ export function advanceTracked(
         finish(t, o.count);
       }
       return;
+    case 'sold': {
+      if (e.who !== who || !CRAFTED.has(e.item)) return;
+      for (const t of list) {
+        const { o, p } = t;
+        if (o.kind !== 'sell') continue;
+        p.n += e.qty;
+        finish(t, o.count);
+      }
+      return;
+    }
+    case 'tabletRead': {
+      if (e.who !== who) return;
+      const kind = getComp(state.entities, e.id, 'fixture')?.kind;
+      for (const t of list) {
+        const { o, p } = t;
+        const i = o.kind === 'read' && kind ? o.fixtures.indexOf(kind) : -1;
+        if (o.kind !== 'read' || i < 0) continue;
+        // A bit for each different tablet, so reading one twice counts once.
+        p.t0 = p.t0 | (1 << i);
+        p.n = [...Array(o.fixtures.length).keys()].filter((b) => (p.t0 >> b) & 1).length;
+        finish(t, o.count);
+      }
+      return;
+    }
     case 'techniqueUsed':
       // A self technique with no attack and no song to finish (Mend) counts when it is cast.
       if (e.who !== who) return;
@@ -283,6 +309,33 @@ export function deliverTrials(state: SimState, who: EntityId, npc: string): void
   deliverTracked(state, who, npc, trialTrackers(state, who));
 }
 
+/** Every item a recipe makes: what counts as a crafted good. */
+const CRAFTED: ReadonlySet<string> = new Set(
+  Object.values(RECIPES)
+    .map((r) => r.result)
+    .filter((r) => r !== ''),
+);
+
+/** Carry objectives: stand at the place with the item in the right phase, and it is handed over. */
+export function carryTracked(state: SimState, who: EntityId, list: readonly Tracked[]): void {
+  const pos = getComp(state.entities, who, 'pos');
+  const inv = getComp(state.entities, who, 'inventory');
+  if (!pos || !inv) return;
+  for (const t of list) {
+    const o = t.o;
+    if (o.kind !== 'carry' || (t.live && !t.live())) continue;
+    if (o.phases && !o.phases.includes(dayPhase(state.worldTick))) continue;
+    const rect = PLACES[o.place]?.spot?.rect;
+    if (!rect || countItem(inv, o.item) < 1) continue;
+    const tx = Math.floor(pos.x / SUBPX / 16);
+    const ty = Math.floor((pos.y / SUBPX - 1) / 16);
+    if (tx < rect.x - 1 || tx > rect.x + rect.w || ty < rect.y - 1 || ty > rect.y + rect.h + 2)
+      continue;
+    removeItem(inv, o.item, 1);
+    t.done();
+  }
+}
+
 /** Reach objectives: the clock starts on touching the `from` fixture, and the room must follow in time. */
 export function reachTracked(
   state: SimState,
@@ -316,5 +369,6 @@ export function trialsSystem(state: SimState): void {
     const events = [...state.events.list];
     for (const e of events) advanceTrials(state, who, e, 'manual');
     reachTracked(state, who, events, trialTrackers(state, who));
+    carryTracked(state, who, trialTrackers(state, who));
   }
 }

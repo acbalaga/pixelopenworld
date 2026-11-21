@@ -12,7 +12,7 @@ import { earnCoin } from '../ledger';
 import { addRenown } from '../renown';
 import type { Journal, RequestRecord, SimState } from '../state';
 import { dayIndex } from '../time';
-import { advanceTracked, deliverTracked, reachTracked, type Tracked } from './trials';
+import { advanceTracked, carryTracked, deliverTracked, reachTracked, type Tracked } from './trials';
 
 /**
  * The requests engine (M3-11). A request has one or more solutions, each a list of steps that run
@@ -81,6 +81,7 @@ export function startRequest(state: SimState, who: EntityId, def: RequestDef): b
     progress: 0,
     ...(def.kind === 'standing' ? { gen: structuredClone(def) } : {}),
   };
+  for (const g of def.give ?? []) give(state, who, g.item, g.qty, 'request');
   emit(state.events, { type: 'requestStarted', who, request: def.id });
   settle(state, who);
   return true;
@@ -207,6 +208,7 @@ export function requestsSystem(state: SimState): void {
       if (rec.state !== 'active') continue;
       for (const e of events) advanceTracked(state, who, e, trackersOf(state, who, rid, rec));
       reachTracked(state, who, events, trackersOf(state, who, rid, rec));
+      carryTracked(state, who, trackersOf(state, who, rid, rec));
     }
     settle(state, who);
     progressOf(state, who);

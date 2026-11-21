@@ -24,6 +24,8 @@ export interface AuthoredRequest {
   ways: { id: string; label: string; steps: RequestObjective[] }[];
   reward: { coin: number; renown: number; items?: { item: string; qty: number }[] };
   estMinutes: number;
+  /** Items handed over when the request is taken. */
+  give?: { item: string; qty: number }[];
   /** A Thread stage: the Thread it belongs to, and the stage before it, which must be done first. */
   thread?: { id: string; after?: string };
   /** What the giver says. `offer` and `remind` are the player's two buttons. */
@@ -442,6 +444,184 @@ export const AUTHORED: readonly AuthoredRequest[] = [
     },
   },
   {
+    key: 'net_nessa',
+    row: 'r13',
+    giver: 'npc.fisher',
+    title: "Nessa's net",
+    ask: 'My net went down the delta with the last flood. A length of wool cloth and some flax cord, knotted tight on a loom, and I will have a new one.',
+    ways: [
+      {
+        id: 'net',
+        label: 'Bring a fishing net',
+        steps: [deliver('item.fishing_net', 1, 'npc.fisher')],
+      },
+    ],
+    reward: { coin: 55, renown: 1 },
+    estMinutes: 10,
+    talk: {
+      offer: 'Where is your net?',
+      remind: 'About the net.',
+      accepted: 'Wool cloth and flax cord, at a loom. Tailors do it before breakfast.',
+      progress: 'A fishing net. Wool cloth, flax cord and a loom.',
+      report: 'That will hold a river fish. Take this, you earned it.',
+    },
+  },
+  {
+    key: 'cart_wheels',
+    row: 'r15',
+    giver: 'npc.foreman',
+    title: 'Cart wheels',
+    ask: 'The quarry carts are down to their rims. Two wheels, planked and strapped with leather at a workbench, and the carts roll again.',
+    ways: [
+      {
+        id: 'wheels',
+        label: 'Bring two cart wheels',
+        steps: [deliver('item.cart_wheel', 2, 'npc.foreman')],
+      },
+    ],
+    reward: { coin: 65, renown: 1 },
+    estMinutes: 10,
+    talk: {
+      offer: 'Those carts look lame.',
+      remind: 'About the wheels.',
+      accepted:
+        'Oak planks, two to a wheel, and a strip of leather for the strap. Pell has a bench if you have none.',
+      progress: 'Two cart wheels, made at a workbench.',
+      report: 'Round and true. The crew will be glad. Here.',
+    },
+  },
+  {
+    key: 'readings_wren',
+    row: 'r17',
+    giver: 'npc.scholar',
+    title: 'Readings for Wren',
+    ask: 'The old hermit on the moor left notes on tablets down his well. I would copy them myself but I do not climb. Read three of the four and tell me what you find.',
+    ways: [
+      {
+        id: 'read',
+        label: 'Read three of the carvings in the well',
+        steps: [
+          {
+            kind: 'read',
+            fixtures: ['a', 'b', 'c', 'd'].map((k) => `fixture.m9_note_${k}`),
+            count: 3,
+          },
+        ],
+      },
+    ],
+    reward: { coin: 70, renown: 2 },
+    estMinutes: 12,
+    talk: {
+      offer: 'What are you working on?',
+      remind: 'About the carvings.',
+      accepted:
+        'Old Fen has a well on Cairnmoor, and the carvings are down it. Three of the four will do.',
+      progress: 'Three of the four carvings, in the well on Cairnmoor.',
+      report: 'Good. Plain handwriting, for a hermit. Take this.',
+    },
+  },
+  {
+    key: 'tower_clock',
+    row: 'r18',
+    giver: 'npc.reeve',
+    title: 'The bell tower clock',
+    ask: 'The clock in the bell tower has been wrong since spring. Someone with a bench and a steady hand could see what is the matter with it.',
+    ways: [
+      {
+        id: 'tinker',
+        label: 'Tinker with the tower clock',
+        steps: [{ kind: 'flag', flag: 'request.clock' }],
+      },
+    ],
+    reward: { coin: 70, renown: 2 },
+    estMinutes: 12,
+    talk: {
+      offer: 'Is the clock wrong?',
+      remind: 'About the clock.',
+      accepted:
+        'Stand at the foot of the tower and see to it. It wants someone who has handled gears.',
+      progress: 'The tower clock. It needs someone who has handled gears.',
+      report: 'It keeps time. Thank you. Here is something for the town.',
+    },
+  },
+  {
+    key: 'pilgrim_errand',
+    row: 'r20',
+    giver: 'npc.pilgrim',
+    title: "The Pilgrim's errand",
+    ask: 'I have a letter that should reach the chapel, but I will not be back before dark. Take it there after dark, and leave it on the steps.',
+    ways: [
+      {
+        id: 'carry',
+        label: 'Take the letter to the chapel after dark',
+        steps: [
+          {
+            kind: 'carry',
+            item: 'item.pilgrim_letter',
+            place: 'wayside.chapel',
+            phases: ['night'],
+          },
+        ],
+      },
+    ],
+    give: [{ item: 'item.pilgrim_letter', qty: 1 }],
+    reward: { coin: 45, renown: 1 },
+    estMinutes: 8,
+    talk: {
+      offer: 'You look like you have somewhere to be.',
+      remind: 'About the letter.',
+      accepted: 'Here it is. The chapel is on the south road. Night, mind. It is for night.',
+      progress: 'The letter goes to the chapel steps, after dark.',
+      report: 'It arrived, I could tell. Take this, and my thanks.',
+    },
+  },
+  {
+    key: 'barrow_lights',
+    row: 'r21',
+    giver: 'npc.reeve',
+    title: 'Barrow lights',
+    ask: 'The shepherds talk about lights out on the downs, near the old barrow, after dark. I would like a plain account of them. Go and see.',
+    ways: [
+      {
+        id: 'watch',
+        label: "Watch the downs by the Shepherd's Barrow after dark",
+        steps: [{ kind: 'flag', flag: 'request.barrow_lights' }],
+      },
+    ],
+    reward: { coin: 90, renown: 2 },
+    estMinutes: 12,
+    talk: {
+      offer: 'I hear there are lights on the downs.',
+      remind: 'About the lights.',
+      accepted: 'South west, on the downs. Go at night and keep your eyes open.',
+      progress: "The Shepherd's Barrow, after dark. Watch for a while.",
+      report: 'A plain account, as I asked for. That is worth something.',
+    },
+  },
+  {
+    key: 'stock_stalls',
+    row: 'r22',
+    giver: 'npc.shopkeeper',
+    title: 'Stock for the stalls',
+    ask: 'The market stalls are bare. Make things and sell them, anything you made yourself, ten of them. I will not be choosy.',
+    ways: [
+      {
+        id: 'sell',
+        label: 'Sell ten things you made',
+        steps: [{ kind: 'sell', count: 10 }],
+      },
+    ],
+    reward: { coin: 80, renown: 2 },
+    estMinutes: 10,
+    talk: {
+      offer: 'Slow day?',
+      remind: 'About the stalls.',
+      accepted: 'Bread, planks, ingots, anything a recipe makes. Sell it to a shop, I will count.',
+      progress: 'Ten things you made, sold to a shop.',
+      report: 'The stalls look better already. Here, for the trouble.',
+    },
+  },
+  {
     key: 'wasps_orchard',
     row: 'r12',
     giver: 'npc.farmer',
@@ -488,6 +668,7 @@ export function authoredDefs(): Record<string, RequestDef> {
         ? { requires: [{ request: `request.${a.thread.after}`, is: 'done' as const }] }
         : {}),
       ...(a.thread ? { thread: a.thread.id } : {}),
+      ...(a.give ? { give: a.give } : {}),
       estMinutes: a.estMinutes,
     };
   }
