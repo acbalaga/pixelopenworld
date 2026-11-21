@@ -11,6 +11,7 @@ import { roamSystem } from './systems/roamers';
 import { spawnerSystem } from './systems/spawner';
 import { streamSystem } from './world/stream';
 import { dungeonSystem } from './systems/dungeon';
+import { thiefSystem } from './systems/thief';
 import { bossSystem } from './systems/boss';
 import { movementSystem } from './systems/movement';
 import { knockSystem, poolsSystem } from './systems/pools';
@@ -59,6 +60,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   roamSystem,
   aiSystem,
   combatSystem,
+  thiefSystem,
   movementSystem,
   fixturesSystem,
   bossSystem,

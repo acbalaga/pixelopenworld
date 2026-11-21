@@ -87,6 +87,7 @@ export const spawnerSchema = z.object({
   respawn: z.number().int().positive(),
   radius: pos,
   daily: z.boolean().optional(),
+  steals: z.literal(true).optional(),
   step: z.enum(['a', 'b', 'c']).optional(),
   when: z.enum(['day', 'night']).optional(),
 });

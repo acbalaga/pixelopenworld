@@ -13,6 +13,11 @@ export const TEMPERAMENT = {
   feed: { reachPx: 28, calmTicks: 1800 },
   /** A creature this many tiers above the avatar's proven tier steps one rung more aggressive. */
   tierGap: 2,
+  /**
+   * A thief (POW-M4-11, m6) takes one unit from a bag slot of these categories, never gear, tools
+   * or the plain keepsakes. It runs for `runTicks` at most before it turns on the avatar again.
+   */
+  thief: { categories: ['material', 'consumable'], runTicks: 240 },
   /** Rank at which a Trial proves a tier: the first threshold in `balance/skills`, tier 1. */
   provenTrialThresholds: [15, 30, 50, 75, 100],
 } as const;
