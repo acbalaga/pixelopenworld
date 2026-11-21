@@ -165,10 +165,17 @@ export function defineDungeon(spec: DungeonSpec) {
         kind: spec.mouth.kind,
         type: 'portal',
         to: spec.mouth.exitKind,
-        arrive: inward(spec.def.entrance, spec.mouth.exit),
+        // `arrive` is where someone coming TO this portal stands: out of the dungeon, below the mouth.
+        arrive: [0, 24],
         at: spec.mouth.at,
       },
-      { kind: spec.mouth.exitKind, type: 'portal', to: spec.mouth.kind, arrive: [0, 24], at: exit },
+      {
+        kind: spec.mouth.exitKind,
+        type: 'portal',
+        to: spec.mouth.kind,
+        arrive: inward(spec.def.entrance, spec.mouth.exit),
+        at: exit,
+      },
     );
     for (const d of spec.doors ?? []) {
       out.push(

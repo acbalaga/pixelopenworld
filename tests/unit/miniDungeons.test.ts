@@ -195,3 +195,33 @@ describe('scripted run through Stonecrop Deeps', () => {
     expect(where()).toBe('room.region');
   });
 });
+
+describe('entering and leaving a built dungeon', () => {
+  const at = (s: SimState, me: number): { tx: number; ty: number } => {
+    const p = s.entities.comps.pos[me]!;
+    return { tx: Math.floor(p.x / 256 / 16), ty: Math.floor((p.y / 256 - 1) / 16) };
+  };
+  const put = (s: SimState, me: number, t: { x: number; y: number }): void => {
+    s.entities.comps.pos[me] = { x: px(t.x * 16 + 8), y: px(t.y * 16 + 8) };
+    for (let i = 0; i < 3; i++) stepWorld(s, me, { commands: [] } as never);
+  };
+  for (const d of BUILT_DUNGEONS) {
+    it(`${d.def.id}: the avatar lands on open floor both ways, never inside a wall`, () => {
+      const s = createDemoState(5, 0);
+      s.region = 'dawnmeadow';
+      s.tick = 10_000;
+      s.world = grid;
+      s.stream = newStream(grid, false);
+      const f = feetAt(2, 2);
+      const me = createAvatar(s, f.x, f.y);
+      put(s, me, d.spec.mouth.at);
+      let p = at(s, me);
+      expect(grid.solidAt(p.tx, p.ty), 'in').toBe(Solid.None);
+      expect(roomAt(p.tx, p.ty, 'dawnmeadow')?.id, 'in').toBe(d.roomId(d.def.entrance));
+      put(s, me, d.regionTile(d.def.entrance, d.spec.mouth.exit));
+      p = at(s, me);
+      expect(grid.solidAt(p.tx, p.ty), 'out').toBe(Solid.None);
+      expect(roomAt(p.tx, p.ty, 'dawnmeadow')?.id, 'out').toBe('room.region');
+    });
+  }
+});
