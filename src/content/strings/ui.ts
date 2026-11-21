@@ -112,7 +112,15 @@ export const UI_STRINGS = {
   detailNone: 'Choose an item to see what it does.',
   detailValue: 'Worth {n} coin',
   detailStack: 'Carrying {n}',
-  actions: { use: 'Use', equip: 'Wear', feed: 'Feed', drop: 'Hold to drop' },
+  actions: {
+    use: 'Use',
+    equip: 'Wear',
+    quick: 'Pin to quick slot',
+    feed: 'Feed',
+    drop: 'Hold to drop',
+  },
+  /** The quick pin action on an item that is already pinned. */
+  quickUnpin: 'Unpin from quick slot',
   /** The Use button, by what the item is: food is eaten, scrolls and manuals are read. */
   useVerb: { eat: 'Eat', read: 'Read', use: 'Use' },
   dropping: 'Keep holding to drop',

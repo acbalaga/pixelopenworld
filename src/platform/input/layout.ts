@@ -15,7 +15,9 @@ export interface ControlLayout {
   /** Where a floating stick may begin. */
   stickZone: Rect;
   /** Every button except `attack`, which exists only in Classic. */
-  buttons: Readonly<Record<Exclude<ButtonId, 'attack'>, Rect>> & { readonly attack?: Rect };
+  buttons: Readonly<Record<Exclude<ButtonId, 'attack' | 'quickNext'>, Rect>> & {
+    readonly attack?: Rect;
+  };
 }
 
 /** True if the point is inside the rect. */
@@ -93,6 +95,14 @@ export function computeLayout(
           }
         : { x: baseX - (size + gap), y: baseY, w: size, h: size },
     );
+  // The quick slot (G4 playtest) sits on the outer rim of the technique arc, in reach of the thumb
+  // and clear of every other button. Classic's guard takes Flow's spot, so Classic goes one further.
+  buttons.quick = mirror({
+    x: baseX - (size + gap) * (classic ? 2.45 : 1.6),
+    y: baseY - (size + gap) * 1.6,
+    w: size,
+    h: size,
+  });
   buttons.menu = mirror({
     x: width - margin - ins.right - min,
     y: margin + ins.top,
@@ -123,7 +133,7 @@ export function computeLayout(
 /** Finds the button under a point. Later buttons win on overlap. */
 export function buttonAt(layout: ControlLayout, p: ScreenPoint): ButtonId | null {
   let hit: ButtonId | null = null;
-  for (const id of Object.keys(layout.buttons) as ButtonId[]) {
+  for (const id of Object.keys(layout.buttons) as (keyof ControlLayout['buttons'])[]) {
     const r = layout.buttons[id];
     if (r && inRect(r, p)) hit = id;
   }

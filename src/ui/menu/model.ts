@@ -155,7 +155,7 @@ export interface SkillFamilyView {
   rows: SkillRowView[];
 }
 
-export type ItemAction = 'use' | 'equip' | 'feed' | 'drop';
+export type ItemAction = 'use' | 'equip' | 'quick' | 'feed' | 'drop';
 
 export type BagFilterId = 'all' | BagFilter;
 export type BagSortId = 'type' | 'tier' | 'value' | 'newest';
@@ -496,6 +496,8 @@ export function itemActions(def: ItemDef): ItemAction[] {
   if (def.food || def.teaches || def.manual || (def.gadget && def.gadget !== 'lantern'))
     out.push('use');
   if (def.equip) out.push('equip');
+  // Food and gadgets can be pinned to the quick slot (G4 playtest).
+  if (def.food || (def.gadget && def.gadget !== 'lantern')) out.push('quick');
   out.push('drop');
   return out;
 }
@@ -505,6 +507,11 @@ export function useLabel(def: ItemDef): string {
   if (def.food) return UI_STRINGS.useVerb.eat;
   if (def.teaches || def.manual) return UI_STRINGS.useVerb.read;
   return UI_STRINGS.useVerb.use;
+}
+
+/** A sheet has three actions at most (design/09). Feed, when offered, outranks the quick pin. */
+function atMostThree(actions: ItemAction[]): ItemAction[] {
+  return actions.length > 3 ? actions.filter((a) => a !== 'quick') : actions;
 }
 
 /** Puts Feed before Drop in an item's actions when a creature in reach would take it. */
@@ -556,7 +563,7 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
     value: fill(UI_STRINGS.detailValue, { n: def.value }),
     qty: fill(UI_STRINGS.detailStack, { n: s.qty }),
     // Feed is offered while a creature in front would take it, so it comes and goes as one walks.
-    actions: withFeed(itemActions(def), feedTarget(state, who, s.item) !== null),
+    actions: atMostThree(withFeed(itemActions(def), feedTarget(state, who, s.item) !== null)),
     useLabel: useLabel(def),
     lines,
     broken,

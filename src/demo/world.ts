@@ -81,6 +81,8 @@ import { pinnedLine } from '../sim/requestLog';
 import { TalkSheet } from '../ui/dom/talk';
 import { ChatTicker, PinnedLine } from '../ui/dom/ambient';
 import { drawFloaters } from '../ui/messages/floaters';
+import { quickCount, quickItem, quickNext, quickSlotOf } from '../ui/hud/quickSlot';
+import { calloutFor } from '../ui/combat/callout';
 import { lanesFor } from '../ui/messages/layout';
 import { MessageRouter } from '../ui/messages/router';
 import { MessageView } from '../ui/messages/view';
@@ -649,8 +651,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       madeItems(state, 'seed', item, qty);
     }
   }
-  // Demo keys until the Menu exists (M1-06): G wear the next piece of gear, F eat, C cook a
-  // recipe from what the bag holds, or experiment with what it has.
+  // Demo keys until the Menu exists (M1-06): G wear the next piece of gear. F is the quick slot now.
   window.addEventListener('keydown', (e) => {
     if (e.repeat) return;
     const inv = state.entities.comps.inventory[who];
@@ -661,9 +662,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     } else if (e.code === 'KeyG') {
       const slot = inv.slots.findIndex((x) => x && ITEMS[x.item]?.equip);
       if (slot >= 0) pendingCommands.push({ type: 'equip', slot });
-    } else if (e.code === 'KeyF') {
-      const slot = inv.slots.findIndex((x) => x && ITEMS[x.item]?.food);
-      if (slot >= 0) pendingCommands.push({ type: 'use', slot });
     }
   });
 
@@ -1395,6 +1393,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         mapper.syncGuard(state.entities.comps.fighter[who]?.guard === true);
         if (rec.menu) menu.toggle();
         if (rec.bag) menu.toggle('bag');
+        // The quick slot (G4 playtest): a tap uses its item, a long press steps it on.
+        if (rec.quickNext) {
+          const inv = state.entities.comps.inventory[who];
+          const next = quickNext(inv, settings.get());
+          if (next && next !== quickItem(inv, settings.get())) {
+            settings.set({ quickPick: next });
+            router.post({
+              lane: 'floater',
+              text: ITEM_STRINGS[ITEMS[next]?.nameKey ?? ''] ?? next,
+              key: 'quick',
+            });
+          }
+        }
+        if (rec.quick) {
+          const inv = state.entities.comps.inventory[who];
+          const item = quickItem(inv, settings.get());
+          const slot = item ? quickSlotOf(inv, item) : -1;
+          if (slot >= 0) pendingCommands.push({ type: 'use', slot });
+        }
         stepWorld(state, who, {
           commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
           worldTick: worldNow(),
@@ -1417,6 +1434,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
+        for (const e of state.events.list) {
+          const c = calloutFor(state, who, e);
+          if (c) feedback.callout(c.id, c.text, c.boss ? HURT : GOLD, now);
+        }
         if (!settings.get().reducedMotion) {
           const w = workOf();
           if (w)
@@ -1819,6 +1840,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         now,
         DARK,
       );
+      feedback.drawCallouts(
+        renderer,
+        fonts.large,
+        camera.x + shake.x,
+        camera.y + shake.y,
+        now,
+        DARK,
+        centerOf,
+        settings.get().reducedMotion,
+      );
 
       // Screen space: bars, lock frame, controls.
       const v = vp.current;
@@ -2015,11 +2046,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const slotOf: Record<string, number> = { tech1: 0, tech2: 1, tech3: 2, tech4: 3 };
         const hasTarget = contextTarget(state, who) !== null;
         const guardUp = state.entities.comps.fighter[who]?.guard === true;
+        const quickInv = state.entities.comps.inventory[who];
+        const quickNow = quickItem(quickInv, settings.get());
         for (const [id, r] of Object.entries(layout.buttons)) {
           // Slots with no technique and a context button with nothing to use are not shown.
           const slot = slotOf[id];
           if (slot !== undefined && !afight.slots[slot]) continue;
           if (id === 'context' && !hasTarget) continue;
+          // The quick slot shows while the Bag holds something it can use.
+          if (id === 'quick' && !quickNow) continue;
           const rect = {
             x: Math.round(r.x * k),
             y: Math.round(r.y * k),
@@ -2028,7 +2063,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           };
           const cooling = slot !== undefined && (afight.cooldowns[slot] ?? 0) > 0;
           const iconId =
-            slot !== undefined ? TECHNIQUES[afight.slots[slot] as string]?.icon : BUTTON_ICONS[id];
+            slot !== undefined
+              ? TECHNIQUES[afight.slots[slot] as string]?.icon
+              : id === 'quick'
+                ? ITEMS[quickNow as string]?.icon
+                : BUTTON_ICONS[id];
           const icon = iconId
             ? { handle: atlas.frame(iconId, 'base'), size: 12, alpha: cooling ? 0.45 : 1 }
             : undefined;
@@ -2039,11 +2078,21 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             // The swap button shows which loadout is in use.
             id === 'swap'
               ? String((state.entities.comps.loadouts[who]?.active ?? 0) + 1)
-              : (LABELS[id] ?? '?'),
+              : id === 'quick'
+                ? String(Math.min(99, quickCount(quickInv, quickNow as string)))
+                : (LABELS[id] ?? '?'),
             held.has(id) || cooling || (id === 'guard' && guardUp),
             'small',
             icon,
           );
+          if (id === 'quick' && quickNow) {
+            // How many are left, in the corner, since the icon takes the label's place.
+            const n = String(Math.min(99, quickCount(quickInv, quickNow)));
+            fonts.small.draw(renderer, n, rect.x + rect.w - 2, rect.y + rect.h - 8, INK, {
+              align: 'right',
+              outline: DARK,
+            });
+          }
           if (cooling && slot !== undefined) {
             // The cooldown drains down the button: dark over what is still cooling.
             const total = TECHNIQUES[afight.slots[slot] as string]?.cooldown ?? 0;

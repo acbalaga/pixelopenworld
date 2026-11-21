@@ -63,6 +63,15 @@ export const UI_BALANCE = {
     /** The chat sheet's share of the screen height. */
     sheetFraction: 0.5,
   },
+  /** The name of a technique or boss move shouted over the head of whoever uses it (G4 playtest). */
+  callout: {
+    /** How long it shows, ms. */
+    ms: 1000,
+    /** Above the entity's center, logical px. */
+    abovePx: 22,
+    /** How far it drifts up while it shows, logical px. None under reduced motion. */
+    risePx: 6,
+  },
   /** The action meter over the avatar while it works (design/09). Distances are logical px. */
   meter: {
     /** Space between the top of the meter and the avatar's head point. */

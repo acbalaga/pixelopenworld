@@ -1,4 +1,5 @@
 import type { Trust } from '../../save/integrity/reasons';
+import { togglePin } from '../hud/quickSlot';
 import { createBackupSection, type BackupDeps } from './backup';
 import { createDeviceSection } from './device';
 import { createSeal } from './seal';
@@ -962,27 +963,39 @@ export class MenuSheet {
     if (!d) return null;
     const inv = state.entities.comps.inventory[who]?.slots[slot];
     const icon = inv ? this.icon(ITEMS[inv.item]?.icon ?? null, 'pow-icon pow-icon-big') : null;
+    const pinned = !!inv && this.deps.settings.get().quickItems.includes(inv.item);
     const actions: SheetAction[] = d.actions.map((a) =>
-      a === 'drop'
+      a === 'quick'
         ? {
-            label: S.actions[a],
+            label: pinned ? S.quickUnpin : S.actions.quick,
             key: `act-${a}`,
-            onHold: () => {
-              this.deps.send({ type: 'drop', slot });
+            onClick: () => {
+              if (!inv) return;
+              const st = this.deps.settings.get();
+              this.deps.settings.set(togglePin(st, inv.item));
               this.closeSheet();
             },
           }
-        : {
-            label: a === 'use' ? d.useLabel : S.actions[a],
-            key: `act-${a}`,
-            primary: true,
-            onClick: () => this.deps.send({ type: a, slot }),
-          },
+        : a === 'drop'
+          ? {
+              label: S.actions[a],
+              key: `act-${a}`,
+              onHold: () => {
+                this.deps.send({ type: 'drop', slot });
+                this.closeSheet();
+              },
+            }
+          : {
+              label: a === 'use' ? d.useLabel : S.actions[a],
+              key: `act-${a}`,
+              primary: true,
+              onClick: () => this.deps.send({ type: a, slot }),
+            },
     );
     // The primary action sits last, on the thumb side.
     actions.sort((x, y) => Number(x.primary === true) - Number(y.primary === true));
     return {
-      sig: JSON.stringify(d),
+      sig: JSON.stringify([d, pinned]),
       parts: {
         title: d.name,
         icon,

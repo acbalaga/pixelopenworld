@@ -1,6 +1,15 @@
 import type { SimEvent } from '../sim/kernel/events';
 import type { Renderer } from './renderer';
 import type { PixelFont } from '../ui/text/pixelFont';
+import { UI_BALANCE } from '../content/balance/ui';
+
+const CALLOUT = UI_BALANCE.callout;
+
+interface Callout {
+  text: string;
+  born: number;
+  color: string;
+}
 
 /** How long a hit flash and a damage number last, in ms. */
 const FLASH_MS = 160;
@@ -30,6 +39,8 @@ export class CombatFeedback {
   private numbers: FloatingNumber[] = [];
   private shakeUntil = 0;
   private shakePower = 0;
+  /** At most one shout per entity: a new one replaces the last. */
+  private callouts = new Map<number, Callout>();
 
   constructor(private readonly colors: { hit: string; crit: string; hurt: string }) {}
 
@@ -90,6 +101,47 @@ export class CombatFeedback {
     const k = Math.floor(now / 16);
     const sign = (n: number): number => (((n * 2654435761) >>> 0) % 2 === 0 ? 1 : -1);
     return { x: sign(k) * this.shakePower, y: sign(k + 7) * Math.max(0, this.shakePower - 1) };
+  }
+
+  /** Shouts a technique or move name over entity `id` (G4 playtest). */
+  callout(id: number, text: string, color: string, now: number): void {
+    this.callouts.set(id, { text, born: now, color });
+  }
+
+  /** The shouts showing now, oldest first. For tests and tools. */
+  activeCallouts(now: number): { id: number; text: string }[] {
+    return [...this.callouts]
+      .filter(([, c]) => now - c.born < CALLOUT.ms)
+      .map(([id, c]) => ({ id, text: c.text }));
+  }
+
+  /** Draws and retires shouts, following whoever shouted. One that has gone from the world ends. */
+  drawCallouts(
+    r: Renderer,
+    font: PixelFont,
+    camX: number,
+    camY: number,
+    now: number,
+    outline: string,
+    posOf: PosOf,
+    reducedMotion: boolean,
+  ): void {
+    for (const [id, c] of this.callouts) {
+      const p = posOf(id);
+      if (!p || now - c.born >= CALLOUT.ms) {
+        this.callouts.delete(id);
+        continue;
+      }
+      const rise = reducedMotion ? 0 : Math.round(((now - c.born) / CALLOUT.ms) * CALLOUT.risePx);
+      font.draw(
+        r,
+        c.text,
+        Math.round(p.x - camX),
+        Math.round(p.y - camY) - CALLOUT.abovePx - rise,
+        c.color,
+        { align: 'center', outline },
+      );
+    }
   }
 
   /** Draws and retires floating numbers. `camX`, `camY` turn world px into screen px. */
