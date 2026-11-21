@@ -17,7 +17,8 @@ import { SUBPX, type Vec } from '../kernel/fixed';
 import { int } from '../kernel/rng';
 import { drain } from '../statuses';
 import type { SimState } from '../state';
-import { tideLow } from '../time';
+import { currentWeather, dayPhase, minuteOfDay, tideLow } from '../time';
+import { pointsOf } from '../skills';
 
 const TILE = 16;
 
@@ -267,11 +268,45 @@ function vents(state: SimState): void {
   }
 }
 
+/** Secrets: standing at a vigil the right way sets its flag, once. Checked twice a second. */
+function vigils(state: SimState): void {
+  if (state.worldTick % 15 !== 0) return;
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    const f = getComp(state.entities, id, 'fixture');
+    const s = f ? FIXTURES[f.kind]?.secret : undefined;
+    const p = getComp(state.entities, id, 'pos');
+    if (!s || !p) continue;
+    for (const a of query(state.entities, 'avatar', 'pos')) {
+      if (!alive(state, a)) continue;
+      const q = getComp(state.entities, a, 'pos');
+      const flags = getComp(state.entities, a, 'journal')?.flags;
+      if (!q || !flags || flags.includes(s.flag)) continue;
+      if (len({ x: (q.x - p.x) / SUBPX, y: (q.y - p.y) / SUBPX }) > s.radius) continue;
+      if (s.need && pointsOf(state, a, s.need.skill) < s.need.points) continue;
+      if (s.minutes) {
+        const m = minuteOfDay(state.worldTick);
+        if (m < s.minutes[0] || m >= s.minutes[1]) continue;
+      }
+      if (s.weather === 'clear' && currentWeather(state) !== 'clear') continue;
+      const give = (flag: string): void => {
+        if (flags.includes(flag)) return;
+        flags.push(flag);
+        emit(state.events, { type: 'flagSet', who: a, flag });
+      };
+      if (s.phases) {
+        give(`${s.flag}.${dayPhase(state.worldTick)}`);
+        if (s.phases.every((ph) => flags.includes(`${s.flag}.${ph}`))) give(s.flag);
+      } else give(s.flag);
+    }
+  }
+}
+
 /** Once per tick, after the fixtures system. */
 export function dungeonSystem(state: SimState): void {
   arenas(state);
   tides(state);
   waters(state);
   vents(state);
+  vigils(state);
   delving(state);
 }

@@ -118,6 +118,11 @@ export interface RegionSpec {
    * empty when POW-M4-11 is done.
    */
   pendingDiscoverables?: readonly string[];
+  /**
+   * Secrets, with the skill that reaches each if its route is a skill route. The bake fails if
+   * fewer than a fifth of them list a non-combat skill (not an arms or magic skill).
+   */
+  secrets?: readonly { id: string; skill?: string }[];
   /** Landmarks tall enough to see from afar, with their height in tiles. Checked by the bake. */
   landmarkHeights?: Readonly<Record<string, number>>;
 }

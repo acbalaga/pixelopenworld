@@ -2,7 +2,7 @@
  * Lore fragment slots (POW-M4-11, regions/01-dawnmeadow section 13): eighteen empty markers, DM-F01
  * to DM-F18. Their content arrives in M10; until then a marker is a point in the data and nothing
  * on screen. Nothing here names or explains anything (design/08 "Delivery rules"). A slot is in the
- * open world at `at`, or in a dungeon room, or `pending` until the place that holds it is built.
+ * open world at `at`, or in a dungeon room (a slot may be `pending` until its place is built).
  */
 export interface FragmentSlot {
   /** `dm_f01`. The marker kind is `marker.fragment.<id>`. */
@@ -17,7 +17,6 @@ export interface FragmentSlot {
 
 const open = (id: string, x: number, y: number): FragmentSlot => ({ id, at: { x, y } });
 const inside = (id: string, dungeon: string): FragmentSlot => ({ id, dungeon });
-const later = (id: string): FragmentSlot => ({ id, pending: true });
 
 export const FRAGMENT_SLOTS: readonly FragmentSlot[] = [
   open('dm_f01', 170, 185), // Wren's study
@@ -37,7 +36,7 @@ export const FRAGMENT_SLOTS: readonly FragmentSlot[] = [
   open('dm_f15', 60, 38), // the lit window sightline
   open('dm_f16', 309, 264), // the beached boat
   open('dm_f17', 142, 128), // the hedge maze centre
-  later('dm_f18'), // the Lark spring grotto
+  open('dm_f18', 279, 47), // the Lark spring grotto
 ];
 
 export const fragmentMarker = (id: string): string => `marker.fragment.${id}`;

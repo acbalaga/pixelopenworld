@@ -1,3 +1,4 @@
+import { SKILLS } from '../../src/content/skills';
 import { FIXTURES } from '../../src/content/world/fixtures';
 import type { RegionSpec } from '../../src/content/world/regions/types';
 import { Solid, tileIndex, CHUNK_TILES, type Chunk } from '../../src/sim/world/chunk';
@@ -161,7 +162,23 @@ export function validateRegion(spec: RegionSpec, files: WorldFiles): string[] {
 
   errors.push(...validateDiscoverables(spec));
   errors.push(...validatePois(spec, baked));
+  errors.push(...validateSecrets(spec));
   return errors;
+}
+
+/** At least a fifth of a region's secrets are reached by a non-combat skill (design/02). */
+function validateSecrets(spec: RegionSpec): string[] {
+  const list = spec.secrets;
+  if (!list) return [];
+  const quiet = list.filter((s) => {
+    const fam = s.skill ? SKILLS[s.skill]?.family : undefined;
+    return fam !== undefined && fam !== 'arms' && fam !== 'magic';
+  });
+  return quiet.length * 5 >= list.length
+    ? []
+    : [
+        `${spec.id}: only ${quiet.length} of ${list.length} secrets list a non-combat skill route, needs a fifth`,
+      ];
 }
 
 /** A point of interest stands on open ground. */

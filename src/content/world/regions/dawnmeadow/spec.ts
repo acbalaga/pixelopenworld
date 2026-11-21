@@ -1,4 +1,5 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
+import { BEE_DOOR, DUNGEON_SECRETS, REGION_SECRETS } from '../../../pois/secrets';
 import { FRAGMENT_SLOTS, fragmentMarker } from '../../../pois/fragments';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
 import { DAWNMEADOW_CLUSTERS } from './clusters';
@@ -229,6 +230,13 @@ const placements: Placement[] = [
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
 
+  // Secrets in the open (regions/01 section 13): a chest each, and what wakes it.
+  ...REGION_SECRETS.flatMap((s) => [
+    at(`fixture.sec_${s.id}_chest`, s.chest.x, s.chest.y),
+    ...(s.trigger && s.vigil ? [at(s.vigil, s.trigger.x, s.trigger.y)] : []),
+  ]),
+  at('fixture.sec_bee_door', BEE_DOOR.x, BEE_DOOR.y),
+
   // Lore fragment slots: empty markers (content arrives in M10).
   ...FRAGMENT_SLOTS.flatMap((f) => (f.at ? [at(fragmentMarker(f.id), f.at.x, f.at.y)] : [])),
 
@@ -331,6 +339,10 @@ export const DAWNMEADOW: RegionSpec = {
   wakePoints: WAKE_IDS.map((id) => ({ id, ...DAWNMEADOW_WAKE_POINTS[id] })),
   waystones: WAYSTONES['dawnmeadow'] ?? [],
   districts,
+  secrets: [
+    ...DUNGEON_SECRETS,
+    ...REGION_SECRETS.map((s) => ({ id: s.id, ...(s.skill ? { skill: s.skill } : {}) })),
+  ],
   pois: DAWNMEADOW_POIS.map((p) => ({ id: p.id, x: p.x, y: p.y })),
   pendingDiscoverables: DAWNMEADOW_PENDING_DISCOVERABLES,
   landmarkHeights: { mill_sails: 16, bell_tower: 10, quarry_crane: 14 },

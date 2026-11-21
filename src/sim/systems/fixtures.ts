@@ -47,6 +47,7 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'torch' ||
     def.type === 'arena' ||
     def.type === 'rest' ||
+    def.type === 'vigil' ||
     def.type === 'vent'
   )
     return id;
