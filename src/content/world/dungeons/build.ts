@@ -13,6 +13,9 @@ import type { DungeonDef, DungeonEdge, DungeonRoom } from './types';
 /** Tiles in one grid cell. */
 export const CELL = 32;
 
+/** How far in from a portal an arriving avatar stands, px. */
+const STEP = 16;
+
 export interface RoomSpec {
   id: string;
   col: number;
@@ -147,14 +150,18 @@ export function defineDungeon(spec: DungeonSpec) {
     const o = roomOrigin(room);
     return { x: o.x + t.x, y: o.y + t.y };
   };
-  /** The way a portal at a room's ring faces: a step into the room, in px. */
+  /**
+   * The way a portal at a room's ring faces: a step into the room, in px. Long enough to be clear
+   * of the portal's own trigger (10px), short enough not to land inside a gate, ledge or wall that
+   * stands two tiles in (22px put the avatar's feet inside it, and they walked on through).
+   */
   const inward = (room: string, t: { x: number; y: number }): [number, number] => {
     const s = specOf(room);
-    if (t.y === 1) return [0, 22];
-    if (t.y === s.h - 2) return [0, -22];
-    if (t.x === 1) return [22, 0];
-    if (t.x === s.w - 2) return [-22, 0];
-    return [0, 22];
+    if (t.y === 1) return [0, STEP];
+    if (t.y === s.h - 2) return [0, -STEP];
+    if (t.x === 1) return [STEP, 0];
+    if (t.x === s.w - 2) return [-STEP, 0];
+    return [0, STEP];
   };
 
   const def: DungeonDef = {
