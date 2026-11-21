@@ -3,6 +3,7 @@ import { FRAGMENT_SLOTS, fragmentMarker } from '../../../pois/fragments';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
 import { DAWNMEADOW_CLUSTERS } from './clusters';
 import { MOUTHS } from '../../dungeons/mouths';
+import { THORNWALL_MOUTH } from '../../dungeons/thornwall';
 import { DEEPS_MOUTH } from '../../dungeons/deeps';
 import { UNDERMILL_MOUTH } from '../../dungeons/undermill';
 import { CLIMB_TOP, LANDING, LANDING_SPOTS } from '../../dungeons/west';
@@ -192,6 +193,7 @@ const placements: Placement[] = [
   at('fixture.wl_climb', LANDING_SPOTS.climb.x, LANDING_SPOTS.climb.y),
   stamp(UNDERMILL_MOUTH.stamp, UNDERMILL_MOUTH.x, UNDERMILL_MOUTH.y),
   stamp(DEEPS_MOUTH.stamp, DEEPS_MOUTH.x, DEEPS_MOUTH.y),
+  stamp(THORNWALL_MOUTH.stamp, THORNWALL_MOUTH.x, THORNWALL_MOUTH.y),
   ...Object.values(MOUTHS).flatMap((m) => (m.stamp ? [stamp(m.stamp, m.x, m.y)] : [])),
 
   // The practice field outside the north gate: the M3 element set pieces, moved from the square.

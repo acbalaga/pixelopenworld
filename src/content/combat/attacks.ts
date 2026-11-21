@@ -834,6 +834,32 @@ export const ATTACKS: Readonly<Record<string, AttackDef>> = {
     knock: 8,
     shape: { kind: 'arc', reach: 26, cos256: 100 },
   },
+  /** The Hedge Warden's briar lash: a long line with a long tell. */
+  'attack.warden_lash': {
+    id: 'attack.warden_lash',
+    family: 'creature',
+    windup: 28,
+    active: 4,
+    recover: 26,
+    mult: 120,
+    stagger: 0,
+    knock: 18,
+    shape: { kind: 'line', reach: 70, halfWidth: 10 },
+    heavy: true,
+  },
+  /** Thorns burst round it in a ring. The ground marker is the circle. */
+  'attack.warden_thorns': {
+    id: 'attack.warden_thorns',
+    family: 'creature',
+    windup: 26,
+    active: 3,
+    recover: 26,
+    mult: 130,
+    stagger: 0,
+    knock: 18,
+    shape: { kind: 'circle', radius: 48 },
+    heavy: true,
+  },
   /** The Foreman's Engine rams along its rail: a long dash with a long tell. */
   'attack.engine_ram': {
     id: 'attack.engine_ram',

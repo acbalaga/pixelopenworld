@@ -20,6 +20,8 @@ export interface DungeonRoom {
   reset?: true;
   /** Item ids of keys lying in this room (in chests or on the floor). The validator needs to know where keys are. */
   keys?: readonly string[];
+  /** Reached only from outside by a back door, never from inside: the reachability check leaves it out. */
+  outsideOnly?: true;
   /** Where the avatar stands on arrival from outside the dungeon, for the entrance room. */
   start?: Tile;
 }

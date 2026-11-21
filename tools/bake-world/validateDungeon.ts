@@ -218,7 +218,7 @@ export function validateDungeon(def: DungeonDef): string[] {
         ),
       );
   for (const r of def.rooms)
-    if (!reachable.has(r.id)) errors.push(at(`room ${r.id} cannot be reached from the entrance`));
+    if (!reachable.has(r.id) && !r.outsideOnly) errors.push(at(`room ${r.id} cannot be reached from the entrance`));
 
   // The way back: from every reachable room, the entrance must be reachable by edges that work
   // in that direction, with every key in hand. A drop works one way only.
