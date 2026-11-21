@@ -51,7 +51,7 @@ describe('ledges (the Fernside climb)', () => {
     const before = at(s, me);
     interactFixture(s, me);
     expect(at(s, me)).toEqual(before);
-    expect(s.events.list.some((e) => e.type === 'denied' && e.reason === 'requires')).toBe(true);
+    expect(s.events.list.some((e) => e.type === 'denied' && e.reason === 'skill')).toBe(true);
     sk.points['skill.athletics'] = 25;
     pools.sta = 5;
     s.events.list.length = 0;

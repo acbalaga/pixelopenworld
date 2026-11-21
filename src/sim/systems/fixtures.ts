@@ -216,7 +216,8 @@ function useLedge(state: SimState, who: EntityId, id: EntityId): void {
   const a = getComp(state.entities, who, 'avatar');
   if (!def?.climb || !pos || !pools || !a) return;
   if (pointsOf(state, who, def.climb.skill) < def.climb.points) {
-    emit(state.events, { type: 'denied', id: who, reason: 'requires' });
+    // Its own reason, so the toast can say the skill is too low and where to go if stuck.
+    emit(state.events, { type: 'denied', id: who, reason: 'skill' });
     return;
   }
   if (pools.sta < def.climb.stamina) {

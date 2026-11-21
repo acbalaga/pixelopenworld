@@ -33,7 +33,7 @@ export type SimEvent =
   | {
       type: 'denied';
       id: number;
-      reason: 'stamina' | 'focus' | 'cooldown' | 'requires' | 'locked';
+      reason: 'stamina' | 'focus' | 'cooldown' | 'requires' | 'skill' | 'locked';
     }
   | { type: 'techniqueUsed'; who: number; technique: string }
   | { type: 'channelStarted'; who: number; technique: string; ticks: number }

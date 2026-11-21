@@ -676,6 +676,8 @@ export const UI_STRINGS = {
     deniedStamina: 'Too tired.',
     deniedFocus: 'Not enough Focus.',
     deniedRequires: 'Cannot use that now.',
+    deniedSkill:
+      'Your skill is too low for this. If you are stuck, travel to a Waystone from the map.',
     deniedLocked: 'Cannot do that now.',
     coin: '{n} coin',
     gate: 'A gate rattles open.',
