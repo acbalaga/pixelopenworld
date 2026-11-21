@@ -420,7 +420,7 @@ export const NODES: Record<string, NodeDef> = {
     yields: [{ item: 'item.oak_log', weight: 1 }],
     respawn: 4 * MIN,
     sweep: { swings: 3, baseMin: 1, baseMax: 2 },
-    sprite: { ready: 'icon.node_oak', spent: 'icon.node_stump' },
+    sprite: { ready: 'icon.node_oak_tall', spent: 'icon.node_stump_oak' },
   },
   'node.ash_tree': {
     id: 'node.ash_tree',
@@ -431,7 +431,7 @@ export const NODES: Record<string, NodeDef> = {
     yields: [{ item: 'item.ash_log', weight: 1 }],
     respawn: 8 * MIN,
     sweep: { swings: 3, baseMin: 1, baseMax: 2 },
-    sprite: { ready: 'icon.node_ash', spent: 'icon.node_stump' },
+    sprite: { ready: 'icon.node_ash_tall', spent: 'icon.node_stump_ash' },
   },
   // Fishing placeholder until M6-05: cast, wait, tap on the bite. A miss still lands the catch.
   'node.fishing_spot': {

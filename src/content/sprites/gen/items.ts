@@ -467,7 +467,42 @@ function fish(name: string, c: Ramp): SpriteDef {
   return icon(name, (im) => fishShape(im, c, c[3]));
 }
 
+/**
+ * A tree you can fell, drawn at the size of the trees round it (28 x 44): a round crown of three
+ * lobes over a straight trunk with a flared foot. Its feet are at the bottom edge.
+ */
+function tallTree(name: string, leaf: Ramp, wood: Ramp): SpriteDef {
+  const im = new Img(28, 44);
+  disc(im, 14, 12, 10, leaf);
+  disc(im, 7, 18, 7, leaf);
+  disc(im, 21, 18, 7, leaf);
+  disc(im, 14, 20, 8, leaf);
+  im.rect(12, 24, 15, 40, wood[1]);
+  im.rect(12, 24, 13, 40, wood[2]);
+  im.rect(10, 38, 17, 41, wood[1]);
+  im.rect(10, 38, 11, 41, wood[2]);
+  return icon28(name, im);
+}
+
+/** What is left of a tall tree: a knee-high stump with a cut face. */
+function tallStump(name: string, wood: Ramp): SpriteDef {
+  const im = new Img(28, 44);
+  im.rect(10, 34, 17, 41, wood[1]);
+  im.rect(10, 34, 12, 41, wood[2]);
+  im.rect(10, 32, 17, 34, wood[3]);
+  im.rect(12, 33, 15, 33, wood[2]);
+  return icon28(name, im);
+}
+
+function icon28(name: string, im: Img): SpriteDef {
+  return toSprite(`icon.${name}`, 'ui', [0, 0], { base: outline(im) });
+}
+
 export const ITEM_ICONS: readonly SpriteDef[] = [
+  tallTree('node_oak_tall', LEAF, WOOD),
+  tallTree('node_ash_tall', [LEAF[0], LEAF[2], LEAF[3], GOLD[3]], STONE),
+  tallStump('node_stump_oak', WOOD),
+  tallStump('node_stump_ash', STONE),
   icon('dagger_wood', (im) => {
     line(im, 8, 3, 5, 7, WOOD[2]);
     line(im, 9, 4, 6, 8, WOOD[1]);

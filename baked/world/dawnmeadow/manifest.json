@@ -1,7 +1,7 @@
 {
   "version": 1,
   "region": "dawnmeadow",
-  "hash": "907caa24d8712aba",
+  "hash": "94bb5925a84ba15f",
   "seed": 20260101,
   "chunks": {
     "w": 12,
@@ -115,13 +115,13 @@
       "file": "chunk-5-1.bin",
       "cx": 5,
       "cy": 1,
-      "hash": "0a7e34d3404eefb2"
+      "hash": "7a2c09cf3e7482fe"
     },
     {
       "file": "chunk-6-1.bin",
       "cx": 6,
       "cy": 1,
-      "hash": "ee3f005b36cddf9e"
+      "hash": "cc19ab5093dd740e"
     },
     {
       "file": "chunk-7-1.bin",
@@ -133,7 +133,7 @@
       "file": "chunk-8-1.bin",
       "cx": 8,
       "cy": 1,
-      "hash": "bb6c02a816a1fc6c"
+      "hash": "3099a0e29b9e044d"
     },
     {
       "file": "chunk-9-1.bin",
@@ -205,7 +205,7 @@
       "file": "chunk-8-2.bin",
       "cx": 8,
       "cy": 2,
-      "hash": "dfdd29ad46376040"
+      "hash": "47d5d67452adc3af"
     },
     {
       "file": "chunk-9-2.bin",
@@ -259,7 +259,7 @@
       "file": "chunk-5-3.bin",
       "cx": 5,
       "cy": 3,
-      "hash": "9dd2865c4298001e"
+      "hash": "bdebf6b24e982f90"
     },
     {
       "file": "chunk-6-3.bin",
@@ -277,7 +277,7 @@
       "file": "chunk-8-3.bin",
       "cx": 8,
       "cy": 3,
-      "hash": "e4d888b7b81cd64f"
+      "hash": "5a2a3ea1b138f92b"
     },
     {
       "file": "chunk-9-3.bin",
@@ -301,7 +301,7 @@
       "file": "chunk-0-4.bin",
       "cx": 0,
       "cy": 4,
-      "hash": "14197f8d52763c83"
+      "hash": "57120e4bb186347d"
     },
     {
       "file": "chunk-1-4.bin",
@@ -319,7 +319,7 @@
       "file": "chunk-3-4.bin",
       "cx": 3,
       "cy": 4,
-      "hash": "f0ca5dabfb72aa57"
+      "hash": "98f633a1d6717ebf"
     },
     {
       "file": "chunk-4-4.bin",
@@ -403,13 +403,13 @@
       "file": "chunk-5-5.bin",
       "cx": 5,
       "cy": 5,
-      "hash": "c270fb12af745c56"
+      "hash": "8762d20ae178bc27"
     },
     {
       "file": "chunk-6-5.bin",
       "cx": 6,
       "cy": 5,
-      "hash": "f24854ed88daad07"
+      "hash": "55843ef27a94f0d5"
     },
     {
       "file": "chunk-7-5.bin",
@@ -475,13 +475,13 @@
       "file": "chunk-5-6.bin",
       "cx": 5,
       "cy": 6,
-      "hash": "a5e89a7a25547950"
+      "hash": "4bcb4dd37d0658e8"
     },
     {
       "file": "chunk-6-6.bin",
       "cx": 6,
       "cy": 6,
-      "hash": "22a65b159f3925f2"
+      "hash": "2c37768c66afaa4d"
     },
     {
       "file": "chunk-7-6.bin",
@@ -571,13 +571,13 @@
       "file": "chunk-9-7.bin",
       "cx": 9,
       "cy": 7,
-      "hash": "f3efb1775318f7a1"
+      "hash": "108c2af33d6d0f90"
     },
     {
       "file": "chunk-10-7.bin",
       "cx": 10,
       "cy": 7,
-      "hash": "67d5aff2caa24c06"
+      "hash": "6d5844f4accc7d77"
     },
     {
       "file": "chunk-11-7.bin",
@@ -679,7 +679,7 @@
       "file": "chunk-3-9.bin",
       "cx": 3,
       "cy": 9,
-      "hash": "0694d2615d743553"
+      "hash": "ca3772752eed3d4b"
     },
     {
       "file": "chunk-4-9.bin",

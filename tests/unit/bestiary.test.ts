@@ -40,6 +40,8 @@ describe('the Bestiary (M4-05)', () => {
     recordKill(s, 'creature.mossling');
     expect(bestiaryView(s, me).rows[0]).toMatchObject({
       name: 'Mossling',
+      // The picture the Chronicle draws is this sprite's idle frame.
+      sprite: 'creature.mossling',
       kills: 'Defeated 1',
       temperament: 'Temperament not yet seen',
       befriended: false,

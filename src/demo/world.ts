@@ -16,6 +16,7 @@ import { randomDoll } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
+import { SIGN_STRINGS } from '../content/strings/signs';
 import { BELL_ORDER } from '../content/world/dungeons/west';
 import { TECHNIQUES } from '../content/combat/techniques';
 import { BUILD_LABEL } from '../shared/version';
@@ -706,11 +707,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       const def = n ? NODES[n.kind] : undefined;
       if (!n || !p || !def) continue;
       const sprite = state.worldTick >= n.readyAt ? def.sprite.ready : def.sprite.spent;
+      // Feet at the node: centered across, with two px under the sprite's bottom edge (a 12 px icon
+      // lands where it always did; a tall tree stands on its own trunk).
+      const h = iconOf(sprite);
       renderer.drawSprite(
         Layer.Objects,
-        iconOf(sprite),
-        Math.round(p.x / 256) - 6,
-        Math.round(p.y / 256) - 10,
+        h,
+        Math.round(p.x / 256) - Math.floor(atlas.width(h) / 2),
+        Math.round(p.y / 256) - (atlas.height(h) - 2),
       );
     }
     for (const id of e.comps.interactable.keys()) {
@@ -952,6 +956,17 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     send: (c) => pendingCommands.push(c),
     settings,
     drawIcon: (canvas, id) => blit(canvas, atlas.frame(id, 'base')),
+    drawCreature: (canvas, spriteId) => {
+      try {
+        const h = atlas.animFrame(animOf(spriteId, 'idle', 4), 0);
+        canvas.width = atlas.width(h);
+        canvas.height = atlas.height(h);
+        blit(canvas, h);
+      } catch {
+        canvas.width = 1;
+        canvas.height = 1;
+      }
+    },
     drawAvatar: (canvas) => blit(canvas, atlas.animFrame(animOf('char.player', 'idle', 4), 0)),
     // Log Out saves, then returns to the title screen (a fresh page start shows it).
     trust: () => saves?.currentTrust() ?? intact(),
@@ -1463,6 +1478,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               }[e.reason],
               `denied.${e.reason}`,
             );
+          else if (e.type === 'signRead' && e.who === who)
+            notices.toast(SIGN_STRINGS[e.kind.replace('fixture.sign_', 'sign.')] ?? '', e.kind);
           else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') {
             openedAt.set(e.id, performance.now());

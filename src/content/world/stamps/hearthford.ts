@@ -195,16 +195,17 @@ function hearthford(): StampV2 {
   part('gate_w', 'gate', 0, 26, 1, 4);
   part('gate_e', 'gate', 55, 26, 1, 4);
   for (const [x, y] of [
-    [25, 2],
     [30, 2],
     [25, 53],
-    [30, 53],
     [2, 25],
-    [2, 30],
-    [53, 25],
     [53, 30],
   ] as const)
     b.object(x, y, 'tile.sign_post');
+  // One post a gate can be read: what the road beyond it leads to.
+  b.place('fixture.sign_gate_n', 25, 2);
+  b.place('fixture.sign_gate_s', 30, 53);
+  b.place('fixture.sign_gate_w', 2, 30);
+  b.place('fixture.sign_gate_e', 53, 25);
   return b.toStamp('hearthford');
 }
 

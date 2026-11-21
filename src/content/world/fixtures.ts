@@ -5,6 +5,7 @@
 
 import { MANUALS } from '../items/manuals';
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { SIGN_FIXTURES } from '../pois/signs';
 import { SECRET_FIXTURES } from '../pois/secrets';
 import { WEST_FIXTURES } from './dungeons/west';
 import type { ElementId } from '../combat/statuses';
@@ -39,6 +40,8 @@ export type FixtureType =
   | 'arena'
   | 'ledge'
   | 'rest'
+  /** A sign: using it shows its text. */
+  | 'sign'
   /** A place where something is found by being there the right way (a secret): sets a journal flag. */
   | 'vigil'
   /** A heat vent: bursts on a cycle and hurts whoever stands near it (m8). */
@@ -506,6 +509,7 @@ export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries
     ...MANUAL_CHESTS,
     ...WEST_FIXTURES,
     ...SECRET_FIXTURES,
+    ...SIGN_FIXTURES,
     ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
   ].map((f) => [f.kind, f]),
 );

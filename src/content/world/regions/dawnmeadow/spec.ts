@@ -1,4 +1,5 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
+import { PLACED_SIGNS, signKind } from '../../../pois/signs';
 import { BEE_DOOR, DUNGEON_SECRETS, REGION_SECRETS } from '../../../pois/secrets';
 import { FRAGMENT_SLOTS, fragmentMarker } from '../../../pois/fragments';
 import { DAWNMEADOW_PENDING_DISCOVERABLES } from '../../../pois/pending';
@@ -229,6 +230,9 @@ const placements: Placement[] = [
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
+
+  // The readable signs that are not part of a stamp.
+  ...PLACED_SIGNS.map((s) => at(signKind(s.id), s.x, s.y)),
 
   // Secrets in the open (regions/01 section 13): a chest each, and what wakes it.
   ...REGION_SECRETS.flatMap((s) => [
