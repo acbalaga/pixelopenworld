@@ -15,6 +15,10 @@ export const HEDGE_WARDEN_BOSS: BossDef = {
   creature: 'creature.hedge_warden',
   title: 'boss.hedge_warden.title',
   dungeon: 'dungeon.thornwall',
+  callouts: {
+    'attack.warden_lash': 'callout.hedge_warden.lash',
+    'attack.warden_thorns': 'callout.hedge_warden.thorns',
+  },
   phases: [
     {
       enter: { hpPct: 100 },

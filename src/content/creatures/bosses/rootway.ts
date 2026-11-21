@@ -11,6 +11,10 @@ export const OLD_BRAMBLEHIDE_BOSS: BossDef = {
   creature: 'creature.old_bramblehide',
   title: 'boss.old_bramblehide.title',
   dungeon: 'dungeon.rootway',
+  callouts: {
+    'attack.bramble_charge': 'callout.bramblehide.charge',
+    'attack.boss_slam': 'callout.bramblehide.slam',
+  },
   phases: [
     {
       enter: { hpPct: 100 },

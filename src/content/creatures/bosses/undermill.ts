@@ -11,6 +11,7 @@ export const MILLRACE_EEL_BOSS: BossDef = {
   creature: 'creature.millrace_eel',
   title: 'boss.millrace_eel.title',
   dungeon: 'dungeon.undermill',
+  callouts: { 'attack.eel_lash': 'callout.millrace_eel.lash' },
   phases: [
     {
       enter: { hpPct: 100 },

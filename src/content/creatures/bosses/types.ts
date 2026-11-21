@@ -81,4 +81,9 @@ export interface BossDef {
   objective?: ObjectiveGraph;
   /** The dungeon this boss clears, if any. */
   dungeon?: string;
+  /**
+   * Signature moves shouted over the boss as they start: attack id to a key in
+   * `CALLOUT_STRINGS`. Plain attacks are left out, so a shout always means a big move.
+   */
+  callouts?: Readonly<Record<string, string>>;
 }

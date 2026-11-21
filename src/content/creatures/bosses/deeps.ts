@@ -13,6 +13,10 @@ export const FOREMANS_ENGINE_BOSS: BossDef = {
   creature: 'creature.foremans_engine',
   title: 'boss.foremans_engine.title',
   dungeon: 'dungeon.deeps',
+  callouts: {
+    'attack.engine_ram': 'callout.foremans_engine.ram',
+    'attack.engine_steam': 'callout.foremans_engine.steam',
+  },
   phases: [
     {
       enter: { hpPct: 100 },
