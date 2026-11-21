@@ -11,6 +11,11 @@ export const MISC_ITEMS: readonly ItemDef[] = [
   item('item.mill_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
   item('item.root_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
   item('item.river_pebble', 'misc', { value: 1 }),
+  // Goods for the region's requests (M4-11). Borrowed icons.
+  item('item.fishing_net', 'misc', { value: 14, icon: 'icon.wool_cloth' }),
+  item('item.cart_wheel', 'misc', { value: 12, icon: 'icon.oak_plank' }),
+  item('item.pilgrim_letter', 'misc', { value: 0, stack: 1, icon: 'icon.scroll_recipe' }),
+  item('item.wren_page', 'misc', { value: 0, stack: 20, icon: 'icon.scroll_recipe' }),
   item('item.crow_feather', 'misc', { value: 2 }),
   item('item.bone_shard', 'misc', { value: 2 }),
   item('item.lantern_oil', 'misc', { value: 5 }),

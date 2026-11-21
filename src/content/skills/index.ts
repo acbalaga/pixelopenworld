@@ -364,7 +364,11 @@ export function trialKey(skill: string, threshold: number): string {
 
 /** How many steps a Trial's objective counts. */
 export function trialCount(o: TrialDef['objective']): number {
-  return o.kind === 'defeat' || o.kind === 'gather' || o.kind === 'perform'
+  return o.kind === 'defeat' ||
+    o.kind === 'gather' ||
+    o.kind === 'perform' ||
+    o.kind === 'sell' ||
+    o.kind === 'read'
     ? o.count
     : o.kind === 'deliver'
       ? o.qty

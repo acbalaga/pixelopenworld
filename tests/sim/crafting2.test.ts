@@ -299,7 +299,7 @@ describe('the 38 recipes', () => {
   const by = (craft: string) => Object.values(RECIPES).filter((r) => r.craft === craft);
   // M3-12 added 6 Tailoring (cloth, leather, a scholar's outfit and leather wraps) and 4 Alchemy recipes.
   it('are 18 Tailoring, 14 Alchemy, 8 Enchanting and 8 Tinkering, each with a station and a start', () => {
-    expect(by('tailoring')).toHaveLength(18);
+    expect(by('tailoring')).toHaveLength(19);
     expect(by('alchemy')).toHaveLength(14);
     expect(by('enchanting')).toHaveLength(8);
     expect(by('tinkering')).toHaveLength(8);

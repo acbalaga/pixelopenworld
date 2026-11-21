@@ -11,6 +11,8 @@ import { Dir, SUBPX, type Direction } from '../../src/sim/kernel/fixed';
 import { renownIn } from '../../src/sim/renown';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { PLACES } from '../../src/content/people/places';
+import { dayPhase } from '../../src/sim/time';
 import { destroy } from '../../src/sim/kernel/entities';
 import { emit } from '../../src/sim/kernel/events';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
@@ -159,6 +161,47 @@ export function playWay(r: Rig, a: AuthoredRequest, wayId: string): void {
       emit(r.s.events, { type: 'roomChanged', who: r.me, from: 'room.outside', to: o.room });
       requestsSystem(r.s);
       destroy(r.s.entities, door);
+    } else if (o.kind === 'explore') {
+      emit(r.s.events, { type: 'revealed', who: r.me, blocks: o.blocks });
+      requestsSystem(r.s);
+    } else if (o.kind === 'flag') {
+      journal(r).flags.push(o.flag);
+      r.run(2);
+    } else if (o.kind === 'sell') {
+      emit(r.s.events, {
+        type: 'sold',
+        who: r.me,
+        item: 'item.oak_plank',
+        qty: o.count,
+        coin: 1,
+        haggled: false,
+      });
+      requestsSystem(r.s);
+    } else if (o.kind === 'read') {
+      for (const kind of o.fixtures.slice(0, o.count)) {
+        const id = spawnFixture(r.s, kind, 30, 30);
+        r.s.events.list.length = 0;
+        emit(r.s.events, { type: 'tabletRead', id, who: r.me });
+        requestsSystem(r.s);
+      }
+    } else if (o.kind === 'carry') {
+      const rect = PLACES[o.place]!.spot!.rect;
+      const ticksPerMin = 1800;
+      const before = r.s.worldTick;
+      const home = { ...r.s.entities.comps.pos[r.me]! };
+      for (let t = 0; t < 48 * ticksPerMin; t += ticksPerMin)
+        if (!o.phases || o.phases.includes(dayPhase(t))) {
+          r.s.worldTick = t;
+          break;
+        }
+      r.s.entities.comps.pos[r.me] = {
+        x: (rect.x * 16 + 8) * SUBPX,
+        y: (rect.y * 16 + 8) * SUBPX,
+      };
+      r.s.events.list.length = 0;
+      requestsSystem(r.s);
+      r.s.worldTick = before;
+      r.s.entities.comps.pos[r.me] = home;
     } else throw new Error(`unhandled step ${o.kind}`);
   }
 }

@@ -98,7 +98,13 @@ export type TrialObjective =
   /** Feed creatures by hand (M4-05 feeding). A creature kind, or any. */
   | { kind: 'feed'; creature?: string; count: number }
   | { kind: 'deliver'; item: string; qty: number; minQuality?: Quality; to: string }
-  | { kind: 'reach'; room: string; from: string; withinTicks: number };
+  | { kind: 'reach'; room: string; from: string; withinTicks: number }
+  /** Sell this many crafted goods (any item a recipe makes) to a shop. */
+  | { kind: 'sell'; count: number }
+  /** Stand at a named place holding the item, in these phases of the day: the item is handed over. */
+  | { kind: 'carry'; item: string; place: string; phases?: DayPhase[] }
+  /** Read `count` different tablets from this list (copying what they say). */
+  | { kind: 'read'; fixtures: string[]; count: number };
 
 /** A Trial: a short authored test, given by a person or place, that opens the next rank of a skill. */
 export interface TrialDef {

@@ -1,3 +1,4 @@
+import { REQUEST_FIXTURES } from '../pois/requestSites';
 import { SECRET_FIXTURES } from '../pois/secrets';
 import { DUNGEON_SPAWNS } from '../creatures/dungeonSpawners';
 import { rosterSpawnerKinds } from '../creatures/zoneSpawners';
@@ -81,6 +82,7 @@ export const REGIONS: readonly RegionDef[] = [
         'fixture.chest_firebrick',
         // The secrets in the open (M4-11).
         ...SECRET_FIXTURES.filter((f) => f.type === 'chest').map((f) => f.kind),
+        ...REQUEST_FIXTURES.filter((f) => f.type === 'chest').map((f) => f.kind),
         // Manuals (M4-15), stand-ins until M4-11 and M4-21 place them.
         ...MANUALS.filter((m) => m.via !== 'singular').map(
           (m) => `fixture.chest_${m.id.replace(/^item\./, '')}`,

@@ -1,4 +1,5 @@
 import { DAWNMEADOW_POIS, poiChest } from '../../../pois/dawnmeadow';
+import { PAGE_SITES, REQUEST_VIGILS } from '../../../pois/requestSites';
 import { PLACED_SIGNS, signKind } from '../../../pois/signs';
 import { BEE_DOOR, DUNGEON_SECRETS, REGION_SECRETS } from '../../../pois/secrets';
 import { FRAGMENT_SLOTS, fragmentMarker } from '../../../pois/fragments';
@@ -233,6 +234,10 @@ const placements: Placement[] = [
 
   // The readable signs that are not part of a stamp.
   ...PLACED_SIGNS.map((s) => at(signKind(s.id), s.x, s.y)),
+
+  // Where the region's requests send people.
+  ...PAGE_SITES.map((s) => at(`fixture.page_${s.id}`, s.x, s.y)),
+  ...REQUEST_VIGILS.map((v) => at(v.kind, v.x, v.y)),
 
   // Secrets in the open (regions/01 section 13): a chest each, and what wakes it.
   ...REGION_SECRETS.flatMap((s) => [
