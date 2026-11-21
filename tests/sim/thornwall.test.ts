@@ -108,6 +108,20 @@ describe('the Hedge Warden', () => {
     expect(pools.hp).toBeLessThan(Math.ceil(pools.hpMax * 0.25));
   });
 
+  it('lets go once the bloom is burnt, though the elements system hits after the boss system', () => {
+    const d = den();
+    const pools = getComp(d.s.entities, d.id, 'pools')!;
+    pools.hp = Math.floor(pools.hpMax * 0.3);
+    d.run(2);
+    const bloom = spawnFixture(d.s, 'fixture.tw_bloom', 12, 10);
+    // The hit lands late in a tick. The next tick clears its event before the boss can read it.
+    hitFixtures(d.s, 'ember', at(bloom, d.s));
+    d.run(2);
+    pools.hp = Math.floor(pools.hpMax * 0.1);
+    d.run(2);
+    expect(pools.hp).toBeLessThan(Math.ceil(pools.hpMax * 0.25));
+  });
+
   it('sleeps, with the same reward, when the bells are rung in order and the root is sung', () => {
     const d = den();
     const bells = [1, 2, 3].map((n) => spawnFixture(d.s, `fixture.tw_bell_${n}`, 10 + n * 3, 12));
