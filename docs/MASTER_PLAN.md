@@ -66,20 +66,21 @@ Decisions made by the design authority (owner may overrule):
 
 **Design**
 
-| Doc                                                      | Covers                                                                 |
-| -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [01-experience](design/01-experience.md)                 | Player fantasy, core loops, first hour, session shapes                 |
-| [02-world](design/02-world.md)                           | Regions, structure, travel, time, weather, dungeons, the frontier      |
-| [03-progression](design/03-progression.md)               | Skills, mastery, attributes, Paths, Forms                              |
-| [04-combat](design/04-combat.md)                         | Controls, weapons, magic, enemies, bosses, death                       |
-| [05-life-systems](design/05-life-systems.md)             | Gathering, crafting, farming, housing, economy, relationships          |
-| [06-automation](design/06-automation.md)                 | Routines, Tactics, Patrol, offline gains                               |
-| [07-simulated-mmo](design/07-simulated-mmo.md)           | Travelers, chat, parties, guilds, rankings, market, events             |
-| [08-lore-SPOILERS](design/08-lore-SPOILERS.md)           | The hidden layer. Spoils everything.                                   |
-| [09-ui-ux](design/09-ui-ux.md)                           | Screen layout, text rules, menus, accessibility                        |
-| [10-content-budget](design/10-content-budget.md)         | Counts, playtime model, 100% definition                                |
-| [11-skill-table](design/11-skill-table.md)               | The 36 skills: XP sources, band 0 and 15 grants, sources, the M3 Paths |
-| [regions/01-dawnmeadow](design/regions/01-dawnmeadow.md) | Region 1 in full. The pattern for every region doc.                    |
+| Doc                                                      | Covers                                                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [01-experience](design/01-experience.md)                 | Player fantasy, core loops, first hour, session shapes                                |
+| [02-world](design/02-world.md)                           | Regions, structure, travel, time, weather, dungeons, the frontier                     |
+| [03-progression](design/03-progression.md)               | Skills, mastery, attributes, Paths, Forms                                             |
+| [04-combat](design/04-combat.md)                         | Controls, weapons, magic, enemies, bosses, death                                      |
+| [05-life-systems](design/05-life-systems.md)             | Gathering, crafting, farming, housing, economy, relationships                         |
+| [06-automation](design/06-automation.md)                 | Routines, Tactics, Patrol, offline gains                                              |
+| [07-simulated-mmo](design/07-simulated-mmo.md)           | Travelers, chat, parties, guilds, rankings, market, events                            |
+| [08-lore-SPOILERS](design/08-lore-SPOILERS.md)           | The hidden layer. Spoils everything.                                                  |
+| [09-ui-ux](design/09-ui-ux.md)                           | Screen layout, text rules, menus, accessibility                                       |
+| [10-content-budget](design/10-content-budget.md)         | Counts, playtime model, 100% definition                                               |
+| [11-skill-table](design/11-skill-table.md)               | The 36 skills: XP sources, band 0 and 15 grants, sources, the M3 Paths                |
+| [12-travelers](design/12-travelers.md)                   | Traveler data, abstract sim, chat grammar, the 24 hand-tuned Travelers, the 12 guilds |
+| [regions/01-dawnmeadow](design/regions/01-dawnmeadow.md) | Region 1 in full. The pattern for every region doc.                                   |
 
 **Tech**
 

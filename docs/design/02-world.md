@@ -27,7 +27,7 @@ Tier sets creature strength, material tier, and gear tier. Tiers are fixed (deci
 | 1   | Dawnmeadow   | 1    | Farmland, gentle hills, river    | Hearthford (town)          | Home. Farming, cooking, first everything.                                 |
 | 2   | Whisperwood  | 2    | Old forest, fog, giant roots     | Mossgate (tree village)    | Foraging, taming, archery. Easy to get lost in.                           |
 | 3   | Saltreach    | 3    | Coast, cliffs, islands           | Port Brine (harbor city)   | Fishing, sailing between islands, the main market.                        |
-| 4   | Ironvale     | 4    | Foothills, mines, quarries       | Anvil Rest (mining town)   | Mining, smithing, tinkering. First guild halls.                           |
+| 4   | Ironvale     | 4    | Foothills, mines, quarries       | Anvil Rest (mining town)   | Mining, smithing, tinkering. First guild halls outside Hearthford.        |
 | 5   | Sunken Mire  | 5    | Swamp, drowned ruins             | Stiltwater (stilt village) | Alchemy, hexing, stealth. Ruins start to look wrong.                      |
 | 6   | Frostspine   | 6    | Alpine, snow, ice caves          | Highhearth (monastery)     | Survival, athletics, climbing. Weather can kill.                          |
 | 7   | Glass Desert | 7    | Dunes, glass flats, buried city  | Mirage (caravan city)      | Deciphering, enchanting. The hidden layer is closest to the surface here. |
