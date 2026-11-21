@@ -72,7 +72,7 @@ Minimal by default. Elements fade when unchanged for a few seconds, return on ch
 - Clock and weather glyph, top center. Tap for calendar.
 - Minimap toggle, top right. Tap for full map.
 - Chat lane above the thumb zone (see Message lanes).
-- Four technique buttons, context button, menu, bag.
+- Four technique buttons, context button, menu, bag, and the quick slot: one button for a consumable, pinned from the Bag (up to three, a long press steps between them).
 - Target frame (name, health, stagger) when locked.
 - Party frames, left edge, when in a party.
 - No quest tracker by default. The player can pin one request, which shows as a single line of the asker's own words.

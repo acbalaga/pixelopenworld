@@ -14,7 +14,7 @@ Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this 
 
 | Wave | Tickets                                   | Notes                                                                                     |
 | ---- | ----------------------------------------- | ----------------------------------------------------------------------------------------- |
-| A    | 20 and up                                 | Gate G4 findings, written by the planning agent after the verdict. Run alongside wave B.  |
+| A    | 20, 21, 22 (and any later G4 findings)    | Gate G4 findings. Merge before wave B starts, as the owner asked.                         |
 | B    | 02, then 03, then 04, 05, 09, then 14, 15 | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
 | G5a  | 13, then the owner check                  | 13 needs 04, 14, 05 and 15.                                                               |
 | C    | 06, then 07, 08, 12. Also 10, 11.         | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
@@ -411,6 +411,44 @@ Acceptance:
 
 ---
 
-## Reserved: Gate G4 findings
+## Wave A: Gate G4 findings
 
-POW-M5-20 and up. Written by the planning agent after the Gate G4 verdict and merged with this file (D24).
+From the owner's G4 playtest on 2026-11-21. More are added here if the rest of the G4 checklist turns up findings (D24).
+
+### POW-M5-20 Dungeon doorways
+
+Size: S Depends: none Status: READY
+Refs: design/02-world (Dungeons), docs/ops/gate-g4.md (F5)
+
+Goal: a way on inside a dungeon looks like a way on.
+Finding: inside every dungeon the room to room portals had no art, so every exit read as a secret door and players walked the walls looking for them.
+Scope: `defineDungeon` (`src/content/world/dungeons/build.ts`) cuts a `tile.cave_arch` into the wall behind each portal a person can walk through from inside a room (every edge that leaves the room, the far end of an open or locked edge, the way out, back doors not behind a slab), or stands one on the portal's tile when it is out in the room. Drop and shortcut landings stay plain, since they work one way only. Re-bake the world.
+Out of scope: secret ways (none exist today; a future secret edge opts out by kind). A brighter doorway sprite.
+Save: none. Integrity: none.
+Acceptance: a test that every edge, the far end of every two way edge and the way out show an arch in all 16 dungeons. Before and after phone screenshots. The existing landing tests still pass.
+
+### POW-M5-21 Quick slot for consumables
+
+Size: M Depends: none Status: READY
+Refs: design/09-ui-ux (HUD, The Menu, Touch rules)
+
+Goal: eat or use a consumable in a fight without opening the Bag.
+Scope:
+
+- One HUD button on the outer rim of the technique arc (Flow: beside technique 2 and 3; Classic: one step further out, clear of Guard). It shows the item's icon and how many are left, and hides when the Bag holds nothing usable. Tap uses the item through the ordinary `use` command. A long press steps to the next item and names it in the floater lane.
+- Items it takes: food, and gadgets other than the lantern.
+- The Bag detail sheet offers "Pin to quick slot" or "Unpin" on those items. Up to three pinned, the oldest dropped. A long press steps through the pinned ones held. With none pinned it offers the first usable item in the Bag. Feed outranks the pin when a sheet would have four actions.
+- Keys: F uses, V steps. Pad: d-pad up uses, d-pad down steps.
+- Pins and the current pick are UI settings, outside the save, persisted and sanitized like the other settings.
+  Save: none (UI settings only). Integrity: none (the sim sees only `use`).
+  Acceptance: unit tests for the rules (pick, step, wrap, pin cap, counts, which items qualify). Layout test: the button overlaps no other control in Flow and Classic, with and without a shield, portrait and landscape, either hand. Input test: a tap uses, a long press steps once. Settings sanitize test. Phone screenshots portrait and landscape.
+
+### POW-M5-22 Technique and boss move callouts
+
+Size: S Depends: none Status: READY
+Refs: design/04-combat (Bosses), design/09-ui-ux (The text rule)
+
+Goal: the player can tell which technique they threw and which big move a boss is starting.
+Scope: on `techniqueUsed` by the avatar, the technique's name shows over its head in gold pixel text for about a second, drifting up (no drift under reduced motion). Bosses get an optional `callouts` map (attack id to string key in `src/content/strings/callouts.ts`); on `attackStarted` by a boss for a mapped attack, its name shows over the boss in red as the telegraph starts. Plain attacks and common creatures stay quiet. One callout per entity at a time. Timing in `UI_BALANCE.callout`. Render side only.
+Save: none. Integrity: none.
+Acceptance: unit tests (the avatar's technique shouts, someone else's does not, a mapped boss move shouts, an unmapped one and a common creature do not, every callout names a move in its boss's pattern and a string of at most 16 characters). Phone screenshot of a boss callout.
