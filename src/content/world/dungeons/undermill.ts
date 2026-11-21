@@ -215,7 +215,7 @@ export const UNDERMILL_BUILT = defineDungeon({
     entrance: 'u1',
     boss: 'boss.millrace_eel',
     region: 'dawnmeadow',
-    estMinutes: 30,
+    estMinutes: 35,
   },
   parts: PARTS,
 });

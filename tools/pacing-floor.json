@@ -1,6 +1,6 @@
 {
   "dawnmeadow": {
-    "minutes": 1179,
-    "enforceBudget": false
+    "minutes": 1224,
+    "enforceBudget": true
   }
 }

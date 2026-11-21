@@ -227,6 +227,8 @@ const m3 = mini({
       objects: [
         { x: 3, y: 3, kind: 'spawner.dgp_hedge_sparrow' },
         { x: 9, y: 7, kind: 'spawner.dg_thornling_scout' },
+        // A crossbow trap across the stair: it hurts whatever stands in its line, creatures too.
+        { x: 6, y: 7, kind: 'fixture.m3_bolt' },
       ],
     }),
     room('f3', 0, 3, 12, 8, {
@@ -238,6 +240,12 @@ const m3 = mini({
   ],
   edges: [open('f1', 'f2', [10, 1], [10, 8]), open('f2', 'f3', [1, 1], [1, 6])],
   parts: [
+    {
+      kind: 'fixture.m3_bolt',
+      type: 'vent',
+      sprite: 'prop.plate',
+      vent: { radius: 30, telegraph: 40, active: 6, period: 120, damage: 35, all: true },
+    },
     chest(M3, 'fixture.m3_chest', { items: [{ item: 'item.copper_ingot', qty: 2 }], coin: 35 }),
   ],
 });
@@ -341,33 +349,20 @@ const m10 = mini({
     }),
     room('b2', 0, 4, 12, 10, {
       objects: [
-        // The urn, and what stands over it. Going near wakes it (the arena starts on approach).
+        // The urn. Taking what is in it wakes what lies with it.
         { x: 6, y: 4, kind: 'fixture.m10_urn' },
-        { x: 6, y: 5, kind: 'fixture.m10_arena' },
-        ...[3, 4, 5, 6, 7, 8].map((x) => ({ x, y: 7, kind: 'fixture.m10_arena_door' })),
         { x: 10, y: 3, kind: 'marker.fragment.dm_f06' },
       ],
     }),
   ],
   edges: [open('b1', 'b2', [12, 4], [1, 4])],
   parts: [
-    chest(M10, 'fixture.m10_urn', { items: [{ item: 'item.copper_ingot', qty: 2 }], coin: 50 }),
-    {
-      kind: 'fixture.m10_arena_door',
-      type: 'gate',
-      sprite: 'prop.gate',
-      size: 16,
-      arenaDoor: true,
-    },
-    {
-      kind: 'fixture.m10_arena',
-      type: 'arena',
-      arena: {
-        radius: 28,
-        doors: ['fixture.m10_arena_door'],
-        waves: [{ creature: 'creature.barrow_bones', count: 2 }],
-      },
-    },
+    chest(
+      M10,
+      'fixture.m10_urn',
+      { items: [{ item: 'item.copper_ingot', qty: 2 }], coin: 50 },
+      { wakes: { creature: 'creature.barrow_bones', count: 2 } },
+    ),
   ],
 });
 
