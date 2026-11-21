@@ -121,7 +121,7 @@ describe('bag view and item actions', () => {
     expect(v.slots[1]).toMatchObject({ item: null, label: UI_STRINGS.bagSlotEmptyLabel });
   });
   it('offers Eat for food, Wear for gear, and Drop for everything', () => {
-    expect(itemActions(ITEMS['item.dish_bread']!)).toEqual(['use', 'drop']);
+    expect(itemActions(ITEMS['item.dish_bread']!)).toEqual(['use', 'quick', 'drop']);
     expect(itemActions(ITEMS['item.sword_iron']!)).toEqual(['equip', 'drop']);
     // Manuals and recipe scrolls are read with Use (M4-15 shipped without it in the Bag).
     expect(itemActions(ITEMS['item.manual_lunge']!)).toEqual(['use', 'drop']);
@@ -129,8 +129,8 @@ describe('bag view and item actions', () => {
     expect(itemActions(ITEMS['item.scroll_sword_iron']!)).toEqual(['use', 'drop']);
     expect(itemActions(ITEMS['item.moss_tuft']!)).toEqual(['drop']);
     // Raw forage can be eaten as found (it pays Survival XP).
-    expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['use', 'drop']);
-    expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'drop']);
+    expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['use', 'quick', 'drop']);
+    expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'quick', 'drop']);
   });
   it('labels Use by what the item is: Eat food, Read scrolls and manuals, Use gadgets', () => {
     expect(useLabel(ITEMS['item.dish_bread']!)).toBe('Eat');
@@ -145,7 +145,7 @@ describe('bag view and item actions', () => {
     expect(d).toMatchObject({
       name: 'Bread',
       category: 'Food',
-      actions: ['use', 'drop'],
+      actions: ['use', 'quick', 'drop'],
       useLabel: 'Eat',
     });
     expect(d.description.length).toBeGreaterThan(5);

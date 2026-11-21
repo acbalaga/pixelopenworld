@@ -14,6 +14,8 @@ const TECH: ButtonId[] = ['tech1', 'tech2', 'tech3', 'tech4'];
 export class InputSampler {
   readonly keyboard = new KeyboardState();
   readonly gamepad = new GamepadState();
+  /** A finger was already holding the quick slot last sample, so its long press has fired. */
+  private quickHeld = false;
 
   constructor(
     readonly touch: TouchController,
@@ -55,6 +57,11 @@ export class InputSampler {
     r.menu = pressed.has('menu');
     r.bag = pressed.has('bag');
     r.swap = pressed.has('swap');
+    r.quick = pressed.has('quick');
+    // A long press on the quick slot steps it on, once per press. Keys and pad have their own button.
+    const quickHold = t.buttonsHeld.has('quick');
+    r.quickNext = pressed.has('quickNext') || (quickHold && !this.quickHeld);
+    this.quickHeld = quickHold;
     if (t.dodge) r.dodge = t.dodge;
     else if (pressed.has('dodge')) r.dodge = { dir: r.moveDir };
     r.targetTap = t.targetTap;

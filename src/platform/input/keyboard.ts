@@ -65,6 +65,8 @@ const KEY_BUTTONS: Record<string, ButtonId> = {
   Escape: 'menu',
   KeyB: 'bag',
   KeyQ: 'swap',
+  KeyF: 'quick',
+  KeyV: 'quickNext',
 };
 
 /** Key codes the page should stop the browser from acting on. */

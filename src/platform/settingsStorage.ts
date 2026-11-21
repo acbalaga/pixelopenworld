@@ -46,6 +46,15 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
     out.pinnedRegions = r.pinnedRegions
       .filter((x): x is string => typeof x === 'string' && /^[a-z][a-z0-9_]{0,40}$/.test(x))
       .slice(0, 40);
+  if (Array.isArray(r.quickItems))
+    out.quickItems = r.quickItems
+      .filter((x): x is string => typeof x === 'string' && /^item\.[a-z0-9_]{1,40}$/.test(x))
+      .slice(-3);
+  if (
+    typeof r.quickPick === 'string' &&
+    (r.quickPick === '' || /^item\.[a-z0-9_]{1,40}$/.test(r.quickPick))
+  )
+    out.quickPick = r.quickPick;
   if (Array.isArray(r.closedSections))
     out.closedSections = r.closedSections
       .filter((x): x is string => typeof x === 'string' && x.length <= 40)

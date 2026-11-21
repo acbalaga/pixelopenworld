@@ -40,6 +40,10 @@ export interface Settings {
   prefetchRegions: boolean;
   /** Regions the player keeps for offline play. They are fetched whole and stay cached. */
   pinnedRegions: string[];
+  /** Items pinned to the quick slot from the Bag, oldest first, at most three (G4 playtest). */
+  quickItems: string[];
+  /** The item showing on the quick slot, or ''. */
+  quickPick: string;
 }
 
 export const TEXT_SCALE_RANGE = [0.8, 1.6] as const;
@@ -80,6 +84,8 @@ export class SettingsStore {
       minimap: true,
       prefetchRegions: true,
       pinnedRegions: [],
+      quickItems: [],
+      quickPick: '',
     };
   }
 
@@ -113,6 +119,9 @@ export class SettingsStore {
       next.prefetchRegions === this.value.prefetchRegions &&
       next.pinnedRegions.length === this.value.pinnedRegions.length &&
       next.pinnedRegions.every((x, i) => x === this.value.pinnedRegions[i]) &&
+      next.quickPick === this.value.quickPick &&
+      next.quickItems.length === this.value.quickItems.length &&
+      next.quickItems.every((x, i) => x === this.value.quickItems[i]) &&
       next.closedSections.length === this.value.closedSections.length &&
       next.closedSections.every((x, i) => x === this.value.closedSections[i])
     )
