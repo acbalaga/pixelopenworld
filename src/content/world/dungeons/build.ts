@@ -90,6 +90,45 @@ const roomStamp = (id: string, s: RoomSpec): DungeonRoom => {
   return { id: s.id, stamp, ...s.extra };
 };
 
+/**
+ * Draws a doorway at each of a room's portals, so a way on reads as a way on (G4 playtest: every
+ * exit looked like a secret). A portal on the ring by a wall gets an arch cut into that wall,
+ * facing into the room. A portal out in the room gets the arch on its own tile.
+ */
+export function withDoorways(
+  stamp: StampV2,
+  s: Pick<RoomSpec, 'w' | 'h' | 'floor'>,
+  tiles: readonly { x: number; y: number }[],
+): StampV2 {
+  const object = (stamp.layers.object ?? []).map((row) => [...row]);
+  const wallAt = (x: number, y: number): boolean => object[y]?.[x] === '#';
+  for (const t of tiles) {
+    const behind =
+      t.y === 1
+        ? { x: t.x, y: 0 }
+        : t.y === s.h - 2
+          ? { x: t.x, y: s.h - 1 }
+          : t.x === 1
+            ? { x: 0, y: t.y }
+            : t.x === s.w - 2
+              ? { x: s.w - 1, y: t.y }
+              : null;
+    const at = behind && wallAt(behind.x, behind.y) ? behind : t;
+    object[at.y]![at.x] = DOORWAY;
+  }
+  return {
+    ...stamp,
+    legend: {
+      ...stamp.legend,
+      [DOORWAY]: { ground: s.floor ?? Terrain.Cave, object: tilesetId('tile.cave_arch') },
+    },
+    layers: { ...stamp.layers, object: object.map((r) => r.join('')) },
+  };
+}
+
+/** The legend character of a doorway arch in a room stamp. */
+const DOORWAY = 'A';
+
 export function defineDungeon(spec: DungeonSpec) {
   const specOf = (id: string): RoomSpec => {
     const s = spec.rooms.find((r) => r.id === id);
@@ -219,8 +258,28 @@ export function defineDungeon(spec: DungeonSpec) {
     });
     if (r.id === spec.def.entrance) mine.push({ ...spec.mouth.exit, kind: spec.mouth.exitKind });
     for (const d of spec.doors ?? []) if (d.room === r.id) mine.push({ ...d.tile, kind: d.kind });
-    return { ...r.stamp, objects: [...(r.stamp.objects ?? []), ...mine] };
+    return withDoorways(
+      { ...r.stamp, objects: [...(r.stamp.objects ?? []), ...mine] },
+      specOf(r.id),
+      doorwaysOf(r.id),
+    );
   });
+
+  /**
+   * The portal tiles of a room a person can walk through from inside it (G4 playtest): every edge
+   * that leaves it, the far end of a two way edge, the way out, and back doors not behind a slab.
+   * The landing end of a drop or a shortcut is not one: those work one way only.
+   */
+  function doorwaysOf(room: string): { x: number; y: number }[] {
+    const out: { x: number; y: number }[] = [];
+    for (const e of spec.edges) {
+      if (e.from === room) out.push(e.at);
+      if (e.to === room && (e.kind === 'open' || e.kind === 'locked')) out.push(e.arrive);
+    }
+    if (room === spec.def.entrance) out.push(spec.mouth.exit);
+    for (const d of spec.doors ?? []) if (d.room === room && !d.unlockedBy) out.push(d.tile);
+    return out;
+  }
 
   /** Where each room stamp goes, for the region spec. */
   const placements = (): { kind: string; stamp: string; x: number; y: number }[] =>

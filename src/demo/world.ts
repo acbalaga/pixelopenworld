@@ -82,6 +82,7 @@ import { TalkSheet } from '../ui/dom/talk';
 import { ChatTicker, PinnedLine } from '../ui/dom/ambient';
 import { drawFloaters } from '../ui/messages/floaters';
 import { quickCount, quickItem, quickNext, quickSlotOf } from '../ui/hud/quickSlot';
+import { calloutFor } from '../ui/combat/callout';
 import { lanesFor } from '../ui/messages/layout';
 import { MessageRouter } from '../ui/messages/router';
 import { MessageView } from '../ui/messages/view';
@@ -1433,6 +1434,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
+        for (const e of state.events.list) {
+          const c = calloutFor(state, who, e);
+          if (c) feedback.callout(c.id, c.text, c.boss ? HURT : GOLD, now);
+        }
         if (!settings.get().reducedMotion) {
           const w = workOf();
           if (w)
@@ -1834,6 +1839,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         camera.y + shake.y,
         now,
         DARK,
+      );
+      feedback.drawCallouts(
+        renderer,
+        fonts.large,
+        camera.x + shake.x,
+        camera.y + shake.y,
+        now,
+        DARK,
+        centerOf,
+        settings.get().reducedMotion,
       );
 
       // Screen space: bars, lock frame, controls.
