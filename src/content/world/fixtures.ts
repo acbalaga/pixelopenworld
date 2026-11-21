@@ -5,6 +5,7 @@
 
 import { MANUALS } from '../items/manuals';
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { SECRET_FIXTURES } from '../pois/secrets';
 import { WEST_FIXTURES } from './dungeons/west';
 import type { ElementId } from '../combat/statuses';
 
@@ -38,6 +39,8 @@ export type FixtureType =
   | 'arena'
   | 'ledge'
   | 'rest'
+  /** A place where something is found by being there the right way (a secret): sets a journal flag. */
+  | 'vigil'
   /** A heat vent: bursts on a cycle and hurts whoever stands near it (m8). */
   | 'vent'
   /** A thing that records being used and does nothing else (a scarecrow, a mound of earth). */
@@ -114,6 +117,19 @@ export interface FixtureDef {
    * sluice switch is on, and high otherwise, or while the named basin has been filled by a Tide hit.
    */
   water?: { sluice: string; when: 'low' | 'high'; basin?: string };
+  /**
+   * Vigil: an avatar within `radius` px sets the journal flag `flag` once the way is right: with
+   * `need` points of a skill, inside the `minutes` window of the in-game day, in `weather`. With
+   * `phases` it must have stood here in each of them (the flag `<flag>.<phase>` records each).
+   */
+  secret?: {
+    radius: number;
+    flag: string;
+    need?: { skill: string; points: number };
+    minutes?: readonly [number, number];
+    weather?: 'clear';
+    phases?: readonly ('dawn' | 'day' | 'dusk' | 'night')[];
+  };
   /** Ledge: climbing it needs this much of the skill and costs this much Stamina, and carries the avatar two tiles on. */
   climb?: { skill: string; points: number; stamina: number };
   /**
@@ -489,6 +505,7 @@ export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries
     ...LIST,
     ...MANUAL_CHESTS,
     ...WEST_FIXTURES,
+    ...SECRET_FIXTURES,
     ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
   ].map((f) => [f.kind, f]),
 );

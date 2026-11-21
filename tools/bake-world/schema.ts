@@ -82,6 +82,7 @@ const specSchema = z
     pois: z
       .array(z.object({ id: dotted, x: z.number().int(), y: z.number().int() }).strict())
       .optional(),
+    secrets: z.array(z.object({ id: z.string(), skill: z.string().optional() })).optional(),
     pendingDiscoverables: z.array(z.string().regex(/^\d+,\d+$/)).optional(),
     landmarkHeights: z.record(id, z.number().int().min(1)).optional(),
   })
