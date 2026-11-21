@@ -178,11 +178,12 @@ export function defineDungeon(spec: DungeonSpec) {
       const a = regionTile(e.from, e.at);
       const b = regionTile(e.to, e.arrive);
       const both = e.kind === 'open' || e.kind === 'locked';
+      // `arrive` is where someone coming TO a fixture stands, a step into the room that fixture is in.
       out.push({
         kind: kindOf(i, 'a'),
         type: 'portal',
         to: kindOf(i, 'b'),
-        arrive: inward(e.to, e.arrive),
+        arrive: inward(e.from, e.at),
         at: a,
         ...(e.kind === 'oneWay' ? { fall: 10 } : {}),
       });
@@ -192,7 +193,7 @@ export function defineDungeon(spec: DungeonSpec) {
               kind: kindOf(i, 'b'),
               type: 'portal',
               to: kindOf(i, 'a'),
-              arrive: inward(e.from, e.at),
+              arrive: inward(e.to, e.arrive),
               at: b,
             }
           : { kind: kindOf(i, 'b'), type: 'arrival', arrive: inward(e.to, e.arrive), at: b },
@@ -222,13 +223,13 @@ export function defineDungeon(spec: DungeonSpec) {
           kind: d.kind,
           type: 'portal',
           to: d.outKind,
-          arrive: [0, 24],
+          arrive: inward(d.room, d.tile),
           at: regionTile(d.room, d.tile),
           ...(d.unlockedBy
             ? { unlockedBy: d.unlockedBy, sprite: 'tile.cave_wall_face', size: 16 }
             : {}),
         },
-        { kind: d.outKind, type: 'portal', to: d.kind, arrive: inward(d.room, d.tile), at: d.at },
+        { kind: d.outKind, type: 'portal', to: d.kind, arrive: [0, 24], at: d.at },
       );
     }
     return out;
