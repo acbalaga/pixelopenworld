@@ -185,7 +185,9 @@ export function defineDungeon(spec: DungeonSpec) {
           to: d.outKind,
           arrive: [0, 24],
           at: regionTile(d.room, d.tile),
-          ...(d.unlockedBy ? { unlockedBy: d.unlockedBy, sprite: 'prop.gate', size: 16 } : {}),
+          ...(d.unlockedBy
+            ? { unlockedBy: d.unlockedBy, sprite: 'tile.cave_wall_face', size: 16 }
+            : {}),
         },
         { kind: d.outKind, type: 'portal', to: d.kind, arrive: inward(d.room, d.tile), at: d.at },
       );
