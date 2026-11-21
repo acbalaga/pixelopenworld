@@ -62,13 +62,17 @@ function eventKinds(state: SimState): string[] {
   return out;
 }
 
-function stepDone(state: SimState, done: ObjectiveDone, who: EntityId | null): boolean {
-  if ('fixtureOpen' in done) {
-    for (const id of query(state.entities, 'fixture'))
-      if (getComp(state.entities, id, 'fixture')?.kind === done.fixtureOpen)
-        if (getComp(state.entities, id, 'fixture')?.open) return true;
-    return false;
+/** True if a fixture of this kind stands open (broken, switched on, pressed). */
+function fixtureOpen(state: SimState, kind: string): boolean {
+  for (const id of query(state.entities, 'fixture')) {
+    const f = getComp(state.entities, id, 'fixture');
+    if (f?.kind === kind && f.open) return true;
   }
+  return false;
+}
+
+function stepDone(state: SimState, done: ObjectiveDone, who: EntityId | null): boolean {
+  if ('fixtureOpen' in done) return fixtureOpen(state, done.fixtureOpen);
   if ('flag' in done) {
     for (const j of state.entities.comps.journal) if (j?.flags.includes(done.flag)) return true;
     return false;
@@ -142,7 +146,12 @@ export function bossSystem(state: SimState): void {
 
     // A health gate holds Health at its floor until its event has been seen. It acts before the
     // phase is worked out, so a burst cannot carry Health through the floor into the next phase.
+    // The event alone is not enough: Ember and Stone hits land in the elements system, after this
+    // one, and events are cleared at the start of the next tick, so the boss never saw them. A
+    // fixture that stands open now (a bloom broken, a switch on) counts as seen, and stays seen.
     const gated = def.phases[b.phase]?.gate;
+    if (gated && !b.events.includes(gated.until) && fixtureOpen(state, gated.until))
+      b.events.push(gated.until);
     if (gated && !b.events.includes(gated.until)) {
       const floor = Math.ceil((pools.hpMax * gated.holdHpPct) / 100);
       if (pools.hp < floor) pools.hp = floor;
