@@ -976,12 +976,12 @@ export class MenuSheet {
               this.closeSheet();
             },
           }
-        : a === 'drop'
+        : a === 'drop' || a === 'trash'
           ? {
               label: S.actions[a],
               key: `act-${a}`,
               onHold: () => {
-                this.deps.send({ type: 'drop', slot });
+                this.deps.send({ type: a, slot });
                 this.closeSheet();
               },
             }

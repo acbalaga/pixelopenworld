@@ -5,6 +5,9 @@ import { item } from './define';
 const mat = (id: string, value: number, tier = 1, quality = true): ItemDef =>
   item(id, 'material', { value, tier, ...(quality ? { quality: true as const } : {}) });
 
+/** What a failed craft leaves: nothing to sell, nothing to make (G4 playtest: it can be thrown away). */
+const junk = (id: string): ItemDef => ({ ...mat(id, 0, 1, false), junk: true });
+
 export const MATERIAL_ITEMS: readonly ItemDef[] = [
   // Herbs and berries gathered from the meadow. Edible as found (Survival XP).
   item('item.sunwort', 'material', {
@@ -30,12 +33,12 @@ export const MATERIAL_ITEMS: readonly ItemDef[] = [
   mat('item.nightshade', 8, 2),
   mat('item.glowcap', 10, 2),
   // What a failed craft leaves.
-  mat('item.slag', 0, 1, false),
-  mat('item.wood_scraps', 0, 1, false),
-  mat('item.rags', 0, 1, false),
-  mat('item.sludge', 0, 1, false),
-  mat('item.rune_dust', 0, 1, false),
-  mat('item.scrap', 0, 1, false),
+  junk('item.slag'),
+  junk('item.wood_scraps'),
+  junk('item.rags'),
+  junk('item.sludge'),
+  junk('item.rune_dust'),
+  junk('item.scrap'),
   // From the water (fishing).
   mat('item.fish_river', 6),
   mat('item.fish_silver', 14, 2),

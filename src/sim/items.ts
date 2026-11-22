@@ -357,6 +357,42 @@ export function dropFromBag(state: SimState, who: EntityId, slot: number): boole
   return true;
 }
 
+/**
+ * Throws a whole bag slot away for good (G4 playtest). Only junk: what a failed craft or a burnt
+ * meal leaves. Nothing is dropped on the ground, and nothing else can be thrown away this way.
+ */
+export function trashFromBag(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  if (!inv || !stack || !ITEMS[stack.item]?.junk) return false;
+  if (getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
+  inv.slots[slot] = null;
+  return true;
+}
+
+/**
+ * Uses a bag item (G4 playtest): grows the Bag to the size the item names and uses it up. A Bag
+ * that is already that big keeps the item and says so. The Bag is only ever the length of its
+ * slot list, so there is nothing else to save.
+ */
+export function useBagItem(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  const to = stack ? ITEMS[stack.item]?.bagSlots : undefined;
+  if (!inv || !stack || to === undefined) return false;
+  if (getComp(state.entities, who, 'fighter')?.state === 'dead') return true;
+  if (inv.slots.length >= to) {
+    emit(state.events, { type: 'bagBigEnough', who, item: stack.item });
+    return true;
+  }
+  const item = stack.item;
+  stack.qty--;
+  if (stack.qty === 0) inv.slots[slot] = null;
+  while (inv.slots.length < to) inv.slots.push(null);
+  emit(state.events, { type: 'bagGrew', who, item, slots: inv.slots.length });
+  return true;
+}
+
 /** Eats food from a bag slot: restores pools and starts a Fed buff that replaces any other. */
 export function eat(state: SimState, who: EntityId, slot: number): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -476,7 +512,8 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       if (
         !eat(state, who, c.slot) &&
         !readScroll(state, who, c.slot) &&
-        !readManual(state, who, c.slot)
+        !readManual(state, who, c.slot) &&
+        !useBagItem(state, who, c.slot)
       )
         useGadget(state, who, c.slot);
       return;
@@ -485,6 +522,9 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'drop':
       dropFromBag(state, who, c.slot);
+      return;
+    case 'trash':
+      trashFromBag(state, who, c.slot);
       return;
     case 'store':
       moveStorage(state, who, c.dir, c.slot);

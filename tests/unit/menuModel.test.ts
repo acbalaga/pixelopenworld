@@ -130,7 +130,8 @@ describe('bag view and item actions', () => {
     expect(itemActions(ITEMS['item.moss_tuft']!)).toEqual(['drop']);
     // Raw forage can be eaten as found (it pays Survival XP).
     expect(itemActions(ITEMS['item.sunwort']!)).toEqual(['use', 'quick', 'drop']);
-    expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'quick', 'drop']);
+    // Junk can still be eaten, is never pinned, and is thrown away instead of dropped.
+    expect(itemActions(ITEMS['item.burnt_mess']!)).toEqual(['use', 'trash']);
   });
   it('labels Use by what the item is: Eat food, Read scrolls and manuals, Use gadgets', () => {
     expect(useLabel(ITEMS['item.dish_bread']!)).toBe('Eat');

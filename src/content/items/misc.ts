@@ -51,6 +51,9 @@ export const MISC_ITEMS: readonly ItemDef[] = [
   ).map(([id, gadget, value]) =>
     item(id, 'misc', { value, stack: 10, gadget, bag: 'tools', tier: 1 }),
   ),
+  // Bags (G4 playtest): made at the loom. Use one to grow the Bag to its size.
+  item('item.satchel', 'misc', { value: 40, stack: 1, bag: 'tools', tier: 1, bagSlots: 26 }),
+  item('item.pack', 'misc', { value: 110, stack: 1, bag: 'tools', tier: 2, bagSlots: 34 }),
   // The lantern is worn in the off hand and lights dark rooms.
   item('item.lantern', 'misc', {
     value: 45,
