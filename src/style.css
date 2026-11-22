@@ -580,7 +580,7 @@ canvas {
   margin-top: calc(var(--px) * 4);
 }
 .pow-danger {
-  border-color: var(--pal-21);
+  border-color: var(--pal-22);
 }
 .pow-coin,
 .pow-bag-count {
@@ -1275,7 +1275,7 @@ canvas {
   color: var(--pal-47);
 }
 .pow-seal-flagged .pow-seal-glyph {
-  color: var(--pal-21);
+  color: var(--pal-22);
 }
 .pow-seal-tap {
   opacity: 0.7;
@@ -2163,4 +2163,139 @@ canvas {
   border-style: double;
   border-color: var(--pal-47);
   background: var(--pal-0);
+}
+
+/* The crafting station (POW-M4-22C): a fixed tray, one switchable list. The sheet does not scroll. */
+.pow-station {
+  height: min(80%, 40rem);
+  max-height: 80%;
+  overflow: hidden;
+}
+.pow-station > * {
+  flex-shrink: 0;
+}
+.pow-station-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+}
+.pow-station-cells {
+  display: flex;
+  gap: calc(var(--px) * 1);
+}
+.pow-station-cells .pow-part-cell {
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+}
+.pow-tray-empty {
+  border-style: dashed;
+  cursor: default;
+}
+.pow-station-acts {
+  display: flex;
+  gap: calc(var(--px) * 2);
+  /* Beside the tray when there is room, else under it, Craft on the thumb side. */
+  flex: 1 1 10em;
+  justify-content: flex-end;
+}
+.pow-station-acts .pow-button {
+  white-space: nowrap;
+  min-height: 48px;
+}
+.pow-station-acts .pow-choice {
+  width: auto;
+  flex: 1 1 auto;
+  text-align: center;
+}
+.pow-station-line {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+.pow-station-line .pow-shop-msg {
+  min-height: 0;
+  font-size: calc(0.9rem * var(--text-scale, 1));
+}
+.pow-station-line .pow-craft-result {
+  width: 100%;
+  margin: 0;
+}
+.pow-station-line .pow-craft-result .pow-hint {
+  display: none;
+}
+.pow-station-switch {
+  display: flex;
+  gap: calc(var(--px) * 1);
+}
+.pow-station-switch .pow-button {
+  flex: 1 1 0;
+  min-height: 44px;
+}
+.pow-station-switch .pow-button[aria-pressed='true'] {
+  border-color: var(--pal-47);
+  background: var(--pal-18);
+}
+/* The one list that scrolls. */
+.pow-station .pow-station-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+.pow-station-recipes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+}
+.pow-station-recipe {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--px) * 2);
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+  font: inherit;
+  text-align: left;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  cursor: pointer;
+}
+.pow-station-recipe.is-short {
+  opacity: 0.8;
+}
+.pow-station-rname {
+  flex: 1 1 6em;
+}
+.pow-station-need {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--px) * 2);
+}
+.pow-station-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--px) * 1);
+  font-size: calc(0.85rem * var(--text-scale, 1));
+}
+.pow-station-lack {
+  color: var(--pal-22);
+}
+.pow-station-bag {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  gap: calc(var(--px) * 1);
+}
+.pow-station-bag .pow-part-cell {
+  min-height: 48px;
+}
+.pow-station-bag .pow-part-cell:disabled {
+  opacity: 0.45;
+  cursor: default;
 }

@@ -4,6 +4,7 @@
  */
 import { ITEMS } from '../../content/items';
 import { AFFIXES } from '../../content/items/affixes';
+import { RECIPES } from '../../content/items/recipes';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
@@ -21,3 +22,17 @@ export const recipeName = (r: { result: string; enchant?: string }): string =>
 export const ingredientLine = (r: {
   ingredients: readonly { item: string; qty: number }[];
 }): string => r.ingredients.map((i) => `${i.qty} ${itemName(i.item)}`).join(', ');
+
+/**
+ * Every item named by any recipe, computed once from data. It says nothing about which station
+ * a recipe is for, so the crafting Bag list gives nothing away (POW-M4-22C).
+ */
+export const INGREDIENT_ITEMS: ReadonlySet<string> = new Set(
+  Object.values(RECIPES).flatMap((r) => r.ingredients.map((i) => i.item)),
+);
+
+/** Whether the crafting Bag list shows an item: a material or consumable, or any recipe ingredient. */
+export function canBeIngredient(id: string): boolean {
+  const c = ITEMS[id]?.category;
+  return c === 'material' || c === 'consumable' || INGREDIENT_ITEMS.has(id);
+}
