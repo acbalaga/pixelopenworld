@@ -148,6 +148,7 @@ const m1 = mini({
         { x: 8, y: 6, kind: 'fixture.m1_plate_b' },
         { x: 10, y: 4, kind: 'fixture.m1_gate_a' },
         { x: 10, y: 5, kind: 'fixture.m1_gate_b' },
+        { x: 2, y: 8, kind: 'fixture.reset_post' },
       ],
       extra: { start: { x: 7, y: 7 }, reset: true },
     }),

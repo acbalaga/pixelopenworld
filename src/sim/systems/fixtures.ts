@@ -127,25 +127,39 @@ function roomOfPos(state: SimState, x: number, y: number): string {
 }
 
 /** Puts a block back where it started. */
-function resetBlock(state: SimState, id: EntityId): void {
+function resetBlock(state: SimState, id: EntityId): boolean {
   const f = getComp(state.entities, id, 'fixture');
   const p = getComp(state.entities, id, 'pos');
-  if (!f || !p || (p.x === f.home.x && p.y === f.home.y)) return;
+  if (!f || !p || (p.x === f.home.x && p.y === f.home.y)) return false;
   p.x = f.home.x;
   p.y = f.home.y;
   emit(state.events, { type: 'blockReset', id });
+  return true;
 }
 
-/** On entering a room, blocks that belong to an unsolved puzzle there go back to their start. */
-function resetRoom(state: SimState, room: string): void {
+/**
+ * Sends the blocks that belong to an unsolved puzzle in `room` back to their start, and returns
+ * how many moved. Runs on entering the room, on leaving it, and from the room's reset post.
+ */
+function resetRoom(state: SimState, room: string): number {
+  let moved = 0;
   for (const id of query(state.entities, 'fixture')) {
     const f = getComp(state.entities, id, 'fixture');
     const def = f ? FIXTURES[f.kind] : undefined;
     if (!f || def?.type !== 'block' || def.room !== room) continue;
     const gate = def.gate ? fixtureOfKind(state, def.gate) : null;
     const solved = gate !== null && getComp(state.entities, gate, 'fixture')?.open === true;
-    if (!solved) resetBlock(state, id);
+    if (!solved && resetBlock(state, id)) moved++;
   }
+  return moved;
+}
+
+/** A reset post: the blocks of its own room, the one it stands in, go back to their start. */
+function useResetPost(state: SimState, who: EntityId, id: EntityId): void {
+  const p = getComp(state.entities, id, 'pos');
+  if (!p) return;
+  const room = roomOfPos(state, p.x, p.y);
+  emit(state.events, { type: 'roomReset', who, room, count: resetRoom(state, room) });
 }
 
 function useDoor(state: SimState, who: EntityId, id: EntityId): void {
@@ -392,6 +406,8 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useChest(state, who, target);
     case 'block':
       return pushBlock(state, who, target);
+    case 'resetpost':
+      return useResetPost(state, who, target);
     case 'switch':
       return useSwitch(state, who, target);
     case 'ledge':
@@ -535,6 +551,9 @@ export function fixturesSystem(state: SimState): void {
       if (def.fall) fall(state, a, def.fall);
       const to = roomOfPos(state, q.x, q.y);
       if (to !== from) {
+        // Unsolved blocks go home on the way out as well as on the way in, so a puzzle is never
+        // left wedged for the next visit, and a room seen from its doorway always looks fresh.
+        resetRoom(state, from);
         resetRoom(state, to);
         emit(state.events, { type: 'roomChanged', who: a, from, to });
       }

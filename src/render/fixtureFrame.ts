@@ -7,6 +7,8 @@ import type { FixtureDef } from '../content/world/fixtures';
  */
 export function fixtureFrame(type: FixtureDef['type'], open: boolean): string {
   if (type === 'plate' || type === 'switch' || type === 'vent') return open ? 'down' : 'up';
+  // The reset post borrows the plate sprite and always shows it raised: it is never pressed down.
+  if (type === 'resetpost') return 'up';
   if (type === 'element' || type === 'breakable') return open ? 'open' : 'closed';
   // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
   if (type === 'storage') return 'closed';

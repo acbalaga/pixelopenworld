@@ -24,6 +24,7 @@ const SOLID_TYPES = new Set([
   'waystone',
   'element',
   'wall',
+  'resetpost',
 ]);
 
 interface Grid {
@@ -31,6 +32,8 @@ interface Grid {
   h: number;
   walk: boolean[];
   blocks: number[];
+  /** Tiles holding a reset post. A room with blocks must have one. */
+  posts: number[];
   plates: number[];
   /** Tiles a block may not be pushed onto: next to an entrance or exit, which it could seal. */
   noPush: Set<number>;
@@ -41,6 +44,7 @@ function grid(room: DungeonRoom, edges: readonly DungeonEdge[]): Grid {
   const idx = (x: number, y: number): number => y * r.w + x;
   const walk: boolean[] = r.cells.map((c) => c !== null && collisionOfCell(c) === Solid.None);
   const blocks: number[] = [];
+  const posts: number[] = [];
   const plates: number[] = [];
   const noPush = new Set<number>();
   for (const o of r.objects) {
@@ -48,6 +52,10 @@ function grid(room: DungeonRoom, edges: readonly DungeonEdge[]): Grid {
     if (!def) continue;
     const i = idx(o.x, o.y);
     if (def.type === 'block') blocks.push(i);
+    else if (def.type === 'resetpost') {
+      posts.push(i);
+      walk[i] = false;
+    }
     else if (def.type === 'plate' && (def.holds ?? ['block']).includes('block')) plates.push(i);
     else if (def.type === 'portal' || def.type === 'arrival') mark(noPush, o.x, o.y, r.w, r.h);
     else if (SOLID_TYPES.has(def.type) && !def.arenaDoor && !def.tide && !def.water && !def.holdTicks) walk[i] = false;
@@ -56,7 +64,7 @@ function grid(room: DungeonRoom, edges: readonly DungeonEdge[]): Grid {
     if (e.from === room.id) mark(noPush, e.at.x, e.at.y, r.w, r.h);
     if (e.to === room.id) mark(noPush, e.arrive.x, e.arrive.y, r.w, r.h);
   }
-  return { w: r.w, h: r.h, walk, blocks, plates, noPush };
+  return { w: r.w, h: r.h, walk, blocks, posts, plates, noPush };
 }
 
 function mark(set: Set<number>, x: number, y: number, w: number, h: number): void {
@@ -96,8 +104,19 @@ function reach(g: Grid, from: number, blocked: ReadonlySet<number>): Set<number>
  * solved (a block pushed into a corner, a plate it can no longer reach).
  */
 function blockPuzzle(room: DungeonRoom, g: Grid, start: number): string[] {
-  if (g.blocks.length === 0 || g.plates.length === 0) return [];
+  if (g.blocks.length === 0) return [];
   const where = `room ${room.id}`;
+  // Every room with blocks has a reset post, and the post is not beside a block's start tile
+  // (the player stands next to the post, and a block going home must not land on them).
+  if (g.posts.length === 0) return [`${where}: has blocks but no reset post (fixture.reset_post)`];
+  for (const post of g.posts)
+    for (const b of g.blocks)
+      if (
+        Math.abs((post % g.w) - (b % g.w)) <= 1 &&
+        Math.abs(Math.floor(post / g.w) - Math.floor(b / g.w)) <= 1
+      )
+        return [`${where}: the reset post is beside a block's start tile`];
+  if (g.plates.length === 0) return [];
   if (g.blocks.length > MAX_BLOCKS)
     return [
       `${where}: ${g.blocks.length} blocks is more than the validator checks (${MAX_BLOCKS})`,

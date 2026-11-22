@@ -47,6 +47,7 @@ const SPECS: readonly RoomSpec[] = [
       { x: 10, y: 7, kind: 'fixture.sd_plate_b' },
       { x: 13, y: 5, kind: 'fixture.sd_gate_a' },
       { x: 13, y: 6, kind: 'fixture.sd_gate_b' },
+      { x: 3, y: 10, kind: 'fixture.reset_post' },
       { x: 7, y: 9, kind: 'spawner.dg_rubblet' },
     ],
     extra: { reset: true },

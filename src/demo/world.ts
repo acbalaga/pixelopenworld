@@ -1503,6 +1503,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             );
           else if (e.type === 'signRead' && e.who === who)
             notices.toast(SIGN_STRINGS[e.kind.replace('fixture.sign_', 'sign.')] ?? '', e.kind);
+          else if (e.type === 'roomReset' && e.who === who)
+            notices.toast(e.count > 0 ? W_STR.roomReset : W_STR.roomResetNone);
           else if (e.type === 'doorLocked') notices.toast(W_STR.locked);
           else if (e.type === 'doorOpened') {
             openedAt.set(e.id, performance.now());

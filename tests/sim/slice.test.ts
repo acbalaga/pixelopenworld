@@ -368,6 +368,51 @@ describe('the pressure plate puzzle cannot soft lock', () => {
     expect(b.count('blockReset')).toBeGreaterThan(0);
   });
 
+  it('leaving the room sends a wedged block home, so it is fresh before the next visit', () => {
+    const b = inPuzzleRoom();
+    const home = b.fixtureTile('fixture.block_puzzle');
+    b.push(S, 1);
+    b.push(S, 1);
+    expect(b.fixtureTile('fixture.block_puzzle')).not.toEqual(home);
+    b.walkTo(at('fixture.portal_c_south'));
+    expect(b.room()).toBe('room.b');
+    expect(b.fixtureTile('fixture.block_puzzle')).toEqual(home);
+  });
+
+  it('the reset post sends a wedged block home without leaving the room', () => {
+    const b = inPuzzleRoom();
+    const home = b.fixtureTile('fixture.block_puzzle');
+    b.push(S, 1);
+    b.push(S, 1);
+    const post = b.fixtureTile('fixture.reset_post');
+    b.use({ x: post.x + 1, y: post.y }, W);
+    expect(b.room()).toBe('room.c');
+    expect(b.fixtureTile('fixture.block_puzzle')).toEqual(home);
+    const ev = b.events.filter((e) => e.type === 'roomReset');
+    expect(ev).toEqual([expect.objectContaining({ room: 'room.c', count: 1 })]);
+  });
+
+  it('the reset post does nothing when nothing is out of place, and says so', () => {
+    const b = inPuzzleRoom();
+    const post = b.fixtureTile('fixture.reset_post');
+    b.use({ x: post.x + 1, y: post.y }, W);
+    expect(b.events.filter((e) => e.type === 'roomReset')).toEqual([
+      expect.objectContaining({ count: 0 }),
+    ]);
+  });
+
+  it('a solved puzzle stays solved: the reset post leaves a block on its plate', () => {
+    const b = inPuzzleRoom();
+    const home = b.fixtureTile('fixture.block_puzzle');
+    const plate = b.fixtureTile('fixture.plate_puzzle');
+    b.push(E, plate.x - home.x);
+    b.push(N, home.y - plate.y);
+    expect(b.count('gateOpened')).toBe(1);
+    const post = b.fixtureTile('fixture.reset_post');
+    b.use({ x: post.x + 1, y: post.y }, W);
+    expect(b.fixtureTile('fixture.block_puzzle')).toEqual(plate);
+  });
+
   it('a solved puzzle stays solved: the block is not reset and the gate stays open', () => {
     const b = inPuzzleRoom();
     const home = b.fixtureTile('fixture.block_puzzle');

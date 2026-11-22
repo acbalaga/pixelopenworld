@@ -47,6 +47,8 @@ export type FixtureType =
   | 'vigil'
   /** A heat vent: bursts on a cycle and hurts whoever stands near it (m8). */
   | 'vent'
+  /** A reset post: using it sends every unsolved block of its room back to where it started. */
+  | 'resetpost'
   /** A thing that records being used and does nothing else (a scarecrow, a mound of earth). */
   | 'site';
 
@@ -256,6 +258,8 @@ const LIST: readonly FixtureDef[] = [
     gate: 'fixture.gate_puzzle',
     room: 'room.c',
   },
+  // Every room with blocks has one, so a wedged block never costs more than a button press.
+  { kind: 'fixture.reset_post', type: 'resetpost', sprite: 'prop.plate', size: 12 },
   {
     kind: 'fixture.chest_key',
     type: 'chest',

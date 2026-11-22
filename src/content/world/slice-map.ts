@@ -343,7 +343,7 @@ const ROOM_C: readonly string[] = [
   '#....##............#',
   '#..................#',
   '#..................#',
-  '#..................#',
+  '#.r................#',
   '#..................#',
   '####P###############',
 ];
@@ -397,6 +397,7 @@ function cave(g: Grid, objects: Obj[]): void {
       else if (ch === 'g') fixture(x, y, 'fixture.gate_puzzle');
       else if (ch === 'c') fixture(x, y, 'fixture.chest_key');
       else if (ch === 'b') fixture(x, y, 'fixture.block_puzzle');
+      else if (ch === 'r') fixture(x, y, 'fixture.reset_post');
     }),
   );
   fixture(c.x0 + 15, c.y0 + 7, 'fixture.plate_puzzle');
