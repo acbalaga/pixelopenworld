@@ -31,6 +31,8 @@ export const REQUEST_BALANCE = {
     gather: { qty: [4, 8], maxQty: 12, coinPct: 160, minCoin: 8 },
     deliver: { qty: [2, 4], maxQty: 6, coinPct: 190, minCoin: 10 },
     defeat: { qty: [3, 6], maxQty: 8, coinPerTier: [0, 12, 24, 40, 60] },
+    /** A board rerolls a job naming an item or creature already posted that day, this many times. */
+    dedupeTries: 6,
   },
   /** The dearest item a standing request will ask for, by value, so a request stays a small job. */
   maxAskValue: 60,

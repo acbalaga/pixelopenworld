@@ -126,7 +126,7 @@ describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
         for (let i = 0; i < o.count; i++) {
           // One short of the count is not enough.
           expect(passed(s, me, t.skill)).toBe(false);
-          feed(s, { type: 'gathered', id: me, tag: 'x', item: o.item!, tier: 1 });
+          feed(s, { type: 'gathered', id: me, tag: 'x', item: o.item!, tier: 1, qty: 1 });
         }
       } else if (o.kind === 'explore') {
         feed(s, { type: 'revealed', who: me, blocks: o.blocks - 1 });

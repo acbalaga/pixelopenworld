@@ -7,7 +7,8 @@ import { REQUEST_STRINGS as T } from '../content/strings/requests';
 import { fill } from '../content/strings/skills';
 import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { getComp, type EntityId } from './kernel/entities';
-import type { RequestRecord, SimState } from './state';
+import { carriedFor } from './systems/trials';
+import type { Inventory, RequestRecord, SimState } from './state';
 
 /**
  * What the interface may know about requests (M3-11): words and nothing else. The log, the board
@@ -34,6 +35,8 @@ export interface RequestView {
   ask: string;
   state: 'active' | 'ready' | 'done';
   pinned: boolean;
+  /** The board that gave it, or empty when a person did. An id, not a place. */
+  board: string;
   ways: WayView[];
   reward: string;
 }
@@ -74,6 +77,11 @@ export function objectiveText(o: RequestObjective): string {
         what: o.item ? itemName(o.item) : (o.tag ?? ''),
       });
     case 'deliver':
+      if (o.to.startsWith('board.'))
+        return fill(T['request.step.deliver.board'] as string, {
+          n: o.qty,
+          what: itemName(o.item),
+        });
       return fill(T['request.step.deliver'] as string, {
         n: o.qty,
         what: itemName(o.item),
@@ -119,7 +127,7 @@ function rewardText(def: RequestDef): string {
   return fill(T['request.reward'] as string, { what: parts.join(', ') });
 }
 
-function waysOf(def: RequestDef, rec: RequestRecord | undefined): WayView[] {
+function waysOf(def: RequestDef, rec: RequestRecord | undefined, inv?: Inventory): WayView[] {
   const text = (k: string): string => fill(T[k] ?? k, def.vars ?? {});
   return def.solutions.map((sol) => ({
     label: text(sol.labelKey),
@@ -145,6 +153,12 @@ function waysOf(def: RequestDef, rec: RequestRecord | undefined): WayView[] {
           n: Math.min(pr.p.n, o.count),
           max: o.count,
         });
+      // A delivery in hand says how much of it the bag holds now (words only).
+      else if (rec && pr && inv && rec.state === 'active' && i === pr.step && o.kind === 'deliver')
+        status = fill(T['request.step.inBag'] as string, {
+          n: Math.min(carriedFor(inv, o), o.qty),
+          max: o.qty,
+        });
       return { text: objectiveText(o), status };
     }),
   }));
@@ -165,7 +179,8 @@ export function requestLog(state: SimState, who: EntityId): RequestView[] {
       ask: fill(T[def.askKey] ?? def.askKey, vars),
       state: rec.state,
       pinned: j.pinned === id,
-      ways: waysOf(def, rec),
+      board: 'board' in def.giver ? def.giver.board : '',
+      ways: waysOf(def, rec, getComp(state.entities, who, 'inventory') ?? undefined),
       reward: rewardText(def),
     });
   }
@@ -196,7 +211,18 @@ export function boardReady(state: SimState, who: EntityId, boardId: string): str
   return Object.entries(j.requests)
     .filter(([id, r]) => {
       const def = REQUESTS[id] ?? r.gen;
-      return r.state === 'ready' && def && 'board' in def.giver && def.giver.board === boardId;
+      if (!def || !('board' in def.giver) || def.giver.board !== boardId) return false;
+      if (r.state === 'ready') return true;
+      // A job that is a delivery to this board and the bag can satisfy now.
+      const inv = getComp(state.entities, who, 'inventory');
+      return (
+        r.state === 'active' &&
+        inv !== undefined &&
+        def.solutions.some((sol) => {
+          const o = sol.steps[r.prog[sol.id]?.step ?? -1];
+          return o?.kind === 'deliver' && o.to === boardId && carriedFor(inv, o) >= o.qty;
+        })
+      );
     })
     .map(([id]) => id);
 }

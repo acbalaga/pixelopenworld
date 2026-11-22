@@ -10,7 +10,7 @@ import { getComp, query, type EntityId } from '../kernel/entities';
 import type { SimEvent } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import { offerTrial, passTrial } from '../skills';
-import type { SimState, TrialProgress } from '../state';
+import type { Inventory, SimState, TrialProgress } from '../state';
 import { dayPhase } from '../time';
 
 /**
@@ -109,7 +109,7 @@ function onGathered(
     if (o.item !== undefined && o.item !== e.item) continue;
     if (o.tag !== undefined && o.tag !== e.tag) continue;
     if (o.phases && !o.phases.includes(dayPhase(state.worldTick))) continue;
-    p.n++;
+    p.n += e.qty;
     finish(t, o.count);
   }
 }
@@ -279,6 +279,15 @@ export function offerFromFixture(state: SimState, who: EntityId, kind: string): 
     if ('fixture' in def.giver && def.giver.fixture === kind) offerTrial(state, who, def.id);
 }
 
+/** How many of a deliver step's item the bag holds at the quality it asks for. */
+export function carriedFor(inv: Inventory, o: Objective<'deliver'>): number {
+  const have = inv.slots.reduce(
+    (n, st) => n + (st && st.item === o.item && (st.q ?? 0) >= (o.minQuality ?? 0) ? st.qty : 0),
+    0,
+  );
+  return Math.min(have, countItem(inv, o.item));
+}
+
 /**
  * Turns in the `deliver` objectives whose `to` is this person: takes the items if the bag holds
  * enough of the quality asked, and meets the objective. Called when a talk starts.
@@ -294,11 +303,7 @@ export function deliverTracked(
   for (const t of list) {
     const o = t.o;
     if (o.kind !== 'deliver' || o.to !== npc || (t.live && !t.live())) continue;
-    const have = inv.slots.reduce(
-      (n, st) => n + (st && st.item === o.item && (st.q ?? 0) >= (o.minQuality ?? 0) ? st.qty : 0),
-      0,
-    );
-    if (have < o.qty || countItem(inv, o.item) < o.qty) continue;
+    if (carriedFor(inv, o) < o.qty) continue;
     removeItem(inv, o.item, o.qty);
     t.done();
   }

@@ -8,6 +8,8 @@ import { ITEMS } from '../../src/content/items';
 import { NODES } from '../../src/content/items/recipes';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { spawnCreature } from '../../src/sim/combat/enemy';
+import { REQUEST_STRINGS } from '../../src/content/strings/requests';
+import { fill } from '../../src/content/strings/skills';
 import { give } from '../../src/sim/items';
 import { createStream } from '../../src/sim/kernel/rng';
 import { renownIn } from '../../src/sim/renown';
@@ -79,12 +81,14 @@ describe('standing request generator', () => {
         expect(seen.has(key), 'no two the same').toBe(false);
         seen.add(key);
         kinds.add(step.kind);
-        if (step.kind === 'gather') {
+        if (step.kind === 'deliver' && step.to.startsWith('board.')) {
+          // A gather job is a hand-in at the board (POW-M4-22A).
+          expect(step.to).toBe('board.square');
           const from = facts.nodes.flatMap((k) => NODES[k]!.yields.map((y) => y.item));
           expect(from, `gather ${step.item} has a node`).toContain(step.item);
-          expect(step.count).toBeGreaterThanOrEqual(RB.standing.gather.qty[0]);
-          expect(step.count).toBeLessThanOrEqual(RB.standing.gather.maxQty);
-          expect(ITEMS[step.item!]!.value).toBeLessThanOrEqual(RB.maxAskValue);
+          expect(step.qty).toBeGreaterThanOrEqual(RB.standing.gather.qty[0]);
+          expect(step.qty).toBeLessThanOrEqual(RB.standing.gather.maxQty);
+          expect(ITEMS[step.item]!.value).toBeLessThanOrEqual(RB.maxAskValue);
         } else if (step.kind === 'deliver') {
           expect(facts.outOfStock).toContainEqual({ npc: step.to, item: step.item });
           expect(have.has(step.item), `deliver ${step.item} has a source`).toBe(true);
@@ -99,7 +103,33 @@ describe('standing request generator', () => {
       }
     }
     expect(posted).toBeGreaterThan(1000);
-    expect([...kinds].sort()).toEqual(['defeat', 'deliver', 'gather']);
+    expect([...kinds].sort()).toEqual(['defeat', 'deliver']);
+  });
+
+  it('never posts two jobs naming the same item or creature on one day', () => {
+    // Dawnmeadow's own region facts, 200 days.
+    const facts: RegionFacts = { nodes: NODE_KINDS, creatures: CREATURE_IDS, outOfStock: STOCK };
+    for (let day = 0; day < 200; day++) {
+      const list = generateStanding(facts, createStream(9, 'requests'), 'board.square', day);
+      const subjects = list.map((d) => {
+        const o = d.solutions[0]!.steps[0]!;
+        return o.kind === 'deliver' ? o.item : o.kind === 'defeat' ? o.creature : '';
+      });
+      expect(new Set(subjects).size, `day ${day}: ${subjects.join(', ')}`).toBe(subjects.length);
+    }
+  });
+
+  it('words a gather ask by how the item is got: dug, cut, landed, or grows', () => {
+    const ask = (nodes: string[]): string => {
+      const facts: RegionFacts = { nodes, creatures: [], outOfStock: [] };
+      for (let day = 0; day < 30; day++) {
+        const d = generateStanding(facts, createStream(3, 'requests'), 'board.square', day)[0];
+        if (d) return fill(REQUEST_STRINGS[d.askKey] ?? d.askKey, d.vars ?? {});
+      }
+      return '';
+    };
+    expect(ask(['node.herb_patch'])).toContain('grows');
+    expect(ask(NODE_KINDS.filter((k) => NODES[k]!.tag === 'mining'))).toContain('dug');
   });
 
   it('is deterministic for a seed and a day, and different on another day', () => {
@@ -252,6 +282,46 @@ describe('request board', () => {
     r.s.entities.comps.pos[r.shop] = { x: (21 * 16 + 8) * 256, y: (20 * 16 + 14) * 256 };
     r.run(2, { type: 'interact' });
     expect(journal(r).requests[def.id]?.state).toBe('ready');
+  });
+
+  it('a gather job is a hand-in: the bag counts, the board takes it, and the reward is paid once', () => {
+    const r = boardRig();
+    const isGather = (d: { solutions: { steps: { kind: string; to?: string }[] }[] }): boolean =>
+      d.solutions[0]!.steps[0]!.to?.startsWith('board.') ?? false;
+    let gather = board(r).posted.find(isGather);
+    for (let day = 1; !gather && day < 40; day++) {
+      stepWorld(r.s, r.me, { commands: [], worldTick: day * 48 * 1800 });
+      gather = board(r).posted.find(isGather);
+    }
+    if (!gather) return expect.unreachable('a gather job is posted');
+    const step = gather.solutions[0]!.steps[0]!;
+    if (step.kind !== 'deliver') return;
+    expect(step.to).toBe('board.square');
+    r.tick({ type: 'takeRequest', board: 'board.square', id: gather.id });
+    // The bag already holds some of it: the log says so, and the board offers no hand-in.
+    give(r.s, r.me, step.item, step.qty - 1, 'start');
+    r.run(2);
+    const line = requestLog(r.s, r.me).find((v) => v.id === gather.id)!;
+    expect(line.ways[0]!.steps[0]!.status).toBe(`${step.qty - 1} of ${step.qty} in your bag`);
+    expect(boardReady(r.s, r.me, 'board.square')).toEqual([]);
+    r.tick({ type: 'turnInRequest', id: gather.id });
+    expect(journal(r).requests[gather.id]?.state).toBe('active');
+    // With the last one it hands in: the items are taken and the coin paid once.
+    give(r.s, r.me, step.item, 1, 'start');
+    r.run(2);
+    expect(boardReady(r.s, r.me, 'board.square')).toEqual([gather.id]);
+    const coin0 = r.s.entities.comps.avatar[r.me]!.coin;
+    r.tick({ type: 'turnInRequest', id: gather.id });
+    expect(journal(r).requests[gather.id]?.state).toBe('done');
+    expect(r.s.entities.comps.avatar[r.me]!.coin).toBe(coin0 + gather.reward.coin);
+    const left = r.s.entities.comps.inventory[r.me]!.slots.reduce(
+      (n, st) => n + (st && st.item === step.item ? st.qty : 0),
+      0,
+    );
+    expect(left).toBe(0);
+    expect(r.s.ledger.requestRewards.n).toBe(1);
+    r.tick({ type: 'turnInRequest', id: gather.id });
+    expect(r.s.ledger.requestRewards.n).toBe(1);
   });
 
   it('too many standing jobs held is refused', () => {

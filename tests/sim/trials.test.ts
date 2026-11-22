@@ -110,7 +110,7 @@ describe('banking and release at every threshold', () => {
       expect(pendingTrial(sks, 'skill.blades')).toBe(th);
       expect(sks.xp['skill.blades']).toBeGreaterThanOrEqual(xpToNext(th - 1));
       expect(offerTrial(s, me, real.id)).toBe(true);
-      feed(s, { type: 'gathered', id: me, tag: 'x', item: 'item.x', tier: 1 });
+      feed(s, { type: 'gathered', id: me, tag: 'x', item: 'item.x', tier: 1, qty: 1 });
       expect(trialPassed(sks, 'skill.blades', th)).toBe(true);
       expect(pointsOf(s, me, 'skill.blades')).toBe(th);
       expect(sks.trial[real.id]).toBeUndefined();
@@ -213,6 +213,7 @@ describe('objective kinds', () => {
           tag: 'foraging',
           item: 'item.sunwort',
           tier: 1,
+          qty: 1,
         };
         s.worldTick = NOON;
         feed(s, g);
@@ -229,6 +230,23 @@ describe('objective kinds', () => {
         expect(passed(s, me)).toBe(true);
       },
     );
+  });
+  it('gather counts the items one gather gives, and an overshoot completes once', () => {
+    run(add({ objective: { kind: 'gather', item: 'item.sunwort', count: 4 } }), (s, me) => {
+      const g = (qty: number): SimEvent => ({
+        type: 'gathered',
+        id: me,
+        tag: 'foraging',
+        item: 'item.sunwort',
+        tier: 1,
+        qty,
+      });
+      feed(s, g(3));
+      expect(sk(s, me).trial['trial.blades.30']!.n).toBe(3);
+      expect(passed(s, me)).toBe(false);
+      feed(s, g(5));
+      expect(passed(s, me)).toBe(true);
+    });
   });
   it('perform perfectDodge inOneFight starts over in a new fight', () => {
     run(
@@ -413,6 +431,7 @@ describe('every authored Trial has a scripted run', () => {
         tag: 'foraging',
         item: 'item.sunwort',
         tier: 1,
+        qty: 1,
       });
       trialsSystem(s);
     },

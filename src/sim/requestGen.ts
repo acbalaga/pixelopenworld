@@ -88,6 +88,26 @@ function itemJob(item: string): { value: number } | null {
   return v > 0 && v <= RB.maxAskValue ? { value: v } : null;
 }
 
+/**
+ * The skill tag of the first node (by id) that yields an item. It picks the ask's wording
+ * ("dug", "cut", "landed"). Foraging when nothing yields it.
+ */
+function tagOf(item: string): string {
+  for (const k of Object.keys(NODES).sort()) {
+    const n = NODES[k];
+    if (n?.yields.some((y) => y.item === item)) return n.tag;
+  }
+  return 'foraging';
+}
+
+/** The item or creature a request names, for the one-per-day rule. */
+function subjectOf(def: RequestDef): string {
+  const o = def.solutions[0]?.steps[0];
+  if (o?.kind === 'deliver') return o.item;
+  if (o?.kind === 'defeat') return o.creature ?? '';
+  return '';
+}
+
 /** Makes one request from one template and the facts, or null when the region cannot support it. */
 function make(
   kind: 'gather' | 'deliver' | 'defeat',
@@ -114,13 +134,22 @@ function make(
       .sort();
     if (pool.length === 0) return null;
     const item = pool[int(rng, 0, pool.length - 1)] as string;
+    const tag = tagOf(item);
     const B = RB.standing.gather;
     const n = int(rng, B.qty[0], B.qty[1]);
     const value = (itemJob(item) as { value: number }).value;
     return {
       ...base,
+      askKey: `${tpl.askKey}.${tag}`,
       vars: { n, what: itemName(item) },
-      solutions: [{ id: 'way', labelKey: tpl.wayKey, steps: [{ kind: 'gather', item, count: n }] }],
+      // A hand-in at the board: what is already in the bag counts, and it is taken (POW-M4-22A).
+      solutions: [
+        {
+          id: 'way',
+          labelKey: tpl.wayKey,
+          steps: [{ kind: 'deliver', item, qty: n, to: boardId }],
+        },
+      ],
       reward: {
         coin: Math.max(B.minCoin, Math.round((n * value * B.coinPct) / 100)),
         items: [],
@@ -190,6 +219,8 @@ export function generateStanding(
 ): RequestDef[] {
   const out: RequestDef[] = [];
   const seen = new Set<string>();
+  const subjects = new Set<string>();
+  let rerolls = 0;
   const table = STANDING_TEMPLATES.map((t) => [t.kind, t.weight] as const);
   for (let tries = 0; out.length < count && tries < count * 10; tries++) {
     const kind = weighted(rng, table);
@@ -197,8 +228,15 @@ export function generateStanding(
     if (!def) continue;
     const step = def.solutions[0]?.steps[0];
     const key = JSON.stringify(step);
+    const subject = subjectOf(def);
     if (seen.has(key) || titleOf(def).length > RB.titleMax) continue;
+    // One job per item or creature per day: reroll, and post fewer when the rerolls run out.
+    if (subject && subjects.has(subject)) {
+      if (++rerolls > RB.standing.dedupeTries) break;
+      continue;
+    }
     seen.add(key);
+    if (subject) subjects.add(subject);
     out.push(def);
   }
   return out;

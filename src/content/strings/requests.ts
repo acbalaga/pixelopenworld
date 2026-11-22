@@ -54,6 +54,8 @@ export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
   'request.step.defeat.one': 'Defeat the {what}',
   'request.step.gather': 'Gather {n} {what}',
   'request.step.deliver': 'Bring {n} {what} to {who}',
+  'request.step.deliver.board': 'Bring {n} {what} to the board',
+  'request.step.inBag': '{n} of {max} in your bag',
   'request.step.craft': 'Make a {what}',
   'request.step.perform': 'Finish {what}',
   'request.step.perform.n': 'Do {what} {n} times',
@@ -85,15 +87,24 @@ export const REQUEST_STRINGS: Readonly<Record<string, string>> = {
   'request.board.empty': 'Nothing is posted. New jobs go up at dawn.',
   'request.board.take': 'Take it',
   'request.board.turnIn': 'Hand in',
-  'request.board.yours': 'Yours, ready to hand in',
+  'request.board.yours': 'Your jobs from this board',
   'request.board.full': 'You are carrying as many jobs as you can manage.',
   'request.board.close': 'Close',
 
   // Standing requests, made at dawn from what the region needs.
-  'request.standing.gather.title': 'Gather {n} {what}',
+  'request.standing.gather.title': 'Bring {n} {what}',
+  // The ask a gather job stored before POW-M4-22A carries. Kept so those requests still read.
   'request.standing.gather.ask':
     'We are short of {what}. Bring {n} to the board, from wherever it grows.',
-  'request.standing.gather.way': 'Gather them',
+  'request.standing.gather.ask.foraging':
+    'We are short of {what}. Bring {n} to the board, from wherever it grows.',
+  'request.standing.gather.ask.mining':
+    'We are short of {what}. Bring {n} to the board, dug from wherever you find it.',
+  'request.standing.gather.ask.logging':
+    'We are short of {what}. Bring {n} to the board, cut from wherever it stands.',
+  'request.standing.gather.ask.fishing':
+    'We are short of {what}. Bring {n} to the board, landed from wherever they bite.',
+  'request.standing.gather.way': 'Bring them to the board',
   'request.standing.deliver.title': 'Stock for the shelf',
   'request.standing.deliver.ask':
     '{who} has run out of {what}. Bring {n} to {who} and the board will pay you.',
