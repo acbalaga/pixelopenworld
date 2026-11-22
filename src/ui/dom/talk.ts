@@ -96,6 +96,11 @@ export class TalkSheet {
     });
   }
 
+  /** The person being talked to, or empty when no talk is open. */
+  get speaker(): string {
+    return this.sheet ? this.npc : '';
+  }
+
   get isOpen(): boolean {
     return this.sheet !== null;
   }

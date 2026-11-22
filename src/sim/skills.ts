@@ -173,11 +173,17 @@ export function addXp(state: SimState, who: EntityId, skill: string, amount: num
   settle(state, who, skill);
 }
 
+/** Whether a Trial could be given now: it exists, is not set and is not passed. */
+export function canOfferTrial(state: SimState, who: EntityId, trialId: string): boolean {
+  const s = getComp(state.entities, who, 'skills');
+  const t = TRIALS[trialId];
+  return !!s && !!t && !s.offered.includes(trialId) && !trialPassed(s, t.skill, t.threshold);
+}
+
 /** An NPC gives a Trial. It can then be passed. */
 export function offerTrial(state: SimState, who: EntityId, trialId: string): boolean {
   const s = getComp(state.entities, who, 'skills');
-  const t = TRIALS[trialId];
-  if (!s || !t || s.offered.includes(trialId) || trialPassed(s, t.skill, t.threshold)) return false;
+  if (!s || !canOfferTrial(state, who, trialId)) return false;
   s.offered.push(trialId);
   s.trial[trialId] = { n: 0, t0: 0 };
   emit(state.events, { type: 'trialOffered', id: who, trial: trialId });

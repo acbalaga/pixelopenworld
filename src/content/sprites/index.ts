@@ -10,6 +10,7 @@ import { natureSprites } from './gen/nature';
 import { dawnmeadowSprites } from './gen/dawnmeadow';
 import { worldSprites } from './gen/world';
 import { UI_ICONS } from './ui/icons';
+import { MARK_SPRITES } from './ui/marks';
 import { uiPanel } from './ui/panel';
 import type { SpriteDef, TileDef } from './types';
 
@@ -30,6 +31,7 @@ export const SPRITES: readonly SpriteDef[] = [
   ...creatureSprites(),
   uiPanel,
   ...UI_ICONS,
+  ...MARK_SPRITES,
   ...ITEM_ICONS,
   ...FONT_SPRITES,
 ];
