@@ -992,15 +992,14 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
       const f = requestFlow(a.key, `request.${a.key}`, 'rq', `request.${a.key}.ask`);
       // A Thread stage is offered only once the stage before it is done.
       const after = a.thread?.after;
-      return after
-        ? {
-            ...f,
-            offer: {
-              ...f.offer,
-              if: [...(f.offer.if ?? []), { request: `request.${after}`, is: 'done' as const }],
-            },
-          }
-        : f;
+      // A job with requirements is not offered until they hold (G4 playtest).
+      const gates: Cond[] = [
+        ...(a.requires ?? []),
+        ...(after ? [{ request: `request.${after}`, is: 'done' as const }] : []),
+      ];
+      return gates.length > 0
+        ? { ...f, offer: { ...f.offer, if: [...(f.offer.if ?? []), ...gates] }, gates }
+        : { ...f, gates };
     });
     if (flows.length > 0) {
       for (const f of flows) Object.assign(nodes, f.nodes);
@@ -1023,7 +1022,15 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
           choices: [...rest.flatMap((f) => [f.offer, f.remind]), { text: 'dlg.c_bye', next: null }],
         };
       entries.unshift(...flows.map((f) => f.ready));
-      doors.push({ text: 'dlg.c_work', next: 'work' });
+      // The door shows only if some job could be offered: what every job needs, this needs.
+      const shared = (flows[0]?.gates ?? []).filter((c) =>
+        flows.every((f) => f.gates.some((g) => JSON.stringify(g) === JSON.stringify(c))),
+      );
+      doors.push({
+        text: 'dlg.c_work',
+        next: 'work',
+        ...(shared.length > 0 ? { if: shared } : {}),
+      });
     }
 
     const tests = AUTHORED_TRIALS.filter((t) => t.giver === npc);

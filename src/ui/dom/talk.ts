@@ -87,6 +87,8 @@ export class TalkSheet {
   private stationKind: string | null = null;
   private lastStation: string | null = null;
   private stationMsg = '';
+  /** What the last craft made, shown as a card until the player starts another pick. */
+  private craftResult: { item: string; qty: number; quality: number } | null = null;
   private picked: string[] = [];
 
   constructor(
@@ -582,7 +584,35 @@ export class TalkSheet {
             ),
           });
     void state;
+    this.craftResult =
+      e.type === 'crafted' ? { item: e.item, qty: e.qty, quality: e.quality } : null;
     this.openStation(this.lastStation, msg);
+  }
+
+  /** The card for what was just made: its icon, name, and quality in words and glyph, never color alone. */
+  private resultCard(r: { item: string; qty: number; quality: number }): HTMLElement {
+    const q = Math.max(0, Math.min(3, r.quality));
+    const card = el('div', `pow-craft-result pow-craft-q${q}`);
+    card.setAttribute('role', 'status');
+    const icon = el('canvas', 'pow-icon pow-icon-big');
+    icon.width = 12;
+    icon.height = 12;
+    icon.setAttribute('aria-hidden', 'true');
+    this.deps.drawIcon(icon, ITEMS[r.item]?.icon ?? '');
+    const name = r.qty > 1 ? `${nameOf(r.item)} x${r.qty}` : nameOf(r.item);
+    const glyph = S.qualityGlyph[q] ?? '';
+    const grade = el(
+      'span',
+      'pow-craft-grade',
+      glyph ? `${S.quality[q]} ${glyph}` : (S.quality[q] ?? ''),
+    );
+    put(
+      card,
+      icon,
+      put(el('div', 'pow-craft-text'), el('strong', 'pow-craft-name', name), grade),
+      el('p', 'pow-hint', S.craft.resultLine[q] ?? ''),
+    );
+    return card;
   }
 
   /** A crafting station: pick up to four ingredients or a known recipe, craft, and repair at the anvil. */
@@ -593,7 +623,10 @@ export class TalkSheet {
     this.stationKind = kind;
     this.lastStation = kind;
     this.stationMsg = msg;
-    if (!msg) this.picked = [];
+    if (!msg) {
+      this.picked = [];
+      this.craftResult = null;
+    }
     this.renderStation();
   }
 
@@ -719,7 +752,10 @@ export class TalkSheet {
     bag.appendChild(stacks);
     const how = el('p', 'pow-hint', S.craft.steps[def.step] ?? '');
     const note = def.craft === 'enchanting' ? el('p', 'pow-hint', S.craft.enchantNote) : null;
-    put(s, head, msg, how);
+    put(s, head, msg);
+    // A finished craft shows as a card, so the quality is hard to miss (G4 playtest).
+    if (this.stationMsg && this.craftResult) s.appendChild(this.resultCard(this.craftResult));
+    put(s, how);
     if (note) s.appendChild(note);
     put(s, known, chosen, bag);
 

@@ -25,10 +25,55 @@ function line(im: Img, x0: number, y0: number, x1: number, y1: number, c: number
   }
 }
 
+/** How each icon is drawn, so a sibling technique can start from the same art (see `variant`). */
+const DRAWN = new Map<string, (im: Img) => void>();
+
 function icon(id: string, draw: (im: Img) => void): SpriteDef {
   const im = new Img(SIZE, SIZE);
   draw(im);
+  DRAWN.set(id, draw);
   return toSprite(id, 'ui', [0, 0], { base: im });
+}
+
+/** Corner badges that tell two techniques of one family apart: bars, dots, a plus. */
+const BADGES: readonly (readonly [number, number][])[] = [
+  [
+    [8, 8],
+    [8, 9],
+    [8, 10],
+    [10, 8],
+    [10, 9],
+    [10, 10],
+  ],
+  [
+    [8, 8],
+    [10, 8],
+    [9, 9],
+    [8, 10],
+    [10, 10],
+  ],
+  [
+    [9, 8],
+    [8, 9],
+    [9, 9],
+    [10, 9],
+    [9, 10],
+  ],
+];
+
+/**
+ * A technique that would otherwise share its icon with another (the second of a family, or one
+ * that reuses a status picture). It is the same art with a small badge on a dark corner, so the
+ * button changes when the player swaps one for the other (G4 playtest).
+ */
+function variant(id: string, baseId: string, badge: 0 | 1 | 2): SpriteDef {
+  const base = DRAWN.get(baseId);
+  if (!base) throw new Error(`no icon ${baseId} to vary`);
+  return icon(id, (im) => {
+    base(im);
+    im.rect(7, 7, 11, 11, METAL_DARK);
+    for (const [x, y] of BADGES[badge] as readonly [number, number][]) im.set(x, y, W);
+  });
 }
 
 /** Attack: a sword on the diagonal. */
@@ -376,6 +421,26 @@ const note = icon('ui.icon_note', (im) => {
   im.rect(7, 7, 10, 9, W);
 });
 
+/** Icons for the techniques that share art with a sibling. */
+const VARIANTS: readonly SpriteDef[] = [
+  variant('ui.icon_crosscut', 'ui.icon_attack', 0),
+  variant('ui.icon_ambush', 'ui.icon_attack', 2),
+  variant('ui.icon_thrust', 'ui.icon_lunge', 1),
+  variant('ui.icon_sweep', 'ui.icon_whirl', 1),
+  variant('ui.icon_scatter', 'ui.icon_arrow', 1),
+  variant('ui.icon_flurry', 'ui.icon_palm', 1),
+  variant('ui.icon_bash', 'ui.icon_guard', 1),
+  variant('ui.icon_bulwark', 'ui.status_warded', 1),
+  variant('ui.icon_ward', 'ui.status_warded', 2),
+  variant('ui.icon_shadowstep', 'ui.icon_dodge', 1),
+  variant('ui.icon_flame_ring', 'ui.icon_ember', 1),
+  variant('ui.icon_undertow', 'ui.icon_splash', 1),
+  variant('ui.icon_tailwind', 'ui.icon_gust', 1),
+  variant('ui.icon_earth_wall', 'ui.icon_stone', 1),
+  variant('ui.icon_drain', 'ui.status_hexed', 1),
+  variant('ui.icon_lullaby', 'ui.icon_note', 1),
+];
+
 export const UI_ICONS: readonly SpriteDef[] = [
   attack,
   lunge,
@@ -408,6 +473,7 @@ export const UI_ICONS: readonly SpriteDef[] = [
   heart,
   hide,
   note,
+  ...VARIANTS,
 ];
 
 /** Icon sprite id for each on-screen button. Technique buttons take their icon from the technique. */

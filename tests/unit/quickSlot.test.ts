@@ -44,6 +44,17 @@ describe('quick slot rules (POW-M5-21)', () => {
     expect(quickItem(bag({ item: 'item.sword_iron', qty: 1 }), none)).toBeNull();
   });
 
+  it('holds only consumables with an effect: no raw forage, no burnt mess, yes potions and meals', () => {
+    const inv = bag(
+      { item: 'item.berry_red', qty: 4 },
+      { item: 'item.burnt_mess', qty: 1 },
+      { item: 'item.potion_health_s', qty: 1 },
+      { item: STEW, qty: 1 },
+    );
+    expect(quickCandidates(inv)).toEqual(['item.potion_health_s', STEW]);
+    expect(quickItem(bag({ item: 'item.berry_red', qty: 4 }), none)).toBeNull();
+  });
+
   it('uses the first stack of the item and counts every stack', () => {
     const inv = bag({ item: TEA, qty: 2 }, null, { item: STEW, qty: 1 }, { item: STEW, qty: 3 });
     expect(quickSlotOf(inv, STEW)).toBe(2);

@@ -247,7 +247,9 @@ describe('recorded sessions: honest play is never flagged', () => {
         // Rested, and the boss already worn down: the fight itself is the real combat system.
         const pools = run.s.entities.comps.pools[run.me]!;
         pools.hp = pools.hpMax;
-        run.fight(BOSS, { hpOverride: 20, eatBelow: 40 });
+        // The boss starts in reach: the bot never walks, and a boss that shells it from range turns
+        // the fight into a race that any balance change can flip.
+        run.fight(BOSS, { hpOverride: 8, eatBelow: 40, gap: 3 });
         bossDown = true;
         if (run.dead) run.recover();
       }

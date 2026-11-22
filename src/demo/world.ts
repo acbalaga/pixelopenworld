@@ -1013,6 +1013,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     onOpenChange: (open) => {
       menuOpen = open;
       if (open) {
+        // One sheet at a time (G4 playtest): the Menu sits over a station, shop or board panel
+        // that is still open, so the Menu would seem not to open. The panel closes instead.
+        if (talk.isOpen) talk.close();
+        if (board.isOpen) board.close();
         input.sampler.keyboard.reset();
         pendingCommands.push({ type: 'hint', id: 'hint.menu' });
       }
@@ -1035,6 +1039,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     onOpenChange: (open) => {
       talkOpen = open;
       audio.setDucked(open);
+      if (open && menu.isOpen) menu.close();
       if (open) input.sampler.keyboard.reset();
     },
   });
@@ -1043,6 +1048,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     send: (c) => pendingCommands.push(c),
     onOpenChange: (open) => {
       talkOpen = open;
+      if (open && menu.isOpen) menu.close();
       if (open) input.sampler.keyboard.reset();
     },
   });

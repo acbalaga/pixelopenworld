@@ -17,7 +17,7 @@ export function skillFactor(rank: number): number {
 
 /**
  * The damage model from design/04:
- * `(weaponPower * techniqueMultiplier * skillFactor) * elementFactor * (100 / (100 + defense))`,
+ * `(weaponPower * techniqueMultiplier * skillFactor) * elementFactor * (base / (base + defense))`,
  * then crit and stagger bonus. `mult` and `element` are percents (100 is 1.0). Integer math
  * throughout, carried in hundredths until the end, so the same inputs give the same damage on
  * every device. Never below 1.
@@ -30,9 +30,10 @@ export function computeDamage(
   element: number,
   opts: DamageOpts,
 ): number {
-  // power * mult/100 * skill/1000 * element/100 * 100/(100+def), in hundredths.
+  // power * mult/100 * skill/1000 * element/100 * base/(base+def), in hundredths.
   let centi = Math.floor(
-    (power * mult * skillFactor(rank) * element) / (1000 * (C.damage.defenseBase + defense)),
+    (power * mult * skillFactor(rank) * element * C.damage.defenseBase) /
+      (100 * 1000 * (C.damage.defenseBase + defense)),
   );
   if (opts.crit) centi = Math.floor((centi * C.damage.critMult) / 100);
   if (opts.pct !== undefined && opts.pct !== 100) centi = Math.floor((centi * opts.pct) / 100);
