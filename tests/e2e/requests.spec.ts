@@ -17,9 +17,9 @@ async function use(page: Page, key: 'KeyW' | 'KeyS' | 'KeyA' | 'KeyD'): Promise<
   await page.keyboard.press('KeyE');
 }
 
-async function openCharacter(page: Page): Promise<void> {
+async function openChronicle(page: Page): Promise<void> {
   await page.keyboard.press('Escape');
-  await page.locator('[data-tab="character"]').click();
+  await page.locator('[data-tab="chronicle"]').click();
 }
 
 test('the board posts jobs, one is taken, shown in the log, and pinned on the HUD', async ({
@@ -46,8 +46,11 @@ test('the board posts jobs, one is taken, shown in the log, and pinned on the HU
   await page.keyboard.press('Escape');
   await expect(board).toHaveCount(0);
 
-  // The log shows it in the asker's words, and it can be pinned.
-  await openCharacter(page);
+  // The log is in the Chronicle, not on the Character tab. It shows the asker's words and can be pinned.
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="character"]').click();
+  await expect(page.locator('.pow-requests')).toHaveCount(0);
+  await page.locator('[data-tab="chronicle"]').click();
   const log = page.locator('.pow-requests');
   await expect(log).toContainText(title);
   await expect(log.locator('.pow-request-ask').first()).not.toBeEmpty();
@@ -75,7 +78,7 @@ test('an authored request: accepted from Orla, shown in her words, pinned as her
   await talk.getByRole('button', { name: 'Done' }).click();
   await expect(talk).toHaveCount(0);
 
-  await openCharacter(page);
+  await openChronicle(page);
   const log = page.locator('.pow-requests');
   await expect(log).toContainText('Pests in the meadow');
   await expect(log).toContainText('Mosslings are chewing up the meadow gardens');

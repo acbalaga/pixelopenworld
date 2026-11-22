@@ -16,6 +16,25 @@ export const UI_STRINGS = {
   },
   sleepHere: 'Sleep here',
   chronicleEmpty: 'Nothing is written here yet.',
+  /** The Chronicle's sections (POW-M4-22B). */
+  journal: {
+    underWay: 'Under way',
+    finished: 'Finished',
+    recipes: 'Recipes',
+    story: 'Your story',
+    trialTitle: '{skill} Trial',
+    trialState: 'Rank {n}, {giver}',
+    trialStateNoGiver: 'Rank {n}',
+    crafts: {
+      cooking: 'Cooking',
+      smithing: 'Smithing',
+      woodworking: 'Woodworking',
+      tailoring: 'Tailoring',
+      alchemy: 'Alchemy',
+      enchanting: 'Enchanting',
+      tinkering: 'Tinkering',
+    } as Record<string, string>,
+  },
   /** The Bestiary section of the Chronicle (M4-05). Entries open on a first kill or a first friend. */
   bestiary: {
     title: 'Bestiary',

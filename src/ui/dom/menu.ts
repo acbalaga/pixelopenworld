@@ -17,7 +17,7 @@ import {
 import type { SettingsStore } from '../../platform/settings';
 import type { Command } from '../../sim/kernel/commands';
 import { ITEMS } from '../../content/items';
-import { requestLog, type RequestView } from '../../sim/requestLog';
+import type { RequestView } from '../../sim/requestLog';
 import type { SimState } from '../../sim/state';
 import { REQUEST_STRINGS as RS } from '../../content/strings/requests';
 import {
@@ -29,7 +29,7 @@ import {
   skillsView,
   techniquesView,
   type PathRowView,
-  trialLog,
+  type TrialLogRow,
   type SkillRowView,
   type BagFilterId,
   type BagSortId,
@@ -38,6 +38,7 @@ import { MAP_STRINGS } from '../../content/strings/map';
 import { MapPane, type MapPaneDeps } from './mapPane';
 import { bestiaryView } from '../menu/bestiaryModel';
 import { chronicleLines } from '../menu/singularModel';
+import { finished, knownRecipes, underWay } from '../menu/journalModel';
 
 export const TAB_IDS = [
   'character',
@@ -149,7 +150,11 @@ export class MenuSheet {
   private readonly head: HTMLElement;
   private bar!: HTMLElement;
   /** The one detail sheet that may be open (never a sheet over a sheet), and what opened it. */
-  private detail: { kind: 'skill' | 'item'; id: string; opener: string } | null = null;
+  private detail: {
+    kind: 'skill' | 'item' | 'request' | 'trial';
+    id: string;
+    opener: string;
+  } | null = null;
   private detailEl: HTMLElement | null = null;
   private detailSig = '';
   /** History entries this Menu has pushed (the Menu, then a sheet), so Back unwinds them in order. */
@@ -376,16 +381,19 @@ export class MenuSheet {
     const closed = this.deps.settings.get().closedSections.join(',');
     switch (this.tab) {
       case 'character':
-        return JSON.stringify([
-          characterView(state, who),
-          requestLog(state, who),
-          closed,
-          canRestOutdoors(state, who),
-        ]);
+        return JSON.stringify([characterView(state, who), closed, canRestOutdoors(state, who)]);
       case 'skills':
-        return JSON.stringify([skillsView(state, who), trialLog(state, who), closed]);
+        return JSON.stringify([skillsView(state, who), closed]);
       case 'chronicle':
-        return JSON.stringify([chronicleLines(state, who), bestiaryView(state, who)]);
+        return JSON.stringify([
+          underWay(state, who),
+          finished(state, who),
+          knownRecipes(state, who),
+          chronicleLines(state, who),
+          bestiaryView(state, who),
+          closed,
+          this.detail?.kind === 'request' || this.detail?.kind === 'trial' ? this.detail.id : '',
+        ]);
       case 'bag':
         return JSON.stringify([
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
@@ -451,16 +459,34 @@ export class MenuSheet {
     count: number | undefined,
     ...kids: (HTMLElement | null)[]
   ): HTMLElement {
+    return this.secWith(id, title, count, true, ...kids);
+  }
+
+  /**
+   * Like `sec`, with the starting state. A section that starts closed is remembered as
+   * `open:<id>` in the same list, so the setting needs no new field.
+   */
+  private secWith(
+    id: string,
+    title: string,
+    count: number | undefined,
+    openByDefault: boolean,
+    ...kids: (HTMLElement | null)[]
+  ): HTMLElement {
     const st = this.deps.settings;
+    const mark = openByDefault ? id : `open:${id}`;
     return section(
       {
         id,
         title,
         ...(count !== undefined ? { count } : {}),
-        open: !st.get().closedSections.includes(id),
+        open: openByDefault
+          ? !st.get().closedSections.includes(id)
+          : st.get().closedSections.includes(mark),
         onToggle: (open) => {
-          const rest = st.get().closedSections.filter((x) => x !== id);
-          st.set({ closedSections: open ? rest : [...rest, id] });
+          const rest = st.get().closedSections.filter((x) => x !== mark);
+          const keep = openByDefault ? !open : open;
+          st.set({ closedSections: keep ? [...rest, mark] : rest });
         },
       },
       ...kids,
@@ -469,20 +495,63 @@ export class MenuSheet {
 
   // ---- Chronicle ----
 
-  /** What the avatar has found and finished, in its own words: Singulars done, and the Bestiary. */
+  /**
+   * The journal (POW-M4-22B): what is under way, what is finished, the recipes known, the
+   * Bestiary, and the Singular lines. Nothing here names a place.
+   */
   private renderChronicle(): void {
     const { state, who } = this.deps.read();
+    const now = underWay(state, who);
+    const done = finished(state, who);
+    const recipes = knownRecipes(state, who);
     const lines = chronicleLines(state, who);
     const bestiary = bestiaryView(state, who);
     put(this.body, header(S.tabs.chronicle));
-    if (lines.length === 0 && bestiary.rows.length === 0) {
+    const nUnder = now.requests.length + now.trials.length;
+    const nDone = done.requests.length + done.trials.length;
+    if (nUnder + nDone + recipes.length + lines.length + bestiary.rows.length === 0) {
       put(this.body, emptyState(S.chronicleEmpty));
       return;
     }
-    if (lines.length > 0) {
-      const ul = el('ul', 'pow-chronicle');
-      for (const t of lines) put(ul, el('li', 'pow-chronicle-line', t));
-      put(this.body, ul);
+    if (nUnder > 0) {
+      const ul = el('ul', 'pow-skills');
+      for (const r of now.requests) ul.appendChild(this.requestRow(r));
+      for (const t of now.trials) ul.appendChild(this.trialRow(t));
+      const sec = this.sec('journal-under', S.journal.underWay, nUnder, ul);
+      sec.dataset.key = 'requests';
+      sec.classList.add('pow-requests');
+      this.body.appendChild(sec);
+    }
+    if (nDone > 0) {
+      const rows = [...done.requests, ...done.trials].map((f) =>
+        row({
+          key: `done-${f.kind}-${f.key}`,
+          name: f.title,
+          state: f.state,
+          onOpen: () => this.openSheet(f.kind, f.key, `done-${f.kind}-${f.key}`),
+        }),
+      );
+      const sec = this.secWith('journal-done', S.journal.finished, nDone, false, ...rows);
+      sec.classList.add('pow-finished');
+      this.body.appendChild(sec);
+    }
+    if (recipes.length > 0) {
+      const n = recipes.reduce((a, g) => a + g.rows.length, 0);
+      const kids: HTMLElement[] = [];
+      for (const g of recipes) {
+        kids.push(el('h5', 'pow-recipe-craft', g.label));
+        for (const r of g.rows)
+          kids.push(
+            row({
+              key: `recipe-${r.id}`,
+              name: r.name,
+              state: r.ingredients,
+              icon: r.icon ? this.icon(r.icon) : null,
+              onOpen: () => undefined,
+            }),
+          );
+      }
+      this.body.appendChild(this.secWith('journal-recipes', S.journal.recipes, n, false, ...kids));
     }
     if (bestiary.rows.length > 0) {
       put(this.body, header(S.bestiary.title), el('p', 'pow-bestiary-count', bestiary.count));
@@ -507,6 +576,11 @@ export class MenuSheet {
         put(ul, li);
       }
       put(this.body, ul);
+    }
+    if (lines.length > 0) {
+      const ul = el('ul', 'pow-chronicle');
+      for (const t of lines) put(ul, el('li', 'pow-chronicle-line', t));
+      put(this.body, header(S.journal.story), ul);
     }
   }
 
@@ -635,7 +709,6 @@ export class MenuSheet {
       }
       this.body.appendChild(wrap);
     }
-    this.renderRequests(requestLog(state, who));
     this.body.appendChild(
       this.sec(
         'paths',
@@ -647,65 +720,64 @@ export class MenuSheet {
   }
 
   /**
-   * The Requests section of the Character tab (M3-11): what each one asked, in the asker's words,
-   * and per way of finishing it which steps are done. It never shows a place. One can be pinned.
+   * One request under way, in the asker's words, with per way which steps are done. It never
+   * shows a place. A request with one way of one step that only repeats its title draws no step
+   * line: its count sits at the right of the title (POW-M4-22B, G10).
    */
-  private renderRequests(rows: readonly RequestView[]): void {
-    const ul = el('ul', 'pow-skills');
-    for (const r of rows) {
-      const li = el('li', `pow-request pow-request-${r.state}`);
-      li.dataset.request = r.id;
-      const head = el('div', 'pow-tech-head');
-      put(head, el('span', 'pow-skill-name', r.title));
-      const tag =
-        r.state === 'ready'
-          ? RS['request.log.ready']
-          : r.state === 'done'
-            ? RS['request.log.done']
-            : '';
-      if (tag) head.appendChild(el('span', 'pow-skill-rank', tag));
-      li.appendChild(head);
-      li.appendChild(el('p', 'pow-request-ask', r.ask));
-      if (r.state !== 'done') {
-        if (r.ways.length > 1) li.appendChild(el('p', 'pow-hint', RS['request.log.any'] as string));
-        for (const w of r.ways) {
-          const way = el('ul', 'pow-request-way');
-          way.setAttribute('aria-label', w.label);
-          for (const st of w.steps) {
-            const stepRow = el(
-              'li',
-              st.status === RS['request.step.done'] ? 'pow-step pow-step-done' : 'pow-step',
-            );
-            stepRow.textContent = st.status ? `${st.text} (${st.status})` : st.text;
-            way.appendChild(stepRow);
-          }
-          li.appendChild(way);
-        }
-        li.appendChild(el('p', 'pow-hint', r.reward));
-        const pin = el(
-          'button',
-          'pow-button',
-          r.pinned ? (RS['request.log.unpin'] as string) : (RS['request.log.pin'] as string),
-        );
-        pin.type = 'button';
-        pin.dataset.key = `pin-${r.id}`;
-        pin.setAttribute('aria-pressed', String(r.pinned));
-        pin.addEventListener('click', () =>
-          this.deps.send({ type: 'pinRequest', id: r.pinned ? null : r.id }),
-        );
-        li.appendChild(pin);
-      }
-      ul.appendChild(li);
-    }
-    const sec = this.sec(
-      'requests',
-      RS['request.log.heading'] as string,
-      rows.length,
-      rows.length === 0 ? emptyState(S.parts.requestsEmpty) : ul,
+  private requestRow(r: RequestView): HTMLElement {
+    const li = el('li', `pow-journal-row pow-request pow-request-${r.state}`);
+    li.dataset.request = r.id;
+    const only = r.ways.length === 1 && r.ways[0]?.steps.length === 1 ? r.ways[0].steps[0] : null;
+    const merged = only !== null && only !== undefined && only.text === r.title;
+    const head = el('div', 'pow-tech-head');
+    put(head, el('span', 'pow-skill-name', r.title));
+    const tag =
+      r.state === 'ready' ? (RS['request.log.ready'] as string) : merged ? only.status : '';
+    if (tag) head.appendChild(el('span', 'pow-skill-rank', tag));
+    const pin = el(
+      'button',
+      'pow-button pow-pin-small',
+      r.pinned ? (RS['request.log.unpin'] as string) : (RS['request.log.pin'] as string),
     );
-    sec.dataset.key = 'requests';
-    sec.classList.add('pow-requests');
-    this.body.appendChild(sec);
+    pin.type = 'button';
+    pin.dataset.key = `pin-${r.id}`;
+    pin.setAttribute('aria-pressed', String(r.pinned));
+    pin.addEventListener('click', () =>
+      this.deps.send({ type: 'pinRequest', id: r.pinned ? null : r.id }),
+    );
+    head.appendChild(pin);
+    li.appendChild(head);
+    li.appendChild(el('p', 'pow-request-ask', r.ask));
+    if (r.ways.length > 1) li.appendChild(el('p', 'pow-hint', RS['request.log.any'] as string));
+    if (!merged)
+      for (const w of r.ways) {
+        const way = el('ul', 'pow-request-way');
+        way.setAttribute('aria-label', w.label);
+        for (const st of w.steps) {
+          const stepRow = el(
+            'li',
+            st.status === RS['request.step.done'] ? 'pow-step pow-step-done' : 'pow-step',
+          );
+          stepRow.textContent = st.status ? `${st.text} (${st.status})` : st.text;
+          way.appendChild(stepRow);
+        }
+        li.appendChild(way);
+      }
+    li.appendChild(el('p', 'pow-hint', r.reward));
+    return li;
+  }
+
+  /** The Trial under way, as a journal row. */
+  private trialRow(r: TrialLogRow): HTMLElement {
+    const li = el('li', 'pow-journal-row pow-skill');
+    li.setAttribute('aria-label', r.label);
+    put(
+      li,
+      el('span', 'pow-skill-name', `${r.skill}, ${r.giver}`),
+      el('span', 'pow-skill-rank', fill(S.trialProgress, { n: r.n, count: r.count })),
+      el('p', 'pow-hint', r.intro),
+    );
+    return li;
   }
 
   /** The Paths list. Hidden Paths are not in the model until earned. */
@@ -731,24 +803,8 @@ export class MenuSheet {
   private renderSkills(): void {
     const { state, who } = this.deps.read();
     const fams = skillsView(state, who);
-    const log = trialLog(state, who);
     put(this.body, header(S.tabs.skills));
-    if (log.length > 0) {
-      const ul = el('ul', 'pow-skills');
-      for (const r of log) {
-        const li = el('li', 'pow-skill');
-        li.setAttribute('aria-label', r.label);
-        put(
-          li,
-          el('span', 'pow-skill-name', `${r.skill}, ${r.giver}`),
-          el('span', 'pow-skill-rank', fill(S.trialProgress, { n: r.n, count: r.count })),
-          el('p', 'pow-hint', r.intro),
-        );
-        ul.appendChild(li);
-      }
-      this.body.appendChild(this.sec('trials', S.trialsTitle, log.length, ul));
-    }
-    if (fams.length === 0 && log.length === 0) {
+    if (fams.length === 0) {
       this.body.appendChild(emptyState(S.skillsEmpty));
       return;
     }
@@ -770,7 +826,11 @@ export class MenuSheet {
 
   // ---- The detail sheet: one level below a tab, never a sheet over a sheet ----
 
-  private openSheet(kind: 'skill' | 'item', id: string, opener: string): void {
+  private openSheet(
+    kind: 'skill' | 'item' | 'request' | 'trial',
+    id: string,
+    opener: string,
+  ): void {
     if (this.detail) return;
     this.detail = { kind, id, opener };
     this.pushHistory();
@@ -804,10 +864,13 @@ export class MenuSheet {
   private mountSheet(first: boolean): void {
     if (!this.detail) return;
     const { state, who } = this.deps.read();
+    const { kind, id } = this.detail;
     const spec =
-      this.detail.kind === 'skill'
-        ? this.skillSheet(state, who, this.detail.id)
-        : this.itemSheet(state, who, Number(this.detail.id));
+      kind === 'skill'
+        ? this.skillSheet(state, who, id)
+        : kind === 'item'
+          ? this.itemSheet(state, who, Number(id))
+          : this.journalSheet(state, who, kind, id);
     if (!spec) {
       this.closeSheet();
       return;
@@ -951,6 +1014,27 @@ export class MenuSheet {
     return {
       sig: JSON.stringify([r, techs]),
       parts: { title: r.name, lines: [`${r.mastery} ${r.points}`], extra },
+    };
+  }
+
+  /** The sheet for a finished request or a passed Trial: the asker's words, and the reward. */
+  private journalSheet(
+    state: SimState,
+    who: number,
+    kind: 'request' | 'trial',
+    id: string,
+  ): { sig: string; parts: Omit<Parameters<typeof detailSheet>[0], 'onClose'> } | null {
+    const v = finished(state, who);
+    const f = (kind === 'request' ? v.requests : v.trials).find((x) => x.key === id);
+    if (!f) return null;
+    return {
+      sig: JSON.stringify(f),
+      parts: {
+        title: f.title,
+        desc: f.desc,
+        lines: f.state ? [f.state] : [],
+        extra: f.reward ? [el('p', 'pow-hint', f.reward)] : [],
+      },
     };
   }
 
