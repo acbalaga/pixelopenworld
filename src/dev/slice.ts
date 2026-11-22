@@ -8,7 +8,7 @@ import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { spawnCreature } from '../sim/combat/enemy';
 import type { Command } from '../sim/kernel/commands';
-import { addItem, countItem } from '../sim/items';
+import { addItem, countItem, learnRecipe } from '../sim/items';
 import { earnCoin, madeItems } from '../sim/ledger';
 import { getComp, query, type EntityId } from '../sim/kernel/entities';
 import { addXp, offerTrial, passTrial } from '../sim/skills';
@@ -57,6 +57,8 @@ export interface PowDevApi {
   /** Sets skill points and teaches taught techniques, as if earned. For screenshots of loadouts. */
   rank(skill: string, points: number): void;
   learn(technique: string): void;
+  /** Teaches a recipe, as if learned. For checks of the station sheet. */
+  learnRecipe(recipe: string): void;
   /** Credits a deed `n` times, as if done. For screenshots of Paths. */
   deed(id: string, n: number): void;
   /** Pays coin into the purse, as a seed (dev only). For screenshots of shops. */
@@ -136,6 +138,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     rank(skill, points) {
       const s = getComp(state.entities, who, 'skills');
       if (s) s.points[skill] = points;
+    },
+    learnRecipe(recipe) {
+      learnRecipe(state, who, recipe);
     },
     learn(technique) {
       learnTechnique(state, who, technique);

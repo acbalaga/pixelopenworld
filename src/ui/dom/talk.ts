@@ -8,8 +8,8 @@ import { PATH_STRINGS } from '../../content/strings/paths';
 import { RECIPES, expand } from '../../content/items/recipes';
 import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
-import { emptyState } from './parts';
-import { itemName, recipeName } from '../menu/recipeModel';
+import { emptyState, gridCell } from './parts';
+import { canBeIngredient, itemName, recipeName } from '../menu/recipeModel';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { holds, startNode } from '../../sim/journal';
@@ -57,6 +57,9 @@ function put<T extends HTMLElement>(parent: T, ...kids: HTMLElement[]): T {
 }
 
 const nameOf = itemName;
+
+/** The list each station kind last showed, for the session. UI state, not saved. */
+const STATION_VIEW = new Map<string, 'recipes' | 'bag' | 'repair'>();
 
 /**
  * The dialogue sheet and the shop sheet (design/09): clear text in a bottom sheet with the
@@ -628,6 +631,10 @@ export class TalkSheet {
     this.renderStation();
   }
 
+  /**
+   * The station sheet (POW-M4-22C): a fixed tray on top, one switchable list below it. The Craft
+   * button never scrolls away, and only the list scrolls.
+   */
   private renderStation(): void {
     const s = this.sheet;
     const kind = this.stationKind;
@@ -642,68 +649,45 @@ export class TalkSheet {
     close.type = 'button';
     close.addEventListener('click', () => this.close());
     head.appendChild(close);
-    const msg = el('p', 'pow-shop-msg', this.stationMsg);
-    msg.setAttribute('role', 'status');
 
     const held = (item: string): number => (inv ? countItem(inv, item) : 0);
     const pickedOf = (item: string): number => this.picked.filter((p) => p === item).length;
     const full = this.picked.length >= CRAFTING.maxIngredients;
+    const icon = (id: string | undefined): HTMLElement => {
+      const c = el('canvas', 'pow-icon');
+      c.width = 12;
+      c.height = 12;
+      c.setAttribute('aria-hidden', 'true');
+      this.deps.drawIcon(c, ITEMS[id ?? '']?.icon ?? '');
+      return c;
+    };
 
-    // Known recipes of this station: one tap fills the ingredients.
-    const known = el('section', 'pow-storage-col');
-    put(known, el('h3', 'pow-heading', S.craft.known));
-    const recipes = Object.values(RECIPES).filter(
-      (r) => r.station === kind && inv?.recipes.includes(r.id),
-    );
-    const list = el('ul', 'pow-shop-list');
-    for (const r of recipes) {
-      const units = expand(r.ingredients);
-      const can = units.every((u) => held(u) >= units.filter((x) => x === u).length);
-      const li = el('li', 'pow-shop-row pow-part-listrow');
-      const b = el('button', 'pow-button', recipeName(r));
-      b.type = 'button';
-      b.disabled = !can;
-      b.dataset.key = `recipe-${r.id}`;
-      b.setAttribute(
-        'aria-label',
-        `${recipeName(r)}: ${r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')}`,
+    // The tray: one cell per ingredient slot. Tap a filled one to take it out.
+    const tray = el('div', 'pow-station-tray');
+    const cells = el('div', 'pow-station-cells');
+    cells.setAttribute('role', 'group');
+    cells.setAttribute('aria-label', S.craft.tray);
+    for (let i = 0; i < CRAFTING.maxIngredients; i++) {
+      const item = this.picked[i];
+      if (item === undefined) {
+        const empty = el('div', 'pow-part-cell pow-tray-empty');
+        empty.setAttribute('aria-hidden', 'true');
+        cells.appendChild(empty);
+        continue;
+      }
+      cells.appendChild(
+        gridCell({
+          key: `picked-${i}`,
+          label: nameOf(item),
+          icon: icon(item),
+          onOpen: () => {
+            this.picked.splice(i, 1);
+            this.renderStation();
+          },
+        }),
       );
-      b.addEventListener('click', () => {
-        this.picked = units;
-        this.stationMsg = '';
-        this.renderStation();
-      });
-      put(
-        li,
-        b,
-        el('span', 'pow-hint', r.ingredients.map((i) => `${i.qty} ${nameOf(i.item)}`).join(', ')),
-      );
-      list.appendChild(li);
     }
-    if (recipes.length === 0) list.appendChild(el('li', 'pow-hint', S.craft.noRecipes));
-    known.appendChild(list);
-
-    // What is chosen.
-    const chosen = el('section', 'pow-storage-col');
-    put(
-      chosen,
-      el('h3', 'pow-heading', fill(S.craft.ingredients, { max: String(CRAFTING.maxIngredients) })),
-    );
-    const picks = el('ul', 'pow-shop-list');
-    if (this.picked.length === 0) picks.appendChild(el('li', 'pow-hint', S.craft.none));
-    this.picked.forEach((item, i) => {
-      const li = el('li', 'pow-shop-row pow-part-listrow');
-      const b = el('button', 'pow-button', nameOf(item));
-      b.type = 'button';
-      b.dataset.key = `picked-${i}`;
-      b.addEventListener('click', () => {
-        this.picked.splice(i, 1);
-        this.renderStation();
-      });
-      li.appendChild(b);
-      picks.appendChild(li);
-    });
-    chosen.appendChild(picks);
+    const acts = el('div', 'pow-station-acts');
     const go = el('button', 'pow-button pow-choice', S.craft.craft);
     go.type = 'button';
     go.dataset.key = 'craft-go';
@@ -714,80 +698,169 @@ export class TalkSheet {
     });
     const clear = el('button', 'pow-button', S.craft.clear);
     clear.type = 'button';
+    clear.dataset.key = 'craft-clear';
     clear.addEventListener('click', () => {
       this.picked = [];
       this.renderStation();
     });
-    put(chosen, go, clear);
+    put(acts, go, clear);
+    put(tray, cells, acts);
 
-    // The bag: tap a stack to add one unit.
-    const bag = el('section', 'pow-storage-col');
-    put(bag, el('h3', 'pow-heading', S.craft.bag));
-    const stacks = el('ul', 'pow-shop-list');
-    const seen = new Set<string>();
-    inv?.slots.forEach((st) => {
-      if (!st || st.item === 'item.coin' || seen.has(st.item)) return;
-      seen.add(st.item);
-      const left = held(st.item) - pickedOf(st.item);
-      const li = el('li', 'pow-shop-row pow-part-listrow');
-      const icon = el('canvas', 'pow-icon');
-      icon.width = 12;
-      icon.height = 12;
-      icon.setAttribute('aria-hidden', 'true');
-      this.deps.drawIcon(icon, ITEMS[st.item]?.icon ?? '');
-      const b = el('button', 'pow-button', `${nameOf(st.item)} x${left}`);
-      b.type = 'button';
-      b.dataset.key = `add-${st.item}`;
-      b.disabled = left <= 0 || full;
-      b.addEventListener('click', () => {
-        this.picked.push(st.item);
-        this.stationMsg = '';
-        this.renderStation();
+    // One line: the result card after a craft, else the message, else how the step plays.
+    const line = el('div', 'pow-station-line');
+    if (this.stationMsg && this.craftResult) line.appendChild(this.resultCard(this.craftResult));
+    else {
+      const msg = el('p', 'pow-shop-msg', this.stationMsg || (S.craft.steps[def.step] ?? ''));
+      msg.setAttribute('role', 'status');
+      line.appendChild(msg);
+    }
+
+    // The known recipes of this station, makeable ones first.
+    const recipes = Object.values(RECIPES)
+      .filter((r) => r.station === kind && inv?.recipes.includes(r.id))
+      .map((r) => {
+        const units = expand(r.ingredients);
+        const short = r.ingredients
+          .map((i) => ({ ...i, lack: Math.max(0, i.qty - held(i.item)) }))
+          .filter((i) => i.lack > 0);
+        return { r, units, short, name: recipeName(r) };
+      })
+      .sort(
+        (a, b) =>
+          Number(a.short.length > 0) - Number(b.short.length > 0) || a.name.localeCompare(b.name),
+      );
+
+    const mode = this.viewFor(kind, recipes.length > 0);
+    const lists = el('div', 'pow-station-list');
+    if (mode === 'recipes') {
+      const ul = el('ul', 'pow-station-recipes');
+      for (const { r, units, short, name } of recipes) {
+        const b = el('button', 'pow-station-recipe');
+        b.type = 'button';
+        b.dataset.key = `recipe-${r.id}`;
+        b.classList.toggle('is-short', short.length > 0);
+        b.setAttribute(
+          'aria-label',
+          `${name}: ${r.ingredients.map((i) => `${held(i.item)} of ${i.qty} ${nameOf(i.item)}`).join(', ')}`,
+        );
+        const need = el('span', 'pow-station-need');
+        for (const i of r.ingredients) {
+          const chip = el('span', 'pow-station-chip');
+          chip.title = nameOf(i.item);
+          put(
+            chip,
+            icon(i.item),
+            el(
+              'span',
+              held(i.item) >= i.qty ? undefined : 'pow-station-lack',
+              `${Math.min(held(i.item), i.qty)}/${i.qty}`,
+            ),
+          );
+          need.appendChild(chip);
+        }
+        put(
+          b,
+          r.result ? icon(r.result) : el('span', 'pow-icon'),
+          el('span', 'pow-station-rname', name),
+          need,
+        );
+        b.addEventListener('click', () => {
+          if (short.length > 0) {
+            this.stationMsg = fill(S.craft.missing, {
+              list: short.map((i) => `${i.lack} ${nameOf(i.item)}`).join(', '),
+            });
+            this.craftResult = null;
+          } else {
+            this.picked = units;
+            this.stationMsg = '';
+          }
+          this.renderStation();
+        });
+        ul.appendChild(el('li')).appendChild(b);
+      }
+      if (recipes.length === 0) ul.appendChild(el('li', 'pow-hint', S.craft.noRecipes));
+      lists.appendChild(ul);
+    } else if (mode === 'bag') {
+      const grid = el('div', 'pow-station-bag');
+      const seen = new Set<string>();
+      inv?.slots.forEach((st) => {
+        if (!st || seen.has(st.item)) return;
+        const gear =
+          def.craft === 'enchanting' &&
+          (ITEMS[st.item]?.category === 'weapon' || ITEMS[st.item]?.category === 'armor');
+        if (!canBeIngredient(st.item) && !gear) return;
+        seen.add(st.item);
+        const left = held(st.item) - pickedOf(st.item);
+        const cell = gridCell({
+          key: `add-${st.item}`,
+          label: `${nameOf(st.item)} x${left}`,
+          icon: icon(st.item),
+          qty: left,
+          onOpen: () => {
+            this.picked.push(st.item);
+            this.stationMsg = '';
+            this.renderStation();
+          },
+        });
+        cell.removeAttribute('aria-haspopup');
+        cell.disabled = left <= 0 || full;
+        grid.appendChild(cell);
       });
-      put(li, icon, b);
-      stacks.appendChild(li);
-    });
-    bag.appendChild(stacks);
-    const how = el('p', 'pow-hint', S.craft.steps[def.step] ?? '');
-    const note = def.craft === 'enchanting' ? el('p', 'pow-hint', S.craft.enchantNote) : null;
-    put(s, head, msg);
-    // A finished craft shows as a card, so the quality is hard to miss (G4 playtest).
-    if (this.stationMsg && this.craftResult) s.appendChild(this.resultCard(this.craftResult));
-    put(s, how);
-    if (note) s.appendChild(note);
-    put(s, known, chosen, bag);
-
-    // Repair at the anvil.
-    if (def.craft === 'smithing') {
-      const rep = el('section', 'pow-storage-col');
-      put(rep, el('h3', 'pow-heading', S.craft.repair));
-      const rl = el('ul', 'pow-shop-list');
+      if (!grid.hasChildNodes()) grid.appendChild(el('p', 'pow-hint', S.craft.none));
+      lists.appendChild(grid);
+    } else {
+      const rl = el('ul', 'pow-station-recipes');
       let any = false;
       inv?.slots.forEach((st, slot) => {
         const d = st ? ITEMS[st.item] : undefined;
         if (!st || !d?.durability || (st.dur ?? d.durability) >= d.durability) return;
         any = true;
-        const li = el('li', 'pow-shop-row pow-part-listrow');
-        const b = el('button', 'pow-button', `${S.craft.repair}: ${nameOf(st.item)}`);
+        const b = el('button', 'pow-station-recipe');
         b.type = 'button';
         b.dataset.key = `repair-${slot}`;
-        b.addEventListener('click', () => this.deps.send({ type: 'repair', slot }));
+        b.setAttribute('aria-label', `${S.craft.repair}: ${nameOf(st.item)}`);
         put(
-          li,
           b,
+          icon(st.item),
+          el('span', 'pow-station-rname', `${S.craft.repair}: ${nameOf(st.item)}`),
           el(
             'span',
             'pow-hint',
             fill(S.craft.repairCost, { item: nameOf(CRAFTING.repairMaterial[d.tier] ?? '') }),
           ),
         );
-        rl.appendChild(li);
+        b.addEventListener('click', () => this.deps.send({ type: 'repair', slot }));
+        rl.appendChild(el('li')).appendChild(b);
       });
       if (!any) rl.appendChild(el('li', 'pow-hint', S.craft.repairNone));
-      put(rep, rl);
-      s.appendChild(rep);
+      lists.appendChild(rl);
     }
+
+    // The switch: one list at a time. It remembers its choice per station kind.
+    const modes: ('recipes' | 'bag' | 'repair')[] =
+      def.craft === 'smithing' ? ['recipes', 'bag', 'repair'] : ['recipes', 'bag'];
+    const sw = el('div', 'pow-station-switch');
+    sw.setAttribute('role', 'group');
+    for (const m of modes) {
+      const label =
+        m === 'recipes' ? S.craft.viewRecipes : m === 'bag' ? S.craft.viewBag : S.craft.viewRepair;
+      const b = el('button', 'pow-button', label);
+      b.type = 'button';
+      b.dataset.key = `view-${m}`;
+      b.setAttribute('aria-pressed', String(m === mode));
+      b.addEventListener('click', () => {
+        STATION_VIEW.set(kind, m);
+        this.renderStation();
+      });
+      sw.appendChild(b);
+    }
+    put(s, head, tray, line, sw, lists);
     (s.querySelector('button.pow-choice') as HTMLElement | null)?.focus();
+  }
+
+  /** The list the switch shows: the remembered one, else Recipes when any is known, else Bag. */
+  private viewFor(kind: string, anyKnown: boolean): 'recipes' | 'bag' | 'repair' {
+    return STATION_VIEW.get(kind) ?? (anyKnown ? 'recipes' : 'bag');
   }
 
   /** The storage chest: two lists, tap a stack to move it across. */
