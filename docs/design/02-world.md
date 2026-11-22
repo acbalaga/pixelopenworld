@@ -103,7 +103,7 @@ Rules:
 ## Secrets and discovery
 
 - **Fog of war.** The map draws itself as you walk. Cartography skill widens reveal radius and adds annotations.
-- **No objective markers** for anything the player has not personally found or been told about by a specific NPC or Traveler. Told locations appear as hand-drawn rumor marks with deliberate imprecision.
+- **No objective markers** for anything the player has not personally found or been told about by a specific NPC or Traveler. Told locations appear as hand-drawn rumor marks with deliberate imprecision. A mark over a person in view who has work for the player (design/09, Giver marks) is not an objective marker: it shows nothing that is not already on screen.
 - **Landmarks** are tall and visible from far away so navigation works by sight.
 - Every chunk on the Continent has at least one thing worth finding: a POI, a node cluster (two or more gathering nodes), a secret, a vista or a settlement. The bake enforces this (POW-M4-11).
 - **Singulars** (design/03) start from places and actions, never from boards. A region holds a few. They are the rarest thing on its map.
