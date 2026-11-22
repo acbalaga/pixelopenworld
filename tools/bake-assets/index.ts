@@ -11,6 +11,7 @@ import { CREATURES, SPAWNERS } from '../../src/content/creatures';
 import { SFX } from '../../src/content/audio/sfx';
 import { validateDefs } from './validate';
 import { validateCreatures } from './validateCreatures';
+import { validateNodes } from './validateNodes';
 import { validateRealItems } from './validateItems';
 import { validateDialogue } from './validateDialogue';
 import { validateReachability } from './validateReachability';
@@ -26,6 +27,7 @@ function validateAll(): string[] {
       sfx: new Set(SFX.map((s) => s.id)),
     }),
     ...validateRealItems(new Set(SPRITES.map((s) => s.id))),
+    ...validateNodes(SPRITES),
     ...validateDialogue(),
     ...validateReachability(),
     ...validateRegions(),

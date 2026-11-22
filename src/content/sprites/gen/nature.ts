@@ -225,11 +225,13 @@ function bush(kind: BushKind, seed: number): Img {
       im.set(x, y, tones[v] as number);
     }
   }
+  // No berries: a bush you cannot pick never looks like one you can (POW-M4-22E). The berry kind
+  // is a plain bush with a few light leaves.
   if (kind === 'berry')
     for (let i = 0; i < 4; i++) {
       const x = 4 + Math.floor(r() * 8);
       const y = 5 + Math.floor(r() * 6);
-      if (im.get(x, y) !== null) im.set(x, y, i % 2 ? 22 : 21);
+      if (im.get(x, y) !== null) im.set(x, y, 11);
     }
   return im;
 }
@@ -245,14 +247,14 @@ function flower(color: FlowerColor, seed: number): Img {
         : color === 'violet'
           ? [26, 27]
           : [2, 3];
+  // A head of at least 3 x 3 petal pixels on a dark green stem. No light green (dewmint's) and
+  // no sunwort yellow beside it, so no flower copies a gatherable herb.
   const x = 3 + Math.floor(r() * 2);
+  im.rect(x - 1, 1, x + 1, 3, main);
+  im.set(x, 2, lit);
+  im.set(x, 0, main);
   im.rect(x, 4, x, 7, 9);
-  im.set(x - 1, 6, 10);
-  im.set(x, 3, main);
-  im.set(x - 1, 3, main);
-  im.set(x + 1, 3, main);
-  im.set(x, 2, main);
-  im.set(x, 3, lit);
+  im.set(x - 1, 6, 9);
   return im;
 }
 
