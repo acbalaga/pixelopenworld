@@ -76,6 +76,7 @@ Minimal by default. Elements fade when unchanged for a few seconds, return on ch
 - Target frame (name, health, stagger) when locked.
 - Party frames, left edge, when in a party.
 - No quest tracker by default. The player can pin one request, which shows as a single line of the asker's own words.
+- **Giver marks.** A person on screen who would give a Trial or request now shows "?" over their head; one waiting for a hand-in the player can make now shows a gold tick. Only over people in view: never on the map, the minimap or the screen edge. A System setting turns them off. ("!" stays the creature-chase mark.)
 
 ## Action meter
 
@@ -109,16 +110,16 @@ While the Menu, a shop, dialogue or a craft panel is open, floaters and notices 
 
 Presented in-fiction as the game's system window (the player is "in a VR game"). Opens with the menu button or a swipe up from the bottom edge. Full-height sheet in portrait with a tab bar at the bottom. Rebuilt in M4 (D21) on a small set of shared parts so every tab behaves the same.
 
-| Tab       | Contents                                                                          |
-| --------- | --------------------------------------------------------------------------------- |
-| Character | Avatar, gear, worn Paths, Forms, pools, loadouts                                  |
-| Skills    | Awakened skills by family, rank, next Trial hint, techniques                      |
-| Bag       | Inventory grid, filters, quick-use slots                                          |
-| Map       | World map with fog, Waystones, player notes, rumor marks                          |
-| Chronicle | Completion by category, bestiary, recipes, fish, fragments as found, Theory Board |
-| Social    | Friends, party finder, guild, rankings, mail, full chat log                       |
-| Routines  | Workers, assignments, offline cap, Tactics editor                                 |
-| System    | Settings, save status and export, calendar, help, **Log Out**                     |
+| Tab       | Contents                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------- |
+| Character | Avatar, gear, worn Paths, Forms, pools, loadouts                                                            |
+| Skills    | Awakened skills by family, rank, next Trial hint, techniques                                                |
+| Bag       | Inventory grid, filters, quick-use slots                                                                    |
+| Map       | World map with fog, Waystones, player notes, rumor marks                                                    |
+| Chronicle | Requests and Trials under way and finished, known recipes, bestiary, fish, fragments as found, Theory Board |
+| Social    | Friends, party finder, guild, rankings, mail, full chat log                                                 |
+| Routines  | Workers, assignments, offline cap, Tactics editor                                                           |
+| System    | Settings, save status and export, calendar, help, **Log Out**                                               |
 
 Tabs whose system does not exist yet are hidden, not greyed out. The tab bar shows a 16 px icon and a short label for each tab, and a badge dot when something new is inside.
 
@@ -143,6 +144,8 @@ The game does not pause when the Menu is open in the open world (it is an online
 - Gear, technique and loadout changes made in the Menu show at once on the doll and the HUD behind the sheet.
 
 **Character tab layout.** The doll at the center, drawn at 2x, with its gear slots around it (head, body, legs, main, off, two trinkets later). Under it, the three pools with their numbers, then worn Paths as chips, then the two loadouts side by side.
+
+**Crafting station.** A fixed tray of four ingredient cells with Craft beside it at the top, then one list at a time under a switch (Recipes, Bag, and Repair at the anvil). The tray and Craft never scroll away. The Bag list shows only things that can be ingredients.
 
 **Skills tab layout.** Awakened skills only, by family, each family a section. A row shows name, rank name and a progress bar. The detail sheet shows the XP to next point, the Trial hint or progress, and that skill's techniques with their source state ("Known", "Insight 18 of 30", "Someone in Hearthford teaches this"). Assigning a technique to a slot happens from the detail sheet.
 

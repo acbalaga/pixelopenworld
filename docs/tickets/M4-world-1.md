@@ -449,3 +449,238 @@ Refs: regions/01-dawnmeadow (sections 9, 10, 14), design/05-life-systems (Reques
 Goal: the region is inhabited, and its hours are counted.
 Scope: the 16 named people in section 9 with schedules (day, night, weather), homes and likes (friendship itself arrives in M6, the data is authored now). 25 authored requests and 5 Threads from section 10, at least 8 with a non-combat solution. The rank 15 Trials for every wired skill: 32 in all (done in PRs #110 and #111). Rank 30 Trials are not in this ticket; the trainers of the M8 regions set them. Move the M3 slice givers (Orla, Wren, Hesper, Brin, the Pilgrim) into their districts without breaking their Trials, requests or teaching lines (POW-M4-15). `estMinutes` on every authored content item, including Singulars, dungeons and POIs. `tools/pacing-ledger` sums by category and region, writes a report, and fails CI under budget. **Schedule movement:** an NPC whose schedule slot changes moves to its new place the next time neither spot is on screen. No walking. Shops, Trials, requests and teaching stay reachable (an NPC is found at its place for the current phase and weather). Each named place in `content/people/places.ts` gets a tile rectangle in the region spec (Millbrook, Reedmouth, Stonecrop, Cairnmoor; the well and shelter on Cairnmoor are placed with m9). `docs/ops/gate-g4.md` owner checklist, including a replay of every playtest finding (F1 to F8) on the phone, and these tuning checks carried from PRs #106 to #111: the Rootway first clear (12 to 18 minutes for a person), the Athletics run (50 s), the Cartography Trial (120 blocks), request coin against shop prices, and how far the Millbrook, Reedmouth, Stonecrop and Cairnmoor givers sit from town.
 Acceptance: ledger report shows Dawnmeadow at or above budget, and the PR that finishes this ticket and POW-M4-11 switches `enforceBudget` on for Dawnmeadow. NPC schedule tests, including one that an NPC never moves while on screen and one that each giver is found at its scheduled place. Every M3 Trial and request still completes after the move (scenario tests). Owner action: play G4 with the checklist.
+
+---
+
+## Gate G4 findings
+
+The owner's G4 playtest (November 2026) and the planning agent's own pass on a 360 x 800 phone viewport. Earlier G4 fixes shipped as POW-M5-20 to M5-22 and the "G4 playtest" commits on main. What is left is one ticket in parts.
+
+### POW-M4-22 G4 findings: the journal, crafting, giver marks, gathering counts, icons
+
+Size: 6 PRs (parts A to F, each S to M, F is L) Depends: see each part Status: READY
+Refs: design/09-ui-ux (The Menu, Shared parts, HUD, Art direction for UI), design/05-life-systems (Requests), design/02-world (Secrets and discovery), tech/03-asset-pipeline (Sprites), tech/02-save-security (only if a part finds it must change saved state)
+
+Goal: finished work leaves the way, the journal holds what the player has done and knows, a station fits on one phone screen, the player can see who has work for them, a request counts what the player carries, and every item and gatherable plant can be told apart at a glance.
+
+**How to run this ticket.** One PR per part. Title: `POW-M4-22<letter> <part title>`, for example `POW-M4-22A Requests count what you carry`. Merge order: A first, then B and D (both need A). C, E and F can run in parallel with anything. E and F both rebake the atlases: whichever merges second rebases and runs `npm run bake` again. Do not start a part whose dependency is not merged.
+
+**Findings this ticket answers.**
+
+| #   | Finding                                                                                                                                                                                                                                                                                                | Part |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
+| G1  | Finished requests stay in the Character tab at full size, under the gear and loadouts. The list grows with every job done.                                                                                                                                                                             | B    |
+| G2  | Known recipes are only visible at the station that makes them. There is no list to plan from.                                                                                                                                                                                                          | B    |
+| G3  | The station panel is about two screens tall on a phone (1210 px of content in a 634 px sheet). The whole bag is listed one button per row, gear and ores included at the camp pot. The ingredient tray and Craft button sit between the recipes and the bag, so every craft is a scroll up and down.   | C    |
+| G4  | Items and plants look alike. 89 of 173 item icons are within 20% pixel distance of another icon (`copper_ore`, `iron_ore`, `coal` and `essence_stone` at 4%; `mushroom_soup` and `sunwort_porridge` at 4%; every salve, oil and draught at 14%). 14 items share one scroll icon, 4 share one key.      | F    |
+| G5  | Gatherable plants in the world are drawn with the 12 x 12 bag icon of what they yield (the herb patch is a sunwort icon, the silk web is a bolt of cloth, the river bank is a clay cone) and every spent node is the moss tuft icon. The decor `prop.bush_berry` looks like a berry bush you can pick. | E    |
+| G6  | Nothing tells the player which people have a Trial or request for them, or which are waiting for a hand-in.                                                                                                                                                                                            | D    |
+| G7  | A gather step counts gather actions, not items. One swing that yields 3 ore counts as 1. Items already in the bag never count. The standing ask says "Bring 7 to the board", but nothing is handed over.                                                                                               | A    |
+| G8  | The board posted two "Gather Blue Berries" jobs at once.                                                                                                                                                                                                                                               | A    |
+| G9  | The standing gather ask says "from wherever it grows" for Coal and ores.                                                                                                                                                                                                                               | A    |
+| G10 | A one-step standing request repeats its title as its only step line ("Gather 7 Blue Berries" twice).                                                                                                                                                                                                   | B    |
+| G11 | Two different items share a display name ("Stamina Tonic" is both `potion_stamina` and `potion_stamina_m`).                                                                                                                                                                                            | F    |
+
+---
+
+#### Part A. Requests count what you carry (G7, G8, G9)
+
+Depends: none. Size: M.
+
+Decisions (settled here, do not reopen):
+
+- **A gather step counts items, not actions.** The `gathered` event gains `qty` (the number given by that gather). `onGathered` in `src/sim/systems/trials.ts` adds `e.qty`, not 1. This applies to Trials and to authored requests alike, so it is written once.
+- **A standing "gather" job is a hand-in at the board.** The board posts it as a `deliver` step whose `to` is the board id (for example `board.square`). Items already in the bag count. The items are taken at hand-in. There is no new objective kind, so the stored request shape does not change.
+- **Trials stay gather objectives** (they test the skill, so the items are not taken), and their words stop saying "bring".
+
+Scope:
+
+- `src/sim/kernel/events.ts`: `gathered` gets `qty: number`. `src/sim/gathering.ts` emits it with the qty passed to `give`. Update every emitter and test fixture that builds the event.
+- `src/sim/systems/trials.ts` `onGathered`: `p.n += e.qty`. `finish` already clamps at the count; confirm with a test that an overshoot (count 4, one gather of 5) completes once.
+- `src/sim/requestGen.ts` `make('gather', ...)`: emit `steps: [{ kind: 'deliver', item, qty: n, to: boardId }]`. The ask string is picked by the node tag that yields the item: `request.standing.gather.ask.foraging` ("...from wherever it grows"), `.mining` ("...dug from wherever you find it"), `.logging` ("...cut from wherever it stands"), `.fishing` ("...landed from wherever they bite"). Title becomes `Bring {n} {what}`, way `Bring them to the board`. Strings live in `src/content/strings/requests.ts`. Which tag yields an item comes from `NODES` (first node that yields it, sorted by id, so the pick is deterministic).
+- `src/sim/requestGen.ts` (or wherever a board picks its posts, `generateStanding`): a board never posts two standing requests that name the same item, or the same creature, on the same day. Reroll up to `REQUEST_BALANCE.standing.dedupeTries` times (new tunable, value 6), then post fewer.
+- `src/sim/systems/requests.ts`: new `handInAtBoard(state, who, rid)`. It runs `deliverTracked(state, who, boardId, trackersOf(...))` for that request, then calls the existing board turn-in if the request is now `ready`. The board's existing turn-in command calls this. `boardReady` in `src/sim/requestLog.ts` also returns a board request whose current step is a deliver to this board that the bag can satisfy now.
+- `src/sim/requestLog.ts` `objectiveText`: a deliver step whose `to` starts with `board.` reads `Bring {n} {what} to the board` (`request.step.deliver.board`).
+- `src/sim/requestLog.ts` `waysOf`: the current step of an active request, when it is a `deliver`, gets status `{n} of {max} in your bag` (`request.step.inBag`), from the avatar's inventory, counting quality as `deliverTracked` does. Words only; this module still returns no position.
+- Trial words in `src/content/skills/dawnmeadowTrials.ts`: the mining intro becomes "Stone gives up what it holds, but only to someone who keeps hitting it. Mine three iron ore and I will know." The logging intro becomes "A tree falls where you tell it or where it likes. Fell four oak logs for me, cleanly." Hints unchanged. Check `src/content/strings/skills.ts` for any other gather Trial text that says "bring" or "hand" and fix it the same way; list each one in the PR.
+- Board UI (`src/ui/dom/board.ts`): a taken board request that can be handed in shows the existing hand-in button. One that cannot yet shows its `in your bag` line instead of the button.
+
+Out of scope: changing reward values, counts or which items are picked. Authored requests that already use `deliver` to a person.
+
+Save: no schema bump. The stored request shape is unchanged: a `deliver` step with a board id is the same type as one with a person's id. A request taken before this change keeps its stored `gather` step and finishes under the new item count. If you find anything that does change the stored shape, stop and raise a Design Query.
+Integrity: the deliver removes items through `removeItem`, as person deliveries do, so the ledger needs no new source. Confirm the existing request-reward rule still holds with a test.
+
+Acceptance:
+
+- Unit: one gather that yields 3 advances a gather step by 3, for a Trial and for an authored request. Overshoot completes once.
+- Unit: a posted standing gather job is a deliver to the board. With 5 of 7 in the bag the log reads `5 of 7 in your bag` and the board offers no hand-in. With 7 the board hands in, 7 are removed, the reward is paid once.
+- Unit: over 200 seeded days on Dawnmeadow's boards, no day posts two standing jobs naming the same item or creature.
+- Unit: the ask for a mined item says "dug", for a foraged one says "grows".
+- Save: load the latest committed fixture (schema 27) with an active standing gather request in it (add one to a copy of the fixture if none has it, and say so in the PR), gather once with qty 3, and see its progress rise by 3.
+- e2e `tests/e2e/requests.spec.ts` still passes, with the hand-in flow added: take a gather job, `__pow.giveItem` the items, hand in at the board.
+
+#### Part B. The Chronicle is the journal (G1, G2, G10)
+
+Depends: Part A. Size: M.
+
+Decision: the tab keeps its name, **Chronicle**, as design/09 names it. Requests and Trials move into it. The Character tab no longer lists requests. The Skills tab no longer lists the Trials under way at its top; its per-skill detail sheet keeps the Trial hint and progress (design/09).
+
+Scope:
+
+- `src/ui/dom/menu.ts` `renderChronicle`: sections built from the shared Section part (collapsible, count, remembered open or closed), in this order:
+  1. **Under way** (open by default): the request rows that `renderRequests` draws today (active and ready, pinned first) followed by the Trials under way (`trialLog`). Pin buttons stay.
+  2. **Finished** (closed by default): one compact Row per finished request (title at left, giver name as the state line) and per passed Trial (`<Skill> Trial` at left, the rank threshold and the giver as the state line). Requests newest first by `doneDay`, then by title. Trials by skill name, then threshold. Tapping a row opens the shared detail sheet with the asker's words and the reward line (requests) or the intro (Trials). Passed Trials are read from `skills.passed` (`skill@threshold`) matched to `TRIALS` by skill and threshold; a passed key with no matching Trial is skipped.
+  3. **Recipes** (closed by default): every recipe in `inventory.recipes`, grouped by craft in this order: Cooking, Smithing, Woodworking, Tailoring, Alchemy, Enchanting, Tinkering. A craft with none known is not shown. Row: result icon, recipe name (the same `recipeName` the station uses; move it into a shared module such as `src/ui/menu/recipeModel.ts`), and the ingredient line ("2 Sunwort, 1 Dewmint") as the state line. Unknown recipes never appear and no total is shown, so discovery is not given away.
+  4. **Bestiary**: as today.
+  5. **Your story**: the Singular lines (`chronicleLines`) as today, under a heading.
+- The view logic goes in pure functions next to the others in `src/ui/menu/` (`journalModel.ts`: `underWay`, `finished`, `knownRecipes`), unit tested. `requestLog` gains nothing that leaks a position.
+- `src/sim/requestLog.ts` `waysOf` or the menu row: when a request has one way with one step and that step's text equals the title, the step line is not drawn; its status (count or `in your bag`) moves onto the title row's right side.
+- Request rows get the shared Row look: one border between rows, the Pin button as a small right-side action, not a full-width block.
+- Character tab: remove the Requests section. Skills tab: remove the Trial list at the top. Strings stay in `src/content/strings/ui.ts` and `requests.ts`; new keys for the section titles: `Under way`, `Finished`, `Recipes`, `Your story`.
+- Empty state for the tab when all five are empty: the existing `chronicleEmpty` line.
+- design/09 table row for the Chronicle already lists recipes; this planning PR adds requests and Trials to it.
+
+Out of scope: a "new" badge on the tab (design/09 mentions it; it is a follow-up). Fish, fragments and the Theory Board (later milestones).
+
+Save: none. Integrity: none.
+
+Acceptance:
+
+- Unit tests for `underWay`, `finished`, `knownRecipes`: ordering, a passed key with no Trial skipped, an unknown recipe never listed, a repeatable request done twice listed once.
+- e2e (update `tests/e2e/requests.spec.ts` and `menu.spec.ts`): the request log is found in the Chronicle, not the Character tab. Finish one request; it moves from Under way to Finished.
+- Phone screenshots (360 x 800): Chronicle with Under way open and three requests; Finished open with at least three requests and two Trials; Recipes open with at least two crafts. Character tab bottom ends at the loadouts.
+
+#### Part C. One-screen station (G3)
+
+Depends: none. Size: M.
+
+Decision: the station sheet is a fixed tray on top and one switchable list below it, so the Craft button never scrolls away.
+
+Scope (`src/ui/dom/talk.ts` `renderStation`, styles in `src/style.css`):
+
+- Top to bottom: header (station name, Close). The **tray**: four Grid cells (48 px, the shared part) in one row, one per ingredient slot, empty ones dashed. Tapping a filled cell takes that ingredient out. To the right of the tray, or under it when the width is under 300 px, **Craft** (primary, thumb side) and **Clear**. Then one line: the step hint, or the result card when a craft just finished (the result card replaces the hint, it does not add height).
+- Under that, a two-way (three at the anvil) segmented switch: **Recipes**, **Bag**, and **Repair** at the anvil only. One list is visible at a time, and only that list scrolls. The switch remembers its choice per station kind for the session (UI state, not saved). It opens on Recipes when any recipe of this station is known, else on Bag.
+- **Recipes list:** a Row per known recipe of this station: result icon, name, then the ingredient icons each with `have/need` (for example `2/2`, `0/1`). Rows the bag can make come first, then the rest, each group by name. Tapping a makeable row fills the tray. Tapping one that is short writes "Missing: 1 Dewmint" in the station message line and fills nothing.
+- **Bag list:** a grid of Grid cells (icon, quantity corner showing what is left after the tray), five per row at 360 px. It shows only items that can be ingredients: category `material` or `consumable`, plus any item that is an ingredient of any recipe in `RECIPES` (a set computed once from data, not per station, so it says nothing about this station). Gear, tools, keys, manuals and coin are not shown. Long-press shows the name (the shared tooltip). Cells keep `data-key="add-<item id>"`.
+- **Repair list (anvil):** as today, as Rows.
+- Keep the existing `data-key` values (`recipe-<id>`, `add-<item>`, `picked-<i>`, `craft-go`, `repair-<slot>`) so e2e flows keep working.
+
+Out of scope: how crafting is graded or what a recipe needs. Experimenting stays possible: any ingredient can still go in the tray.
+
+Save: none. Integrity: none.
+
+Acceptance:
+
+- e2e at 360 x 800 with 20 different ingredient items and 10 known recipes at the camp pot: the tray and Craft are inside the viewport with the sheet scrolled to the top and with the list scrolled to its end. The sheet itself does not scroll.
+- e2e: the cook flow in `tests/e2e/sliceRun.spec.ts` passes unchanged or with only selector changes.
+- e2e: a short recipe tapped shows the Missing line and leaves the tray empty.
+- Unit: the ingredient-item set includes every item named in any recipe, and excludes a weapon, a tool and a key.
+- Phone screenshots: camp pot on Recipes, on Bag, and the anvil on Repair. A landscape screenshot.
+
+#### Part D. Who has work for you (G6)
+
+Depends: Part A. Size: M.
+
+Decisions:
+
+- A person who would give you a Trial or request right now shows **"?"** over their head. A person waiting for something you can hand in now shows a **gold tick**. Hand-in wins when both apply. "!" stays the creature-chase mark and is not used for people.
+- The mark is drawn only over a person who is on screen. It never appears on the minimap, the map or the screen edge, and no arrow points to anyone. This is a person in front of you showing they want to talk, not an objective marker (design/02 is clarified in this planning PR).
+- A System setting **Show who has work** turns marks off. Default on. It is a UI setting outside the save, like the quick-slot pins.
+
+Scope:
+
+- New pure module `src/sim/giverMarks.ts`: `giverMarks(state, who): Map<npcId, 'offer' | 'ready'>`. For each person with a dialogue: start at `startNode`, walk the nodes reachable through `next` and through choices whose `if` holds (no node twice, depth at most `UI_BALANCE.giverMarkDepth`, new tunable, value 8). It is an **offer** if a reachable node or choice has `offerTrial` for a Trial that `offerTrial` would accept now (not offered, not passed), or `startRequest` for a request that `startRequest` would accept now (not taken or repeat cooldown passed, `requires` hold). Do not check the active-request cap; a full log still shows who has work. It is **ready** if a reachable `turnIn` names a request in state `ready`, or a request or Trial under way has a current `deliver` step to this person that the bag satisfies now. Teaching (`learnTechnique`), shops and flags alone never make a mark. Reuse `holds`, `startNode`, and the acceptance checks inside `offerTrial` and `startRequest` by extracting them to `canOfferTrial` and `canStartRequest`, so the rules are written once. No DOM, no clock, no random.
+- Render: in `src/render/renderer.ts` (or a new `src/render/giverMark.ts`), draw the mark centered 2 px above the top of the person's doll, on the world layer above actors. Recompute the map at most every `UI_BALANCE.giverMarkRecheckTicks` (new tunable, value 30) and at once on `requestStarted`, `requestReady`, `trialOffered`, `trialPassed` and when a talk closes. Hidden over the person you are talking to. A 1 px bob on a 1 s cycle, off under reduced motion.
+- Sprites in `src/content/sprites/ui` (generated, no external art): `ui.mark_offer` (a 7 x 9 speech bubble with "?" in it, light fill, darkest neutral outline) and `ui.mark_ready` (the same bubble in gold with a tick). Readable at 1x on a phone.
+- Setting: `showGiverMarks` in `src/platform/settings.ts` and its storage, a toggle in the System tab, string `Show who has work`.
+
+Out of scope: marks for Travelers (M5 proper), teachers or shops. Any off-screen indicator.
+
+Save: none. Integrity: none.
+
+Acceptance:
+
+- Unit (`tests/unit/giverMarks.test.ts`): offer for a Trial giver whose Trial is open; none once offered; none once passed. Offer for an authored request with `requires` met; none when not met; none once taken; offer again when a repeat's cooldown has passed. Ready when a request is `ready` and its giver has a reachable `turnIn`. Ready when the bag holds a deliver step's items, not when it holds one fewer. A choice guarded by a phase shows the mark only in that phase. A teacher with only `learnTechnique` shows nothing.
+- Scenario test over Dawnmeadow: for every person who gives any authored request or Trial, in a state where the mark is `offer`, running the dialogue by the choices the walk found reaches the offer. (The mark never lies.)
+- Purity: `src/sim/giverMarks.ts` passes the sim-purity lint.
+- Perf: the frame budget in tech/04 holds in Hearthford square with all marks on (report the frame time from the dev overlay before and after).
+- Phone screenshots: the square with at least one "?" and one gold tick; the same with the setting off.
+
+#### Part E. Plants look like plants (G5)
+
+Depends: none. Size: M.
+
+Decision: a gatherable node is drawn with its own world sprite, never with an item icon. Anything that looks gatherable is gatherable: decor never copies a node's look.
+
+Scope:
+
+- New world sprites, generated in `src/content/sprites/gen/nature.ts` (or a new `gen/nodes.ts`), 16 x 16 unless noted, each with a `ready` and a `spent` frame. The spent frame is the same plant stripped (no berries, cut stalks, torn web), never the moss tuft:
+  - `node.herb_patch`: a low leafy clump with small yellow sunwort heads and pale green dewmint sprigs mixed, so both yields show.
+  - `node.berry_bush`: a round bush with clear red and blue berry clusters (3 to 4 px each) on the leaves.
+  - `node.nightshade_bush`: a darker, taller bush with drooping purple berries.
+  - `node.glowcap_cluster`: two or three mushroom caps of different heights. Night variant with a lit rim if the lighting pass already supports emissive pixels; otherwise skip and note it.
+  - `node.flax_patch`: tall thin stalks with small blue flowers.
+  - `node.briar_tuft`: a thorny bramble with white wool caught on it.
+  - `node.river_bank`: a wet clay mound with two pebbles at its foot.
+  - `node.silk_web`: a web strung between two twigs.
+- `NODES[*].sprite` in `src/content/items/recipes.ts` points to these. The vein, tree and fishing nodes keep their existing world sprites.
+- Decor: `prop.bush_berry` is redrawn without berries or removed from the region spec scatter (say which in the PR). The four `prop.flower_*` decor sprites grow a clearer head (at least 3 x 3 px of petal color) so they read as flowers, and none uses sunwort yellow plus dewmint green together.
+- The look-alike check from Part F, run over every node `ready` sprite against every decor prop sprite, at the same 0.20 threshold. If F has not merged, this part adds the check tool and F extends it to items.
+- Rebake (`npm run bake`, `npm run bake:world`).
+
+Out of scope: new node types, yields or respawn times.
+
+Save: none. Integrity: none.
+
+Acceptance:
+
+- Validator: no `NODES` entry's sprite id starts with `icon.`.
+- Look-alike check passes for nodes against decor.
+- A contact sheet committed to `docs/ops/evidence/pow-m4-22e/` showing every node ready and spent, next to every bush and flower decor prop, on grass.
+- Phone screenshots of a meadow with a herb patch, a berry bush and decor bushes and flowers in one frame, by day.
+
+#### Part F. Every item its own icon (G4, G11)
+
+Depends: none. Size: L. If it grows past one session, split by family into F1 (gear and tools), F2 (materials and food), F3 (potions, misc, manuals), each its own PR in that order.
+
+Decision: every item has its own drawn icon. Tier variants of one weapon or tool may share a silhouette but must differ in metal or wood color and in one detail (guard, binding or head shape).
+
+Scope:
+
+- `src/content/sprites/gen/items.ts`: draw a distinct icon for every item. Families to redraw first (from the look-alike report, not exhaustive):
+  - Manuals and letters (14 on one scroll): each manual gets a cover with an emblem for its skill (blade, open palm, footprints, flame, wave, wind swirl, fist on stone, mending stitch, lute, closed eye, hex knot), the Pilgrim's letter is a folded sheet with a wax seal, Wren's page is a torn sheet, the iron sword recipe scroll keeps the scroll. The Dawnmeadow notes and book items get book or sheet shapes that differ from each other. An icon shows only what the thing is (a book, a rubbing on stone, a page of notes), never a symbol that hints at what it says.
+  - Keys (4 on one): different bows and metals (old brass key, foreman's iron key, mill key with a wooden grip, root key twisted like a root).
+  - Ores and stone: copper ore (grey lump, orange flecks), iron ore (darker lump, rust flecks), coal (black faceted lumps, two pieces), stone essence (smooth orb, not a lump).
+  - Bowls: herb tea in a cup, compote in a bowl with berries on top, stew with chunks, chowder with a fish tail, mushroom soup with a cap floating, porridge with a sunwort flower.
+  - Bottles: one silhouette per effect family. Health a round flask, stamina a tall vial, focus a square bottle, cures (antidote, warming draught) a stoppered jar, salves (fire salve) a flat tin, oils (oil of keenness) a cruet with a spout, ward, swift, clarity and vigor each a different stopper or bottle shape. Minor and full versions share the shape and differ in size.
+  - Wood: oak log (dark bark, ringed end) and ash log (pale grey bark); oak and ash planks by color and grain; the cart wheel as a wheel.
+  - The other shared icons: fishing net as a mesh, wayfarer's cloak as a cloak, baker's peel as a peel, firebrick as a brick, crow feather charm as a feather on a cord, baker's loaf against bread, burnt mess against river pebble, dew vial against water flask.
+- Each item's `icon` in `src/content/items/*` points to its own sprite.
+- New check in `tools/bake-assets/` (run by `npm run validate` and so by `npm run verify`):
+  - No two `ItemDef`s share an `icon` id.
+  - For every pair of item icons, `d` = pixels whose palette index differs (transparent counts as its own index) divided by 144. Every pair needs `d >= 0.20`, except pairs listed in `ICON_VARIANT_GROUPS` (new data, next to the generator: one group per tier line, for example the four swords, the four spears, the two picks, axes, sickles, hammers, rods), which need `d >= 0.10` and a different most-common non-outline ramp.
+  - No two items share a display name.
+  - Thresholds live in the tool's config with a comment, not in `balance/` (they are not gameplay numbers).
+  - The tool prints the failing pairs with their `d`, so a failure says what to redraw.
+- Names: `item.potion_stamina_m.name` becomes `Strong Stamina Tonic`. If the name check finds others, rename by the same pattern (`Strong ...` for the `_m` version) and list them in the PR.
+- Rebake. The contact sheet `baked/contact-items.png` shows the new set.
+
+Out of scope: icon size (stays 12 x 12), the bag UI, item stats.
+
+Save: none (icons and names are not saved). Integrity: none.
+
+Acceptance:
+
+- The look-alike check passes and is part of `npm run verify`. A test feeds it two identical icons and sees it fail.
+- The PR shows the before and after count of pairs under 0.20 (before: 180 pairs, 89 items).
+- A grouped contact sheet (by category, name under each icon, at 4x) committed to `docs/ops/evidence/pow-m4-22f/`.
+- Phone screenshot of a Bag holding all the potions and salves, and one holding the four ores and coal.
+
+#### Owner action (after all parts merge)
+
+Replay on the phone: take a standing gather job holding some of the items already; find the "?" people in the square; craft three dishes at the camp pot without scrolling; open the Chronicle and find a finished request, a passed Trial and a recipe; tell the potions apart in the Bag; pick a herb patch and a berry bush out of a meadow by sight.
+
+#### Follow-ups noted, not in this ticket
+
+- A "new" badge on the Chronicle tab when a request finishes or a recipe is learned (design/09 already asks for badge dots).
+- The dev overlay covers the minimap and the top of the screen in `?kit=dev` screenshots. Dev only, so low priority.
