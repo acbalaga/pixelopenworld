@@ -35,6 +35,8 @@ export interface RequestView {
   ask: string;
   state: 'active' | 'ready' | 'done';
   pinned: boolean;
+  /** Who gave it: the person's name, or the board's. */
+  giver: string;
   /** The board that gave it, or empty when a person did. An id, not a place. */
   board: string;
   ways: WayView[];
@@ -179,6 +181,10 @@ export function requestLog(state: SimState, who: EntityId): RequestView[] {
       ask: fill(T[def.askKey] ?? def.askKey, vars),
       state: rec.state,
       pinned: j.pinned === id,
+      giver:
+        'npc' in def.giver
+          ? (NPCS[def.giver.npc]?.name ?? '')
+          : (T['request.board.title'] as string),
       board: 'board' in def.giver ? def.giver.board : '',
       ways: waysOf(def, rec, getComp(state.entities, who, 'inventory') ?? undefined),
       reward: rewardText(def),

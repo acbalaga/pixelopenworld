@@ -2,15 +2,14 @@ import { DIALOGUES, NPCS, SHOPS } from '../../content/dialogue';
 import type { DialogueNode } from '../../content/dialogue/types';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS } from '../../content/items';
-import { AFFIXES } from '../../content/items/affixes';
 import { PATHS } from '../../content/paths';
 import { PATHS_BALANCE } from '../../content/balance/paths';
 import { PATH_STRINGS } from '../../content/strings/paths';
 import { RECIPES, expand } from '../../content/items/recipes';
 import { STATIONS } from '../../content/items/stations';
 import { DIALOGUE_STRINGS } from '../../content/strings/dialogue';
-import { ITEM_STRINGS } from '../../content/strings/items';
 import { emptyState } from './parts';
+import { itemName, recipeName } from '../menu/recipeModel';
 import { fill } from '../../content/strings/skills';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { holds, startNode } from '../../sim/journal';
@@ -57,13 +56,7 @@ function put<T extends HTMLElement>(parent: T, ...kids: HTMLElement[]): T {
   return parent;
 }
 
-const nameOf = (id: string): string => ITEM_STRINGS[ITEMS[id]?.nameKey ?? ''] ?? id;
-
-/** What a recipe is called: the item it makes, or for an enchant the affix it applies. */
-const recipeName = (r: { result: string; enchant?: string }): string =>
-  r.enchant
-    ? fill(S.craft.enchant, { name: ITEM_STRINGS[AFFIXES[r.enchant]?.nameKey ?? ''] ?? r.enchant })
-    : nameOf(r.result);
+const nameOf = itemName;
 
 /**
  * The dialogue sheet and the shop sheet (design/09): clear text in a bottom sheet with the

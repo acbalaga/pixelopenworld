@@ -55,5 +55,13 @@ test('a gather job is handed in at the board: items in the bag count and are tak
   );
   await board.getByRole('button', { name: 'Hand in' }).click();
   await expect(board.getByRole('button', { name: 'Hand in' })).toHaveCount(0);
+  // The finished job leaves Under way and shows in Finished, in the Chronicle.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.locator('[data-tab="chronicle"]').click();
+  await expect(page.locator('.pow-requests')).toHaveCount(0);
+  const finished = page.locator('.pow-finished');
+  await finished.locator('[data-key="section-journal-done"]').click();
+  await expect(finished).toContainText(`Bring ${qty} ${name}`);
   expect(problems.pageErrors).toEqual([]);
 });
