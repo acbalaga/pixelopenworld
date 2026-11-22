@@ -1,79 +1,35 @@
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
+import { DISTINCT_ICONS } from './itemsDistinct';
+import {
+  BRONZE,
+  COPPER,
+  CREAM,
+  FIRE,
+  GOLD,
+  LEAF,
+  LEATHER,
+  METAL,
+  RUST,
+  ROSE,
+  SILK,
+  STEEL,
+  STONE,
+  type Ramp,
+  VIOLET,
+  WATER,
+  WOOD,
+  disc,
+  icon,
+  line,
+  outline,
+} from './iconKit';
 
 /**
  * Item icons, 12 x 12, from shape templates and ramps (art bible: generators multiply bases).
  * Light from the top left. A 1 px outline in the darkest neutral keeps them readable on any
  * slot color. Each icon is one frame, `base`.
  */
-const SIZE = 12;
-const OUT = 0;
-
-type Ramp = readonly [number, number, number, number];
-
-const METAL: Ramp = [28, 29, 30, 31];
-const RUST: Ramp = [20, 4, 5, 6];
-const WOOD: Ramp = [4, 5, 6, 7];
-const LEAF: Ramp = [8, 9, 10, 11];
-const FIRE: Ramp = [20, 21, 22, 23];
-const WATER: Ramp = [12, 13, 14, 15];
-const VIOLET: Ramp = [24, 25, 26, 27];
-const STONE: Ramp = [16, 17, 18, 19];
-const GOLD: Ramp = [44, 45, 46, 47];
-const ROSE: Ramp = [40, 41, 42, 43];
-const CREAM: Ramp = [4, 44, 45, 46];
-const COPPER: Ramp = [4, 21, 22, 23];
-const STEEL: Ramp = [28, 30, 31, 3];
-const BRONZE: Ramp = [44, 5, 45, 46];
-const LEATHER: Ramp = [4, 5, 6, 7];
-const SILK: Ramp = [40, 41, 42, 43];
-
-function line(im: Img, x0: number, y0: number, x1: number, y1: number, c: number): void {
-  const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
-  for (let i = 0; i <= n; i++) {
-    const t = n === 0 ? 0 : i / n;
-    im.set(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), c);
-  }
-}
-
-/** A shaded disc: shadow bottom right, highlight top left. */
-function disc(im: Img, cx: number, cy: number, r: number, ramp: Ramp): void {
-  for (let y = cy - r; y <= cy + r; y++)
-    for (let x = cx - r; x <= cx + r; x++) {
-      const dx = x - cx;
-      const dy = y - cy;
-      if (dx * dx + dy * dy > r * r + r * 0.6) continue;
-      const lit = dx + dy;
-      im.set(x, y, lit < -r * 0.6 ? ramp[3] : lit > r * 0.5 ? ramp[1] : ramp[2]);
-    }
-}
-
-/** 1 px outline around everything drawn, painted only on empty pixels. */
-function outline(im: Img): Img {
-  const out = new Img(im.w, im.h);
-  for (let y = 0; y < im.h; y++)
-    for (let x = 0; x < im.w; x++) {
-      const c = im.get(x, y);
-      if (c !== null) {
-        out.set(x, y, c);
-        continue;
-      }
-      const near = [
-        [1, 0],
-        [-1, 0],
-        [0, 1],
-        [0, -1],
-      ].some(([dx, dy]) => im.get(x + (dx as number), y + (dy as number)) !== null);
-      if (near) out.set(x, y, OUT);
-    }
-  return out;
-}
-
-function icon(name: string, draw: (im: Img) => void): SpriteDef {
-  const im = new Img(SIZE, SIZE);
-  draw(im);
-  return toSprite(`icon.${name}`, 'ui', [0, 0], { base: outline(im) });
-}
 
 function sword(name: string, blade: Ramp): SpriteDef {
   return icon(name, (im) => {
@@ -498,7 +454,7 @@ function icon28(name: string, im: Img): SpriteDef {
   return toSprite(`icon.${name}`, 'ui', [0, 0], { base: outline(im) });
 }
 
-export const ITEM_ICONS: readonly SpriteDef[] = [
+const BASE_ICONS: readonly SpriteDef[] = [
   tallTree('node_oak_tall', LEAF, WOOD),
   tallTree('node_ash_tall', [LEAF[0], LEAF[2], LEAF[3], GOLD[3]], STONE),
   tallStump('node_stump_oak', WOOD),
@@ -819,11 +775,11 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   }),
   shield('shield_iron', STONE, METAL),
   shield('shield_tower', METAL, STEEL),
-  trousers('trousers_wool', WOOD),
+  trousers('trousers_wool', CREAM),
   hood('hood_silk', SILK),
   tunic('robe_silk', SILK),
   skirt('skirt_silk', SILK),
-  hood('cap_leather', LEATHER),
+  hood('cap_leather', GOLD),
   tunic('jerkin_leather', GOLD, false),
   trousers('chaps_leather', GOLD),
   hood('hood_hide', WOOD),
@@ -1039,4 +995,12 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
     im.rect(4, 3, 5, 9, CREAM[2]);
     im.rect(6, 9, 7, 9, CREAM[1]);
   }),
+];
+
+const REDRAWN = new Set(DISTINCT_ICONS.map((s) => s.id));
+
+/** Every item icon. Those in `itemsDistinct.ts` replace the older drawing of the same id. */
+export const ITEM_ICONS: readonly SpriteDef[] = [
+  ...BASE_ICONS.filter((s) => !REDRAWN.has(s.id)),
+  ...DISTINCT_ICONS,
 ];

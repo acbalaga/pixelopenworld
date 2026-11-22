@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SPRITES } from '../../src/content/sprites';
 import type { SpriteDef } from '../../src/content/sprites/types';
 import { lookAlikePairs, pixelDistance } from '../../tools/bake-assets/lookalike';
+import { validateItemIcons } from '../../tools/bake-assets/validateIcons';
 import { validateNodes } from '../../tools/bake-assets/validateNodes';
 import { NODES } from '../../src/content/items/recipes';
 
@@ -33,5 +34,26 @@ describe('plant nodes (POW-M4-22E)', () => {
     } finally {
       (real as { sprite: typeof saved }).sprite = saved;
     }
+  });
+});
+
+describe('item icons (POW-M4-22F)', () => {
+  it('every item has its own icon, its own name, and an icon unlike any other', () => {
+    expect(validateItemIcons(SPRITES)).toEqual([]);
+  });
+  it('fails two identical icons, and names the pair', () => {
+    const sunwort = byId('icon.sunwort');
+    const sprites = SPRITES.map((s) => (s.id === 'icon.dewmint' ? { ...sunwort, id: s.id } : s));
+    expect(validateItemIcons(sprites).join()).toMatch(
+      /icon\.sunwort and icon\.dewmint look alike \(d = 0\.00/,
+    );
+  });
+  it('a tier variant must differ in ramp as well as pixels', () => {
+    const a = byId('icon.pick_copper');
+    const b: SpriteDef = { ...a, id: 'icon.pick_iron' };
+    const sprites = SPRITES.map((s) => (s.id === 'icon.pick_iron' ? b : s));
+    expect(validateItemIcons(sprites).join()).toMatch(
+      /pick_copper and icon.pick_iron differ by 0.00/,
+    );
   });
 });
