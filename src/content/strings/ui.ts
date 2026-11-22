@@ -182,6 +182,13 @@ export const UI_STRINGS = {
     failed: 'That came to nothing: {item}.',
     mended: 'Mended {item}.',
     qualities: ['Common.', 'Fine.', 'Superior.', 'Masterwork.'] as readonly string[],
+    /** The line under a finished craft, by quality. */
+    resultLine: [
+      'A plain result. A steadier hand does better.',
+      'Better than usual.',
+      'Well made. It will outlast the common kind.',
+      'As good as this recipe gets.',
+    ] as readonly string[],
   },
   storage: {
     title: 'Storage',

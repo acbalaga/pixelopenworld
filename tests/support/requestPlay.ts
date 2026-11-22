@@ -8,7 +8,9 @@ import { requestState, startNode } from '../../src/sim/journal';
 import type { Command } from '../../src/sim/kernel/commands';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { Dir, SUBPX, type Direction } from '../../src/sim/kernel/fixed';
-import { renownIn } from '../../src/sim/renown';
+import { addRenown, renownIn } from '../../src/sim/renown';
+import { awaken } from '../../src/sim/skills';
+import type { Cond } from '../../src/content/dialogue/types';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { PLACES } from '../../src/content/people/places';
@@ -207,8 +209,17 @@ export function playWay(r: Rig, a: AuthoredRequest, wayId: string): void {
 }
 
 /** Takes a request through its giver's work menu, plays one way, and turns it in. Checks the payout. */
+/** Makes a request's requirements hold (skills awake, Renown earned), for tests that play the job itself. */
+export function meet(r: Rig, requires: readonly Cond[] | undefined): void {
+  for (const c of requires ?? []) {
+    if ('awake' in c) awaken(r.s, r.me, c.awake);
+    else if ('renown' in c) addRenown(r.s, r.me, c.renown.region, c.renown.atLeast);
+  }
+}
+
 export function playRequest(r: Rig, a: AuthoredRequest, wayId: string): void {
   const id = `request.${a.key}`;
+  meet(r, a.requires);
   r.front(a.giver);
   r.tick(say(a.giver, `${a.key}_ask`, 0));
   expect(state(r, id)).toBe('active');

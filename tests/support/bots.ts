@@ -124,7 +124,7 @@ export class Run {
   /** Spawns a creature one tile east of the avatar and swings until one of them is down. */
   fight(
     kind: string,
-    opts: { hpOverride?: number; maxTicks?: number; eatBelow?: number } = {},
+    opts: { hpOverride?: number; maxTicks?: number; eatBelow?: number; gap?: number } = {},
   ): void {
     if (this.dead) return;
     this.stand(30, 30, E);
@@ -132,7 +132,7 @@ export class Run {
     const foe = spawnCreature(
       this.s,
       kind,
-      Math.round(here.x / 256) + 16,
+      Math.round(here.x / 256) + (opts.gap ?? 16),
       Math.round(here.y / 256),
     );
     // The bot picks the fight, so the creature is provoked from the first tick.

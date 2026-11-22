@@ -2,6 +2,8 @@
 export const REQUEST_BALANCE = {
   /** The region of the slice. Its Renown is what requests, Trials and trade raise here. */
   homeRegion: 'dawnmeadow',
+  /** Home Renown at which the far or weighty authored jobs are offered (G4 playtest). */
+  knownTownRenown: 2,
   /** The board in the square. */
   squareBoard: 'board.square',
   /** Requests posted at each board at dawn. */

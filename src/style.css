@@ -2099,3 +2099,41 @@ canvas {
 .pow-bestiary-name {
   font-weight: bold;
 }
+
+/* The card for a finished craft (G4 playtest): quality in words and glyph, with a heavier frame per grade. */
+.pow-craft-result {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: calc(var(--px) * 2) calc(var(--px) * 3);
+  padding: calc(var(--px) * 3);
+  border: 2px solid var(--pal-18);
+  background: var(--pal-16);
+}
+.pow-craft-result .pow-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.pow-craft-text {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 1);
+}
+.pow-craft-grade {
+  font-weight: bold;
+  color: var(--pal-47);
+}
+.pow-craft-q1 {
+  border-width: 3px;
+}
+.pow-craft-q2 {
+  border-width: 4px;
+  border-style: double;
+  border-color: var(--pal-47);
+}
+.pow-craft-q3 {
+  border-width: 5px;
+  border-style: double;
+  border-color: var(--pal-47);
+  background: var(--pal-0);
+}

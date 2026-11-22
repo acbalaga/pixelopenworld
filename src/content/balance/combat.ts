@@ -29,8 +29,12 @@ export const COMBAT = {
     critMult: 150,
     /** Damage taken by a staggered target, percent. */
     staggerBonus: 150,
-    /** Defense curve denominator base: factor = 100 / (100 + defense). */
-    defenseBase: 100,
+    /**
+     * Defense curve: damage taken is multiplied by base / (base + defense). Was 100 (G4 playtest:
+     * a full tier 2 set cut only 18% and gear did not read). At 50, tier 1 gear cuts about 14%
+     * and a full tier 2 set about 36%. Creature defense uses the same curve.
+     */
+    defenseBase: 50,
   },
   stagger: {
     /** Ticks an enemy stays helpless once its bar fills. */

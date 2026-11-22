@@ -37,9 +37,28 @@ function icon(id: string, draw: (im: Img) => void): SpriteDef {
 
 /** Corner badges that tell two techniques of one family apart: bars, dots, a plus. */
 const BADGES: readonly (readonly [number, number][])[] = [
-  [[8, 8], [8, 9], [8, 10], [10, 8], [10, 9], [10, 10]],
-  [[8, 8], [10, 8], [9, 9], [8, 10], [10, 10]],
-  [[9, 8], [8, 9], [9, 9], [10, 9], [9, 10]],
+  [
+    [8, 8],
+    [8, 9],
+    [8, 10],
+    [10, 8],
+    [10, 9],
+    [10, 10],
+  ],
+  [
+    [8, 8],
+    [10, 8],
+    [9, 9],
+    [8, 10],
+    [10, 10],
+  ],
+  [
+    [9, 8],
+    [8, 9],
+    [9, 9],
+    [10, 9],
+    [9, 10],
+  ],
 ];
 
 /**

@@ -71,10 +71,13 @@ function enemyEast(a: Arena, dx: number, id = 'creature.mossling'): number {
 }
 
 describe('damage formula', () => {
-  it('follows design/04: power x multiplier x skill x element x 100/(100+defense)', () => {
+  it('follows design/04: power x multiplier x skill x element x base/(base+defense)', () => {
     const o = { crit: false, staggered: false };
     expect(computeDamage(10, 100, 0, 0, 100, o)).toBe(10);
-    expect(computeDamage(10, 100, 0, 100, 100, o)).toBe(5);
+    // base / (base + defense): defense equal to the base halves a hit (base is 50, G4 playtest).
+    expect(computeDamage(10, 100, 0, 50, 100, o)).toBe(5);
+    // A full tier 2 set (defense 28) takes a bit over a third off.
+    expect(computeDamage(14, 100, 0, 28, 100, o)).toBe(9);
     expect(computeDamage(10, 150, 0, 0, 100, o)).toBe(15);
     expect(computeDamage(10, 100, 100, 0, 100, o)).toBe(20);
     expect(computeDamage(10, 100, 0, 0, 150, o)).toBe(15);

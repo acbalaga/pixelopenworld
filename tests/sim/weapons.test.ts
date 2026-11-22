@@ -125,9 +125,9 @@ describe('Blades: from behind and on the staggered', () => {
     const r = rig();
     const f = damageOf(r, 'blades', () => front, { power: 20 });
     const b = damageOf(r, 'blades', () => behind, { power: 20 });
-    expect(f).toBe(Math.round((20 * 1000) / 105 / 10));
+    expect(f).toBe(Math.round((20 * C.damage.defenseBase) / (C.damage.defenseBase + 5)));
     expect(b).toBeGreaterThan(f);
-    expect(b).toBe(Math.round((f * C.weapons.blades.behindPct) / 100));
+    expect(Math.abs(b - (f * C.weapons.blades.behindPct) / 100)).toBeLessThanOrEqual(1);
   });
   it('a hit from the side is not from behind', () => {
     const r = rig();
@@ -356,7 +356,8 @@ describe('Shieldcraft', () => {
     const taken2 = hp2 - pools(r).hp;
     expect(pools(r).sta).toBe(sta2);
     expect(taken2).toBeGreaterThan(taken * 2);
-    expect(taken).toBe(Math.round((taken2 * C.guard.takenPct) / 100));
+    // The block scales the hit before it rounds, so allow one point of rounding.
+    expect(Math.abs(taken - (taken2 * C.guard.takenPct) / 100)).toBeLessThanOrEqual(1);
   });
 
   it('a block begun just before the impact parries: no damage, and the attacker is staggered', () => {

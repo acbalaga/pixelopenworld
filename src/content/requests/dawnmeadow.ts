@@ -1,7 +1,11 @@
 import { REQUEST_BALANCE as RB } from '../balance/requests';
 import { UNDERMILL_BUILT } from '../world/dungeons/undermill';
 import { THREAD_STAGES } from './threads';
+import type { Cond } from '../dialogue/types';
 import type { RequestDef, RequestObjective } from './types';
+
+/** The town has come to know the player: enough Renown at home for the far and weighty jobs. */
+const KNOWN_TOWN: Cond = { renown: { region: RB.homeRegion, atLeast: RB.knownTownRenown } };
 
 /**
  * Dawnmeadow's authored requests (POW-M4-12, regions/01-dawnmeadow section 10), the ones the
@@ -26,6 +30,12 @@ export interface AuthoredRequest {
   estMinutes: number;
   /** Items handed over when the request is taken. */
   give?: { item: string; qty: number }[];
+  /**
+   * Shown and taken only when these hold (G4 playtest): a new character does not know the town's
+   * troubles yet. A giver offers a job that needs a skill once the player has used it, and the
+   * far or weighty ones once the town has come to know them (Renown).
+   */
+  requires?: Cond[];
   /** A Thread stage: the Thread it belongs to, and the stage before it, which must be done first. */
   thread?: { id: string; after?: string };
   /** What the giver says. `offer` and `remind` are the player's two buttons. */
@@ -220,6 +230,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'thornling_fernside',
+    requires: [KNOWN_TOWN],
     row: 'r24',
     giver: 'npc.guard',
     title: 'Thornling at Fernside',
@@ -345,6 +356,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'oil_quarry',
+    requires: [KNOWN_TOWN],
     row: 'r16',
     giver: 'npc.foreman',
     title: 'Lamp oil for the quarry',
@@ -368,6 +380,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'moorhounds_dusk',
+    requires: [KNOWN_TOWN],
     row: 'r19',
     giver: 'npc.hermit',
     title: 'Moorhounds at dusk',
@@ -445,6 +458,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'net_nessa',
+    requires: [{ awake: 'skill.tailoring' }],
     row: 'r13',
     giver: 'npc.fisher',
     title: "Nessa's net",
@@ -468,6 +482,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'cart_wheels',
+    requires: [KNOWN_TOWN],
     row: 'r15',
     giver: 'npc.foreman',
     title: 'Cart wheels',
@@ -492,6 +507,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'readings_wren',
+    requires: [KNOWN_TOWN],
     row: 'r17',
     giver: 'npc.scholar',
     title: 'Readings for Wren',
@@ -522,6 +538,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'tower_clock',
+    requires: [{ awake: 'skill.tinkering' }],
     row: 'r18',
     giver: 'npc.reeve',
     title: 'The bell tower clock',
@@ -577,6 +594,7 @@ export const AUTHORED: readonly AuthoredRequest[] = [
   },
   {
     key: 'barrow_lights',
+    requires: [KNOWN_TOWN],
     row: 'r21',
     giver: 'npc.reeve',
     title: 'Barrow lights',
@@ -664,8 +682,15 @@ export function authoredDefs(): Record<string, RequestDef> {
         steps: w.steps,
       })),
       reward: { coin: a.reward.coin, items: a.reward.items ?? [], renown: a.reward.renown },
-      ...(a.thread?.after
-        ? { requires: [{ request: `request.${a.thread.after}`, is: 'done' as const }] }
+      ...(a.thread?.after || a.requires
+        ? {
+            requires: [
+              ...(a.requires ?? []),
+              ...(a.thread?.after
+                ? [{ request: `request.${a.thread.after}`, is: 'done' as const }]
+                : []),
+            ],
+          }
         : {}),
       ...(a.thread ? { thread: a.thread.id } : {}),
       ...(a.give ? { give: a.give } : {}),

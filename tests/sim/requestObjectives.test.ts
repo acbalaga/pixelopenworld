@@ -15,7 +15,8 @@ import { requestsSystem } from '../../src/sim/systems/requests';
 import { SUBPX } from '../../src/sim/kernel/fixed';
 import { CHUNK_TILES, Solid, decodeChunk } from '../../src/sim/world/chunk';
 import { bakeRegion } from '../../tools/bake-world/bake';
-import { rig, journal } from '../support/requestPlay';
+import { rig, journal, meet } from '../support/requestPlay';
+import { AUTHORED } from '../../src/content/requests/dawnmeadow';
 
 const NIGHT = (() => {
   for (let t = 0; ; t += 1800) if (t % (48 * 1800) >= 40 * 1800) return t;
@@ -24,6 +25,7 @@ const NIGHT = (() => {
 describe('request objectives: sell, carry, read (M4-11)', () => {
   const begin = (key: string) => {
     const r = rig('npc.shopkeeper');
+    meet(r, AUTHORED.find((a) => a.key === key)?.requires);
     expect(startRequest(r.s, r.me, REQUESTS[`request.${key}`]!)).toBe(true);
     return r;
   };
