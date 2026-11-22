@@ -1,3 +1,4 @@
+import { UI_BALANCE } from '../../content/balance/ui';
 import { ITEMS } from '../../content/items';
 import type { Inventory } from '../../sim/state';
 
@@ -18,10 +19,21 @@ export interface QuickPrefs {
   quickPick: string;
 }
 
-/** True for items the quick slot can hold: food, and gadgets other than the lantern. */
+/**
+ * True for items the quick slot can hold: a consumable that has an effect worth a button. That is
+ * a gadget (not the lantern), a remedy or buff (a status or a Fed meal), or a real restore of
+ * Health, Stamina or Focus. Raw food and a burnt mess do not qualify.
+ */
 export function quickUsable(itemId: string): boolean {
   const d = ITEMS[itemId];
-  return !!d && (!!d.food || (!!d.gadget && d.gadget !== 'lantern'));
+  if (!d) return false;
+  if (d.gadget) return d.gadget !== 'lantern';
+  const f = d.food;
+  if (!f) return false;
+  if (d.status || f.fed) return true;
+  if (f.raw) return false;
+  const q = UI_BALANCE.quick;
+  return f.hp >= q.minHp || f.sta >= q.minPool || f.foc >= q.minPool;
 }
 
 /** Usable item ids in the Bag, in bag order, each once. */

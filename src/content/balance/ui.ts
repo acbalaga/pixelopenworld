@@ -1,5 +1,11 @@
 /** HUD and Menu tunables. Times are ms. Distances are CSS px. */
 export const UI_BALANCE = {
+  /**
+   * What the quick slot will carry (G4 playtest): only a consumable that does something worth a
+   * button. Foraged raw food and a burnt mess restore a token amount and stay in the Bag.
+   * Stamina and Focus are in tenths, so 100 is ten points.
+   */
+  quick: { minHp: 10, minPool: 100 },
   hud: {
     /** Pool bars and the status row fade after this long unchanged (design/09). */
     idleMs: 4000,
