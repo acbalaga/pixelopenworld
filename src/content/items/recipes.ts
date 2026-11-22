@@ -402,7 +402,7 @@ export const NODES: Record<string, NodeDef> = {
       { item: 'item.dewmint', weight: 2 },
     ],
     respawn: 3 * MIN,
-    sprite: { ready: 'icon.sunwort', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.herb_patch', spent: 'node.herb_patch_spent' },
   },
   'node.berry_bush': {
     id: 'node.berry_bush',
@@ -414,7 +414,7 @@ export const NODES: Record<string, NodeDef> = {
       { item: 'item.berry_blue', weight: 2 },
     ],
     respawn: 4 * MIN,
-    sprite: { ready: 'icon.berry_red', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.berry_bush', spent: 'node.berry_bush_spent' },
   },
   // Mining: one sweep, a narrow window and a big bonus. The pick sets the pace.
   'node.copper_vein': {
@@ -494,7 +494,7 @@ export const NODES: Record<string, NodeDef> = {
     tier: 2,
     yields: [{ item: 'item.flax_fiber', weight: 1 }],
     respawn: 4 * MIN,
-    sprite: { ready: 'icon.flax_fiber', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.flax_patch', spent: 'node.flax_patch_spent' },
   },
   'node.briar_tuft': {
     id: 'node.briar_tuft',
@@ -503,7 +503,7 @@ export const NODES: Record<string, NodeDef> = {
     tier: 2,
     yields: [{ item: 'item.wool_tuft', weight: 1 }],
     respawn: 4 * MIN,
-    sprite: { ready: 'icon.wool_tuft', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.briar_tuft', spent: 'node.briar_tuft_spent' },
   },
   'node.glowcap_cluster': {
     id: 'node.glowcap_cluster',
@@ -512,7 +512,7 @@ export const NODES: Record<string, NodeDef> = {
     tier: 2,
     yields: [{ item: 'item.glowcap', weight: 1 }],
     respawn: 5 * MIN,
-    sprite: { ready: 'icon.glowcap', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.glowcap_cluster', spent: 'node.glowcap_cluster_spent' },
   },
   'node.nightshade_bush': {
     id: 'node.nightshade_bush',
@@ -521,7 +521,7 @@ export const NODES: Record<string, NodeDef> = {
     tier: 2,
     yields: [{ item: 'item.nightshade', weight: 1 }],
     respawn: 5 * MIN,
-    sprite: { ready: 'icon.nightshade', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.nightshade_bush', spent: 'node.nightshade_bush_spent' },
   },
   'node.river_bank': {
     id: 'node.river_bank',
@@ -533,7 +533,7 @@ export const NODES: Record<string, NodeDef> = {
       { item: 'item.river_pebble', weight: 2 },
     ],
     respawn: 4 * MIN,
-    sprite: { ready: 'icon.clay', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.river_bank', spent: 'node.river_bank_spent' },
   },
   'node.silk_web': {
     id: 'node.silk_web',
@@ -542,6 +542,6 @@ export const NODES: Record<string, NodeDef> = {
     tier: 2,
     yields: [{ item: 'item.silk_cloth', weight: 1 }],
     respawn: 8 * MIN,
-    sprite: { ready: 'icon.silk_cloth', spent: 'icon.moss_tuft' },
+    sprite: { ready: 'node.silk_web', spent: 'node.silk_web_spent' },
   },
 };
