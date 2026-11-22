@@ -357,6 +357,19 @@ export function dropFromBag(state: SimState, who: EntityId, slot: number): boole
   return true;
 }
 
+/**
+ * Throws a whole bag slot away for good (G4 playtest). Only junk: what a failed craft or a burnt
+ * meal leaves. Nothing is dropped on the ground, and nothing else can be thrown away this way.
+ */
+export function trashFromBag(state: SimState, who: EntityId, slot: number): boolean {
+  const inv = getComp(state.entities, who, 'inventory');
+  const stack = inv?.slots[slot];
+  if (!inv || !stack || !ITEMS[stack.item]?.junk) return false;
+  if (getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
+  inv.slots[slot] = null;
+  return true;
+}
+
 /** Eats food from a bag slot: restores pools and starts a Fed buff that replaces any other. */
 export function eat(state: SimState, who: EntityId, slot: number): boolean {
   const inv = getComp(state.entities, who, 'inventory');
@@ -485,6 +498,9 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'drop':
       dropFromBag(state, who, c.slot);
+      return;
+    case 'trash':
+      trashFromBag(state, who, c.slot);
       return;
     case 'store':
       moveStorage(state, who, c.dir, c.slot);

@@ -1,6 +1,7 @@
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
+import { RECIPES } from '../../content/items/recipes';
 import { STATUS_BALANCE } from '../../content/balance/status';
 import { STATUSES, type StatusId } from '../../content/combat/statuses';
 import {
@@ -155,7 +156,7 @@ export interface SkillFamilyView {
   rows: SkillRowView[];
 }
 
-export type ItemAction = 'use' | 'equip' | 'quick' | 'feed' | 'drop';
+export type ItemAction = 'use' | 'equip' | 'quick' | 'feed' | 'drop' | 'trash';
 
 export type BagFilterId = 'all' | BagFilter;
 export type BagSortId = 'type' | 'tier' | 'value' | 'newest';
@@ -497,8 +498,9 @@ export function itemActions(def: ItemDef): ItemAction[] {
     out.push('use');
   if (def.equip) out.push('equip');
   // Food and gadgets can be pinned to the quick slot (G4 playtest).
-  if (def.food || (def.gadget && def.gadget !== 'lantern')) out.push('quick');
-  out.push('drop');
+  if (!def.junk && (def.food || (def.gadget && def.gadget !== 'lantern'))) out.push('quick');
+  // Junk is thrown away for good; everything else is dropped where it can be picked up again.
+  out.push(def.junk ? 'trash' : 'drop');
   return out;
 }
 
@@ -523,6 +525,94 @@ function withFeed(actions: ItemAction[], can: boolean): ItemAction[] {
     'feed',
     ...actions.slice(i < 0 ? actions.length : i),
   ];
+}
+
+/** Health in points, Stamina and Focus stored in tenths: the player sees whole points. */
+const pts = (pool: 'hp' | 'sta' | 'foc', n: number): number =>
+  pool === 'hp' ? n : Math.round(n / 10);
+
+/** What eating, drinking or using the item does, read from its data so the sheet never drifts from the rules. */
+function effectLines(def: ItemDef): string[] {
+  const out: string[] = [];
+  const names = UI_STRINGS.detailPools;
+  const f = def.food;
+  if (f) {
+    const gain = (['hp', 'sta', 'foc'] as const)
+      .filter((p) => f[p] > 0)
+      .map((p) => `${pts(p, f[p])} ${names[p]}`);
+    if (gain.length > 0) out.push(fill(UI_STRINGS.detailRestores, { list: gain.join(', ') }));
+    if (f.fed) {
+      const max = (
+        [
+          ['hp', f.fed.hpMax],
+          ['sta', f.fed.staMax],
+          ['foc', f.fed.focMax],
+        ] as const
+      )
+        .filter(([, n]) => n > 0)
+        .map(([p, n]) => `+${pts(p, n)} max ${names[p]}`);
+      out.push(
+        fill(UI_STRINGS.detailFed, {
+          min: Math.max(1, Math.round(f.fed.ticks / TIME.ticksPerMinute)),
+          list: max.join(', '),
+        }),
+      );
+    }
+  }
+  const st = def.status;
+  if (st?.clear?.length)
+    out.push(
+      fill(UI_STRINGS.detailCures, {
+        list: st.clear.map((c) => UI_STRINGS.statusNames[c as StatusId] ?? c).join(', '),
+      }),
+    );
+  if (st?.apply)
+    out.push(
+      fill(UI_STRINGS.detailGives, {
+        status: UI_STRINGS.statusNames[st.apply.status as StatusId] ?? st.apply.status,
+        sec: Math.round(st.apply.ticks / 30),
+      }),
+    );
+  return out;
+}
+
+/** Most recipe names the "Used in" line lists before it says "and n more". */
+const USED_IN_MAX = 4;
+
+/**
+ * Where the item fits in crafting, from the recipes the player already knows. Recipes still to be
+ * found by experiment are never shown, so this does not give the discovery away.
+ */
+function craftLines(state: SimState, who: number, def: ItemDef): string[] {
+  const known = state.entities.comps.inventory[who]?.recipes ?? [];
+  const recipes = Object.values(RECIPES).filter((r) => !r.enchant && known.includes(r.id));
+  const out: string[] = [];
+  const made = recipes.find((r) => r.result === def.id);
+  if (made)
+    out.push(
+      fill(UI_STRINGS.detailMadeAt, {
+        station: UI_STRINGS.craft.title[made.station] ?? made.station,
+        ingredients: made.ingredients.map((i) => `${i.qty} ${itemName(i.item)}`).join(', '),
+      }),
+    );
+  const uses = [
+    ...new Set(
+      recipes.filter((r) => r.ingredients.some((i) => i.item === def.id)).map((r) => r.result),
+    ),
+  ].map((id) => itemName(id));
+  if (uses.length > 0) {
+    const shown = uses.slice(0, USED_IN_MAX);
+    const more = uses.length - shown.length;
+    out.push(
+      fill(UI_STRINGS.detailUsedIn, {
+        list:
+          more > 0
+            ? `${shown.join(', ')}, ${fill(UI_STRINGS.detailMore, { n: more })}`
+            : shown.join(', '),
+      }),
+    );
+  }
+  return out;
 }
 
 export function itemDetail(state: SimState, who: number, slot: number): ItemDetailView | null {
@@ -551,6 +641,8 @@ export function itemDetail(state: SimState, who: number, slot: number): ItemDeta
           .join(', '),
       }),
     );
+  lines.push(...effectLines(def), ...craftLines(state, who, def));
+  if (def.junk) lines.push(UI_STRINGS.detailJunk);
   if (s.mark)
     lines.push(
       fill(UI_STRINGS.detailMark, { handle: state.entities.comps.avatar[who]?.handle ?? '' }),

@@ -42,7 +42,11 @@ export const FOOD_ITEMS: readonly ItemDef[] = [
     food: { hp: 10, sta: 0, foc: 250, fed: { ticks: 2 * T, hpMax: 0, staMax: 0, focMax: 150 } },
   }),
   // Still edible, just poor: it restores a little and gives no buff.
-  item('item.burnt_mess', 'consumable', { value: 0, food: { hp: 3, sta: 0, foc: 0 } }),
+  item('item.burnt_mess', 'consumable', {
+    value: 0,
+    junk: true,
+    food: { hp: 3, sta: 0, foc: 0 },
+  }),
   item('item.roast_meat', 'consumable', {
     value: 18,
     quality: true,

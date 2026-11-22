@@ -118,12 +118,14 @@ export const UI_STRINGS = {
     quick: 'Pin to quick slot',
     feed: 'Feed',
     drop: 'Hold to drop',
+    trash: 'Hold to throw away',
   },
   /** The quick pin action on an item that is already pinned. */
   quickUnpin: 'Unpin from quick slot',
   /** The Use button, by what the item is: food is eaten, scrolls and manuals are read. */
   useVerb: { eat: 'Eat', read: 'Read', use: 'Use' },
   dropping: 'Keep holding to drop',
+  throwing: 'Keep holding to throw away',
   /** Item quality, by number. The glyph sits in the corner of the slot (never color alone). */
   quality: ['Common', 'Fine', 'Superior', 'Masterwork'],
   qualityGlyph: ['', '+', '++', '+++'],
@@ -146,6 +148,16 @@ export const UI_STRINGS = {
   detailMark: 'Made by {handle}',
   detailAffixes: 'Affixes: {list}',
   detailStats: 'Power {power}. Defense {defense}',
+  /** What an item does, from its data (G4 playtest). Pools are named in `detailPools`. */
+  detailRestores: 'Restores {list}',
+  detailFed: 'Fed for {min} min: {list}',
+  detailCures: 'Cures {list}',
+  detailGives: 'Gives {status} for {sec} s',
+  detailMadeAt: 'You can make it at the {station}: {ingredients}',
+  detailUsedIn: 'Used in: {list}',
+  detailMore: 'and {n} more',
+  detailJunk: 'Junk. No shop buys it and nothing uses it. Hold to throw it away.',
+  detailPools: { hp: 'Health', sta: 'Stamina', foc: 'Focus' } as Record<string, string>,
   brokenGlyph: 'Broken',
   craft: {
     title: {

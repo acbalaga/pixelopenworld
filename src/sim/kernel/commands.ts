@@ -33,6 +33,7 @@ export type Command =
   | { type: 'unequip'; slot: string }
   /** Drop all of bag slot `slot` on the ground. */
   | { type: 'drop'; slot: number }
+  | { type: 'trash'; slot: number }
   /** Move a whole stack between the bag and the storage chest in front: `in` from bag slot `slot`, `out` from chest slot `slot`. */
   | { type: 'store'; dir: 'in' | 'out'; slot: number }
   /** Eat or use the item in bag slot `slot`. */
@@ -174,6 +175,7 @@ export function validateCommand(raw: unknown): Validated {
     case 'use':
     case 'feed':
     case 'drop':
+    case 'trash':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };
       return { ok: true, command: { type: r.type, slot: r.slot as number } };
