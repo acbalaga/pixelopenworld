@@ -115,6 +115,7 @@ const SPECS: readonly RoomSpec[] = [
       { x: 10, y: 7, kind: 'fixture.rw_plate_b' },
       { x: 13, y: 5, kind: 'fixture.rw_gate_a' },
       { x: 13, y: 6, kind: 'fixture.rw_gate_b' },
+      { x: 3, y: 10, kind: 'fixture.reset_post' },
       { x: 14, y: 5, kind: 'fixture.rw_chest_key' },
     ],
     extra: { reset: true, keys: ['item.root_key'] },

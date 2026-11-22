@@ -155,6 +155,8 @@ export type SimEvent =
   | { type: 'plateChanged'; id: number; pressed: boolean }
   | { type: 'blockPushed'; id: number }
   | { type: 'blockReset'; id: number }
+  /** A reset post was used. `count` is how many blocks went back (0 when nothing was out of place). */
+  | { type: 'roomReset'; who: number; room: string; count: number }
   /** A block pressed a plate for the first time (M4-08). `id` is the plate. */
   | { type: 'blockSolved'; id: number; block: number }
   | { type: 'switchChanged'; id: number; on: boolean }

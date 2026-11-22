@@ -74,6 +74,8 @@ export function sfxFor(
       return 'sfx.pickup';
     case 'blockPushed':
       return 'sfx.step';
+    case 'roomReset':
+      return e.count > 0 ? 'sfx.slam' : 'sfx.ui_open';
     case 'waystoneSet':
     case 'traveled':
       return 'sfx.chime';

@@ -681,6 +681,8 @@ export const UI_STRINGS = {
     locked: 'Locked. It needs a key.',
     unlocked: 'Unlocked.',
     chest: 'Opened.',
+    roomReset: 'The blocks slide back to where they began.',
+    roomResetNone: 'Nothing is out of place.',
     shortcut: 'Part of the wall has opened.',
     learned: 'Learned {name}.',
     awakens: '{skill} awakens',

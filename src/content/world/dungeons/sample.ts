@@ -68,6 +68,7 @@ export const SAMPLE_DUNGEON: DungeonDef = {
         { x: 8, y: 2, kind: 'fixture.plate_puzzle' },
         { x: 3, y: 4, kind: 'fixture.chest_key' },
         { x: 9, y: 4, kind: 'fixture.drop_hole' },
+        { x: 1, y: 4, kind: 'fixture.reset_post' },
       ],
       { keys: ['item.old_key'], reset: true },
     ),

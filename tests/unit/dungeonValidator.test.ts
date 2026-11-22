@@ -98,6 +98,7 @@ describe('dungeon validator', () => {
     const objs = [
       { x: 3, y: 2, kind: 'fixture.block_puzzle' },
       { x: 7, y: 2, kind: 'fixture.plate_puzzle' },
+      { x: 8, y: 4, kind: 'fixture.reset_post' },
     ];
     const dungeon = (extra: Partial<DungeonRoom>): DungeonDef => ({
       id: 'dungeon.t',
@@ -112,6 +113,38 @@ describe('dungeon validator', () => {
       expect(errors.some((e) => e.includes('soft lock') && e.includes('room h'))).toBe(true);
     });
 
+    it('rejects a room with blocks and no reset post', () => {
+      const d = dungeon({ reset: true });
+      const noPost: DungeonDef = {
+        ...d,
+        rooms: d.rooms.map((r) => ({
+          ...r,
+          stamp: {
+            ...r.stamp,
+            objects: (r.stamp.objects ?? []).filter((o) => o.kind !== 'fixture.reset_post'),
+          },
+        })),
+      };
+      expect(validateDungeon(noPost).some((e) => e.includes('no reset post'))).toBe(true);
+    });
+
+    it('rejects a reset post beside a block start, where a returning block could land on the player', () => {
+      const d = dungeon({ reset: true });
+      const beside: DungeonDef = {
+        ...d,
+        rooms: d.rooms.map((r) => ({
+          ...r,
+          stamp: {
+            ...r.stamp,
+            objects: (r.stamp.objects ?? []).map((o) =>
+              o.kind === 'fixture.reset_post' ? { ...o, x: 4, y: 3 } : o,
+            ),
+          },
+        })),
+      };
+      expect(validateDungeon(beside).some((e) => e.includes("beside a block's start"))).toBe(true);
+    });
+
     it('accepts the same room when it resets on entry', () => {
       expect(validateDungeon(dungeon({ reset: true }))).toEqual([]);
     });
@@ -123,11 +156,12 @@ describe('dungeon validator', () => {
         rooms: [
           room(
             'h',
-            ['#########', '#.......#', '#########'],
+            ['##########', '#........#', '##########'],
             [
               { x: 3, y: 1, kind: 'fixture.block_puzzle' },
               // The plate is at the end of the row, so a block can never be pushed past it.
               { x: 7, y: 1, kind: 'fixture.plate_puzzle' },
+              { x: 8, y: 1, kind: 'fixture.reset_post' },
             ],
             { start: { x: 1, y: 1 } },
           ),
@@ -142,11 +176,12 @@ describe('dungeon validator', () => {
         rooms: [
           room(
             'h',
-            ['#########', '#.......#', '#########'],
+            ['##########', '#........#', '##########'],
             [
               // The plate is on the wrong side of the block, which cannot be pulled.
               { x: 5, y: 1, kind: 'fixture.block_puzzle' },
               { x: 2, y: 1, kind: 'fixture.plate_puzzle' },
+              { x: 8, y: 1, kind: 'fixture.reset_post' },
             ],
             { start: { x: 1, y: 1 } },
           ),
