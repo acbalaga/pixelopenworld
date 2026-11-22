@@ -1,5 +1,7 @@
 /** HUD and Menu tunables. Times are ms. Distances are CSS px. */
 export const UI_BALANCE = {
+  /** The giver marks are recomputed at most this often, in ticks, and at once on a request or Trial event. */
+  giverMarkRecheckTicks: 30,
   /**
    * What the quick slot will carry (G4 playtest): only a consumable that does something worth a
    * button. Foraged raw food and a burnt mess restore a token amount and stay in the Bag.

@@ -255,6 +255,7 @@ export const UI_STRINGS = {
     guardToggle: 'Tap Guard to raise and lower it',
     mute: 'Mute audio',
     minimap: 'Show the minimap',
+    giverMarks: 'Show who has work',
     prefetchRegions: 'Download the region for offline play',
     pinRegion: 'Keep this region for offline play',
     scheme: 'Controls',

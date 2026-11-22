@@ -12,6 +12,8 @@ export const REQUEST_BALANCE = {
   maxActive: 8,
   /** Finished standing requests kept in the journal. Older ones are dropped. */
   keepDoneStanding: 10,
+  /** How many dialogue nodes deep the giver mark walks (POW-M4-22D). */
+  giverMarkDepth: 8,
   /** Pixel length limit of a filled title (design/09). */
   titleMax: 24,
 

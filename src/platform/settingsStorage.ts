@@ -19,6 +19,7 @@ const BOOLEANS = [
   'guardToggle',
   'chatCollapsed',
   'minimap',
+  'showGiverMarks',
   'prefetchRegions',
 ] as const;
 

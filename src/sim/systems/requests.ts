@@ -56,11 +56,16 @@ const activeCount = (j: Journal): number =>
   Object.values(j.requests).filter((r) => r.state !== 'done').length;
 
 /**
- * Takes a request. Refused when it is already taken (a finished one that repeats can be taken
- * again once its cooldown has passed), when its requirements do not hold, or when too many are
- * under way. Returns whether it was taken.
+ * Whether a request could be taken now: not already taken (a finished one that repeats can be
+ * taken again once its cooldown has passed), its requirements hold, and, unless `ignoreCap`,
+ * fewer than the most are under way.
  */
-export function startRequest(state: SimState, who: EntityId, def: RequestDef): boolean {
+export function canStartRequest(
+  state: SimState,
+  who: EntityId,
+  def: RequestDef,
+  opts: { ignoreCap?: boolean } = {},
+): boolean {
   const j = getComp(state.entities, who, 'journal');
   if (!j) return false;
   const cur = j.requests[def.id];
@@ -73,7 +78,13 @@ export function startRequest(state: SimState, who: EntityId, def: RequestDef): b
     if (!again) return false;
   }
   if (!holds(state, who, def.requires)) return false;
-  if (activeCount(j) >= RB.maxActive) return false;
+  return opts.ignoreCap === true || activeCount(j) < RB.maxActive;
+}
+
+/** Takes a request when `canStartRequest` allows. Returns whether it was taken. */
+export function startRequest(state: SimState, who: EntityId, def: RequestDef): boolean {
+  const j = getComp(state.entities, who, 'journal');
+  if (!j || !canStartRequest(state, who, def)) return false;
   j.requests[def.id] = {
     state: 'active',
     solution: null,

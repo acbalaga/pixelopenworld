@@ -153,6 +153,7 @@ import type { DevOverlay } from '../dev/overlay';
 import { Canvas2DRenderer, Layer } from '../render/renderer';
 import { readSafeInsets, watchViewport } from '../render/viewport';
 import { createAvatar } from '../sim/avatar';
+import { giverMarks, type GiverMark } from '../sim/giverMarks';
 import { SKILLS } from '../content/skills';
 import { TECHNIQUE_STRINGS } from '../content/strings/techniques';
 import { chooseWake } from '../sim/world/wake';
@@ -546,6 +547,10 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let menuOpen = false;
   let mirrorOpen = false;
   let talkOpen = false;
+  // Who has work for the avatar (POW-M4-22D). Recomputed on a timer and when a request or Trial changes.
+  let giverMarkMap = new Map<string, GiverMark>();
+  let giverMarkTick = -1e9;
+  let giverMarkDirty = true;
 
   // The avatar lives in the sim. Feet position is the bottom center of its 10 x 8 box.
   const at = params.get('at')?.split(',').map(Number);
@@ -1038,6 +1043,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
     onOpenChange: (open) => {
       talkOpen = open;
+      if (!open) giverMarkDirty = true;
       audio.setDucked(open);
       if (open && menu.isOpen) menu.close();
       if (open) input.sampler.keyboard.reset();
@@ -1580,6 +1586,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 : undefined,
             );
           }
+          if (
+            e.type === 'requestStarted' ||
+            e.type === 'requestReady' ||
+            e.type === 'trialOffered' ||
+            e.type === 'trialPassed'
+          )
+            giverMarkDirty = true;
           talk.onEvent(e);
           board.onEvent(e);
           const sfx = sfxFor(e, who, (id) => {
@@ -1673,6 +1686,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
       }
       // People: they stand still and turn to face you when you are close.
+      const marksOn = !dark && settings.get().showGiverMarks && !talkOpen;
+      if (
+        marksOn &&
+        (giverMarkDirty || state.tick - giverMarkTick >= UI_BALANCE.giverMarkRecheckTicks)
+      ) {
+        giverMarkMap = giverMarks(state, who);
+        giverMarkTick = state.tick;
+        giverMarkDirty = false;
+      }
       for (const id of dark ? [] : state.entities.comps.npc.keys()) {
         const n = state.entities.comps.npc[id];
         const np = state.entities.comps.pos[id];
@@ -1691,13 +1713,30 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               : 0
           : FACING[def.facing];
         const a = animOf(`char.${n.id}`, 'idle', face);
+        const frame = atlas.animFrame(a, now);
         renderer.drawSprite(
           Layer.Objects,
-          atlas.animFrame(a, now),
+          frame,
           Math.round(np.x / 256),
           Math.round(np.y / 256),
           atlas.animFlip(a),
         );
+        // A mark over a person who wants to talk, centered 2 px above the doll's head. Never
+        // over the person being talked to, and never anywhere but on screen (design/02).
+        const mark = marksOn ? giverMarkMap.get(n.id) : undefined;
+        if (mark && talk.speaker !== n.id) {
+          const bob = settings.get().reducedMotion
+            ? 0
+            : Math.sin((now / 1000) * Math.PI * 2) > 0
+              ? -1
+              : 0;
+          renderer.drawSprite(
+            Layer.Overhead,
+            atlas.frame(mark === 'ready' ? 'ui.mark_ready' : 'ui.mark_offer', 'base'),
+            Math.round(np.x / 256),
+            Math.round(np.y / 256) - atlas.originY(frame) + 3 - 2 + bob,
+          );
+        }
       }
       // The sky: weather particles, the tint of the hour and the weather, and the lights of the
       // night. Under open sky only: caves, dungeons and houses keep their own light (M4-09).

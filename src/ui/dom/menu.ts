@@ -1304,6 +1304,11 @@ export class MenuSheet {
       (v) => st.set({ minimap: v }),
     );
     toggle(
+      sys.giverMarks,
+      () => st.get().showGiverMarks,
+      (v) => st.set({ showGiverMarks: v }),
+    );
+    toggle(
       sys.haptics,
       () => st.get().haptics,
       (v) => st.set({ haptics: v }),
