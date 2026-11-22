@@ -494,7 +494,13 @@ const BAG_ORDER: readonly BagFilter[] = ['gear', 'tools', 'food', 'materials', '
 /** What can be done with an item from the Bag: eat food, wear gear, and drop anything. */
 export function itemActions(def: ItemDef): ItemAction[] {
   const out: ItemAction[] = [];
-  if (def.food || def.teaches || def.manual || (def.gadget && def.gadget !== 'lantern'))
+  if (
+    def.food ||
+    def.teaches ||
+    def.manual ||
+    def.bagSlots ||
+    (def.gadget && def.gadget !== 'lantern')
+  )
     out.push('use');
   if (def.equip) out.push('equip');
   // Food and gadgets can be pinned to the quick slot (G4 playtest).
@@ -559,6 +565,7 @@ function effectLines(def: ItemDef): string[] {
       );
     }
   }
+  if (def.bagSlots) out.push(fill(UI_STRINGS.detailBag, { n: def.bagSlots }));
   const st = def.status;
   if (st?.clear?.length)
     out.push(

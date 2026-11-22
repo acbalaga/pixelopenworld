@@ -95,6 +95,11 @@ export interface ItemDef {
   teaches?: string;
   /** Reading it (the Use button) teaches this technique, awakens its skill, and uses it up (M4-15). */
   manual?: { technique: string; skill: string };
+  /**
+   * Using it grows the Bag to this many slots and uses it up. It never shrinks a bigger Bag, and
+   * is kept (with a notice) when the Bag is already this big. At most `MAX_BAG_SLOTS` (60).
+   */
+  bagSlots?: number;
   /** What a failed craft or a burnt meal leaves: worth nothing, no use. It can be thrown away. */
   junk?: true;
   /** A shiny thing: a crow takes it from the ground by a scarecrow (M4-20). */

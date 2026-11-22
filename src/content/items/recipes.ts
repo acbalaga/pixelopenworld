@@ -197,6 +197,26 @@ const LIST: readonly RecipeDef[] = [
     ['item.linen_cloth', 2],
     ['item.thread_spool'],
   ]),
+  // Bags: use one to grow the Bag (26 slots, then 34).
+  make(
+    'tailoring',
+    LOOM,
+    1,
+    'item.satchel',
+    [['item.leather_strip', 3], ['item.wool_cloth']],
+    'start',
+  ),
+  make(
+    'tailoring',
+    LOOM,
+    2,
+    'item.pack',
+    [
+      ['item.leather', 2],
+      ['item.wool_cloth', 2],
+    ],
+    'start',
+  ),
   make('tailoring', LOOM, 1, 'item.cap_leather', [['item.leather_strip', 2]], 'start'),
   make('tailoring', LOOM, 1, 'item.chaps_leather', [['item.leather_strip', 3]]),
   make('tailoring', LOOM, 1, 'item.jerkin_leather', [

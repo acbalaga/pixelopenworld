@@ -107,6 +107,11 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.bone_shard.desc': 'Sharp at one end.',
   'item.lantern_oil.name': 'Lantern Oil',
   'item.lantern_oil.desc': 'A small flask, nearly full.',
+  'item.satchel.name': 'Satchel',
+  'item.satchel.desc': 'Stitched leather and wool. Use it and the Bag holds six more.',
+  'item.pack.name': "Traveler's Pack",
+  'item.pack.desc':
+    'Hide straps, a frame, deep pockets. Use it and the Bag holds eight more still.',
   'item.worn_map.name': 'Worn Map',
   'item.worn_map.desc': 'Folded so often it is soft.',
   'item.sword_bronze.name': 'Bronze Sword',

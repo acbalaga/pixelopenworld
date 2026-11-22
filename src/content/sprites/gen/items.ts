@@ -650,6 +650,27 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
     im.rect(7, 4, 8, 9, WATER[1]);
     im.rect(4, 7, 7, 9, GOLD[2]);
   }),
+  icon('satchel', (im) => {
+    im.rect(2, 4, 9, 10, LEATHER[2]);
+    im.rect(2, 4, 9, 5, LEATHER[3]);
+    im.rect(2, 10, 9, 10, LEATHER[1]);
+    im.rect(3, 6, 8, 7, LEATHER[1]);
+    im.rect(5, 7, 6, 8, GOLD[2]);
+    line(im, 3, 3, 4, 1, LEATHER[1]);
+    line(im, 8, 3, 7, 1, LEATHER[1]);
+    im.rect(4, 1, 7, 1, LEATHER[1]);
+  }),
+  icon('pack', (im) => {
+    im.rect(2, 2, 9, 10, LEAF[1]);
+    im.rect(2, 2, 9, 3, LEAF[2]);
+    im.rect(2, 10, 9, 10, LEAF[0]);
+    im.rect(3, 6, 8, 9, LEAF[0]);
+    im.rect(3, 6, 8, 6, LEAF[2]);
+    im.rect(5, 7, 6, 8, GOLD[2]);
+    im.rect(1, 3, 1, 9, LEATHER[2]);
+    im.rect(10, 3, 10, 9, LEATHER[2]);
+    im.rect(4, 0, 7, 1, LEATHER[1]);
+  }),
   icon('worn_map', (im) => {
     im.rect(2, 2, 9, 9, CREAM[2]);
     im.rect(2, 2, 9, 2, CREAM[3]);

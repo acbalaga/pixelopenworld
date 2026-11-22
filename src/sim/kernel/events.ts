@@ -216,6 +216,10 @@ export type SimEvent =
     }
   /** A skill's first XP, a manual or a lesson woke it (M4-15). */
   | { type: 'skillAwakened'; id: number; skill: string }
+  /** A bag item was used and the Bag grew to `slots`. */
+  | { type: 'bagGrew'; who: number; item: string; slots: number }
+  /** A bag item was used but the Bag is already that big, so it was kept. */
+  | { type: 'bagBigEnough'; who: number; item: string }
   /** A manual was read and used up. */
   | { type: 'manualRead'; who: number; item: string; technique: string }
   /** A manual was read whose technique is already known, so it was kept. */

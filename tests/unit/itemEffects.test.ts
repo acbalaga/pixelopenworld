@@ -99,3 +99,38 @@ describe('throwing junk away (G4 playtest)', () => {
     expect(countItem(s.entities.comps.inventory[me]!, 'item.dish_bread')).toBe(had);
   });
 });
+
+describe('bags that grow the Bag (G4 playtest)', () => {
+  it('a satchel grows the Bag to 26 slots once and is used up', () => {
+    const { s, me, slotOf } = setup();
+    const inv = s.entities.comps.inventory[me]!;
+    const before = inv.slots.length;
+    give(s, me, 'item.satchel', 1, 'seed');
+    expect(itemDetail(s, me, slotOf('item.satchel'))!.lines).toContain(
+      'Use it and the Bag grows to 26 slots',
+    );
+    stepWorld(s, me, { commands: [{ type: 'use', slot: slotOf('item.satchel') }] });
+    expect(before).toBe(20);
+    expect(inv.slots).toHaveLength(26);
+    expect(countItem(inv, 'item.satchel')).toBe(0);
+  });
+
+  it('keeps a bag that would not grow the Bag, and never shrinks it', () => {
+    const { s, me, slotOf } = setup();
+    const inv = s.entities.comps.inventory[me]!;
+    give(s, me, 'item.pack', 1, 'seed');
+    stepWorld(s, me, { commands: [{ type: 'use', slot: slotOf('item.pack') }] });
+    expect(inv.slots).toHaveLength(34);
+    give(s, me, 'item.satchel', 1, 'seed');
+    stepWorld(s, me, { commands: [{ type: 'use', slot: slotOf('item.satchel') }] });
+    expect(inv.slots).toHaveLength(34);
+    expect(countItem(inv, 'item.satchel')).toBe(1);
+  });
+
+  it('can be made at the loom from the first day, and stays within the save bound', () => {
+    expect(RECIPES['recipe.satchel']?.learn).toBe('start');
+    expect(RECIPES['recipe.pack']?.learn).toBe('start');
+    for (const d of Object.values(ITEMS))
+      if (d.bagSlots) expect(d.bagSlots).toBeLessThanOrEqual(60);
+  });
+});
