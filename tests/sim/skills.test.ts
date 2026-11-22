@@ -50,6 +50,7 @@ const gather = (me: number, item = 'item.herb', tier = 1): SimEvent => ({
   tag: 'foraging',
   item,
   tier,
+  qty: 1,
 });
 const ofType = <T extends SimEvent['type']>(s: SimState, t: T) =>
   s.events.list.filter((e): e is Extract<SimEvent, { type: T }> => e.type === t);
@@ -305,6 +306,7 @@ describe('the Foraging Trial', () => {
       tag: 'foraging',
       item: 'item.sunwort',
       tier: 1,
+      qty: 1,
     };
     const flag = () => sk(s, me).passed.includes(trialKey('skill.foraging', 15));
 
@@ -331,7 +333,7 @@ describe('the Foraging Trial', () => {
     const { s, me } = world();
     offerTrial(s, me, 'trial.foraging.15');
     s.worldTick = 31 * TIME.ticksPerMinute;
-    feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1 });
+    feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1, qty: 1 });
     expect(sk(s, me).passed).toContain(trialKey('skill.foraging', 15));
   });
 });
@@ -375,7 +377,7 @@ describe('data-only skills', () => {
     });
     try {
       const { s, me } = world();
-      feed(s, { type: 'gathered', id: me, tag: 'fake', item: 'item.x', tier: 1 });
+      feed(s, { type: 'gathered', id: me, tag: 'fake', item: 'item.x', tier: 1, qty: 1 });
       expect(pointsOf(s, me, 'skill.fake')).toBe(1);
       expect(s.entities.comps.pools[me]!.focMax).toBe(C.pools.focMax + 5);
       expect(ofType(s, 'skillRankUp').at(-1)).toMatchObject({ skill: 'skill.fake', points: 1 });

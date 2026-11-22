@@ -91,7 +91,7 @@ export class BoardSheet {
     return JSON.stringify([
       boardPosted(state, this.board),
       boardReady(state, who, this.board),
-      requestLog(state, who).length,
+      requestLog(state, who).filter((r) => r.board === this.board),
     ]);
   }
 
@@ -105,17 +105,26 @@ export class BoardSheet {
     sheet.textContent = '';
     put(sheet, el('h2', 'pow-sheet-title', T['request.board.title']));
 
+    // Jobs this board gave: the ones that can be handed in now get the button, the ones still
+    // short show how much of it the bag holds instead (POW-M4-22A).
     const ready = boardReady(state, who, this.board);
-    if (ready.length > 0) {
-      const log = requestLog(state, who).filter((r) => ready.includes(r.id));
+    const mine = requestLog(state, who).filter((r) => r.board === this.board && r.state !== 'done');
+    if (mine.length > 0) {
       put(sheet, el('h3', 'pow-h', T['request.board.yours']));
-      for (const r of log) {
-        const row = el('div', 'pow-board-row pow-part-listrow');
-        const btn = el('button', 'pow-button', T['request.board.turnIn']);
-        btn.type = 'button';
-        btn.dataset.key = `turnin-${r.id}`;
-        btn.addEventListener('click', () => this.deps.send({ type: 'turnInRequest', id: r.id }));
-        put(row, el('strong', undefined, r.title), el('p', 'pow-hint', r.reward), btn);
+      for (const r of mine) {
+        const row = el('div', 'pow-board-mine pow-part-listrow');
+        put(row, el('strong', undefined, r.title));
+        if (ready.includes(r.id)) {
+          const btn = el('button', 'pow-button', T['request.board.turnIn']);
+          btn.type = 'button';
+          btn.dataset.key = `turnin-${r.id}`;
+          btn.addEventListener('click', () => this.deps.send({ type: 'turnInRequest', id: r.id }));
+          put(row, el('p', 'pow-hint', r.reward), btn);
+        } else {
+          const status = r.ways.map((w) => w.steps.find((st) => st.status)?.status).find(Boolean);
+          row.dataset.waiting = r.id;
+          put(row, el('p', 'pow-hint', status ?? r.ways[0]?.steps[0]?.text ?? ''));
+        }
         sheet.appendChild(row);
       }
     }

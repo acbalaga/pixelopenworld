@@ -78,7 +78,7 @@ export type SimEvent =
   | { type: 'phaseChanged'; id: number; phase: number }
   | { type: 'spawned'; id: number; creature: string }
   /** A gathering node was worked. Sent by the gathering system, read by skills. */
-  | { type: 'gathered'; id: number; tag: string; item: string; tier: number }
+  | { type: 'gathered'; id: number; tag: string; item: string; tier: number; qty: number }
   /** A dish or item was made. Sent by the crafting system, read by skills. */
   /**
    * A craft finished. `tag` is the craft (the skill tag), `quality` 0 to 3. Sent by crafting,

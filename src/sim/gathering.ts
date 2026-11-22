@@ -186,5 +186,5 @@ export function resolveGather(state: SimState, who: EntityId, hits: number): voi
   emit(state.events, { type: 'gatherResolved', id: who, node: g.node, sweet: hits > 0, item, qty });
   give(state, who, item, qty, 'gather', q ? { q } : {});
   if (g.tool >= 0) useTool(state, who, g.tool, def.tag);
-  emit(state.events, { type: 'gathered', id: who, tag: def.tag, item, tier: def.tier });
+  emit(state.events, { type: 'gathered', id: who, tag: def.tag, item, tier: def.tier, qty });
 }

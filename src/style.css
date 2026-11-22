@@ -1462,7 +1462,8 @@ canvas {
   max-height: 80%;
   overflow-y: auto;
 }
-.pow-board-row {
+.pow-board-row,
+.pow-board-mine {
   display: flex;
   flex-direction: column;
   gap: calc(var(--px) * 1);

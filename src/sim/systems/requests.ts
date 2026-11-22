@@ -273,13 +273,27 @@ export function takeFromBoard(
   return true;
 }
 
-/** Turns in a finished request that a board gave, at that board. */
-export function turnInAtBoard(state: SimState, who: EntityId, rid: string): boolean {
+/**
+ * Hands in at a board. A standing gather job is a delivery to the board (POW-M4-22A): what the
+ * bag holds counts, and it is taken here. A request that is already ready is turned in as before.
+ * Returns whether a request was paid.
+ */
+export function handInAtBoard(state: SimState, who: EntityId, rid: string): boolean {
   const j = getComp(state.entities, who, 'journal');
   const rec = j?.requests[rid];
   const def = rec && requestDefOf(rec, rid);
-  if (!def || !('board' in def.giver) || boardAt(state, who, def.giver.board) === null)
+  if (
+    !j ||
+    !rec ||
+    !def ||
+    !('board' in def.giver) ||
+    boardAt(state, who, def.giver.board) === null
+  )
     return false;
+  if (rec.state === 'active') {
+    deliverTracked(state, who, def.giver.board, trackersOf(state, who, rid, rec));
+    progressOf(state, who);
+  }
   return turnIn(state, who, rid);
 }
 

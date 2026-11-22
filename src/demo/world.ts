@@ -1591,6 +1591,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           if (h !== null) vibrate(h, settings.get().haptics);
         }
       }
+      // The board redraws when what it shows changes, such as the bag (POW-M4-22A).
+      board.update();
       meter?.tickEnd(performance.now());
     },
     render: (alpha) => {

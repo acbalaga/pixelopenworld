@@ -115,8 +115,7 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
     skill: 'skill.logging',
     giver: 'npc.carpenter',
     objective: { kind: 'gather', item: 'item.oak_log', count: 4 },
-    intro:
-      'A tree falls where you tell it or where it likes. Bring down oak for me: four logs, cleanly.',
+    intro: 'A tree falls where you tell it or where it likes. Fell four oak logs for me, cleanly.',
     hint: 'Pell wants four oak logs felled.',
     button: 'The felling test.',
     estMinutes: 5,
@@ -146,7 +145,7 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
     giver: 'npc.foreman',
     objective: { kind: 'gather', item: 'item.iron_ore', count: 3 },
     intro:
-      'Stone gives up what it holds, but only to someone who keeps hitting it. Bring me three iron ore.',
+      'Stone gives up what it holds, but only to someone who keeps hitting it. Mine three iron ore and I will know.',
     hint: 'Garrick wants three iron ore mined.',
     button: 'The mining test.',
     estMinutes: 6,

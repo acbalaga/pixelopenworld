@@ -34,7 +34,7 @@ export const TRIAL_STRINGS: Readonly<Record<string, string>> = {
     'A Hearty Stew, and not a plain one. Cook it until it comes out Fine or better, then put it in my hands. I will teach you the pot.',
   'trial.cooking.15.hint': 'Hesper wants a Hearty Stew cooked to Fine or better.',
   'trial.foraging.15.intro':
-    'And if you want to call yourself a forager, bring me sunwort picked at dawn or dusk. It keeps its scent then.',
+    'And if you want to call yourself a forager, pick sunwort at dawn or dusk. It keeps its scent then, and I will know.',
   'trial.foraging.15.hint': 'Hesper wants sunwort picked at the turn of the day.',
 };
 

@@ -101,13 +101,27 @@ describe('every skill that is not pending earns XP', () => {
       feed(s, { type: 'dodged', src: foe, dst: me });
     },
     'skill.foraging': (s, me) =>
-      feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1 }),
+      feed(s, { type: 'gathered', id: me, tag: 'foraging', item: 'item.sunwort', tier: 1, qty: 1 }),
     'skill.mining': (s, me) =>
-      feed(s, { type: 'gathered', id: me, tag: 'mining', item: 'item.copper_ore', tier: 1 }),
+      feed(s, {
+        type: 'gathered',
+        id: me,
+        tag: 'mining',
+        item: 'item.copper_ore',
+        tier: 1,
+        qty: 1,
+      }),
     'skill.logging': (s, me) =>
-      feed(s, { type: 'gathered', id: me, tag: 'logging', item: 'item.oak_log', tier: 1 }),
+      feed(s, { type: 'gathered', id: me, tag: 'logging', item: 'item.oak_log', tier: 1, qty: 1 }),
     'skill.fishing': (s, me) =>
-      feed(s, { type: 'gathered', id: me, tag: 'fishing', item: 'item.fish_river', tier: 1 }),
+      feed(s, {
+        type: 'gathered',
+        id: me,
+        tag: 'fishing',
+        item: 'item.fish_river',
+        tier: 1,
+        qty: 1,
+      }),
     'skill.smithing': (s, me) =>
       feed(s, {
         type: 'crafted',

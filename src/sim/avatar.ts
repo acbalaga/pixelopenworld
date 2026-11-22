@@ -1,7 +1,7 @@
 import { MOVEMENT as M } from '../content/balance/movement';
 import { addNote, removeNote } from './systems/map';
 import { travelTo } from './systems/waystones';
-import { pinRequest, takeFromBoard, turnInAtBoard } from './systems/requests';
+import { pinRequest, handInAtBoard, takeFromBoard } from './systems/requests';
 import { Dir, px } from './kernel/fixed';
 import { setComp, spawn, type EntityId } from './kernel/entities';
 import type { Command } from './kernel/commands';
@@ -105,7 +105,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   else if (c.type === 'loadout') swapLoadout(state, who);
   else if (c.type === 'sleep') sleep(state, who);
   else if (c.type === 'takeRequest') takeFromBoard(state, who, c);
-  else if (c.type === 'turnInRequest') turnInAtBoard(state, who, c.id);
+  else if (c.type === 'turnInRequest') handInAtBoard(state, who, c.id);
   else if (c.type === 'pinRequest') pinRequest(state, who, c.id);
   else if (c.type === 'noteAdd') addNote(state, c.x, c.y, c.text);
   else if (c.type === 'noteRemove') removeNote(state, c.id);
