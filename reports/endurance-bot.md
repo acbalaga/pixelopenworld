@@ -10,14 +10,14 @@ Three bots:
 
 ## Headline
 
-| Question | Answer |
-| --- | --- |
-| Time to fog-clear all of Dawnmeadow | **23 to 28 sim minutes** of pure walking (sprint 24.5, walk only 28.4, creatures on 25.1, other wake point 22.9). 8,951 of 12,288 blocks (72.8%); the rest is sea and rock. 0 deaths with creatures on. |
-| Time to rank 15 in every wired skill | **about 70 h**, plus 195 min of Trials. Fishing alone is 29 h. Without Fishing: about 41 h. |
-| Time to the Dawnmeadow ceiling (29 with a full bar; no rank 30 Trial exists) | **about 530 h**. Fishing 281 h, Survival 35 h, Mining 26 h, every crafting skill about 16 h. |
-| Skills that cannot reach 15 in Dawnmeadow at all | **Cartography** (0 XP in live play, bug below), **Deciphering** (600 XP total, so 3 points max) |
-| Skills with no XP source yet | Farming, Husbandry, Leadership, Taming (pending by design) |
-| Save integrity over 10 play, save and reopen cycles | **10 of 10 intact**, every loaded hash equals the saved hash, 0 page errors |
+| Question                                                                     | Answer                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time to fog-clear all of Dawnmeadow                                          | **23 to 28 sim minutes** of pure walking (sprint 24.5, walk only 28.4, creatures on 25.1, other wake point 22.9). 8,951 of 12,288 blocks (72.8%); the rest is sea and rock. 0 deaths with creatures on. |
+| Time to rank 15 in every wired skill                                         | **about 70 h**, plus 195 min of Trials. Fishing alone is 29 h. Without Fishing: about 41 h.                                                                                                             |
+| Time to the Dawnmeadow ceiling (29 with a full bar; no rank 30 Trial exists) | **about 530 h**. Fishing 281 h, Survival 35 h, Mining 26 h, every crafting skill about 16 h.                                                                                                            |
+| Skills that cannot reach 15 in Dawnmeadow at all                             | **Cartography** (0 XP in live play, bug below), **Deciphering** (600 XP total, so 3 points max)                                                                                                         |
+| Skills with no XP source yet                                                 | Farming, Husbandry, Leadership, Taming (pending by design)                                                                                                                                              |
+| Save integrity over 10 play, save and reopen cycles                          | **10 of 10 intact**, every loaded hash equals the saved hash, 0 page errors                                                                                                                             |
 
 ## Findings
 
@@ -27,7 +27,7 @@ Three bots:
 
 **F3. Survival is a 10 to 11 hour grind to 15 (balance, medium).** 30 XP per in-game night hour outdoors means about 3 XP a minute averaged over the day cycle. Eating raw food is the only other source. Compare with the 27-minute design target for a focused skill (design/10).
 
-**F4. Tier 2 supply is thin (balance, medium).** Mining has 2 iron veins and 1 of them cannot be walked to, so 0.13 a minute. Tier 2 foraging nodes are defined (6) but none are placed in Dawnmeadow. From 15 to 29, tier 1 pays the 10% floor, so these skills crawl: Mining 26 h to the ceiling.
+**F4. Iron is thin (balance, medium).** One surface iron vein (quarry, 185, 75) on an 8-minute respawn, about 0.2 iron ore a minute. The second vein is inside the Rootway. No shop sells iron. 15 smithing recipes need iron ingots, so an iron sword takes about 20 minutes at one vein. (Correction: an earlier draft said the second vein could not be walked to. The route model did not path through portals. Tier 2 foraging nodes are Whisperwood supply by design, not a gap.) From 15 to 29, tier 1 pays the 10% floor, so Mining takes about 26 h to the ceiling.
 
 **F5. Deciphering caps at 3 points (content, medium).** It pays 100 XP once per tablet kind. There are 7 tablets of 6 kinds, so 600 XP in total. xpTo(15) is 4,378. Its rank 15 Trial exists but cannot be reached. Delving holds 9,080 XP (58 rooms, 6 puzzles, 16 clears), which is enough for 15 and about 23 after the Trial.
 
@@ -41,28 +41,28 @@ Three bots:
 
 "How": measured is a real-sim loop; real-map uses node positions and respawns on the baked map; modeled uses a stated rate (see `skills.ts`). Hours exclude Trial time.
 
-| Skill | How | To 15 | To ceiling (29 + bar) | Rate basis |
-| --- | --- | --- | --- | --- |
-| Blades | measured | 0.2 to 0.5 h | 1.2 h | 46 hits/min |
-| Heavy Arms, Polearms, Archery, Unarmed | modeled | 0.2 to 0.5 h | 1.2 h | Blades hit rate |
-| Ember, Tide, Gale, Stone, Hexing | modeled | 0.2 to 0.5 h | 1.2 h | Blades hit rate; Focus will slow these |
-| Shieldcraft | modeled | 0.8 h | 6.3 h | parries at dodge rate |
-| Evasion | measured | 1.3 h | 10.5 h | 4.4 dodges/min in fight loop |
-| Mending | modeled | 5.2 h | 17.2 h | 4 heals/min at 4 XP |
-| Mining | real-map | 2.7 h | 25.8 h | 19 copper (3.6/min), 2 iron (0.13/min) |
-| Logging | real-map | 1.5 h | 12.7 h | 54 oak, 14 ash |
-| Foraging | real-map | 0.1 h | 1.4 h | 191 patches and bushes (8.9/min) |
-| Fishing | real-map | **29.1 h** | **281 h** | 1 spot (0.33/min) |
-| Cooking | measured | 0.2 h | 2.3 h | 1.4 crafts/min |
-| Smithing, Woodworking, Tailoring, Alchemy, Enchanting, Tinkering | modeled | 1.0 to 1.7 h | 15.5 to 16.1 h | cooking loop rate at 25 XP |
-| Bartering | modeled | 2.9 h | 9.8 h | 2 haggles, 4 sales/min |
-| Performance | modeled | 1.7 h | 5.7 h | a song every 15 s |
-| Stealth | modeled | 4.2 h | 16.3 h | 2 sneaks/min |
-| Survival | modeled | **10.6 h** | 34.7 h | night outdoors plus raw food |
-| Athletics | measured | 0.5 h | 1.7 h | map bot sprinting, 160 XP/min |
-| Cartography | finite | never (F1) | never | 8,951 XP if fixed, so about 23 after the Trial |
-| Deciphering | finite | never (3 points) | never | 600 XP total |
-| Delving | finite | about 23 points total | about 23 | 9,080 XP total |
+| Skill                                                            | How      | To 15                 | To ceiling (29 + bar) | Rate basis                                     |
+| ---------------------------------------------------------------- | -------- | --------------------- | --------------------- | ---------------------------------------------- |
+| Blades                                                           | measured | 0.2 to 0.5 h          | 1.2 h                 | 46 hits/min                                    |
+| Heavy Arms, Polearms, Archery, Unarmed                           | modeled  | 0.2 to 0.5 h          | 1.2 h                 | Blades hit rate                                |
+| Ember, Tide, Gale, Stone, Hexing                                 | modeled  | 0.2 to 0.5 h          | 1.2 h                 | Blades hit rate; Focus will slow these         |
+| Shieldcraft                                                      | modeled  | 0.8 h                 | 6.3 h                 | parries at dodge rate                          |
+| Evasion                                                          | measured | 1.3 h                 | 10.5 h                | 4.4 dodges/min in fight loop                   |
+| Mending                                                          | modeled  | 5.2 h                 | 17.2 h                | 4 heals/min at 4 XP                            |
+| Mining                                                           | real-map | 2.7 h                 | 25.8 h                | 19 copper (3.6/min), 1 surface iron (0.13/min) |
+| Logging                                                          | real-map | 1.5 h                 | 12.7 h                | 54 oak, 14 ash                                 |
+| Foraging                                                         | real-map | 0.1 h                 | 1.4 h                 | 191 patches and bushes (8.9/min)               |
+| Fishing                                                          | real-map | **29.1 h**            | **281 h**             | 1 spot (0.33/min)                              |
+| Cooking                                                          | measured | 0.2 h                 | 2.3 h                 | 1.4 crafts/min                                 |
+| Smithing, Woodworking, Tailoring, Alchemy, Enchanting, Tinkering | modeled  | 1.0 to 1.7 h          | 15.5 to 16.1 h        | cooking loop rate at 25 XP                     |
+| Bartering                                                        | modeled  | 2.9 h                 | 9.8 h                 | 2 haggles, 4 sales/min                         |
+| Performance                                                      | modeled  | 1.7 h                 | 5.7 h                 | a song every 15 s                              |
+| Stealth                                                          | modeled  | 4.2 h                 | 16.3 h                | 2 sneaks/min                                   |
+| Survival                                                         | modeled  | **10.6 h**            | 34.7 h                | night outdoors plus raw food                   |
+| Athletics                                                        | measured | 0.5 h                 | 1.7 h                 | map bot sprinting, 160 XP/min                  |
+| Cartography                                                      | finite   | never (F1)            | never                 | 8,951 XP if fixed, so about 23 after the Trial |
+| Deciphering                                                      | finite   | never (3 points)      | never                 | 600 XP total                                   |
+| Delving                                                          | finite   | about 23 points total | about 23              | 9,080 XP total                                 |
 
 ## Limits of this check
 
@@ -79,3 +79,5 @@ npx tsx tools/endurance-bot/rates.ts 20
 npx tsx tools/endurance-bot/skills.ts '{"athleticsXpPerMin":160,"mapBlocks":8951}'
 npm run build && SOAK_CYCLES=10 npx playwright test -c tools/endurance-bot/visual/playwright.config.ts --trace off
 ```
+
+Ticket drafts for F1 to F5 are in `reports/endurance-tickets.md`.
