@@ -45,6 +45,5 @@ export const MANUAL_ITEMS: readonly ItemDef[] = MANUALS.map((m) =>
     value: 0,
     stack: 5,
     manual: { technique: m.technique, skill: m.skill },
-    icon: 'icon.scroll_recipe',
   }),
 );

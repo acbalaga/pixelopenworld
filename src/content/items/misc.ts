@@ -6,16 +6,16 @@ export const MISC_ITEMS: readonly ItemDef[] = [
   // Money and odds and ends. Coin is held as a number, not in a slot.
   item('item.coin', 'currency', { value: 1, stack: 9999 }),
   item('item.old_key', 'misc', { value: 0, stack: 1 }),
-  // The Rootway's key (M4-21): a knot of dried root, found behind the stump gates. Borrowed icon.
-  item('item.foreman_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
-  item('item.mill_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
-  item('item.root_key', 'misc', { value: 0, stack: 1, icon: 'icon.old_key' }),
+  // The Rootway's key (M4-21): a knot of dried root, found behind the stump gates.
+  item('item.foreman_key', 'misc', { value: 0, stack: 1 }),
+  item('item.mill_key', 'misc', { value: 0, stack: 1 }),
+  item('item.root_key', 'misc', { value: 0, stack: 1 }),
   item('item.river_pebble', 'misc', { value: 1 }),
-  // Goods for the region's requests (M4-11). Borrowed icons.
-  item('item.fishing_net', 'misc', { value: 14, icon: 'icon.wool_cloth' }),
-  item('item.cart_wheel', 'misc', { value: 12, icon: 'icon.oak_plank' }),
-  item('item.pilgrim_letter', 'misc', { value: 0, stack: 1, icon: 'icon.scroll_recipe' }),
-  item('item.wren_page', 'misc', { value: 0, stack: 20, icon: 'icon.scroll_recipe' }),
+  // Goods for the region's requests (M4-11).
+  item('item.fishing_net', 'misc', { value: 14 }),
+  item('item.cart_wheel', 'misc', { value: 12 }),
+  item('item.pilgrim_letter', 'misc', { value: 0, stack: 1 }),
+  item('item.wren_page', 'misc', { value: 0, stack: 20 }),
   item('item.crow_feather', 'misc', { value: 2 }),
   item('item.bone_shard', 'misc', { value: 2 }),
   item('item.lantern_oil', 'misc', { value: 5 }),
@@ -64,12 +64,11 @@ export const MISC_ITEMS: readonly ItemDef[] = [
     gadget: 'lantern',
     equip: { slot: 'off' },
   }),
-  // Singular rewards and parts (M4-20). Icons are borrowed until art for them is drawn.
+  // Singular rewards and parts (M4-20).
   item('item.crow_feather_charm', 'misc', {
     value: 0,
     stack: 1,
     bag: 'gear',
-    icon: 'icon.crow_feather',
     equip: { slot: 'accessory' },
     noWear: true,
   }),
@@ -77,12 +76,11 @@ export const MISC_ITEMS: readonly ItemDef[] = [
     value: 0,
     stack: 1,
     bag: 'gear',
-    icon: 'icon.belt_leather',
     equip: { slot: 'accessory' },
     noWear: true,
   }),
-  item('item.bakers_peel', 'misc', { value: 0, stack: 1, icon: 'icon.whetstone' }),
-  item('item.firebrick', 'misc', { value: 0, stack: 4, icon: 'icon.clay' }),
+  item('item.bakers_peel', 'misc', { value: 0, stack: 1 }),
+  item('item.firebrick', 'misc', { value: 0, stack: 4 }),
   item('item.thread_spool', 'misc', { value: 5 }),
   item('item.chalk_stub', 'misc', { value: 2 }),
 ];

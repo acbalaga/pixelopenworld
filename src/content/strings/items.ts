@@ -330,7 +330,7 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.rune_dust.desc': 'All that is left when a rune does not take.',
   'item.scrap.name': 'Scrap',
   'item.scrap.desc': 'Bent metal. Not what you meant to build.',
-  'item.potion_stamina_m.name': 'Stamina Tonic',
+  'item.potion_stamina_m.name': 'Strong Stamina Tonic',
   'item.potion_stamina_m.desc': 'A strong tonic. Wind returns in a moment.',
   'item.potion_focus_m.name': 'Focus Tonic',
   'item.potion_focus_m.desc': 'A strong tonic. The mind clears.',

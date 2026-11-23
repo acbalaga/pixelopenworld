@@ -1,3 +1,4 @@
+import { ALL_RAMPS } from '../../src/content/sprites/palette';
 import type { SpriteDef } from '../../src/content/sprites/types';
 
 /**
@@ -6,6 +7,9 @@ import type { SpriteDef } from '../../src/content/sprites/types';
  * These are art thresholds, not gameplay numbers, so they live here and not in `balance/`.
  */
 export const LOOKALIKE_MIN = 0.2;
+
+/** Members of one tier line (`ICON_VARIANT_GROUPS`) may share a silhouette, so they need less. */
+export const LOOKALIKE_VARIANT_MIN = 0.1;
 
 /** A grid of palette indices, `null` for transparent. */
 function grid(s: SpriteDef, frame = 'base'): (number | null)[][] {
@@ -58,4 +62,30 @@ export function lookAlikePairs(
       if (d < min) out.push({ a: a.id, b: b.id, d });
     }
   return out.sort((x, y) => x.d - y.d);
+}
+
+const RAMP_OF = new Map<number, string>(
+  ALL_RAMPS.flatMap((r) => r.indices.map((i) => [i, r.name] as const)),
+);
+
+/**
+ * The ramp that most of the differing pixels of two sprites belong to, taken in each sprite. A
+ * tier variant must differ in metal or wood color, so this has to differ between the two.
+ */
+export function differingRamps(a: SpriteDef, b: SpriteDef, frame = 'base'): [string, string] {
+  const ga = grid(a, frame);
+  const gb = grid(b, frame);
+  const count = (g: (number | null)[][], other: (number | null)[][]): string => {
+    const n = new Map<string, number>();
+    g.forEach((row, y) =>
+      row.forEach((c, x) => {
+        // Outlines (index 0) and unchanged pixels say nothing about the metal or wood.
+        if (c === null || c === 0 || other[y]?.[x] === c) return;
+        const r = RAMP_OF.get(c) ?? '';
+        n.set(r, (n.get(r) ?? 0) + 1);
+      }),
+    );
+    return [...n].sort((x, y) => y[1] - x[1])[0]?.[0] ?? '';
+  };
+  return [count(ga, gb), count(gb, ga)];
 }
