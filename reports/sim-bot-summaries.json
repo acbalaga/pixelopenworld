@@ -562,9 +562,10 @@
     "playSeconds": 2437,
     "coin": 171,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 38,
     "requestsDone": 0,
     "flags": 0
@@ -577,9 +578,10 @@
     "playSeconds": 2502,
     "coin": 171,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 51,
     "requestsDone": 0,
     "flags": 0
@@ -592,9 +594,10 @@
     "playSeconds": 2568,
     "coin": 183,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 45,
     "requestsDone": 0,
     "flags": 0
@@ -607,9 +610,10 @@
     "playSeconds": 2634,
     "coin": 183,
     "skillPoints": {
-     "skill.foraging": 14
+     "skill.foraging": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 45,
     "requestsDone": 0,
     "flags": 0
@@ -1406,9 +1410,10 @@
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 9
+     "skill.evasion": 9,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 24,
+    "totalSkillPoints": 25,
     "itemCount": 27,
     "requestsDone": 0,
     "flags": 2
@@ -1423,9 +1428,10 @@
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 10
+     "skill.evasion": 10,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 26,
     "itemCount": 33,
     "requestsDone": 0,
     "flags": 2
@@ -1434,16 +1440,17 @@
   {
    "minute": 44,
    "summary": {
-    "tick": 79457,
-    "playSeconds": 2648,
-    "coin": 157,
+    "tick": 78724,
+    "playSeconds": 2624,
+    "coin": 140,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 10
+     "skill.evasion": 10,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 25,
-    "itemCount": 36,
+    "totalSkillPoints": 26,
+    "itemCount": 35,
     "requestsDone": 0,
     "flags": 2
    }
@@ -1451,16 +1458,35 @@
   {
    "minute": 45,
    "summary": {
-    "tick": 81597,
-    "playSeconds": 2719,
-    "coin": 158,
+    "tick": 80806,
+    "playSeconds": 2693,
+    "coin": 117,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 10
+     "skill.evasion": 10,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 26,
     "itemCount": 36,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 46,
+   "summary": {
+    "tick": 82643,
+    "playSeconds": 2754,
+    "coin": 137,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 10,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 26,
+    "itemCount": 20,
     "requestsDone": 0,
     "flags": 2
    }
@@ -1468,32 +1494,16 @@
   {
    "minute": 47,
    "summary": {
-    "tick": 83915,
-    "playSeconds": 2797,
-    "coin": 163,
+    "tick": 85242,
+    "playSeconds": 2841,
+    "coin": 127,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 10
+     "skill.evasion": 10,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 25,
-    "itemCount": 20,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 48,
-   "summary": {
-    "tick": 86487,
-    "playSeconds": 2882,
-    "coin": 162,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 10
-    },
-    "totalSkillPoints": 25,
+    "totalSkillPoints": 26,
     "itemCount": 20,
     "requestsDone": 0,
     "flags": 2
@@ -1502,98 +1512,14 @@
   {
    "minute": 49,
    "summary": {
-    "tick": 88383,
-    "playSeconds": 2946,
-    "coin": 167,
+    "tick": 88029,
+    "playSeconds": 2934,
+    "coin": 117,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 11
-    },
-    "totalSkillPoints": 26,
-    "itemCount": 23,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 51,
-   "summary": {
-    "tick": 90921,
-    "playSeconds": 3030,
-    "coin": 168,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 11
-    },
-    "totalSkillPoints": 26,
-    "itemCount": 25,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 52,
-   "summary": {
-    "tick": 93639,
-    "playSeconds": 3121,
-    "coin": 152,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 11
-    },
-    "totalSkillPoints": 26,
-    "itemCount": 25,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 53,
-   "summary": {
-    "tick": 95779,
-    "playSeconds": 3192,
-    "coin": 152,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 11
-    },
-    "totalSkillPoints": 26,
-    "itemCount": 25,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 54,
-   "summary": {
-    "tick": 97919,
-    "playSeconds": 3263,
-    "coin": 152,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 11
-    },
-    "totalSkillPoints": 26,
-    "itemCount": 25,
-    "requestsDone": 0,
-    "flags": 2
-   }
-  },
-  {
-   "minute": 56,
-   "summary": {
-    "tick": 100132,
-    "playSeconds": 3337,
-    "coin": 130,
-    "skillPoints": {
-     "skill.blades": 14,
-     "skill.cartography": 1,
-     "skill.evasion": 11
+     "skill.evasion": 10,
+     "skill.survival": 1
     },
     "totalSkillPoints": 26,
     "itemCount": 21,
@@ -1602,18 +1528,109 @@
    }
   },
   {
-   "minute": 57,
+   "minute": 50,
    "summary": {
-    "tick": 102118,
-    "playSeconds": 3403,
-    "coin": 117,
+    "tick": 90629,
+    "playSeconds": 3020,
+    "coin": 118,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 11
+     "skill.evasion": 11,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 26,
-    "itemCount": 26,
+    "totalSkillPoints": 27,
+    "itemCount": 25,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 51,
+   "summary": {
+    "tick": 92506,
+    "playSeconds": 3083,
+    "coin": 118,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 29,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 52,
+   "summary": {
+    "tick": 94412,
+    "playSeconds": 3147,
+    "coin": 135,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 20,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 54,
+   "summary": {
+    "tick": 96652,
+    "playSeconds": 3221,
+    "coin": 127,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 23,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 55,
+   "summary": {
+    "tick": 99272,
+    "playSeconds": 3309,
+    "coin": 107,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 25,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 57,
+   "summary": {
+    "tick": 101821,
+    "playSeconds": 3394,
+    "coin": 107,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 25,
     "requestsDone": 0,
     "flags": 2
    }
@@ -1621,16 +1638,17 @@
   {
    "minute": 58,
    "summary": {
-    "tick": 104679,
-    "playSeconds": 3489,
-    "coin": 124,
+    "tick": 104310,
+    "playSeconds": 3477,
+    "coin": 107,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 12
+     "skill.evasion": 11,
+     "skill.survival": 1
     },
     "totalSkillPoints": 27,
-    "itemCount": 27,
+    "itemCount": 25,
     "requestsDone": 0,
     "flags": 2
    }
@@ -1638,16 +1656,35 @@
   {
    "minute": 59,
    "summary": {
-    "tick": 106689,
-    "playSeconds": 3556,
-    "coin": 130,
+    "tick": 106450,
+    "playSeconds": 3548,
+    "coin": 107,
     "skillPoints": {
      "skill.blades": 14,
      "skill.cartography": 1,
-     "skill.evasion": 12
+     "skill.evasion": 11,
+     "skill.survival": 1
     },
     "totalSkillPoints": 27,
-    "itemCount": 32,
+    "itemCount": 25,
+    "requestsDone": 0,
+    "flags": 2
+   }
+  },
+  {
+   "minute": 60,
+   "summary": {
+    "tick": 108611,
+    "playSeconds": 3620,
+    "coin": 87,
+    "skillPoints": {
+     "skill.blades": 14,
+     "skill.cartography": 1,
+     "skill.evasion": 11,
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 27,
+    "itemCount": 20,
     "requestsDone": 0,
     "flags": 2
    }
@@ -2253,9 +2290,10 @@
     "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.cooking": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 29,
     "itemCount": 42,
     "requestsDone": 0,
     "flags": 0
@@ -2269,9 +2307,10 @@
     "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.cooking": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 29,
     "itemCount": 42,
     "requestsDone": 0,
     "flags": 0
@@ -2285,9 +2324,10 @@
     "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.cooking": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 29,
     "itemCount": 43,
     "requestsDone": 0,
     "flags": 0
@@ -2301,9 +2341,10 @@
     "coin": 174,
     "skillPoints": {
      "skill.foraging": 14,
-     "skill.cooking": 14
+     "skill.cooking": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 28,
+    "totalSkillPoints": 29,
     "itemCount": 46,
     "requestsDone": 0,
     "flags": 0
@@ -3173,9 +3214,10 @@
     "playSeconds": 2415,
     "coin": 63,
     "skillPoints": {
-     "skill.blades": 3
+     "skill.blades": 3,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 3,
+    "totalSkillPoints": 4,
     "itemCount": 4,
     "requestsDone": 2,
     "flags": 1
@@ -3188,9 +3230,10 @@
     "playSeconds": 2475,
     "coin": 63,
     "skillPoints": {
-     "skill.blades": 3
+     "skill.blades": 3,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 3,
+    "totalSkillPoints": 4,
     "itemCount": 4,
     "requestsDone": 2,
     "flags": 1
@@ -3203,9 +3246,10 @@
     "playSeconds": 2535,
     "coin": 63,
     "skillPoints": {
-     "skill.blades": 3
+     "skill.blades": 3,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 3,
+    "totalSkillPoints": 4,
     "itemCount": 4,
     "requestsDone": 2,
     "flags": 1
@@ -3218,9 +3262,10 @@
     "playSeconds": 2595,
     "coin": 63,
     "skillPoints": {
-     "skill.blades": 3
+     "skill.blades": 3,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 3,
+    "totalSkillPoints": 4,
     "itemCount": 4,
     "requestsDone": 2,
     "flags": 1
@@ -4091,9 +4136,10 @@
     "playSeconds": 2445,
     "coin": 128,
     "skillPoints": {
-     "skill.fishing": 14
+     "skill.fishing": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 71,
     "requestsDone": 0,
     "flags": 0
@@ -4106,9 +4152,10 @@
     "playSeconds": 2506,
     "coin": 128,
     "skillPoints": {
-     "skill.fishing": 14
+     "skill.fishing": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 73,
     "requestsDone": 0,
     "flags": 0
@@ -4121,9 +4168,10 @@
     "playSeconds": 2567,
     "coin": 128,
     "skillPoints": {
-     "skill.fishing": 14
+     "skill.fishing": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 73,
     "requestsDone": 0,
     "flags": 0
@@ -4136,9 +4184,10 @@
     "playSeconds": 2628,
     "coin": 128,
     "skillPoints": {
-     "skill.fishing": 14
+     "skill.fishing": 14,
+     "skill.survival": 1
     },
-    "totalSkillPoints": 14,
+    "totalSkillPoints": 15,
     "itemCount": 77,
     "requestsDone": 0,
     "flags": 0
@@ -4396,6 +4445,948 @@
     },
     "totalSkillPoints": 15,
     "itemCount": 101,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  }
+ ],
+ "survive": [
+  {
+   "minute": 1,
+   "summary": {
+    "tick": 1802,
+    "playSeconds": 60,
+    "coin": 0,
+    "skillPoints": {},
+    "totalSkillPoints": 0,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 2,
+   "summary": {
+    "tick": 3602,
+    "playSeconds": 120,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 1,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 3,
+   "summary": {
+    "tick": 5402,
+    "playSeconds": 180,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 1
+    },
+    "totalSkillPoints": 1,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 4,
+   "summary": {
+    "tick": 7202,
+    "playSeconds": 240,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 2
+    },
+    "totalSkillPoints": 2,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 5,
+   "summary": {
+    "tick": 9002,
+    "playSeconds": 300,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 2
+    },
+    "totalSkillPoints": 2,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 6,
+   "summary": {
+    "tick": 10802,
+    "playSeconds": 360,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 3
+    },
+    "totalSkillPoints": 3,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 7,
+   "summary": {
+    "tick": 12603,
+    "playSeconds": 420,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 3
+    },
+    "totalSkillPoints": 3,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 8,
+   "summary": {
+    "tick": 14403,
+    "playSeconds": 480,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 4
+    },
+    "totalSkillPoints": 4,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 9,
+   "summary": {
+    "tick": 16203,
+    "playSeconds": 540,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 4
+    },
+    "totalSkillPoints": 4,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 10,
+   "summary": {
+    "tick": 18003,
+    "playSeconds": 600,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 4
+    },
+    "totalSkillPoints": 4,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 11,
+   "summary": {
+    "tick": 19803,
+    "playSeconds": 660,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 5
+    },
+    "totalSkillPoints": 5,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 12,
+   "summary": {
+    "tick": 21603,
+    "playSeconds": 720,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 5
+    },
+    "totalSkillPoints": 5,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 13,
+   "summary": {
+    "tick": 23404,
+    "playSeconds": 780,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 6
+    },
+    "totalSkillPoints": 6,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 14,
+   "summary": {
+    "tick": 25204,
+    "playSeconds": 840,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 6
+    },
+    "totalSkillPoints": 6,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 15,
+   "summary": {
+    "tick": 27004,
+    "playSeconds": 900,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 6
+    },
+    "totalSkillPoints": 6,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 16,
+   "summary": {
+    "tick": 28804,
+    "playSeconds": 960,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 7
+    },
+    "totalSkillPoints": 7,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 17,
+   "summary": {
+    "tick": 30604,
+    "playSeconds": 1020,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 7
+    },
+    "totalSkillPoints": 7,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 18,
+   "summary": {
+    "tick": 32404,
+    "playSeconds": 1080,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 7
+    },
+    "totalSkillPoints": 7,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 19,
+   "summary": {
+    "tick": 34205,
+    "playSeconds": 1140,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 8,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 9,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 20,
+   "summary": {
+    "tick": 36005,
+    "playSeconds": 1200,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 8,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 9,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 21,
+   "summary": {
+    "tick": 37805,
+    "playSeconds": 1260,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 8,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 9,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 22,
+   "summary": {
+    "tick": 39605,
+    "playSeconds": 1320,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 8,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 9,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 23,
+   "summary": {
+    "tick": 41405,
+    "playSeconds": 1380,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 9,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 10,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 24,
+   "summary": {
+    "tick": 43205,
+    "playSeconds": 1440,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 9,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 10,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 25,
+   "summary": {
+    "tick": 45006,
+    "playSeconds": 1500,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 9,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 10,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 26,
+   "summary": {
+    "tick": 46806,
+    "playSeconds": 1560,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 10,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 11,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 27,
+   "summary": {
+    "tick": 48606,
+    "playSeconds": 1620,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 10,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 11,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 28,
+   "summary": {
+    "tick": 50406,
+    "playSeconds": 1680,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 10,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 11,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 29,
+   "summary": {
+    "tick": 52206,
+    "playSeconds": 1740,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 10,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 11,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 30,
+   "summary": {
+    "tick": 54006,
+    "playSeconds": 1800,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 11,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 12,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 31,
+   "summary": {
+    "tick": 55807,
+    "playSeconds": 1860,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 11,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 12,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 32,
+   "summary": {
+    "tick": 57607,
+    "playSeconds": 1920,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 11,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 12,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 33,
+   "summary": {
+    "tick": 59407,
+    "playSeconds": 1980,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 11,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 12,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 34,
+   "summary": {
+    "tick": 61207,
+    "playSeconds": 2040,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 12,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 13,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 35,
+   "summary": {
+    "tick": 63007,
+    "playSeconds": 2100,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 12,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 13,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 36,
+   "summary": {
+    "tick": 64807,
+    "playSeconds": 2160,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 12,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 13,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 37,
+   "summary": {
+    "tick": 66608,
+    "playSeconds": 2220,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 12,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 13,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 38,
+   "summary": {
+    "tick": 68408,
+    "playSeconds": 2280,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 13,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 14,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 39,
+   "summary": {
+    "tick": 70208,
+    "playSeconds": 2340,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 13,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 14,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 40,
+   "summary": {
+    "tick": 72008,
+    "playSeconds": 2400,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 13,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 14,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 41,
+   "summary": {
+    "tick": 73808,
+    "playSeconds": 2460,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 42,
+   "summary": {
+    "tick": 75608,
+    "playSeconds": 2520,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 43,
+   "summary": {
+    "tick": 77409,
+    "playSeconds": 2580,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 44,
+   "summary": {
+    "tick": 79209,
+    "playSeconds": 2640,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 45,
+   "summary": {
+    "tick": 81009,
+    "playSeconds": 2700,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 46,
+   "summary": {
+    "tick": 82809,
+    "playSeconds": 2760,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 47,
+   "summary": {
+    "tick": 84609,
+    "playSeconds": 2820,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 48,
+   "summary": {
+    "tick": 86409,
+    "playSeconds": 2880,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 49,
+   "summary": {
+    "tick": 88210,
+    "playSeconds": 2940,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 50,
+   "summary": {
+    "tick": 90010,
+    "playSeconds": 3000,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 51,
+   "summary": {
+    "tick": 91810,
+    "playSeconds": 3060,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 52,
+   "summary": {
+    "tick": 93610,
+    "playSeconds": 3120,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 53,
+   "summary": {
+    "tick": 95410,
+    "playSeconds": 3180,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 54,
+   "summary": {
+    "tick": 97210,
+    "playSeconds": 3240,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 55,
+   "summary": {
+    "tick": 99011,
+    "playSeconds": 3300,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 56,
+   "summary": {
+    "tick": 100811,
+    "playSeconds": 3360,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 57,
+   "summary": {
+    "tick": 102611,
+    "playSeconds": 3420,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 58,
+   "summary": {
+    "tick": 104411,
+    "playSeconds": 3480,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 59,
+   "summary": {
+    "tick": 106211,
+    "playSeconds": 3540,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
+    "requestsDone": 0,
+    "flags": 0
+   }
+  },
+  {
+   "minute": 60,
+   "summary": {
+    "tick": 108011,
+    "playSeconds": 3600,
+    "coin": 0,
+    "skillPoints": {
+     "skill.survival": 14,
+     "skill.cartography": 1
+    },
+    "totalSkillPoints": 15,
+    "itemCount": 1,
     "requestsDone": 0,
     "flags": 0
    }

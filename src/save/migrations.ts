@@ -680,6 +680,19 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       ledger: structuredClone(s.ledger),
     };
   },
+  /**
+   * 28 to 29 (M4-23 part C): Skills gain `camp`, the camping accumulator, the minutes each camp
+   * has paid today and the last sleep that paid (Survival). It starts empty: nothing is owed and
+   * nothing has been paid.
+   */
+  28: (old) => {
+    const raw = JSON.parse(old.sim) as {
+      entities: { comps: { skills: ({ camp?: unknown } | null)[] } };
+    };
+    for (const sk of raw.entities.comps.skills)
+      if (sk) sk.camp = { at: null, acc: 0, used: {}, sleepHour: -1 };
+    return { ...old, schema: 29, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

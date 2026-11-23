@@ -49,6 +49,24 @@ export const SKILLS_BALANCE = {
     'technique.evasion_light_feet': 12,
   } as Readonly<Record<string, number>>,
   dummyInsightUntil: 5,
+  /**
+   * Survival (POW-M4-23C). Standing still at a camp (a `rest` fixture) outdoors and outside a
+   * settlement pays per full minute, up to a daily cap for each camp, so training it means going
+   * from camp to camp. Sleeping outdoors pays a lump, once an in-game hour. Night outdoors stays
+   * a bonus.
+   */
+  survival: {
+    /** How close to a camp counts as at it, in tiles. */
+    campRadius: 3,
+    /** Survival XP for each full minute of camping. */
+    campXpPerMinute: 85,
+    /** Minutes one camp pays in one in-game day, for one avatar. */
+    campMinutesPerDay: 6,
+    /** Survival XP for sleeping outdoors, at most once an in-game hour. */
+    sleepOutdoorsXp: 40,
+    /** Survival XP for each in-game hour of night spent outdoors. */
+    nightXpPerHour: 60,
+  },
   /** Sprint pays once for every this many px run. */
   sprintPx: 32,
   /** A feet move longer than this in one tick is a teleport or respawn and pays no sprint XP. */

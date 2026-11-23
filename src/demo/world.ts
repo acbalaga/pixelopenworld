@@ -1561,6 +1561,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 TECHNIQUE_STRINGS[`${e.technique}.name`] ?? e.technique,
               ),
             );
+          else if (e.type === 'campSettled' && e.who === who) notices.toast(W_STR.campSettled);
+          else if (e.type === 'campSpent' && e.who === who) notices.toast(W_STR.campSpent);
           else if (e.type === 'gateOpened') {
             openedAt.set(e.id, performance.now());
             notices.toast(W_STR.gate);

@@ -293,6 +293,17 @@ export interface Skills {
   stride: { x: number; y: number; acc: number };
   /** Ticks of night spent outdoors that have not yet been paid as an in-game hour (Survival). */
   nightAcc: number;
+  /**
+   * Camping (Survival, POW-M4-23C). `at` is the camp being stood at (its tile as `x,y`) or null,
+   * `acc` the ticks stood there that have not made a full minute, `used` the minutes each camp
+   * has paid on its in-game day, and `sleepHour` the in-game hour of the last sleep that paid.
+   */
+  camp: {
+    at: string | null;
+    acc: number;
+    used: Record<string, { day: number; min: number }>;
+    sleepHour: number;
+  };
   /** Trial progress by Trial id: for offered, unpassed Trials only. `n` counts, `t0` is a start tick or fight number, `bad` lists creatures hit the wrong way. */
   trial: Record<string, TrialProgress>;
   /** The current fight: its number and the tick of its latest combat (see `sim/fight.ts`). */

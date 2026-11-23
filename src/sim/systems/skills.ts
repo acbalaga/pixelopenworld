@@ -2,16 +2,18 @@ import { SKILLS_BALANCE as B } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
 import { roomAt } from '../../content/world/rooms';
+import { FIXTURES } from '../../content/world/fixtures';
+import { inSettlement } from '../../content/world/settlements';
 import { WEAPONS } from '../../content/combat/attacks';
 import { TECHNIQUE_LIST } from '../../content/combat/techniques';
 import { countInsight } from '../combat/techniques';
 import { SKILLS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
-import type { SimEvent } from '../kernel/events';
+import { emit, type SimEvent } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { addXp, challengePct, pointsOf } from '../skills';
-import { dayPhase } from '../time';
+import { dayIndex, dayPhase } from '../time';
 
 const TILE = 16;
 
@@ -145,7 +147,91 @@ export const SKILLS_READS = [
   'dungeonCleared',
   'revealed',
   'tabletRead',
+  'sleptOutdoors',
 ] as const satisfies readonly SimEvent['type'][];
+
+/** The tile the avatar's feet are on. */
+function feetTile(p: { x: number; y: number }): { tx: number; ty: number } {
+  return { tx: Math.floor(p.x / SUBPX / TILE), ty: Math.floor((p.y / SUBPX - 1) / TILE) };
+}
+
+/** Survival: sleeping outdoors pays a lump, at most once an in-game hour. */
+function sleepPay(state: SimState, who: EntityId): void {
+  const s = getComp(state.entities, who, 'skills');
+  if (!s) return;
+  const hour = Math.floor(state.worldTick / TIME.hourTicks);
+  if (s.camp.sleepHour === hour) return;
+  s.camp.sleepHour = hour;
+  practice(state, who, { on: 'sleepOutdoors', tag: undefined, tier: 0, subject: null });
+}
+
+/** The camp (a `rest` fixture) within `campRadius` tiles of the feet, as its tile key, or null. */
+function campNear(state: SimState, tx: number, ty: number): string | null {
+  const r = B.survival.campRadius;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    const kind = getComp(state.entities, id, 'fixture')?.kind;
+    if (!kind || FIXTURES[kind]?.type !== 'rest') continue;
+    const q = getComp(state.entities, id, 'pos');
+    if (!q) continue;
+    const c = feetTile(q);
+    const d = Math.hypot(c.tx - tx, c.ty - ty);
+    if (d <= r && d < bestD) {
+      bestD = d;
+      best = `${c.tx},${c.ty}`;
+    }
+  }
+  return best;
+}
+
+/**
+ * Survival: standing still at a camp, outdoors and outside every settlement, pays
+ * `campXpPerMinute` for each full minute, up to `campMinutesPerDay` a day for each camp. A move,
+ * a hit or a death drops the partial minute. `eventCount` is how many events of this tick came
+ * before the ones this system sent.
+ */
+function camping(state: SimState, who: EntityId, eventCount: number): void {
+  const s = getComp(state.entities, who, 'skills');
+  const p = getComp(state.entities, who, 'pos');
+  const a = getComp(state.entities, who, 'avatar');
+  if (!s || !p || !a) return;
+  const stop = (): void => {
+    s.camp.at = null;
+    s.camp.acc = 0;
+  };
+  const hurt = state.events.list
+    .slice(0, eventCount)
+    .some((e) => e.type === 'damageDealt' && e.dst === who && e.amount > 0);
+  if (getComp(state.entities, who, 'fighter')?.state !== 'idle' || a.intent !== null || hurt)
+    return stop();
+  const { tx, ty } = feetTile(p);
+  const region = state.region ?? 'slice';
+  if (!roomAt(tx, ty, region)?.outdoors || inSettlement(region, tx, ty)) return stop();
+  const camp = campNear(state, tx, ty);
+  if (camp === null) return stop();
+  const day = dayIndex(state.worldTick);
+  const used = (s.camp.used[camp] ??= { day, min: 0 });
+  if (used.day !== day) {
+    used.day = day;
+    used.min = 0;
+  }
+  if (used.min >= B.survival.campMinutesPerDay) return stop();
+  if (s.camp.at !== camp) {
+    s.camp.at = camp;
+    s.camp.acc = 0;
+    emit(state.events, { type: 'campSettled', who });
+  }
+  s.camp.acc += 1;
+  if (s.camp.acc < TIME.ticksPerMinute) return;
+  s.camp.acc = 0;
+  used.min += 1;
+  practice(state, who, { on: 'camp', tag: undefined, tier: 0, subject: null });
+  if (used.min >= B.survival.campMinutesPerDay) {
+    emit(state.events, { type: 'campSpent', who });
+    s.camp.at = null;
+  }
+}
 
 /**
  * Turns this tick's sim events into skill XP for each avatar. Runs last, so it sees everything
@@ -235,6 +321,8 @@ export function skillsSystem(state: SimState): void {
       } else if (e.type === 'revealed' && e.who === who) {
         for (let n = 0; n < e.blocks; n++)
           practice(state, who, { on: 'reveal', tag: undefined, tier: 0, subject: null });
+      } else if (e.type === 'sleptOutdoors' && e.who === who) {
+        sleepPay(state, who);
       } else if (e.type === 'tabletRead' && e.who === who) {
         const kind = getComp(state.entities, e.id, 'fixture')?.kind ?? null;
         practice(state, who, { on: 'tabletRead', tag: undefined, tier: 0, subject: kind });
@@ -242,6 +330,7 @@ export function skillsSystem(state: SimState): void {
     }
     sprint(state, who);
     outdoorsNight(state, who);
+    camping(state, who, count);
     syncWeaponRank(state, who);
   }
 }

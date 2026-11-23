@@ -22,6 +22,7 @@ export function newSkills(): Skills {
     seen: [],
     stride: { x: 0, y: 0, acc: 0 },
     nightAcc: 0,
+    camp: { at: null, acc: 0, used: {}, sleepHour: -1 },
     trial: {},
     fight: { id: 0, last: NO_FIGHT },
   };

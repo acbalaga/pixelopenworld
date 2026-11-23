@@ -225,6 +225,10 @@ export type SimEvent =
   /** A bag item was used but the Bag is already that big, so it was kept. */
   | { type: 'bagBigEnough'; who: number; item: string }
   /** A manual was read and used up. */
+  /** The avatar stopped at a camp, outdoors. One notice. */
+  | { type: 'campSettled'; who: number }
+  /** A camp has paid all it will today. One notice. */
+  | { type: 'campSpent'; who: number }
   | { type: 'manualRead'; who: number; item: string; technique: string }
   /** A manual was read whose technique is already known, so it was kept. */
   | { type: 'manualKnown'; who: number; item: string; technique: string }

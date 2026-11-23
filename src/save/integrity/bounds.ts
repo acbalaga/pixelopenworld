@@ -142,6 +142,10 @@ const RATES: Record<XpSource['on'], number> = {
   craft: COOK_EVENTS_PER_SECOND,
   sprint: SPRINT_EVENTS_PER_SECOND,
   outdoorsNight: NIGHT_HOURS_PER_SECOND,
+  /** Camping pays once a full minute of standing still. */
+  camp: 1 / 60,
+  /** Sleeping outdoors pays once an in-game hour. */
+  sleepOutdoors: NIGHT_HOURS_PER_SECOND,
   /** Eating takes a command each, so the cooking bound is far past a hand. */
   eatRaw: COOK_EVENTS_PER_SECOND,
   /** A tablet pays only the first-time lump, which is counted below. */
