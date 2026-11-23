@@ -85,6 +85,38 @@ export function newInventory(): Inventory {
   return inv;
 }
 
+/** Grows a chest saved at an older size to the current one. Never shrinks it. */
+export function ensureStorage(store: Storage): void {
+  while (store.slots.length < B.storage.slots) store.slots.push(null);
+}
+
+/**
+ * Puts what did not fit in the Bag into the storage chest, wherever the avatar is. Returns how
+ * many still did not fit. Says how many went and how full the chest is. Moves items between two
+ * places the avatar owns, so the ledger is untouched.
+ */
+function sendToChest(
+  state: SimState,
+  who: EntityId,
+  item: string,
+  qty: number,
+  extra: StackExtra,
+): number {
+  const store = getComp(state.entities, who, 'storage');
+  if (!store) return qty;
+  ensureStorage(store);
+  const left = addStack(store.slots, newStack(item, qty, extra));
+  if (left < qty)
+    emit(state.events, {
+      type: 'bagOverflow',
+      id: who,
+      item,
+      qty: qty - left,
+      free: store.slots.filter((s) => s === null).length,
+    });
+  return left;
+}
+
 /** An empty storage chest. */
 export function newStorage(): Storage {
   return { slots: Array.from({ length: B.storage.slots }, () => null) };
@@ -301,8 +333,13 @@ export function give(
   const inv = getComp(state.entities, who, 'inventory');
   if (!inv) return;
   madeItems(state, source, item, qty);
-  const left = addItem(inv, item, qty, extra);
+  let left = addItem(inv, item, qty, extra);
   if (source !== 'singular') emit(state.events, { type: 'itemGained', who, item, qty });
+  if (left > 0) {
+    // The Bag is full: what does not fit goes to the storage chest, if it has room (POW-M4 bag).
+    const stored = left - sendToChest(state, who, item, left, extra);
+    left -= stored;
+  }
   if (left > 0) {
     const f = feet(state, who);
     spawnPickup(state, item, left, f.x, f.y, newStack(item, 1, extra));
@@ -598,6 +635,7 @@ export function moveStorage(
   const kind = target === null ? null : getComp(state.entities, target, 'fixture')?.kind;
   if (!inv || !store || !kind || FIXTURES[kind]?.type !== 'storage' || !idle(state, who))
     return false;
+  ensureStorage(store);
   const from = dir === 'in' ? inv.slots : store.slots;
   const to = dir === 'in' ? store.slots : inv.slots;
   const stack = from[slot];

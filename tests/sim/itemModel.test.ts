@@ -251,10 +251,10 @@ describe('storage chest', () => {
     for (let n = 0; n < 6; n++) stepWorld(w.s, w.me, { commands: [] });
     return w;
   }
-  it('holds 40 slots on the avatar', () => {
+  it('holds the balance number of slots on the avatar', () => {
     const { s, me } = world();
-    expect(s.entities.comps.storage[me]!.slots).toHaveLength(40);
-    expect(B.storage.slots).toBe(40);
+    expect(s.entities.comps.storage[me]!.slots).toHaveLength(B.storage.slots);
+    expect(B.storage.slots).toBe(80);
   });
   it('moves a stack in and out, never losing or making anything', () => {
     const { s, me } = atChest();

@@ -9,8 +9,12 @@ export const ITEMS_BALANCE = {
    * the Bag fast once crafting makes Fine and Superior batches. Same as food and materials.
    */
   potionStack: 20,
-  /** The storage chest by the square Waystone. */
-  storage: { slots: 40 },
+  /**
+   * The storage chest by the square Waystone. It also takes what does not fit in the Bag, so it
+   * holds twice what it did (40 to 80). A chest saved with 40 grows to this when it is next used.
+   * `nearlyFull` is the free slots at which the player is told the chest is filling up.
+   */
+  storage: { slots: 80, nearlyFull: 6 },
   /**
    * Power and defense are the base times this percent for a quality, indexed Common, Fine,
    * Superior, Masterwork. Starting values, tuned by M3-12.

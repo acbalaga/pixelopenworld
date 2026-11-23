@@ -1,3 +1,4 @@
+import { ITEMS_BALANCE } from '../../src/content/balance/items';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -58,7 +59,7 @@ describe('schema 6 to 7 migration', () => {
     });
     expect(inv.equipment.off?.item).toBe('item.shield_wood');
     expect(inv.wear).toEqual({ hits: 0, taken: 0, uses: 0 });
-    expect(s.entities.comps.storage[me]!.slots).toHaveLength(40);
+    expect(s.entities.comps.storage[me]!.slots).toHaveLength(ITEMS_BALANCE.storage.slots);
     for (const st of inv.slots) {
       const max = ITEMS[st!.item]!.durability;
       expect(st!.dur).toBe(max);

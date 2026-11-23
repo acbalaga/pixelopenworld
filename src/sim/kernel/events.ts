@@ -109,6 +109,8 @@ export type SimEvent =
   | { type: 'lootDropped'; id: number; item: string; qty: number }
   | { type: 'itemPickedUp'; id: number; item: string; qty: number }
   | { type: 'bagFull'; id: number; item: string }
+  /** The Bag was full, so `qty` of `item` went to the storage chest. `free` is its empty slots now. */
+  | { type: 'bagOverflow'; id: number; item: string; qty: number; free: number }
   | { type: 'equipped'; id: number; slot: string; item: string }
   | { type: 'unequipped'; id: number; slot: string; item: string }
   | { type: 'eaten'; id: number; item: string; raw?: boolean }
