@@ -1,5 +1,7 @@
 # Ticket drafts for the planning agent: endurance-bot findings F1 to F5
 
+**Adopted.** The planning PR for POW-M4-23 moved these drafts into `docs/tickets/M4-world-1.md` with the owner's decisions and corrections from the code. That spec wins. This file is kept as the evidence trail.
+
 From the executor, for the design authority. Executors do not edit `docs/tickets/` (CLAUDE.md, "Changing a ticket"), so these are drafts. They follow the format in `docs/tickets/README.md`. The planning agent should adopt, change or reject them in a planning PR to `docs/tickets/M4-world-1.md`. They are numbered as the next M4 ticket because they fix region 1 before M5. Renumber them if M5 refinement absorbs them instead.
 
 Evidence: `reports/endurance-bot.md`, tools in `tools/endurance-bot/`, branch `claude/epic-goldberg-gcysb3`, build `626be6f`.

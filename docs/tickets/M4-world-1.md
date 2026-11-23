@@ -16,7 +16,7 @@ Ticket ids 02 to 12 keep their numbers from the draft so references elsewhere st
 | B    | 02, then 03, 08, 09, 10            | Tech          | Can start alongside wave A.                                                       |
 | C    | 04, 05, 06, 07, 21, 11, 20, 12     | Dawnmeadow    | Content on the new tech. Follow Depends.                                          |
 
-**Save schema bumps serialize.** Tickets 14, 15, 19 and 20 each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
+**Save schema bumps serialize.** Tickets 14, 15, 19 and 20, and POW-M4-23 parts A and C, each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
 
 ---
 
@@ -684,3 +684,186 @@ Replay on the phone: take a standing gather job holding some of the items alread
 
 - A "new" badge on the Chronicle tab when a request finishes or a recipe is learned (design/09 already asks for badge dots).
 - The dev overlay covers the minimap and the top of the screen in `?kit=dev` screenshots. Dev only, so low priority.
+
+---
+
+## Endurance-bot findings
+
+The executor's endurance bots (`tools/endurance-bot/`, report `reports/endurance-bot.md`, build `626be6f`) played every Dawnmeadow skill against the real map and curve. Five skills with a rank 15 Trial in Dawnmeadow cannot reach it, or reach it far outside the pacing bands. The executor's drafts are in `reports/endurance-tickets.md`. This ticket supersedes them. Where the two differ, this spec wins.
+
+### POW-M4-23 Endurance-bot findings: Cartography XP, fishing, Survival, iron, Deciphering
+
+Size: 5 PRs (parts A to E: A, D and E are S, B and C are M) Depends: see each part Status: READY
+Refs: design/03-progression (Curve, Mastery ranks and Trials), design/10-content-budget, design/11-skill-table, regions/01-dawnmeadow (sections 9 and 14), tech/02-save-security (parts A, C and D), tech/04-quality, `reports/endurance-bot.md`
+
+Goal: every skill with a rank 15 Trial in Dawnmeadow can reach that Trial in Dawnmeadow, inside its pacing band, and the map pays the XP it says it does.
+
+**How to run this ticket.** One PR per part. Title: `POW-M4-23<letter> <part title>`, for example `POW-M4-23A The map pays Cartography`. Part A first: it is a live bug and changes the save. B to E do not depend on each other and can run in parallel once A merges. Parts A and C each bump the save schema, and the "Save schema bumps serialize" rule at the top of this file applies: whichever merges later rebases and takes the next number. Parts B and D both rebake the world: whichever merges second rebases and runs `npm run bake` again. Every part that changes a rate reruns `npx tsx tools/endurance-bot/skills.ts` and `npm run sim-bot` and pastes the before and after rows for its skill into the PR.
+
+**Findings this ticket answers.**
+
+| #   | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                      | Part |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| E1  | Walking never pays Cartography. `mapSystem` runs after `skillsSystem` in `WORLD_SYSTEMS` (`src/sim/step.ts`), and `tick()` clears events at the start of each tick (`src/sim/kernel/scheduler.ts`), so the `revealed` event is never read. `tests/sim/map.test.ts` calls the two systems by hand in the right order, so it passes. Map bot, same 24.5-minute walk: shipped order gives 0 XP; map before skills gives 8,951 XP and 14 points. | A    |
+| E2  | Dawnmeadow has one `node.fishing_spot` (238, 170), 3-minute respawn, 20 XP a catch. Rank 15 takes about 29 h of play. Every other gathering skill reaches 15 in 0.1 to 2.7 h.                                                                                                                                                                                                                                                                | B    |
+| E3  | Survival pays 30 XP per in-game night hour outdoors (10 of every 48 real minutes are night), plus 8 per raw food eaten. Rank 15 takes about 10.6 h. The slow band is 35 to 70 minutes.                                                                                                                                                                                                                                                       | C    |
+| E4  | One surface iron vein (quarry, 185, 75) on an 8-minute respawn, about 0.2 ore a minute. The second vein is inside the Rootway. No shop sells iron. 15 smithing recipes need iron ingots at 2 ore each.                                                                                                                                                                                                                                       | D    |
+| E5  | Deciphering pays 100 XP once per tablet kind. Dawnmeadow has 7 tablets of 6 kinds, 600 XP in total, so 3 points at most. Rank 15 needs 4,378. Its Trial exists and cannot be reached.                                                                                                                                                                                                                                                        | E    |
+
+**Owner decisions (November 2026), settled here, do not reopen.** A: backfill existing saves. B: Fishing pays as Foraging does, and the river and coast get more spots. C: real camps, active Survival. D: iron is a region 1 goal. E: tablets pay per placement and again at each Deciphering band.
+
+---
+
+#### Part A. The map pays Cartography (E1)
+
+Depends: none. Size: S.
+
+Scope:
+
+- `src/sim/step.ts`: move `mapSystem` ahead of `wearSystem, trialsSystem, skillsSystem`. Nothing else in the order changes. Replace the comment above that block with one that says why: a system that emits an event `skillsSystem` or `trialsSystem` reads must run before them. Cartography's reveal radius then reads the points from the end of the previous tick. That one-tick lag is accepted.
+- A guard test, `tests/sim/systemOrder.test.ts`. It lists the event types `skillsSystem` and `trialsSystem` read (export the list from `src/sim/systems/skills.ts` and `trials.ts` so the test cannot drift from the code), then checks every system after them in `WORLD_SYSTEMS` (`deedsSystem`, `pathsSystem`, `singularsSystem`, `bestiarySystem` today) by running each alone on a scripted state and asserting it emits none of those types. If one of them already does, stop and raise a Design Query. Do not reorder it in this PR.
+- `tests/sim/map.test.ts`: a new test that drives `stepWorld`, not the systems by hand.
+- Save migration, `CURRENT_SCHEMA` 27 to 28 (or the next free number). For each avatar, count the revealed blocks in every region in `map.fog` (`countRevealed` in `src/sim/world/fog.ts`). Grant `blocks * MAP_BALANCE.xpPerBlock` minus any Cartography XP the ledger already records (never less than 0). Grant it through the sim's XP path, so the skill awakens, the XP banks at a pending Trial (14 with a full bar), and `ledger.xpEarned['skill.cartography']` records it. The Rested bonus does not apply: use a variant of `addXp` that skips `statusMods`, or clear the bonus for the call. The grant is exact.
+- Ledger note: `ledger.xpEarned` is keyed by skill, not by source. There is no per-source ledger entry to add. The plausibility ceiling for Cartography (`xpCeiling`, from `REVEAL_EVENTS_PER_SECOND`) already covers XP equal to blocks revealed in the save's play time, because those blocks were revealed in that time. The fixture test proves it.
+- A fixture from schema 27 (export from main as it stands, `tests/fixtures/saves/schema-27.json`) and its migration test.
+
+Out of scope: the reveal radius table, XP per block, the Cartography Trial.
+
+Acceptance:
+
+- A `stepWorld` test walks 40 tiles over unseen ground and Cartography XP equals blocks revealed times `MAP_BALANCE.xpPerBlock`.
+- The guard test fails with `mapSystem` moved back after `skillsSystem`. Paste the red run in the PR.
+- `npx tsx tools/endurance-bot/map.ts --cap 60` on the shipped order reports Cartography at least 14, with XP equal to blocks revealed.
+- The schema 27 fixture loads, migrates, has Cartography XP equal to its revealed blocks, and passes every integrity layer with the seal intact.
+- A migrated save that already holds Cartography XP is not paid twice (unit test).
+- `npm run verify` passes.
+
+---
+
+#### Part B. Fishing that can be trained (E2)
+
+Depends: POW-M4-23A. Size: M.
+
+Decision: Fishing pays as Foraging does (base 150, first time 150), and Dawnmeadow gets 6 to 8 more `node.fishing_spot` placements on the river, the lake shore, Reedmouth and the coast, on the current 3-minute respawn. The model in `reports/endurance-tickets.md` puts that at about 2 catches a minute on a short stretch of river, 40 to 60 minutes to rank 15.
+
+Scope:
+
+- `src/content/skills/index.ts`: the Fishing source row becomes `{ on: 'gather', tag: 'fishing', base: 150, firstTime: 150 }`.
+- `src/content/world/regions/dawnmeadow/spec.ts`: the new `at('node.fishing_spot', x, y)` placements. Each sits on a water-edge tile with open, walkable ground next to it. At least 3 are within one river stretch a player can walk between in under a minute. At least one is in or beside Reedmouth. List the coordinates in the PR.
+- Rebake (`npm run bake`).
+- A Fishing policy in `tools/sim-bot/policies.ts`, checked against `timeTo15Slow` in `tools/balance-thresholds.json`, and added to the `balance:ci` run.
+- If `GATHER_ITEMS_PER_SECOND` or the gather XP ceiling in `src/save/integrity/bounds.ts` no longer covers the new rate, raise it and say why in the PR.
+
+Out of scope: new fish, new fishing mechanics, the Fishing Trial (three river fish).
+
+Acceptance:
+
+- Every new spot passes the bake validator, stands next to walkable ground, and is reachable from Hearthford without a portal (the endurance bot's route model, `tools/endurance-bot/world.ts`, confirms it).
+- `npm run sim-bot` has a Fishing loop and its time to rank 15 is inside `timeTo15Slow`.
+- `npx tsx tools/endurance-bot/skills.ts` reports Fishing to rank 15 under 70 minutes on the real map.
+- The Fishing Trial is still passable at rank 14 (unit test or sim-bot row).
+- `npm run verify` and `npm run balance:ci` pass.
+
+---
+
+#### Part C. Survival paced like a skill: real camps (E3)
+
+Depends: POW-M4-23A. Size: M.
+
+Decision: Survival becomes something the player does. Rest points outdoors become camps. A player who stands still at one outside a settlement earns Survival per minute, at any hour, up to a daily cap per camp, so training it means moving between camps. Sleeping outdoors pays a small lump. Night outdoors stays as a bonus, raised to 60. Raw food stays at 8.
+
+What the code holds today (read before starting): `fixture.rest_point` (`src/content/world/fixtures.ts`, type `rest`) has no body and no interactable. Two stand on the surface (`src/content/world/stamps/dawnmeadow.ts`). The rest are in dungeon rooms, which are not outdoors. `sleepOutdoors` in `src/sim/systems/fixtures.ts` already exists and emits `sleptOutdoors`.
+
+Rules:
+
+- **Camping.** The avatar is camping while all of these hold: it is alive and its fighter state is idle, it issued no move or attack command this tick, it is within `SKILLS_BALANCE.survival.campRadius` tiles of a `rest` fixture, the tile is outdoors by the same test `outdoorsNight` uses, and it is outside every settlement rectangle (Hearthford's, from `TOWN_ORIGIN` and `TOWN_SIZE`, and the other settlement stamps placed in `spec.ts`). Any move, attack, hit taken or death ends it and drops the partial minute.
+- **Camp pay.** Each full minute of camping pays `campXpPerMinute` Survival XP. Each camp pays at most `campMinutesPerDay` minutes per in-game day per avatar. The day boundary is the in-game day from `src/content/balance/time.ts`. Camping at a camp that has used its minutes pays nothing and shows nothing new.
+- **Sleeping outdoors.** Each `sleptOutdoors` event pays `sleepOutdoorsXp`, at most once per in-game hour.
+- **Night outdoors.** Raised from 30 to 60 per in-game hour. Unchanged otherwise.
+- **The player sees it.** When camping starts, one message-lane notice from `src/content/strings/` ("You settle in by the camp." or close). When a camp's minutes for the day run out, one notice ("This camp has nothing more to teach you today." or close). No other new UI.
+
+Scope:
+
+- New `XpEvent` values `camp` and `sleepOutdoors` (`src/content/skills/types.ts`), their source rows on Survival (`src/content/skills/index.ts`), and their rates in `RATES` (`src/save/integrity/bounds.ts`: camping is one event a minute, sleeping one an in-game hour).
+- The camping accumulator, the per-camp minutes used today and the last sleep pay hour on the avatar's `Skills` component (`src/sim/state.ts`). This changes saved state: bump the schema, migrate old saves with empty values, and ship the fixture test.
+- The emitter in `src/sim/systems/skills.ts` (next to `outdoorsNight`), keyed on the camp's home tile so each camp is tracked apart.
+- Tunables in `src/content/balance/skills.ts` under `survival`: `campRadius`, `campXpPerMinute`, `campMinutesPerDay`, `sleepOutdoorsXp`, `nightXpPerHour`. Tune them so a player walking a camp circuit lands inside `timeTo15Slow`.
+- 6 more `fixture.rest_point` placements on the Dawnmeadow surface, outside settlements, spread across at least four map regions (meadow, woods edge, river, quarry road, coast). Each gets a campfire or bedroll look already in the atlas. List them in the PR.
+- A Survival loop in `tools/sim-bot/policies.ts` that walks a camp circuit, checked against `timeTo15Slow`, added to `balance:ci`.
+
+Out of scope: new fixture kinds, new sprites, weather damage, the Hermit Path, cooked-food provenance (the draft's "eat a dish cooked outdoors" source is dropped: items do not record where they were cooked, and adding that would change every saved stack).
+
+Acceptance:
+
+- Sim tests: camping outdoors by day pays per minute; the same stand indoors, in Hearthford, or while dead pays nothing; a move drops the partial minute; a camp stops paying at `campMinutesPerDay` and pays again the next in-game day; a second sleep within the same in-game hour pays nothing.
+- The sim-bot Survival loop reaches rank 15 inside `timeTo15Slow`.
+- The previous-schema fixture loads, migrates and passes every integrity layer with the seal intact.
+- The Survival Trial (sleep outdoors twice) still passes at rank 14.
+- `npm run verify` and `npm run balance:ci` pass.
+
+---
+
+#### Part D. Enough iron for Dawnmeadow's iron recipes (E4)
+
+Depends: POW-M4-23A. Size: S.
+
+Decision: iron is a region 1 goal. More surface veins, and Brin sells iron ore at a price that makes buying possible but mining cheaper.
+
+Scope:
+
+- `src/content/world/regions/dawnmeadow/spec.ts`: 4 more `at('node.iron_vein', x, y)` placements in the quarry and on the Stonecrop approach, tier 2, on the current 8-minute respawn, each reachable without a portal. List them in the PR. Rebake.
+- `src/content/dialogue/index.ts`, `shop.brin` stock: `{ item: 'item.iron_ore', max: <n> }`, with `max` in `src/content/balance/shop.ts`.
+- **Price rule.** One bought ore costs more coin than the fight loop earns in the time it takes to mine one ore from the surface veins. Measure both from the sim-bot (fight coin per minute) and the endurance bot (surface tier 2 ore per minute). Use the shop's existing price path. If it cannot meet the rule, add a per-stock buy price in `src/content/balance/shop.ts`. Do not raise `item.iron_ore`'s value in `src/content/items/materials.ts`: that raises its sell price too. Buy must stay above sell as `src/content/balance/shop.ts` requires.
+- A balance test that asserts the price rule from the measured numbers, so a later change to fight coin or vein count fails it.
+- Ledger: shop stock already counts as an item source (`src/save/integrity/sources.ts`). Confirm with the save round trip below. No new rule is expected. If one is needed, add it and say why.
+
+Out of scope: new ores, the iron recipes themselves, other shops.
+
+Acceptance:
+
+- `npx tsx tools/endurance-bot/gather.ts` shows tier 2 mining at least 0.8 a minute on surface nodes.
+- Every new vein passes the bake validator and is reachable without a portal.
+- Buy ore, smelt, craft an iron sword, save, reload: the seal stays intact and every integrity layer passes (e2e or sim test).
+- The price rule test passes, with the numbers it used in the PR.
+- `npm run verify` and `npm run balance:ci` pass.
+
+---
+
+#### Part E. Deciphering can reach its Trial (E5)
+
+Depends: POW-M4-23A. Size: S.
+
+Decision: reading pays per placement, not per kind, and pays again at each Deciphering band. Manuals pay once each. No new readable content.
+
+What the code holds today: tablets are fixtures of type `tablet` (`fixture.tablet`, `fixture.tw_order`, the mini-dungeon tablets). `skillsSystem` keys the first-time lump on the fixture kind, so two tablets of one kind pay once. First-time bonuses are kept in `Skills.seen` as `skill:event:subject` strings. Manuals emit `manualRead` and pay no Deciphering today.
+
+Rules:
+
+- **Tablets.** The subject becomes the tablet's placement and the reader's band: `<kind>@<homeX>,<homeY>#<band>`, where `band = floor(points / SKILLS_BALANCE.deciphering.bandSize)`. Each subject pays `tabletXp` once. A tablet read again in the same band pays nothing. Reaching a new band makes every tablet pay again once. Re-reads pay the same as a first read, not less: with 7 tablets, less would leave rank 15 out of reach.
+- **Manuals.** A new `XpEvent` `manualRead` pays Deciphering `manualXp` as a first-time lump, subject the manual item id. A manual is consumed when read, so it pays once.
+- **Numbers.** Count the tablets and manuals in the bake first and put the counts in the PR. Then set `bandSize`, `tabletXp` and `manualXp` in `src/content/balance/skills.ts` so a player who reads every tablet at every band up to 14, and every manual, reaches 14 with a full bar, in about 60 to 90 minutes of reading and travel by the endurance bot's route model.
+- **Old saves.** `seen` holds strings, so the shape does not change and no schema bump is needed. A save that already read a tablet kind under the old key gets paid once more for each tablet at its current band. That is at most 7 payments, accepted, and it does not need a migration. Say so in the PR.
+
+Scope: the source rows in `src/content/skills/index.ts`, `manualRead` in `src/content/skills/types.ts`, the subject keys in `src/sim/systems/skills.ts`, the `RATES` entry and the first-time subject count in `src/save/integrity/bounds.ts` (`FIRST_TIME_SUBJECTS` must cover tablet placements times bands plus manuals), the tunables, tests, and an endurance-bot rerun.
+
+Out of scope: new lore text, new readables, signs. Any of those needs its own ticket under design/08 "Delivery rules".
+
+Acceptance:
+
+- A sim test reads every tablet on the real map (a list taken from the bake) at every band, and every manual, and Deciphering reaches 14 with a full bar.
+- A sim test: a tablet read twice in the same band pays once; the same tablet pays again after the reader crosses a band.
+- The plausibility layer passes a save that has read everything (fixture or generated).
+- No player-facing string is added. The Deciphering Trial (`readManual`) is unchanged.
+- `npm run verify` passes.
+
+---
+
+#### Owner action (after all parts merge)
+
+One short session on the phone: walk out of Hearthford and watch the Cartography bar move; fish a stretch of river for five minutes; sit at two camps; buy one iron ore from Brin and price it against a fight; read a tablet, gain a Deciphering band, read it again.
+
+#### Follow-ups noted, not in this ticket
+
+- F6 (the map is fog-cleared in about 25 sim minutes) and F7 (tier 2 foes make combat skills very fast) are pacing notes for M5 refinement, not defects.
+- Rank 15 to 29 in Dawnmeadow runs at the 10% floor for most skills (about 530 h to the region ceiling in total). Expected while region 1 has only rank 15 Trials. Confirm before Whisperwood is planned.
+- `tools/endurance-bot/` could become `npm run endurance` inside `balance:ci` once these parts land, so its rows gate the bands as the sim bot does.
