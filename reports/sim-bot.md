@@ -3,66 +3,7 @@
 Made by `npm run sim-bot` (POW-M3-12). Do not edit by hand. Four v1 policies drive the real sim in the slice's own supply (three herb patches, two berry bushes, a camp pot, a shopkeeper, the guard). Each reports over 60 sim minutes. The bots take every sweet spot and never miss, so these are a fast player's numbers. Every minute the bot saves, and every snapshot is loaded back through the integrity validator.
 
 - Policies: **gather** (Forage the herb patches and berry bushes, sell what is gathered); **fight** (Fight Mosslings with the sword, sell the loot); **craft** (Forage, cook at the camp pot, sell the dishes); **request** (Take Orla's and Wren's requests, then the board's gathering jobs); **fish** (Fish a stretch of river bank, sell the catch); **survive** (Walk a circuit of camps, sleep out at each and stand there a while).
-- Snapshots validated: 341. Flagged: **59**.
-  - request minute 1: REQUEST_STATE
-  - request minute 2: REQUEST_STATE
-  - request minute 3: REQUEST_STATE
-  - request minute 4: REQUEST_STATE
-  - request minute 5: REQUEST_STATE
-  - request minute 6: REQUEST_STATE
-  - request minute 7: REQUEST_STATE
-  - request minute 8: REQUEST_STATE
-  - request minute 9: REQUEST_STATE
-  - request minute 10: REQUEST_STATE
-  - request minute 11: REQUEST_STATE
-  - request minute 12: REQUEST_STATE
-  - request minute 13: REQUEST_STATE
-  - request minute 14: REQUEST_STATE
-  - request minute 15: REQUEST_STATE
-  - request minute 16: REQUEST_STATE
-  - request minute 17: REQUEST_STATE
-  - request minute 18: REQUEST_STATE
-  - request minute 19: REQUEST_STATE
-  - request minute 20: REQUEST_STATE
-  - request minute 21: REQUEST_STATE
-  - request minute 22: REQUEST_STATE
-  - request minute 23: REQUEST_STATE
-  - request minute 24: REQUEST_STATE
-  - request minute 25: REQUEST_STATE
-  - request minute 26: REQUEST_STATE
-  - request minute 27: REQUEST_STATE
-  - request minute 28: REQUEST_STATE
-  - request minute 29: REQUEST_STATE
-  - request minute 30: REQUEST_STATE
-  - request minute 31: REQUEST_STATE
-  - request minute 32: REQUEST_STATE
-  - request minute 33: REQUEST_STATE
-  - request minute 34: REQUEST_STATE
-  - request minute 35: REQUEST_STATE
-  - request minute 36: REQUEST_STATE
-  - request minute 37: REQUEST_STATE
-  - request minute 38: REQUEST_STATE
-  - request minute 39: REQUEST_STATE
-  - request minute 40: REQUEST_STATE
-  - request minute 41: REQUEST_STATE
-  - request minute 42: REQUEST_STATE
-  - request minute 43: REQUEST_STATE
-  - request minute 44: REQUEST_STATE
-  - request minute 45: REQUEST_STATE
-  - request minute 46: REQUEST_STATE
-  - request minute 47: REQUEST_STATE
-  - request minute 48: REQUEST_STATE
-  - request minute 49: REQUEST_STATE
-  - request minute 50: REQUEST_STATE
-  - request minute 51: REQUEST_STATE
-  - request minute 52: REQUEST_STATE
-  - request minute 53: REQUEST_STATE
-  - request minute 54: REQUEST_STATE
-  - request minute 55: REQUEST_STATE
-  - request minute 56: REQUEST_STATE
-  - request minute 57: REQUEST_STATE
-  - request minute 58: REQUEST_STATE
-  - request minute 59: REQUEST_STATE
+- Snapshots validated: 336. Flagged: **0**.
 
 ## Time to rank 15
 
@@ -92,9 +33,10 @@ Made by `npm run sim-bot` (POW-M3-12). Do not edit by hand. Four v1 policies dri
 | craft | Foraging | 4659 |
 | craft | Survival | 300 |
 | craft | Cartography | 67 |
+| request | Foraging | 4650 |
 | request | Blades | 642 |
 | request | Survival | 300 |
-| request | Cartography | 54 |
+| request | Cartography | 68 |
 | fish | Fishing | 4542 |
 | fish | Survival | 300 |
 | fish | Cartography | 85 |
