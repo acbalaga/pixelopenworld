@@ -1,4 +1,5 @@
 import type { ItemDef } from './types';
+import { ITEMS_BALANCE as B } from '../balance/items';
 import { item, T } from './define';
 
 /**
@@ -6,7 +7,13 @@ import { item, T } from './define';
  * give a short Fed-style buff. They list under the Food filter of the Bag.
  */
 const potion = (id: string, value: number, tier: number, food: ItemDef['food']): ItemDef =>
-  item(id, 'consumable', { value, tier, quality: true, stack: 10, ...(food ? { food } : {}) });
+  item(id, 'consumable', {
+    value,
+    tier,
+    quality: true,
+    stack: B.potionStack,
+    ...(food ? { food } : {}),
+  });
 
 export const POTION_ITEMS: readonly ItemDef[] = [
   potion('item.potion_health_s', 18, 1, { hp: 30, sta: 0, foc: 0 }),

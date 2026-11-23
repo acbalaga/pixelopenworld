@@ -4,6 +4,11 @@ export const ITEMS_BALANCE = {
     /** Bag slots at the start. */
     slots: 20,
   },
+  /**
+   * Potions per Bag slot. Each quality of each potion takes its own slot, so a small stack fills
+   * the Bag fast once crafting makes Fine and Superior batches. Same as food and materials.
+   */
+  potionStack: 20,
   /** The storage chest by the square Waystone. */
   storage: { slots: 40 },
   /**
