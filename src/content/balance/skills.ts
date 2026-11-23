@@ -55,6 +55,14 @@ export const SKILLS_BALANCE = {
    * from camp to camp. Sleeping outdoors pays a lump, once an in-game hour. Night outdoors stays
    * a bonus.
    */
+  deciphering: {
+    /** Points in a band. A tablet pays again once in every band the reader reaches. */
+    bandSize: 1,
+    /** Deciphering XP for reading one tablet, once in each band. */
+    tabletXp: 70,
+    /** Deciphering XP for reading a manual, once for each manual. */
+    manualXp: 50,
+  },
   survival: {
     /** How close to a camp counts as at it, in tiles. */
     campRadius: 3,

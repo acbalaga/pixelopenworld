@@ -24,6 +24,7 @@ export type XpEvent =
   | 'sleepOutdoors'
   | 'eatRaw'
   | 'tabletRead'
+  | 'manualRead'
   | 'delveRoom'
   | 'delveBlock'
   | 'delveClear'
@@ -48,7 +49,7 @@ export interface XpSource {
   scaled?: boolean;
   /**
    * Lump of XP the first time. The subject per event: damage the creature kind at the kill,
-   * gather the item, craft the recipe, tabletRead the tablet kind, perform the technique, sneak
+   * gather the item, craft the recipe, tabletRead the tablet's kind, place and the reader's band (`kind@x,y#band`), manualRead the manual item, perform the technique, sneak
    * the creature kind, haggle the shop, delveRoom the room, delveBlock the plate, delveClear the dungeon. `reveal` is one block of map uncovered for the first time. Other events have none. Fires once ever per subject.
    */
   firstTime?: number;
