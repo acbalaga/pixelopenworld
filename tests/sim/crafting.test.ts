@@ -1,4 +1,3 @@
-import { appendFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CRAFTING as C } from '../../src/content/balance/crafting';
 import { ITEMS } from '../../src/content/items';
@@ -194,27 +193,11 @@ describe('quality roll', () => {
     return n.map((x) => x / N);
   };
   const fine = (s: number[]): number => s[1]! + s[2]! + s[3]!;
-  const row = (label: string, s: number[]): string =>
-    `${label}: Common ${(s[0]! * 100).toFixed(1)}% Fine ${(s[1]! * 100).toFixed(1)}% Superior ${(s[2]! * 100).toFixed(1)}% Masterwork ${(s[3]! * 100).toFixed(1)}%`;
 
   it('10,000 rolls at three skill levels and three material qualities: every input moves it the right way', () => {
-    const lines: string[] = [];
-    const bySkill = [0, 15, 30].map((skill) => {
-      const s = shares({ skill, tier: 2, matAvg: 1, grade: 15 });
-      lines.push(row(`skill ${skill} (tier 2, par 15), Fine materials, grade 15`, s));
-      return s;
-    });
-    const byMat = [0, 1, 2].map((matAvg) => {
-      const s = shares({ skill: 15, tier: 2, matAvg, grade: 15 });
-      lines.push(row(`skill 15, materials ${['Common', 'Fine', 'Superior'][matAvg]}, grade 15`, s));
-      return s;
-    });
-    const byGrade = [0, 15, 30].map((grade) => {
-      const s = shares({ skill: 15, tier: 2, matAvg: 1, grade });
-      lines.push(row(`skill 15, Fine materials, grade ${grade}`, s));
-      return s;
-    });
-    appendFileSync('/tmp/claude-0/quality.txt', lines.join('\n') + '\n');
+    const bySkill = [0, 15, 30].map((skill) => shares({ skill, tier: 2, matAvg: 1, grade: 15 }));
+    const byMat = [0, 1, 2].map((matAvg) => shares({ skill: 15, tier: 2, matAvg, grade: 15 }));
+    const byGrade = [0, 15, 30].map((grade) => shares({ skill: 15, tier: 2, matAvg: 1, grade }));
     for (const set of [bySkill, byMat, byGrade]) {
       expect(fine(set[1]!)).toBeGreaterThan(fine(set[0]!));
       expect(fine(set[2]!)).toBeGreaterThan(fine(set[1]!));
