@@ -159,14 +159,31 @@ export const REQUEST: Policy = {
     const open = Object.values(j.requests).some((r) => r.state === 'active');
     if (!open) {
       const board = run.s.entities.comps.board.find((b) => b);
-      const next = board?.posted[0];
+      // Take a job the bot can do: something it forages (handed in at the board) or a creature
+      // it can fight. The rest stay posted.
+      const next = board?.posted.find((d) => {
+        const s = d.solutions[0]?.steps[0];
+        return (
+          (s?.kind === 'deliver' && s.to === board.id && FORAGED.includes(s.item)) ||
+          s?.kind === 'defeat'
+        );
+      });
       if (board && next) run.tick({ type: 'takeRequest', board: board.id, id: next.id });
       else run.run(600);
     }
     for (const r of Object.values(j.requests)) {
       if (r.state !== 'active') continue;
       const step = r.gen?.solutions[0]?.steps[0];
-      if (step?.kind === 'gather') forage(run, n);
+      // A board gather job is a hand-in (POW-M4-22A): forage what it asks for, and the loop
+      // above hands it in at the board once the bag holds enough.
+      if (
+        step?.kind === 'gather' ||
+        (step?.kind === 'deliver' &&
+          r.gen &&
+          'board' in r.gen.giver &&
+          step.to === r.gen.giver.board)
+      )
+        forage(run, n);
       else if (step?.kind === 'defeat') run.fight(step.creature ?? MOSSLING, { eatBelow: 40 });
       else run.run(300);
     }
