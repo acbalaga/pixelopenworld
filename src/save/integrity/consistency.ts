@@ -18,6 +18,7 @@ import { HINTS } from '../../content/hints';
 import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
 import { REQUESTS } from '../../content/requests';
 import { MAX_STANDING_COIN } from '../../sim/requestGen';
+import { STANDING_TEMPLATES } from '../../content/requests/templates';
 import { solutionMax, stepWeight } from '../../sim/systems/requests';
 import { CREATURES } from '../../content/creatures';
 import { validAffix } from '../../content/items/affixes';
@@ -73,10 +74,30 @@ const DIALOGUE_RENOWN = Object.values(DIALOGUES).reduce(
   0,
 );
 
-/** A standing request as the generator makes it: one solution of one step, inside its caps. */
+/**
+ * A standing request as the generator makes it: one solution of one step, inside its caps. The
+ * template the title names decides which step it may have and which cap it answers to. A board
+ * gather job is a hand-in at the board (POW-M4-22A), a `deliver` step like a shelf job's, so the
+ * step alone does not say which cap applies (POW-M4-23 triage B).
+ */
 function standingLooksRight(def: RequestDef, id: string): boolean {
   const step = def.solutions[0]?.steps[0];
   const caps = RB.standing;
+  const template = STANDING_TEMPLATES.find((t) => t.titleKey === def.titleKey)?.kind;
+  const board = 'board' in def.giver ? def.giver.board : null;
+  const stepOk =
+    template === 'gather'
+      ? // Jobs taken before the hand-in change keep their `gather` step.
+        step?.kind === 'gather'
+        ? step.count <= caps.gather.maxQty
+        : step?.kind === 'deliver' && board !== null && step.to === board
+          ? step.qty <= caps.gather.maxQty
+          : false
+      : template === 'deliver'
+        ? step?.kind === 'deliver' && step.to !== board && step.qty <= caps.deliver.maxQty
+        : template === 'defeat'
+          ? step?.kind === 'defeat' && step.count <= caps.defeat.maxQty
+          : false;
   return (
     def.kind === 'standing' &&
     def.id === id &&
@@ -87,13 +108,7 @@ function standingLooksRight(def: RequestDef, id: string): boolean {
     (def.reward.techniques ?? []).length === 0 &&
     def.reward.renown <= RB.renown.standing &&
     def.reward.coin <= MAX_STANDING_COIN &&
-    (step?.kind === 'gather'
-      ? step.count <= caps.gather.maxQty
-      : step?.kind === 'deliver'
-        ? step.qty <= caps.deliver.maxQty
-        : step?.kind === 'defeat'
-          ? step.count <= caps.defeat.maxQty
-          : false)
+    stepOk
   );
 }
 
