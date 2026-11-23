@@ -291,7 +291,12 @@ describe('the discoverable check (M4-11)', () => {
   );
   const bare: RegionSpec = {
     ...DAWNMEADOW,
-    placements: DAWNMEADOW.placements.filter((p) => !DAWNMEADOW_CLUSTERS.includes(p)),
+    // The fishing spots added in POW-M4-23B are node clusters too, so they come off with them.
+    placements: DAWNMEADOW.placements.filter(
+      (p) =>
+        !DAWNMEADOW_CLUSTERS.includes(p) &&
+        !(p.kind === 'node.fishing_spot' && !(p.x === 238 && p.y === 170)),
+    ),
     pendingDiscoverables: clusterChunks,
   };
 

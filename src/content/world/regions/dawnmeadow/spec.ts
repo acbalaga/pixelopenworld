@@ -231,6 +231,15 @@ const placements: Placement[] = [
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
   at('node.fishing_spot', 238, 170),
+  // The river bank east of Hearthford (four within a minute's walk of each other), Reedmouth,
+  // the Millbrook lake shore and the south coast.
+  at('node.fishing_spot', 244, 150),
+  at('node.fishing_spot', 243, 157),
+  at('node.fishing_spot', 241, 166),
+  at('node.fishing_spot', 245, 176),
+  at('node.fishing_spot', 296, 244),
+  at('node.fishing_spot', 351, 110),
+  at('node.fishing_spot', 144, 312),
 
   // The readable signs that are not part of a stamp.
   ...PLACED_SIGNS.map((s) => at(signKind(s.id), s.x, s.y)),

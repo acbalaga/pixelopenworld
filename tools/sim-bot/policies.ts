@@ -1,5 +1,6 @@
 import { MOSSLING, Run } from '../../tests/support/bots';
 import { withRustySword } from '../../tests/support/oldKit';
+import { spawnNode } from '../../src/sim/items';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
 import { requestState } from '../../src/sim/journal';
@@ -32,7 +33,7 @@ const COOK: readonly (readonly string[])[] = [
 ];
 
 export interface Policy {
-  id: 'gather' | 'fight' | 'craft' | 'request';
+  id: 'gather' | 'fight' | 'craft' | 'request' | 'fish';
   label: string;
   /** The skill whose time to rank 15 this loop measures, if it is the loop for one. */
   skill?: string;
@@ -170,4 +171,46 @@ export const REQUEST: Policy = {
   },
 };
 
-export const POLICIES: readonly Policy[] = [GATHER, FIGHT, CRAFT, REQUEST];
+/**
+ * Four fishing spots along one stretch of bank, a few tiles apart, as the river east of
+ * Hearthford has them in Dawnmeadow (POW-M4-23B). Each comes back after three minutes.
+ */
+export const FISH_SPOTS: readonly [number, number][] = [
+  [45, 40],
+  [45, 43],
+  [45, 46],
+  [45, 49],
+];
+
+/** Casts at the spot, waits for the bite and takes it. */
+function fish(run: Run, n: number): void {
+  const [x, y] = FISH_SPOTS[n % FISH_SPOTS.length] as [number, number];
+  run.stand(x + 1, y, 6);
+  run.tick({ type: 'interact' });
+  const g = (): { t: number; wait: number } | null | undefined =>
+    run.s.entities.comps.gather[run.me];
+  for (let i = 0; i < 400; i++) {
+    const c = g();
+    if (!c || c.t >= c.wait) break;
+    run.tick();
+  }
+  run.tick({ type: 'interact' });
+  run.run(30);
+}
+
+export const FISH: Policy = {
+  id: 'fish',
+  label: 'Fish a stretch of river bank, sell the catch',
+  skill: 'skill.fishing',
+  pace: 'slow',
+  seed: 15,
+  setup(run) {
+    for (const [x, y] of FISH_SPOTS) spawnNode(run.s, 'node.fishing_spot', x * 16 + 8, y * 16 + 14);
+  },
+  step(run, n) {
+    fish(run, n);
+    if (n % 10 === 9) sellAll(run, ['item.fish_river', 'item.fish_silver']);
+  },
+};
+
+export const POLICIES: readonly Policy[] = [GATHER, FIGHT, CRAFT, REQUEST, FISH];
