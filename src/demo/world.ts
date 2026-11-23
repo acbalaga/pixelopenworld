@@ -1548,7 +1548,12 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             notices.toast(W_STR.returned.replace('{item}', itemName(e.item)), 'returned');
           else if (e.type === 'bagGrew' && e.who === who)
             notices.toast(W_STR.bagGrew.replace('{n}', String(e.slots)));
-          else if (e.type === 'bagBigEnough' && e.who === who) notices.toast(W_STR.bagBigEnough);
+          else if (e.type === 'bagOverflow' && e.id === who) {
+            notices.toast(
+              W_STR.bagOverflow.replace('{n}', String(e.qty)).replace('{item}', itemName(e.item)),
+            );
+            if (e.free <= ITEMS_BALANCE.storage.nearlyFull) notices.toast(W_STR.chestFilling);
+          } else if (e.type === 'bagBigEnough' && e.who === who) notices.toast(W_STR.bagBigEnough);
           else if (e.type === 'manualKnown' && e.who === who)
             notices.toast(
               W_STR.manualKnown.replace(

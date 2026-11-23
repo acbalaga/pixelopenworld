@@ -715,6 +715,8 @@ export const UI_STRINGS = {
     returned: 'Got your {item} back.',
     manualKnown: 'You already know {name}.',
     bagGrew: 'Your Bag now holds {n} things.',
+    bagOverflow: 'Bag full. {n} {item} went to the chest.',
+    chestFilling: 'The chest is nearly full.',
     bagBigEnough: 'Your Bag is already this big.',
     techniques: { 'technique.ember_bolt': 'Ember Bolt' } as Readonly<Record<string, string>>,
     chestFound: 'Found {items}.',

@@ -9,7 +9,7 @@ import { roomAt } from '../../content/world/rooms';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { dirStep, px, SUBPX } from '../kernel/fixed';
-import { give, removeItem } from '../items';
+import { ensureStorage, give, removeItem } from '../items';
 import { applyStatus } from '../statuses';
 import type { SimState } from '../state';
 import { overlapsSolid, type Box } from './collision';
@@ -423,9 +423,12 @@ export function interactFixture(state: SimState, who: EntityId): void {
     case 'site':
       emit(state.events, { type: 'fixtureUsed', id: target, who, kind: f.kind });
       return;
-    case 'storage':
+    case 'storage': {
+      const store = getComp(state.entities, who, 'storage');
+      if (store) ensureStorage(store);
       emit(state.events, { type: 'storageOpened', id: target, who });
       return;
+    }
     case 'board':
       emit(state.events, { type: 'boardOpened', id: target, who, board: def.board ?? '' });
       return;

@@ -12,6 +12,7 @@ import {
   canHold,
   countItem,
   equip,
+  give,
   newInventory,
   removeItem,
   rollDrops,
@@ -359,14 +360,44 @@ describe('gathering nodes', () => {
     r.tick({ type: 'interact' });
     expect(ofType(r.events, 'gatherStarted')).toHaveLength(1);
   });
-  it('an overflowing gather leaves the rest at the avatar feet instead of losing it', () => {
+  it('with the Bag and the chest both full, an overflowing gather leaves the rest at the feet', () => {
     const r = rig();
     inv(r).slots.fill({ item: 'item.old_key', qty: 1 });
+    r.s.entities.comps.storage[r.me]!.slots.fill({ item: 'item.old_key', qty: 1 });
     nodeInFront(r);
     r.tick({ type: 'interact' });
     r.tick({ type: 'interact' });
     expect(ofType(r.events, 'bagFull').length).toBeGreaterThan(0);
     expect(ofType(r.events, 'lootDropped').length).toBe(1);
+  });
+  it('a full Bag sends the overflow to the chest, grows an old chest, and says so', () => {
+    const r = rig();
+    inv(r).slots.fill({ item: 'item.old_key', qty: 1 });
+    const chest = r.s.entities.comps.storage[r.me]!;
+    // A chest saved at the old size of 40 grows to the current one when it is used.
+    chest.slots.length = 40;
+    give(r.s, r.me, 'item.sunwort', 5, 'gather');
+    expect(chest.slots.length).toBe(B.storage.slots);
+    expect(chest.slots.find((x) => x?.item === 'item.sunwort')?.qty).toBe(5);
+    const o = ofType(r.s.events.list, 'bagOverflow');
+    expect(o).toHaveLength(1);
+    expect(o[0]).toMatchObject({ item: 'item.sunwort', qty: 5, free: B.storage.slots - 1 });
+    expect(ofType(r.s.events.list, 'bagFull')).toHaveLength(0);
+    // A second batch of another quality takes another chest slot; the ledger counts both.
+    give(r.s, r.me, 'item.potion_health_s', 3, 'craft', { q: 1 });
+    expect(chest.slots.filter((x) => x).length).toBe(2);
+    expect(r.s.ledger.itemsMade.gather?.['item.sunwort']).toBe(5);
+  });
+  it('part goes to the chest and the rest to the feet when the chest fills', () => {
+    const r = rig();
+    inv(r).slots.fill({ item: 'item.old_key', qty: 1 });
+    const chest = r.s.entities.comps.storage[r.me]!;
+    chest.slots.fill({ item: 'item.old_key', qty: 1 });
+    chest.slots[0] = { item: 'item.sunwort', qty: 18 };
+    give(r.s, r.me, 'item.sunwort', 5, 'gather');
+    expect(chest.slots[0]!.qty).toBe(20);
+    expect(ofType(r.s.events.list, 'bagOverflow')[0]).toMatchObject({ qty: 2 });
+    expect(ofType(r.s.events.list, 'bagFull')).toHaveLength(1);
   });
   it('yields follow the node weights', () => {
     const r = rig();
