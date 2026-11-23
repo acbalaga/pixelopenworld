@@ -714,6 +714,8 @@ export const UI_STRINGS = {
     stolen: 'A fox snatched your {item}.',
     returned: 'Got your {item} back.',
     manualKnown: 'You already know {name}.',
+    campSettled: 'You settle in by the camp.',
+    campSpent: 'This camp has nothing more to teach you today.',
     bagGrew: 'Your Bag now holds {n} things.',
     bagOverflow: 'Bag full. {n} {item} went to the chest.',
     chestFilling: 'The chest is nearly full.',

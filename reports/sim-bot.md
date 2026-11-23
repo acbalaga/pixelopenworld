@@ -2,8 +2,8 @@
 
 Made by `npm run sim-bot` (POW-M3-12). Do not edit by hand. Four v1 policies drive the real sim in the slice's own supply (three herb patches, two berry bushes, a camp pot, a shopkeeper, the guard). Each reports over 60 sim minutes. The bots take every sweet spot and never miss, so these are a fast player's numbers. Every minute the bot saves, and every snapshot is loaded back through the integrity validator.
 
-- Policies: **gather** (Forage the herb patches and berry bushes, sell what is gathered); **fight** (Fight Mosslings with the sword, sell the loot); **craft** (Forage, cook at the camp pot, sell the dishes); **request** (Take Orla's and Wren's requests, then the board's gathering jobs); **fish** (Fish a stretch of river bank, sell the catch).
-- Snapshots validated: 280. Flagged: **59**.
+- Policies: **gather** (Forage the herb patches and berry bushes, sell what is gathered); **fight** (Fight Mosslings with the sword, sell the loot); **craft** (Forage, cook at the camp pot, sell the dishes); **request** (Take Orla's and Wren's requests, then the board's gathering jobs); **fish** (Fish a stretch of river bank, sell the catch); **survive** (Walk a circuit of camps, sleep out at each and stand there a while).
+- Snapshots validated: 341. Flagged: **59**.
   - request minute 1: REQUEST_STATE
   - request minute 2: REQUEST_STATE
   - request minute 3: REQUEST_STATE
@@ -74,30 +74,33 @@ Made by `npm run sim-bot` (POW-M3-12). Do not edit by hand. Four v1 policies dri
 | Fight Mosslings with the sword, sell the loot | Blades | 28.6 | 20 to 40 | yes |
 | Forage, cook at the camp pot, sell the dishes | Cooking | 41.9 | 35 to 70 | yes |
 | Fish a stretch of river bank, sell the catch | Fishing | 56.2 | 35 to 70 | yes |
+| Walk a circuit of camps, sleep out at each and stand there a while | Survival | 45.0 | 35 to 70 | yes |
 
 ## XP per hour, top four skills of each policy
 
 | Policy | Skill | XP per hour |
 | --- | --- | --- |
 | gather | Foraging | 4650 |
-| gather | Survival | 150 |
+| gather | Survival | 300 |
 | gather | Bartering | 111 |
 | gather | Cartography | 64 |
-| fight | Blades | 6355 |
-| fight | Evasion | 3319 |
-| fight | Cartography | 186 |
-| fight | Survival | 120 |
+| fight | Blades | 6322 |
+| fight | Evasion | 2962 |
+| fight | Survival | 240 |
+| fight | Cartography | 189 |
 | craft | Cooking | 5115 |
 | craft | Foraging | 4659 |
-| craft | Survival | 150 |
+| craft | Survival | 300 |
 | craft | Cartography | 67 |
 | request | Blades | 642 |
-| request | Survival | 150 |
+| request | Survival | 300 |
 | request | Cartography | 54 |
 | fish | Fishing | 4542 |
-| fish | Survival | 150 |
+| fish | Survival | 300 |
 | fish | Cartography | 85 |
 | fish | Bartering | 24 |
+| survive | Survival | 5800 |
+| survive | Cartography | 291 |
 
 ## Coin per hour, by activity
 
@@ -106,10 +109,11 @@ Coin per hour is the coin held at the end plus the coin spent, over the window. 
 | Policy | Coin per hour | By source | Deaths | Requests done |
 | --- | --- | --- | --- | --- |
 | gather | 224 | sale 224 | 0 | 0 |
-| fight | 687 | loot 163, echo 394, sale 130 | 3 | 0 |
+| fight | 654 | loot 161, echo 349, sale 144 | 2 | 0 |
 | craft | 225 | sale 225 | 0 | 0 |
 | request | 79 | loot 4, request 75 | 0 | 2 |
 | fish | 188 | sale 188 | 0 | 0 |
+| survive | 0 | none | 0 | 0 |
 
 ## Save summaries
 

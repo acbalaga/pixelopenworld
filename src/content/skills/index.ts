@@ -1,5 +1,6 @@
 import { authoredTrialDefs } from './dawnmeadowTrials';
 import { MAP_BALANCE } from '../balance/map';
+import { SKILLS_BALANCE } from '../balance/skills';
 import type { SkillDef, TrialDef } from './types';
 
 export type { SkillDef, TrialDef, XpSource, XpEvent, SkillFamily } from './types';
@@ -205,7 +206,9 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         name: 'Survival',
         family: 'exploration',
         sources: [
-          { on: 'outdoorsNight', base: 30, scaled: false },
+          { on: 'outdoorsNight', base: SKILLS_BALANCE.survival.nightXpPerHour, scaled: false },
+          { on: 'camp', base: SKILLS_BALANCE.survival.campXpPerMinute, scaled: false },
+          { on: 'sleepOutdoors', base: SKILLS_BALANCE.survival.sleepOutdoorsXp, scaled: false },
           { on: 'eatRaw', base: 8, scaled: false },
         ],
       },

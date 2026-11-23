@@ -20,6 +20,8 @@ export type XpEvent =
   | 'sneak'
   | 'sprint'
   | 'outdoorsNight'
+  | 'camp'
+  | 'sleepOutdoors'
   | 'eatRaw'
   | 'tabletRead'
   | 'delveRoom'

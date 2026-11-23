@@ -95,11 +95,17 @@ describe('schema 22 to 23 migration (the move to Dawnmeadow)', () => {
       'deeds',
       'paths',
     ] as const)
-      // Schemas 26 and 27 give every journal an empty `singulars` and `bestiary`.
+      // Schemas 26 and 27 give every journal an empty `singulars` and `bestiary`. Schema 29 gives
+      // every skills record an empty `camp`.
       expect(after.entities.comps[k][b], k).toEqual(
         k === 'journal'
           ? { ...before.entities.comps[k][a], singulars: {}, bestiary: {} }
-          : before.entities.comps[k][a],
+          : k === 'skills'
+            ? {
+                ...before.entities.comps[k][a],
+                camp: { at: null, acc: 0, used: {}, sleepHour: -1 },
+              }
+            : before.entities.comps[k][a],
       );
     expect(after.entities.comps.avatar[b]!.coin).toBe(before.entities.comps.avatar[a]!.coin);
     expect(after.ledger).toEqual(before.ledger);

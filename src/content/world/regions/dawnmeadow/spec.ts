@@ -241,6 +241,14 @@ const placements: Placement[] = [
   at('node.fishing_spot', 351, 110),
   at('node.fishing_spot', 144, 312),
 
+  // Camps (POW-M4-23C): a bedroll each, outside every settlement. The Fernside climb has two more.
+  at('fixture.rest_point', 140, 235), // meadow, south
+  at('fixture.rest_point', 215, 140), // meadow, north
+  at('fixture.rest_point', 128, 176), // woods edge
+  at('fixture.rest_point', 236, 195), // river
+  at('fixture.rest_point', 180, 100), // quarry road
+  at('fixture.rest_point', 150, 305), // coast
+
   // The readable signs that are not part of a stamp.
   ...PLACED_SIGNS.map((s) => at(signKind(s.id), s.x, s.y)),
 

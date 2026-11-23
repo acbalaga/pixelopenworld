@@ -1,5 +1,7 @@
 import { MOSSLING, Run } from '../../tests/support/bots';
 import { withRustySword } from '../../tests/support/oldKit';
+import { SKILLS_BALANCE } from '../../src/content/balance/skills';
+import { TIME } from '../../src/content/balance/time';
 import { spawnNode } from '../../src/sim/items';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
@@ -33,7 +35,7 @@ const COOK: readonly (readonly string[])[] = [
 ];
 
 export interface Policy {
-  id: 'gather' | 'fight' | 'craft' | 'request' | 'fish';
+  id: 'gather' | 'fight' | 'craft' | 'request' | 'fish' | 'survive';
   label: string;
   /** The skill whose time to rank 15 this loop measures, if it is the loop for one. */
   skill?: string;
@@ -213,4 +215,43 @@ export const FISH: Policy = {
   },
 };
 
-export const POLICIES: readonly Policy[] = [GATHER, FIGHT, CRAFT, REQUEST, FISH];
+/**
+ * Eight camps across the open ground, as in Dawnmeadow (six placed, two on the Fernside climb),
+ * far enough apart that standing at one is not standing at another.
+ */
+export const CAMPS: readonly [number, number][] = [
+  [10, 10],
+  [30, 10],
+  [50, 10],
+  [70, 10],
+  [10, 80],
+  [30, 80],
+  [50, 80],
+  [70, 80],
+];
+
+/** Minutes the bot stands at each camp: what a camp pays in a day. */
+const CAMP_STAY = SKILLS_BALANCE.survival.campMinutesPerDay;
+
+export const SURVIVE: Policy = {
+  id: 'survive',
+  label: 'Walk a circuit of camps, sleep out at each and stand there a while',
+  skill: 'skill.survival',
+  pace: 'slow',
+  seed: 16,
+  setup(run) {
+    for (const [x, y] of CAMPS) spawnFixture(run.s, 'fixture.rest_point', x + 1, y);
+  },
+  // One step is one minute at a camp. The circuit walk between camps is taken as free here: the
+  // real map's camps are a minute or two apart on foot.
+  step(run, n) {
+    const [x, y] = CAMPS[Math.floor(n / CAMP_STAY) % CAMPS.length] as [number, number];
+    if (n % CAMP_STAY === 0) {
+      run.stand(x, y, 2);
+      run.tick({ type: 'sleep' });
+    }
+    run.run(TIME.ticksPerMinute);
+  },
+};
+
+export const POLICIES: readonly Policy[] = [GATHER, FIGHT, CRAFT, REQUEST, FISH, SURVIVE];

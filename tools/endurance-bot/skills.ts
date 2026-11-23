@@ -12,6 +12,7 @@ import { AUTHORED_TRIALS } from '../../src/content/skills/dawnmeadowTrials';
 import { RECIPES } from '../../src/content/items/recipes';
 import { BUILT_DUNGEONS } from '../../src/content/world/dungeons/registry';
 import { FIXTURES } from '../../src/content/world/fixtures';
+import { SKILLS_BALANCE } from '../../src/content/balance/skills';
 import { challengePct, xpToNext } from '../../src/sim/skills';
 import { supply } from './gather';
 import { loadDawnmeadow } from './world';
@@ -179,9 +180,23 @@ const MODELS: Model[] = [
   {
     skill: 'skill.survival',
     how: 'modeled',
-    note: '30 XP per in-game night hour outdoors (10 of every 48 real minutes are night), plus 1 raw food a minute',
+    note: 'a camp circuit: 8 camps (6 placed, 2 on the Fernside climb), 6 paid minutes each a day, 12 minutes of walking between them, one sleep out at each camp, plus night outdoors and raw food',
     ways: [
-      { perMin: (30 / 2) * (10 / 48), base: 1, label: 'night outdoors' },
+      // 48 paid minutes in a 48 minute day plus 12 of walking: 48 of every 60 minutes pay. One
+      // sleep out a camp visit, eight visits an in-game day (48 real minutes). Camp and sleep
+      // are one way, since they are done together on the same circuit.
+      {
+        perMin:
+          (48 / 60) * SKILLS_BALANCE.survival.campXpPerMinute +
+          (8 / 48) * SKILLS_BALANCE.survival.sleepOutdoorsXp,
+        base: 1,
+        label: 'camp circuit',
+      },
+      {
+        perMin: (30 / 2) * (10 / 48),
+        base: SKILLS_BALANCE.survival.nightXpPerHour / 30,
+        label: 'night outdoors',
+      },
       { perMin: 1, base: 8, label: 'eat raw' },
     ],
     lump: 0,
