@@ -17,6 +17,7 @@ import { applyEffect } from '../../src/sim/systems/npcs';
 import { addNote, hearRumor, mapSystem, regionFog, removeNote } from '../../src/sim/systems/map';
 import { skillsSystem } from '../../src/sim/systems/skills';
 import { stepWorld } from '../../src/sim/step';
+import { Dir, SUBPX } from '../../src/sim/kernel/fixed';
 import { newStream } from '../../src/sim/world/stream';
 import { createChunk } from '../../src/sim/world/chunk';
 import { TileWorld } from '../../src/sim/world/world';
@@ -142,6 +143,17 @@ describe('the map system', () => {
     expect(pointsOf(b.s, b.me, 'skill.cartography')).toBeGreaterThanOrEqual(15);
     mapSystem(b.s);
     expect(countRevealed(regionFog(b.s))).toBeGreaterThan(countRevealed(regionFog(a.s)));
+  });
+
+  it('pays Cartography when the avatar walks through stepWorld, in the shipped system order', () => {
+    const { s, me } = world(10, 10);
+    for (let i = 0; i < 400; i++)
+      stepWorld(s, me, { commands: [{ type: 'move', dir: Dir.E, full: true }] } as never);
+    const walked = Math.floor((s.entities.comps.pos[me]!.x / SUBPX - 10 * 16) / 16);
+    expect(walked).toBeGreaterThanOrEqual(40);
+    const blocks = countRevealed(regionFog(s));
+    expect(blocks).toBeGreaterThan(0);
+    expect(s.ledger.xpEarned['skill.cartography']).toBe(blocks * MAP_BALANCE.xpPerBlock);
   });
 
   it('keeps fog per region and keeps working through the sim step', () => {

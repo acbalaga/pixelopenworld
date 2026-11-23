@@ -261,6 +261,30 @@ export function advanceTracked(
 }
 
 /**
+ * The event types `trialsSystem` reads, through `advanceTracked` and `reachTracked`. A system that
+ * sends one must run before it (see `WORLD_SYSTEMS`).
+ */
+export const TRIALS_READS = [
+  'damageDealt',
+  'died',
+  'gathered',
+  'perfectDodge',
+  'attackStarted',
+  'crafted',
+  'parried',
+  'haggleWon',
+  'sleptOutdoors',
+  'manualRead',
+  'revealed',
+  'creatureFed',
+  'sold',
+  'tabletRead',
+  'techniqueUsed',
+  'perform',
+  'roomChanged',
+] as const satisfies readonly SimEvent['type'][];
+
+/**
  * Applies one sim event to the Trials of `who`, if the acting source is manual.
  */
 export function advanceTrials(

@@ -14,6 +14,7 @@ import { emit, type SimEvent } from '../../src/sim/kernel/events';
 import { awaken, isAwake } from '../../src/sim/skills';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
+import { mapSystem } from '../../src/sim/systems/map';
 import { skillsSystem } from '../../src/sim/systems/skills';
 import { spawnNpc } from '../../src/sim/systems/npcs';
 
@@ -29,6 +30,9 @@ function rig(): Rig {
   s.world = { solidAt: () => 0 };
   const f = feetAt(20, 20);
   const me = createAvatar(s, f.x, f.y);
+  // Cartography wakes on the first uncovered ground, so uncover it before these tests count wakings.
+  mapSystem(s);
+  s.events.list.length = 0;
   const events: SimEvent[] = [];
   const tick = (...c: Command[]): void => {
     stepWorld(s, me, { commands: c });
