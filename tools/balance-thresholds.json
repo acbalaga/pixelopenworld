@@ -12,20 +12,23 @@
       "gather": [3000, 12000],
       "fight": [3000, 12000],
       "craft": [3500, 14000],
-      "request": [3000, 12000]
+      "request": [3000, 12000],
+      "fish": [3000, 12000]
     },
     "coinPerHour": {
       "gather": [100, 500],
       "fight": [150, 900],
       "craft": [100, 450],
-      "request": [50, 400]
+      "request": [50, 400],
+      "fish": [100, 500]
     },
     "maxFlags": 0,
     "maxDeaths": {
       "gather": 0,
       "fight": 10,
       "craft": 0,
-      "request": 2
+      "request": 2,
+      "fish": 0
     },
     "timeTo15Slow": [35, 70]
   },

@@ -7,7 +7,7 @@ import { ALLOWED } from '../../tools/bake-assets/reachabilityAllow';
 import { ITEMS } from '../../src/content/items';
 import { sourcesOf } from '../../src/save/integrity/sources';
 import { Run } from '../support/bots';
-import { FIGHT, GATHER, POLICIES } from '../../tools/sim-bot/policies';
+import { FIGHT, FISH, GATHER, POLICIES } from '../../tools/sim-bot/policies';
 
 describe('content reachability', () => {
   const items = { 'item.a': { tier: 1 }, 'item.b': { tier: 2 }, 'item.c': { tier: 3 } };
@@ -141,9 +141,9 @@ describe('fight simulator', () => {
 });
 
 describe('sim bot policies', () => {
-  it('there are four, and each pays XP in a short run and keeps the save Intact', async () => {
-    expect(POLICIES.map((p) => p.id)).toEqual(['gather', 'fight', 'craft', 'request']);
-    for (const policy of [GATHER, FIGHT]) {
+  it('there are five, and each pays XP in a short run and keeps the save Intact', async () => {
+    expect(POLICIES.map((p) => p.id)).toEqual(['gather', 'fight', 'craft', 'request', 'fish']);
+    for (const policy of [GATHER, FIGHT, FISH]) {
       const run = new Run(policy.seed);
       policy.setup?.(run);
       for (let n = 0; n < 6; n++) policy.step(run, n);

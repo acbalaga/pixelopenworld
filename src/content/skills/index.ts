@@ -115,7 +115,7 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         id: 'skill.fishing',
         name: 'Fishing',
         family: 'gathering',
-        sources: [{ on: 'gather', tag: 'fishing', base: 20, firstTime: 100 }],
+        sources: [{ on: 'gather', tag: 'fishing', base: 150, firstTime: 150 }],
       },
       { id: 'skill.farming', name: 'Farming', family: 'gathering', sources: [] },
       { id: 'skill.husbandry', name: 'Husbandry', family: 'gathering', sources: [] },
