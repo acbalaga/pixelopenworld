@@ -50,7 +50,9 @@ const idx = (x: number, y: number): number => y * W + x;
 
 // Portal graph: standing on a portal tile lands you next to its partner.
 const byKind = new Map<string, { x: number; y: number }>();
-for (const o of L.objects) if (FIXTURES[o.kind]?.type === 'portal' || FIXTURES[o.kind]?.type === 'arrival') byKind.set(o.kind, o);
+for (const o of L.objects)
+  if (FIXTURES[o.kind]?.type === 'portal' || FIXTURES[o.kind]?.type === 'arrival')
+    byKind.set(o.kind, o);
 const jump = new Map<number, number>();
 for (const p of L.portals) {
   if (p.locked) continue;
@@ -92,9 +94,9 @@ function bfs(sx: number, sy: number, goal: (x: number, y: number) => boolean): n
       for (let k = c; k !== -1; k = prev[k]!) path.push(k);
       return path.reverse();
     }
-    const nb = [c - W, c + 1, c + W, c - 1];
+    // Standing on a portal moves you through it, so its only way on is the far side.
     const j = jump.get(c);
-    if (j !== undefined) nb.push(j);
+    const nb = j !== undefined && c !== s ? [j] : [c - W, c + 1, c + W, c - 1];
     for (const n of nb) {
       if (n < 0 || n >= W * H || prev[n] !== -2) continue;
       const nx = n % W;
@@ -141,9 +143,9 @@ const milestones: { pct: number; min: number }[] = [];
 const marks = [10, 25, 50, 75, 90, 95, 99, 100];
 let nudges = 0;
 let deaths = 0;
-let target = -1;
+let target: number;
 let stopAt: [number, number] | null = null;
-const log: { min: number; revealed: number; carto: number }[] = [];
+const log: Record<string, unknown>[] = [];
 const target95 = reachBlocks.size;
 
 while (s.tick < CAP_MIN * 60 * TPS) {
@@ -208,9 +210,17 @@ while (s.tick < CAP_MIN * 60 * TPS) {
     }
     if (s.tick % (60 * TPS) === 0) {
       const r = countRevealed(fog());
-      log.push({ min: s.tick / TPS / 60, revealed: r, carto: pointsOf(s, me, 'skill.cartography') });
+      log.push({
+        min: s.tick / TPS / 60,
+        revealed: r,
+        carto: pointsOf(s, me, 'skill.cartography'),
+        at: tileOf(),
+        goal: [target % W, Math.floor(target / W)],
+        left: path.length - i,
+      } as never);
       const pct = (100 * r) / target95;
-      while (marks.length && pct >= marks[0]!) milestones.push({ pct: marks.shift()!, min: s.tick / TPS / 60 });
+      while (marks.length && pct >= marks[0]!)
+        milestones.push({ pct: marks.shift()!, min: s.tick / TPS / 60 });
     }
   }
   if (i >= path.length) {

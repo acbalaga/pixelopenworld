@@ -9,7 +9,8 @@ import { watchProblems } from '../../../tests/e2e/helpers';
 const OUT = process.env.SOAK_OUT ?? join(process.cwd(), 'e2e-screenshots', 'soak');
 const CYCLES = Number(process.env.SOAK_CYCLES ?? 8);
 
-const attr = (page: Page, n: string): Promise<string | null> => page.locator('#game').getAttribute(n);
+const attr = (page: Page, n: string): Promise<string | null> =>
+  page.locator('#game').getAttribute(n);
 async function inWorld(page: Page): Promise<void> {
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
   await page.waitForTimeout(500);
@@ -57,12 +58,16 @@ test('soak: play, save, reopen, repeat', async ({ page }) => {
       await page.keyboard.press('KeyE');
       await page.waitForTimeout(250);
       // Close anything the interact opened, so the next leg moves the avatar.
-      if (await page.locator('[role="dialog"]:visible').count()) await page.keyboard.press('Escape');
-      if (i === 3) writeFileSync(join(OUT, `${String(c).padStart(2, '0')}-mid.png`), await page.screenshot());
+      if (await page.locator('[role="dialog"]:visible').count())
+        await page.keyboard.press('Escape');
+      if (i === 3)
+        writeFileSync(join(OUT, `${String(c).padStart(2, '0')}-mid.png`), await page.screenshot());
     }
     const seq0 = Number((await attr(page, 'data-saved-seq')) ?? '0');
     await hide(page);
-    await expect.poll(async () => Number((await attr(page, 'data-saved-seq')) ?? '0')).toBeGreaterThan(seq0);
+    await expect
+      .poll(async () => Number((await attr(page, 'data-saved-seq')) ?? '0'))
+      .toBeGreaterThan(seq0);
     const saved = await attr(page, 'data-saved-hash');
     await page.goto('/');
     const seal = page.locator('.pow-seal');

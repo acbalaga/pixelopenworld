@@ -22,7 +22,13 @@ function dist(from: { x: number; y: number }): Int32Array {
   let h = 0;
   let t = 0;
   // Nodes stand on solid tiles; start from the open tiles around them.
-  for (const [ox, oy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [0, 0]] as const) {
+  for (const [ox, oy] of [
+    [0, 1],
+    [1, 0],
+    [-1, 0],
+    [0, -1],
+    [0, 0],
+  ] as const) {
     const x = from.x + ox;
     const y = from.y + oy;
     if (walkable(L.grid, x, y) && d[y * W + x] === -1) {
@@ -46,7 +52,13 @@ function dist(from: { x: number; y: number }): Int32Array {
 
 const at = (d: Int32Array, p: { x: number; y: number }): number => {
   let best = -1;
-  for (const [ox, oy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [0, 0]] as const) {
+  for (const [ox, oy] of [
+    [0, 1],
+    [1, 0],
+    [-1, 0],
+    [0, -1],
+    [0, 0],
+  ] as const) {
     const v = d[(p.y + oy) * W + p.x + ox] ?? -1;
     if (v >= 0 && (best < 0 || v < best)) best = v;
   }
