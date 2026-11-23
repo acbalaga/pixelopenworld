@@ -222,8 +222,22 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         id: 'skill.deciphering',
         name: 'Deciphering',
         family: 'exploration',
-        // First reading of a tablet kind only. A tablet read again pays nothing.
-        sources: [{ on: 'tabletRead', base: 0, scaled: false, firstTime: 100 }],
+        // A tablet pays once for each placement and each band of the reader's points, so reaching
+        // a new band makes every tablet pay again once (POW-M4-23E). A manual pays once.
+        sources: [
+          {
+            on: 'tabletRead',
+            base: 0,
+            scaled: false,
+            firstTime: SKILLS_BALANCE.deciphering.tabletXp,
+          },
+          {
+            on: 'manualRead',
+            base: 0,
+            scaled: false,
+            firstTime: SKILLS_BALANCE.deciphering.manualXp,
+          },
+        ],
       },
       {
         id: 'skill.delving',

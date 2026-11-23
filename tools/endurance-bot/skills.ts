@@ -11,10 +11,10 @@ import { SKILLS, TRIALS } from '../../src/content/skills';
 import { AUTHORED_TRIALS } from '../../src/content/skills/dawnmeadowTrials';
 import { RECIPES } from '../../src/content/items/recipes';
 import { BUILT_DUNGEONS } from '../../src/content/world/dungeons/registry';
-import { FIXTURES } from '../../src/content/world/fixtures';
 import { SKILLS_BALANCE } from '../../src/content/balance/skills';
 import { challengePct, xpToNext } from '../../src/sim/skills';
 import { supply } from './gather';
+import { plan } from './tablets';
 import { loadDawnmeadow } from './world';
 
 const A = JSON.parse(process.argv[2] ?? '{}') as { athleticsXpPerMin?: number; mapBlocks?: number };
@@ -92,10 +92,13 @@ const craft = (skill: string, tag: string, base: number, first: number): Model =
   lump: first * recipesOf(tag),
 });
 
-// Deciphering pays once per tablet KIND, so count distinct kinds.
-const tablets = new Set(
-  L.objects.filter((o) => FIXTURES[o.kind]?.type === 'tablet').map((o) => o.kind),
-).size;
+// Deciphering: the route model (tablets.ts) plays the reading plan on the baked map.
+const decipher = plan();
+const xpToReachFull = (p: number): number => {
+  let a = xpToNext(p);
+  for (let i = 0; i < p; i++) a += xpToNext(i);
+  return a;
+};
 const rooms = BUILT_DUNGEONS.reduce((n, d) => n + d.def.rooms.length, 0);
 void objs;
 const MODELS: Model[] = [
@@ -218,11 +221,11 @@ const MODELS: Model[] = [
   },
   {
     skill: 'skill.deciphering',
-    how: 'finite',
-    note: `100 XP per tablet kind read once; ${tablets} tablet kinds on the map`,
-    ways: [],
+    how: 'modeled',
+    note: `${decipher.tablets} tablets and ${decipher.manuals} manual chests on the map. A tablet pays ${decipher.tabletXp} XP once per band (${decipher.bandSize} point), a manual ${decipher.manualXp} once. Route model: ${decipher.tours} tours, ${decipher.minutesTo14} min to 14 with a full bar`,
+    // The rate that takes the route model's minutes to 14 and a full bar.
+    ways: [{ perMin: xpToReachFull(14) / decipher.minutesTo14, base: 1, label: 'tablet tours' }],
     lump: 0,
-    finite: 100 * tablets,
   },
   {
     skill: 'skill.delving',

@@ -147,12 +147,26 @@ export const SKILLS_READS = [
   'dungeonCleared',
   'revealed',
   'tabletRead',
+  'manualRead',
   'sleptOutdoors',
 ] as const satisfies readonly SimEvent['type'][];
 
 /** The tile the avatar's feet are on. */
 function feetTile(p: { x: number; y: number }): { tx: number; ty: number } {
   return { tx: Math.floor(p.x / SUBPX / TILE), ty: Math.floor((p.y / SUBPX - 1) / TILE) };
+}
+
+/**
+ * What a tablet's first-time lump keys on (POW-M4-23E): the kind, the tile it stands on and the
+ * reader's Deciphering band. A tablet read again in the same band pays nothing, and a new band
+ * makes every tablet pay once more. Null when the tablet is not a fixture.
+ */
+function tabletSubject(state: SimState, who: EntityId, id: EntityId): string | null {
+  const f = getComp(state.entities, id, 'fixture');
+  if (!f) return null;
+  const { tx, ty } = feetTile(f.home);
+  const points = getComp(state.entities, who, 'skills')?.points['skill.deciphering'] ?? 0;
+  return `${f.kind}@${tx},${ty}#${Math.floor(points / B.deciphering.bandSize)}`;
 }
 
 /** Survival: sleeping outdoors pays a lump, at most once an in-game hour. */
@@ -324,8 +338,14 @@ export function skillsSystem(state: SimState): void {
       } else if (e.type === 'sleptOutdoors' && e.who === who) {
         sleepPay(state, who);
       } else if (e.type === 'tabletRead' && e.who === who) {
-        const kind = getComp(state.entities, e.id, 'fixture')?.kind ?? null;
-        practice(state, who, { on: 'tabletRead', tag: undefined, tier: 0, subject: kind });
+        practice(state, who, {
+          on: 'tabletRead',
+          tag: undefined,
+          tier: 0,
+          subject: tabletSubject(state, who, e.id),
+        });
+      } else if (e.type === 'manualRead' && e.who === who) {
+        practice(state, who, { on: 'manualRead', tag: undefined, tier: 0, subject: e.item });
       }
     }
     sprint(state, who);

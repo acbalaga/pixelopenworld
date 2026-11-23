@@ -351,7 +351,7 @@ describe('Survival', () => {
 });
 
 describe('Deciphering', () => {
-  it('pays only the first-time lump for a tablet kind, then nothing', () => {
+  it('pays a tablet once for its placement and band, and a second tablet of the kind on its own', () => {
     const { s, me } = world();
     const a = spawnFixture(s, 'fixture.tablet', 22, 20);
     const b = spawnFixture(s, 'fixture.tablet', 24, 20);
@@ -359,8 +359,9 @@ describe('Deciphering', () => {
     feed(s, { type: 'tabletRead', id: a, who: me });
     expect(earned(s, me, 'skill.deciphering')).toBe(lump);
     feed(s, { type: 'tabletRead', id: a, who: me });
-    feed(s, { type: 'tabletRead', id: b, who: me });
     expect(earned(s, me, 'skill.deciphering')).toBe(lump);
+    feed(s, { type: 'tabletRead', id: b, who: me });
+    expect(earned(s, me, 'skill.deciphering')).toBe(2 * lump);
   });
 });
 

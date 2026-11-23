@@ -148,8 +148,10 @@ const RATES: Record<XpSource['on'], number> = {
   sleepOutdoors: NIGHT_HOURS_PER_SECOND,
   /** Eating takes a command each, so the cooking bound is far past a hand. */
   eatRaw: COOK_EVENTS_PER_SECOND,
-  /** A tablet pays only the first-time lump, which is counted below. */
+  /** A tablet pays only first-time lumps, counted below. */
   tabletRead: 0,
+  /** A manual pays only its first-time lump, counted below. */
+  manualRead: 0,
   /** Delving pays only first-time lumps (room, plate, dungeon), counted below. */
   delveRoom: 0,
   delveBlock: 0,
@@ -180,6 +182,16 @@ const FIRST_TIME_SUBJECTS =
   Object.keys(FIXTURES).length;
 
 /**
+ * The most tablets the first region places (a test holds the baked count to it), times the bands
+ * a reader meets up to the first Trial rank and one more. A tablet pays once for each of those,
+ * so they add to the subjects a first-time lump can key on (POW-M4-23E).
+ */
+export const MAX_TABLET_PLACEMENTS = 12;
+const TABLET_SUBJECTS =
+  MAX_TABLET_PLACEMENTS *
+  (Math.floor(SKILLS_BALANCE.thresholds[0]! / SKILLS_BALANCE.deciphering.bandSize) + 2);
+
+/**
  * The most XP a skill can have earned in `seconds` of play: every source firing at its fastest
  * rate for the whole time at the top challenge pay, plus every first-time lump, plus slack.
  */
@@ -189,7 +201,8 @@ export function xpCeiling(skill: string, seconds: number): number {
   let total = XP_SLACK;
   for (const s of def.sources) {
     total += perEvent(s) * rateOf(s.on) * seconds;
-    total += (s.firstTime ?? 0) * FIRST_TIME_SUBJECTS;
+    total +=
+      (s.firstTime ?? 0) * (FIRST_TIME_SUBJECTS + (s.on === 'tabletRead' ? TABLET_SUBJECTS : 0));
   }
   return Math.ceil(total);
 }
