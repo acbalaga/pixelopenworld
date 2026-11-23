@@ -12,6 +12,7 @@ import { createDemoState, type SimState } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
+import { mapSystem } from '../../src/sim/systems/map';
 import { trialsSystem } from '../../src/sim/systems/trials';
 
 const OPEN = { solidAt: (): number => 0 };
@@ -23,6 +24,9 @@ function world(giver: string): { s: SimState; me: number } {
   const f = feetAt(20, 20);
   const me = createAvatar(s, f.x, f.y);
   spawnNpc(s, giver, 21, 20);
+  // The ground here is already uncovered, so standing still reveals nothing that counts for an explore Trial.
+  mapSystem(s);
+  s.events.list.length = 0;
   return { s, me };
 }
 

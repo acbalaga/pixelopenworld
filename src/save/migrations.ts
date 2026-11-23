@@ -9,7 +9,10 @@ import { RECIPES } from '../content/items/recipes';
 import { createStream } from '../sim/kernel/rng';
 import { intact } from './integrity/reasons';
 import { newLedger } from '../sim/ledger';
-import { xpToNext } from '../sim/skills';
+import { addXpExact, xpToNext } from '../sim/skills';
+import { countRevealed } from '../sim/world/fog';
+import { MAP_BALANCE } from '../content/balance/map';
+import { query } from '../sim/kernel/entities';
 import { NO_FIGHT } from '../sim/fight';
 import { dayIndex } from '../sim/time';
 import { solutionMax } from '../sim/systems/requests';
@@ -19,6 +22,7 @@ import { deserializeState, serializeState } from '../sim/state';
 import { DEFAULT_ORIGIN } from '../content/world/origins';
 import { normalizeDoll } from '../content/dolls/parts';
 import { CURRENT_SCHEMA, type SavePlain } from './types';
+import { deriveSummary } from '../shared/summary';
 import { remapFromSlice } from './sliceRemap';
 
 /**
@@ -651,6 +655,30 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     };
     for (const j of raw.entities.comps.journal) if (j) j.bestiary = {};
     return { ...old, schema: 27, sim: serializeState(deserializeState(JSON.stringify(raw))) };
+  },
+  /**
+   * 27 to 28 (M4-23 part A): walking never paid Cartography, because the map ran after the skills
+   * system and its `revealed` event was cleared unread. Pay what the fog already shows: every
+   * revealed block at `xpPerBlock`, less any Cartography XP the ledger records, never below 0.
+   * The grant goes through the sim's XP path (the skill awakens, XP banks at a pending Trial,
+   * the ledger records it) without the Rested bonus, so it is exact.
+   */
+  27: (old) => {
+    const s = deserializeState(old.sim);
+    let blocks = 0;
+    for (const fog of Object.values(s.map.fog)) blocks += countRevealed(fog);
+    const owed = blocks * MAP_BALANCE.xpPerBlock - (s.ledger.xpEarned['skill.cartography'] ?? 0);
+    if (owed > 0)
+      for (const who of query(s.entities, 'avatar', 'skills'))
+        addXpExact(s, who, 'skill.cartography', owed);
+    const sim = serializeState(s);
+    return {
+      ...old,
+      schema: 28,
+      sim,
+      summary: deriveSummary(s, old.playSeconds),
+      ledger: structuredClone(s.ledger),
+    };
   },
 };
 

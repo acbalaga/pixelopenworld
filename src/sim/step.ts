@@ -80,13 +80,16 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   scheduleSystem,
   hintsSystem,
   // Last, so they see every event the other systems sent this tick. Trials run before skills,
-  // so a pass releases banked XP in the same tick.
+  // so a pass releases banked XP in the same tick. A system that emits an event `skillsSystem` or
+  // `trialsSystem` reads must run before them: `tick()` clears events at the start of each tick, so
+  // an event sent after them is never read. The map is one (`revealed`). It reads Cartography
+  // from the end of the previous tick, a lag of one tick that is accepted.
+  mapSystem,
   wearSystem,
   trialsSystem,
   skillsSystem,
   deedsSystem,
   pathsSystem,
-  mapSystem,
   singularsSystem,
   bestiarySystem,
 ];

@@ -7,6 +7,7 @@ import { TECHNIQUE_LIST } from '../../content/combat/techniques';
 import { countInsight } from '../combat/techniques';
 import { SKILLS, type XpEvent } from '../../content/skills';
 import { getComp, query, type EntityId } from '../kernel/entities';
+import type { SimEvent } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { addXp, challengePct, pointsOf } from '../skills';
@@ -121,6 +122,30 @@ function outdoorsNight(state: SimState, who: EntityId): void {
     practice(state, who, { on: 'outdoorsNight', tag: undefined, tier: 0, subject: null });
   }
 }
+
+/** The event types `skillsSystem` reads. A system that sends one must run before it (see `WORLD_SYSTEMS`). */
+export const SKILLS_READS = [
+  'damageDealt',
+  'statusApplied',
+  'sneak',
+  'perform',
+  'healed',
+  'haggleWon',
+  'sold',
+  'perfectDodge',
+  'dodged',
+  'blocked',
+  'parried',
+  'gathered',
+  'crafted',
+  'repaired',
+  'eaten',
+  'delved',
+  'blockSolved',
+  'dungeonCleared',
+  'revealed',
+  'tabletRead',
+] as const satisfies readonly SimEvent['type'][];
 
 /**
  * Turns this tick's sim events into skill XP for each avatar. Runs last, so it sees everything

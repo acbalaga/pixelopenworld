@@ -153,13 +153,28 @@ function settle(state: SimState, who: EntityId, skill: string): void {
 
 /** Adds XP to a skill. XP past a pending Trial is banked, not lost. */
 export function addXp(state: SimState, who: EntityId, skill: string, amount: number): void {
+  // Rested adds a percent, through the same mod path as everything else.
+  grantXp(state, who, skill, amount, true);
+}
+
+/** Adds exactly `amount` XP: no Rested bonus. For a migration that pays back what is owed. */
+export function addXpExact(state: SimState, who: EntityId, skill: string, amount: number): void {
+  grantXp(state, who, skill, amount, false);
+}
+
+function grantXp(
+  state: SimState,
+  who: EntityId,
+  skill: string,
+  amount: number,
+  mods: boolean,
+): void {
   const s = getComp(state.entities, who, 'skills');
   if (!s || amount <= 0 || !SKILLS[skill]) return;
   awaken(state, who, skill);
   const p = s.points[skill] ?? 0;
   if (p >= B.maxPoints) return;
-  // Rested adds a percent, through the same mod path as everything else.
-  amount = applyMods(amount, 'xp', statusMods(state, who));
+  if (mods) amount = applyMods(amount, 'xp', statusMods(state, who));
   const before = s.xp[skill] ?? 0;
   s.xp[skill] = before + amount;
   earnedXp(state, skill, amount);
