@@ -230,6 +230,11 @@ const placements: Placement[] = [
   at('node.copper_vein', 180, 70),
   at('node.copper_vein', 165, 90),
   at('node.iron_vein', 185, 75),
+  // Four more on the surface (POW-M4-23D): two in the quarry, two on the Stonecrop approach.
+  at('node.iron_vein', 192, 72),
+  at('node.iron_vein', 196, 83),
+  at('node.iron_vein', 172, 58),
+  at('node.iron_vein', 159, 69),
   at('node.fishing_spot', 238, 170),
   // The river bank east of Hearthford (four within a minute's walk of each other), Reedmouth,
   // the Millbrook lake shore and the south coast.

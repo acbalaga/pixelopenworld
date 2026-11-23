@@ -301,6 +301,8 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       { item: 'item.wraps_cloth', max: 3 },
       { item: 'item.lantern_oil', max: 10 },
       { item: 'item.scroll_sword_iron', max: 1 },
+      // Iron ore (POW-M4-23D): buying is possible and costs more than mining one, see the price rule test.
+      { item: 'item.iron_ore', max: 8 },
     ],
   },
   // Tier 1 trade for the new item set. Purses are small and capped, so no one buys without end.
