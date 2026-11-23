@@ -89,32 +89,46 @@ export function supply(): Supply[] {
   const out: Supply[] = [];
   for (const [k, list] of groups) {
     const [tag, tier] = k.split(':') as [string, string];
-    // Nearest-neighbour tour from the first node.
-    const left = [...list];
-    let cur = left.shift()!;
-    let tiles = 0;
-    let unreachable = 0;
-    const first = cur;
-    while (left.length) {
-      const d = dist(cur);
-      let bi = -1;
-      let bd = Infinity;
-      left.forEach((p, i) => {
-        const v = at(d, p);
-        if (v >= 0 && v < bd) {
-          bd = v;
-          bi = i;
+    // Nearest-neighbour tour from a start node. A start on the wrong side of a locked door or a
+    // portal reaches little, so a tour that leaves nodes behind is retried from one of them and the
+    // tour that reaches the most is kept.
+    const tour = (startIdx: number): { tiles: number; unreachable: number; left: typeof list } => {
+      const left = [...list];
+      let cur = left.splice(startIdx, 1)[0]!;
+      let tiles = 0;
+      let unreachable = 0;
+      const first = cur;
+      let stranded: typeof list = [];
+      while (left.length) {
+        const d = dist(cur);
+        let bi = -1;
+        let bd = Infinity;
+        left.forEach((p, i) => {
+          const v = at(d, p);
+          if (v >= 0 && v < bd) {
+            bd = v;
+            bi = i;
+          }
+        });
+        if (bi < 0) {
+          unreachable += left.length;
+          stranded = [...left];
+          break;
         }
-      });
-      if (bi < 0) {
-        unreachable += left.length;
-        break;
+        tiles += bd;
+        cur = left.splice(bi, 1)[0]!;
       }
-      tiles += bd;
-      cur = left.splice(bi, 1)[0]!;
+      const back = at(dist(cur), first);
+      if (back > 0) tiles += back;
+      return { tiles, unreachable, left: stranded };
+    };
+    let best = tour(0);
+    for (let tries = 0; best.unreachable > 0 && tries < 4; tries++) {
+      const next = tour(list.indexOf(best.left[0]!));
+      if (next.unreachable >= best.unreachable) break;
+      best = next;
     }
-    const back = at(dist(cur), first);
-    if (back > 0) tiles += back;
+    const { tiles, unreachable } = best;
     const reached = list.length - unreachable;
     const respawn = Math.max(...list.map((p) => NODES[p.kind]!.respawn)) / TPS / 60;
     const lap = tiles / WALK / 60 + (reached * GATHER_S) / 60;
