@@ -9,6 +9,9 @@ import { newLedger, type Ledger } from './ledger';
 import type { Deltas } from './world/deltas';
 import type { StreamState } from './world/stream';
 import type { Fog } from './world/fog';
+import { initialLives } from './travelers/generate';
+import { livesFromText, livesToText } from './travelers/codec';
+import type { TravelerLife } from './travelers/types';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -647,6 +650,8 @@ export interface SimState {
   deltas: Deltas;
   /** Fog, notes and rumors (M4-06). Saved. */
   map: MapState;
+  /** The 240 Travelers' lives (M5-02). Saved as a compact binary section. Identity is derived from `seed`. */
+  travelers: TravelerLife[];
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
@@ -710,6 +715,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     ledger: newLedger(),
     deltas: {},
     map: newMapState(),
+    travelers: initialLives(seed),
     events: createEventQueue(),
     world: null,
   };
@@ -739,7 +745,12 @@ export function canonical(v: unknown): string {
     .join(',')}}`;
 }
 
-function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'worldTick' | 'stream'> {
+function persistent(state: SimState): Omit<
+  SimState,
+  'events' | 'world' | 'worldTick' | 'stream' | 'travelers'
+> & {
+  travelers: string | undefined;
+} {
   return {
     seed: state.seed,
     tick: state.tick,
@@ -748,6 +759,8 @@ function persistent(state: SimState): Omit<SimState, 'events' | 'world' | 'world
     ledger: state.ledger,
     deltas: state.deltas,
     map: state.map,
+    // Absent only in tests that take the field off to compare a hash with an older fixture's.
+    travelers: state.travelers ? livesToText(state.travelers) : undefined,
   };
 }
 
@@ -760,11 +773,12 @@ export function serializeState(state: SimState): string {
 export function deserializeState(text: string, world: CollisionGrid | null = null): SimState {
   const raw = JSON.parse(text) as Omit<
     SimState,
-    'events' | 'world' | 'ledger' | 'worldTick' | 'deltas' | 'map' | 'stream'
+    'events' | 'world' | 'ledger' | 'worldTick' | 'deltas' | 'map' | 'stream' | 'travelers'
   > & {
     ledger?: Ledger;
     deltas?: Deltas;
     map?: MapState;
+    travelers?: string;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -781,6 +795,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     ledger: raw.ledger ?? newLedger(),
     deltas: raw.deltas ?? {},
     map: raw.map ?? newMapState(),
+    // A state from before Travelers has none: they start as a fresh generation from the seed.
+    travelers: raw.travelers === undefined ? initialLives(raw.seed) : livesFromText(raw.travelers),
     events: createEventQueue(),
     world,
   };

@@ -1,5 +1,6 @@
 import { getComp, query } from '../sim/kernel/entities';
 import type { SimState } from '../sim/state';
+import { travelerTotals } from '../sim/travelers';
 
 /**
  * A small fixed-shape digest of a sim, derived by this one function. It is stored beside the sim
@@ -16,6 +17,9 @@ export interface SaveSummary {
   itemCount: number;
   requestsDone: number;
   flags: number;
+  /** Sum of skill points across every Traveler's build, and of coin across their purses (M5-02). */
+  travelerPoints: number;
+  travelerCoin: number;
 }
 
 /** The avatar's entity id, or null if the state has none. */
@@ -29,6 +33,7 @@ export function deriveSummary(state: SimState, playSeconds: number): SaveSummary
   const skills = who === null ? undefined : getComp(state.entities, who, 'skills');
   const inv = who === null ? undefined : getComp(state.entities, who, 'inventory');
   const journal = who === null ? undefined : getComp(state.entities, who, 'journal');
+  const trav = travelerTotals(state.travelers);
   const skillPoints: Record<string, number> = {};
   let total = 0;
   for (const [id, p] of Object.entries(skills?.points ?? {})) {
@@ -44,5 +49,7 @@ export function deriveSummary(state: SimState, playSeconds: number): SaveSummary
     itemCount: (inv?.slots ?? []).reduce((n, s) => n + (s?.qty ?? 0), 0),
     requestsDone: Object.values(journal?.requests ?? {}).filter((r) => r.state === 'done').length,
     flags: journal?.flags.length ?? 0,
+    travelerPoints: trav.points,
+    travelerCoin: trav.coin,
   };
 }

@@ -23,6 +23,7 @@ describe('schema 23 to 24 migration (the map)', () => {
     expect(s.map).toEqual(newMapState());
     // With the new field removed, the old hash comes back.
     delete (s as { map?: unknown }).map;
+    delete (s as { travelers?: unknown }).travelers;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 
@@ -48,6 +49,7 @@ describe('schema 24 to 25 migration (attuned Waystones)', () => {
     const s = deserializeState(at25.sim);
     expect(s.map.waystones).toEqual([]);
     delete (s.map as { waystones?: unknown }).waystones;
+    delete (s as { travelers?: unknown }).travelers;
     expect(hashState(s)).toBe(f.expectedHash);
     expect(validateSave(migrate(decoded)).reasons.map((r) => r.code)).not.toContain('MAP_STATE');
   });
