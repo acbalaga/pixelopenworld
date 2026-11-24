@@ -1,0 +1,127 @@
+import type { Archetype, TieKind, VoiceId } from '../travelers/types';
+
+/**
+ * Chat content types (POW-M5-05, design/12 section 4). Templates, voices, glyphs and rumors are
+ * data. The engine in `src/sim/chat/` fills and voices them. Text here never names a thing the
+ * game does not have: the validator in `validate.ts` holds every template to that.
+ */
+
+export const CATEGORIES = [
+  'lfg',
+  'trade',
+  'brag',
+  'question',
+  'answer',
+  'joke',
+  'banter',
+  'weather',
+  'event',
+  'deed',
+  'greet',
+  'farewell',
+  'afk',
+  'complaint',
+] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+/** What can make a template speak: a sim event, or a state the engine reads. */
+export const TRIGGERS = [
+  'travelerLooted',
+  'travelerCrafted',
+  'travelerSold',
+  'travelerRankUp',
+  'travelerDied',
+  'travelerArrived',
+  'travelerLoggedIn',
+  'travelerLoggedOut',
+  'state.weather',
+  'state.phase',
+  'state.idle',
+  'state.afk',
+  'state.lfg',
+  'state.question',
+  'state.answer',
+  /** Reserved for the player's public deeds (M5-15 fills these in with `playerPassed` and others). */
+  'playerDeed',
+] as const;
+export type Trigger = (typeof TRIGGERS)[number];
+
+/** The slots a template may use (design/12 4.2). */
+export const SLOT_NAMES = [
+  'item',
+  'qty',
+  'price',
+  'place',
+  'creature',
+  'skill',
+  'rank',
+  'handle',
+  'player',
+  'dungeon',
+  'weather',
+  'time',
+  /** A line from the rumor table, for answers only. */
+  'rumor',
+] as const;
+export type SlotName = (typeof SLOT_NAMES)[number];
+
+/** Conditions on the speaker and the world. Anything listed must hold. */
+export interface When {
+  archetype?: readonly Archetype[];
+  voice?: readonly VoiceId[];
+  weather?: readonly string[];
+  /** In-game day phases: dawn, day, dusk, night. */
+  phase?: readonly string[];
+}
+
+export interface ChatTemplate {
+  id: string;
+  category: Category;
+  channel: 'world' | 'local';
+  trigger: Trigger;
+  when?: When;
+  /** Alternatives, one chosen. Slots in braces. */
+  text: readonly string[];
+  weight: number;
+  /** In-game minutes before the same speaker may use this template again. */
+  cooldownMin: number;
+}
+
+/** A two-to-five line exchange between two Travelers with a tie (design/12 4.5). */
+export interface ChatExchange {
+  id: string;
+  tie: TieKind;
+  lines: readonly { role: 'a' | 'b'; text: string }[];
+  weight: number;
+}
+
+/** A hint or rumor a Traveler can repeat. About one in four is wrong, and none is costly (4.6). */
+export interface Rumor {
+  id: string;
+  /** What it is about, for the question that asks for it. */
+  about: 'recipe' | 'creature' | 'place' | 'tip';
+  text: string;
+  true: boolean;
+}
+
+export interface Glyph {
+  id: string;
+  /** Eight rows of eight: `.` clear, `#` ink, `o` outline. */
+  rows: readonly string[];
+  /** Palette index of the ink. */
+  ink: number;
+}
+
+export interface VoiceDef {
+  id: VoiceId;
+  /** Whole-word swaps, case-insensitive. */
+  lexicon: Readonly<Record<string, string>>;
+  case: 'lower' | 'sentence' | 'shout' | 'title';
+  punct: 'none' | 'light' | 'full' | 'ellipsis' | 'exclaim';
+  /** Chance a line ends with an emoticon or a glyph, and what they are. */
+  emoticon: { rate: number; texts: readonly string[]; glyphs: readonly string[] };
+  /** Chance a line carries a typo, which kinds, and the chance a `*fix` follows it. */
+  typo: { rate: number; kinds: readonly ('swap' | 'double' | 'drop')[]; fix: number };
+  /** Said on a farewell. */
+  signoff: string;
+}

@@ -17,6 +17,7 @@ import { validateRealItems } from './validateItems';
 import { validateDialogue } from './validateDialogue';
 import { validateReachability } from './validateReachability';
 import { validateRegions } from './validateRegions';
+import { validateShippedChat } from '../../src/content/chat/validate';
 
 /** Sprite, creature and spawner validation together. */
 function validateAll(): string[] {
@@ -33,6 +34,7 @@ function validateAll(): string[] {
     ...validateDialogue(),
     ...validateReachability(),
     ...validateRegions(),
+    ...validateShippedChat(),
   ];
 }
 
