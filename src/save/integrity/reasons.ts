@@ -56,6 +56,7 @@ export const REASON_CODES = [
   'GATHER_RATE',
   'SALE_RATE',
   'PLAYTIME_EXCEEDS_ELAPSED',
+  'TRAVELER_BUILD',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

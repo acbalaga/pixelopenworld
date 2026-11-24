@@ -269,7 +269,34 @@ export type SimEvent =
   | { type: 'haggleWon'; who: number; shop: string; item: string; price: number }
   | { type: 'hintShown'; who: number; hint: string }
   | { type: 'hintEnded'; who: number; hint: string; how: 'done' | 'expired' }
-  | { type: 'roomChanged'; who: number; from: string; to: string };
+  | { type: 'roomChanged'; who: number; from: string; to: string }
+  // ---- Travelers (M5-03). `slot` is the Traveler's slot, 0 to 239. ----
+  /** A Traveler came online at `place` (an index into the places list). */
+  | { type: 'travelerLoggedIn'; slot: number; place: number }
+  | { type: 'travelerLoggedOut'; slot: number; place: number }
+  /** A Traveler finished a trip and stands at `place`. */
+  | { type: 'travelerArrived'; slot: number; place: number }
+  /** A drop at a low chance (or a rare find): chat may talk about it. */
+  | {
+      type: 'travelerLooted';
+      slot: number;
+      item: string;
+      qty: number;
+      creature: string;
+      chance: number;
+    }
+  /** A skill crossed a rank: `points` is the new total. */
+  | { type: 'travelerRankUp'; slot: number; skill: string; points: number }
+  | { type: 'travelerDied'; slot: number; creature: string; place: number }
+  | { type: 'travelerCrafted'; slot: number; item: string; qty: number; recipe: string }
+  | { type: 'travelerSold'; slot: number; item: string; qty: number; price: number }
+  /** A login catch-up finished. `away` is at most six things that changed (rank-ups, big purses). */
+  | { type: 'travelersAway'; away: TravelerAway[] };
+
+/** One thing the Travelers did while the player was away. */
+export type TravelerAway =
+  | { kind: 'rankUp'; slot: number; skill: string; rank: number }
+  | { kind: 'coin'; slot: number; gain: number };
 
 /** Transient queue. Cleared at the start of every tick. Not saved or hashed. */
 export interface EventQueue {

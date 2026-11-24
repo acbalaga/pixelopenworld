@@ -42,16 +42,16 @@ export const CULTURE_WEIGHTS: W<Culture> = [
 
 /** Schedule shapes and their shares (design/12 3.1). */
 export const SCHEDULE_WEIGHTS: W<ScheduleId> = [
-  ['student', 18],
-  ['office', 22],
-  ['early', 7],
+  ['student', 15],
+  ['office', 18],
+  ['early', 10],
   ['nightshift', 6],
-  ['parent', 13],
+  ['parent', 11],
   ['lunch', 8],
-  ['retiree', 6],
-  ['weekend', 10],
-  ['nightowl', 7],
-  ['always', 3],
+  ['retiree', 8],
+  ['weekend', 9],
+  ['nightowl', 8],
+  ['always', 7],
 ];
 
 /** Phase shift of a Traveler's own schedule against its shape, in minutes. */
@@ -381,18 +381,18 @@ export const PLATEAU_RANGE: Record<Archetype, readonly [number, number]> = {
   Veteran: [66, 82],
 };
 
-/** Skill points a Traveler of this archetype starts with in each focus skill, at save creation. */
-export const START_POINTS: Record<Archetype, readonly [number, number]> = {
-  Grinder: [8, 22],
-  Explorer: [6, 18],
-  Socializer: [4, 14],
-  Crafter: [8, 20],
-  Trader: [6, 16],
-  Roleplayer: [4, 12],
-  Completionist: [8, 20],
-  Casual: [2, 10],
-  Newbie: [0, 3],
-  Veteran: [28, 46],
+/** Skill points a Traveler of this archetype starts with in its first focus skill. Later ones fall off. */
+export const START_BASE: Record<Archetype, number> = {
+  Grinder: 14,
+  Explorer: 11,
+  Socializer: 8,
+  Crafter: 12,
+  Trader: 10,
+  Roleplayer: 7,
+  Completionist: 13,
+  Casual: 5,
+  Newbie: 1,
+  Veteran: 34,
 };
 
 /** Starting purse in coin, by archetype. */
@@ -432,3 +432,286 @@ export const ARMED_CHANCE: Record<Archetype, number> = {
   Newbie: 0.3,
   Veteran: 0.95,
 };
+
+/** One session of a schedule shape, in minutes after local midnight. `start + len` may pass 1440. */
+export interface SessionShape {
+  start: number;
+  len: number;
+  /** Largest random shift of the start and of the length, in minutes, either way. */
+  jitter: number;
+}
+
+export interface ScheduleShape {
+  weekday: readonly SessionShape[];
+  weekend: readonly SessionShape[];
+  /** Chance a weekday session is skipped (design/12 3.1: 12%, 25% for parent). */
+  skip: number;
+  /**
+   * Chance the Traveler logs in at all on a weekday and on a weekend day. With 240 Travelers and
+   * every shape playing every day the evening would hold over 100 online, so each shape has an
+   * attendance that brings the count to the curve in design/07 (about 20 at the trough, about 45
+   * at the weekday peak). A balance knob, tuned with `npm run crowd-report`.
+   */
+  attend: readonly [weekday: number, weekend: number];
+  /** `weekend` shape: its one weekday session falls on a single weekday chosen per Traveler. */
+  oneWeekday?: true;
+}
+
+const h = (hour: number, min = 0): number => hour * 60 + min;
+const SS = (start: number, end: number, jitter = 20): SessionShape => ({
+  start,
+  len: end - start,
+  jitter,
+});
+
+/** The ten schedule shapes (design/12 3.1). Times are real local time. */
+export const SCHEDULE_SHAPES: Record<ScheduleId, ScheduleShape> = {
+  student: {
+    weekday: [SS(h(15), h(19)), SS(h(19, 30), h(23, 30))],
+    weekend: [SS(h(11), h(15)), SS(h(18), h(25))],
+    skip: 0.12,
+    attend: [0.2, 0.15],
+  },
+  office: {
+    weekday: [SS(h(18, 30), h(23))],
+    weekend: [SS(h(14), h(18)), SS(h(20), h(24))],
+    skip: 0.12,
+    attend: [0.3, 0.15],
+  },
+  early: {
+    weekday: [SS(h(4, 30), h(9))],
+    weekend: [SS(h(5, 30), h(11))],
+    skip: 0.12,
+    attend: [0.45, 0.4],
+  },
+  nightshift: {
+    weekday: [SS(h(7, 30), h(14, 30))],
+    weekend: [SS(h(9), h(13))],
+    skip: 0.12,
+    attend: [0.35, 0.05],
+  },
+  parent: {
+    weekday: [SS(h(13, 30), h(16)), SS(h(21, 30), h(23, 15))],
+    weekend: [SS(h(13), h(15)), SS(h(21), h(23, 30))],
+    skip: 0.25,
+    attend: [0.05, 0.05],
+  },
+  lunch: {
+    weekday: [SS(h(12, 10), h(12, 55)), SS(h(20), h(21, 30))],
+    weekend: [SS(h(10), h(12))],
+    skip: 0.12,
+    attend: [0.65, 0.05],
+  },
+  retiree: {
+    weekday: [SS(h(9), h(12)), SS(h(12, 30), h(18, 30))],
+    weekend: [SS(h(10), h(16))],
+    skip: 0.12,
+    attend: [0.55, 0.05],
+  },
+  weekend: {
+    weekday: [SS(h(21), h(22))],
+    weekend: [SS(h(10), h(13)), SS(h(14), h(19)), SS(h(19), h(26))],
+    skip: 0.12,
+    attend: [0.25, 0.4],
+    oneWeekday: true,
+  },
+  nightowl: {
+    weekday: [SS(h(22, 30), h(28, 45))],
+    weekend: [SS(h(24), h(30))],
+    skip: 0.12,
+    attend: [0.82, 0.15],
+  },
+  always: {
+    // Three long sessions with short overlaps, so the Traveler is never seen to blink out.
+    weekday: [SS(h(0), h(8), 10), SS(h(7, 30), h(16), 10), SS(h(15, 30), h(24, 30), 10)],
+    weekend: [SS(h(0), h(8), 10), SS(h(7, 30), h(16), 10), SS(h(15, 30), h(24, 30), 10)],
+    skip: 0.05,
+    attend: [0.95, 1],
+  },
+};
+
+/**
+ * Sessions pinned to exact times with a fixed first line (design/12 3.1, the lore support). The
+ * schedule system honors them and M5 uses none: M10 fills this in. Keyed by slot. `weekday` is
+ * 0 (Sunday) to 6; `line` is a chat template id.
+ */
+export interface FixedSession {
+  weekday: number;
+  start: number;
+  len: number;
+  line: string;
+}
+export const FIXED_SESSIONS: Readonly<Record<number, readonly FixedSession[]>> = {};
+
+/**
+ * Progress (design/12 3.4): `expected = min(plateau, start + pace * (A * playHours + B * realDays)
+ * curve(archetype, playHours))` for the first focus skill, times `focusFalloff` for each next one.
+ */
+export const PROGRESS = {
+  /** Skill points per play hour and per real day in a focus skill, before pace and curve. */
+  pointsPerHour: 1.3,
+  pointsPerRealDay: 0.5,
+  /** Each later focus skill earns this share of the one before it. */
+  focusFalloff: 0.85,
+  /** Activity may push a skill this many points past its expected value, never more. */
+  band: 3,
+  /** Chance per abstract minute of working a skill that it gains a point, while it is behind. */
+  nudgePerMinute: 0.06,
+  /** Points per rank, for the rank-up event. */
+  pointsPerRank: 5,
+  /** Coin per play hour by archetype, before pace. Catch-up and the purse use it. */
+  coinPerHour: {
+    Grinder: 70,
+    Explorer: 50,
+    Socializer: 40,
+    Crafter: 90,
+    Trader: 220,
+    Roleplayer: 35,
+    Completionist: 55,
+    Casual: 25,
+    Newbie: 20,
+    Veteran: 130,
+  } as Record<Archetype, number>,
+  coinPerRealDay: 8,
+  /** Largest purse a Traveler holds. */
+  coinCap: 60_000,
+} as const;
+
+/**
+ * How an archetype's pace bends over play hours: it moves from `from` to `to`, mostly by `tau`
+ * hours (a Gaussian ease). A Newbie starts slow and catches up by hour 80; a Veteran starts quick
+ * and levels off.
+ */
+export const ARCHETYPE_CURVE: Record<Archetype, { from: number; to: number; tau: number }> = {
+  Grinder: { from: 1, to: 1, tau: 1 },
+  Explorer: { from: 1, to: 1, tau: 1 },
+  Socializer: { from: 1, to: 1, tau: 1 },
+  Crafter: { from: 1, to: 1, tau: 1 },
+  Trader: { from: 1, to: 1, tau: 1 },
+  Roleplayer: { from: 1, to: 1, tau: 1 },
+  Completionist: { from: 0.9, to: 1.2, tau: 60 },
+  Casual: { from: 1, to: 0.7, tau: 60 },
+  Newbie: { from: 0.25, to: 1.15, tau: 45 },
+  Veteran: { from: 1.45, to: 0.9, tau: 30 },
+};
+
+/** The reference player's points in a focus skill: `scale * ln(1 + hours / halfHours)`, capped at 100. */
+export const REFERENCE_PLAYER = { scale: 20, halfHours: 2 } as const;
+
+/** One abstract tick is one in-game minute: 60 sim ticks (the 48 minute day is 24 in-game hours). */
+export const ABSTRACT_TICKS = 60;
+
+/** The most "while you were away" events a catch-up reports. */
+export const AWAY_EVENTS_MAX = 6;
+
+/** Share of gap days to count at most, so a very long absence does not run past the plateau logic. */
+export const CATCHUP_DAYS_CAP = 3650;
+
+/** Activity weights by archetype, over the things a Traveler can choose to do. */
+export type Choice = 'gather' | 'fight' | 'craft' | 'trade' | 'social' | 'afk';
+export const ACTIVITY_WEIGHTS: Record<Archetype, Record<Choice, number>> = {
+  Grinder: { gather: 2, fight: 9, craft: 1, trade: 1, social: 2, afk: 1 },
+  Explorer: { gather: 5, fight: 3, craft: 1, trade: 1, social: 2, afk: 1 },
+  Socializer: { gather: 2, fight: 1, craft: 2, trade: 2, social: 9, afk: 1 },
+  Crafter: { gather: 4, fight: 1, craft: 8, trade: 3, social: 2, afk: 1 },
+  Trader: { gather: 2, fight: 1, craft: 2, trade: 8, social: 3, afk: 1 },
+  Roleplayer: { gather: 1, fight: 2, craft: 1, trade: 1, social: 8, afk: 1 },
+  Completionist: { gather: 4, fight: 4, craft: 3, trade: 1, social: 1, afk: 1 },
+  Casual: { gather: 4, fight: 2, craft: 2, trade: 1, social: 4, afk: 3 },
+  Newbie: { gather: 4, fight: 3, craft: 3, trade: 1, social: 3, afk: 1 },
+  Veteran: { gather: 2, fight: 6, craft: 2, trade: 2, social: 3, afk: 1 },
+};
+
+/** Multipliers on the weights by day phase and by weather. A missing entry is 1. */
+export const PHASE_FACTORS: Record<string, Partial<Record<Choice, number>>> = {
+  dawn: { gather: 1.3, social: 0.7 },
+  day: {},
+  dusk: { social: 1.6, afk: 1.2 },
+  night: { social: 1.5, fight: 0.7, gather: 0.6, afk: 1.8 },
+};
+export const WEATHER_FACTORS: Record<string, Partial<Record<Choice, number>>> = {
+  rain: { gather: 0.4, fight: 0.5, craft: 1.5, social: 1.4 },
+  storm: { gather: 0.2, fight: 0.3, craft: 1.6, social: 1.6 },
+  snow: { gather: 0.4, fight: 0.5, craft: 1.4, social: 1.4 },
+  fog: { fight: 0.7 },
+};
+
+/** Minutes an activity lasts before the next choice, as a range per choice. */
+export const ACTIVITY_MINUTES: Record<Choice, readonly [number, number]> = {
+  gather: [12, 40],
+  fight: [15, 45],
+  craft: [10, 30],
+  trade: [4, 10],
+  social: [10, 35],
+  afk: [3, 12],
+};
+
+/** Minutes per outcome while working, and what it pays. */
+export const OUTCOME = {
+  /** One gather swing every this many minutes yields 1 to `gatherQty` items. */
+  gatherEvery: 2,
+  gatherQty: 2,
+  /** One kill every this many minutes. Coin per kill by creature tier, a range. */
+  fightEvery: 3,
+  coinPerKill: [2, 6] as readonly [number, number],
+  /** Chance per kill of dying, and the share of the purse it costs. */
+  deathChance: 0.01,
+  deathCoinPct: 5,
+  /** One craft every this many minutes. */
+  craftEvery: 3,
+  /** Share of the shop's sell price a Traveler gets before the market exists. */
+  sellPct: 100,
+  /** Chance a Traveler that is short of an ingredient buys it, instead of gathering it. */
+  buyInstead: 0.4,
+  /** The most items a Traveler carries per item id. */
+  stockCap: 60,
+  /** A drop at or under this percent chance is notable and is reported. */
+  notableDropPct: 50,
+} as const;
+
+/** Walking speed between places, in tiles per in-game minute (a minute is 2 real seconds). */
+export const TRAVEL_TILES_PER_MINUTE = 9;
+/** Minutes between places that have no spot yet, and the least a trip takes. */
+export const TRAVEL_DEFAULT_MINUTES = 6;
+export const TRAVEL_MIN_MINUTES = 1;
+
+/** Where each gathering skill is worked. Place ids are from the people places table. */
+export const GATHER_PLACES: Record<string, string> = {
+  'skill.foraging': 'millbrook.fields',
+  'skill.farming': 'millbrook.fields',
+  'skill.mining': 'stonecrop.quarry',
+  'skill.logging': 'cairnmoor.well',
+  'skill.fishing': 'reedmouth.jetty',
+};
+
+/** The workshop of each station kind. */
+export const STATION_PLACES: Record<string, string> = {
+  'fixture.anvil': 'hearthford.smithy',
+  'fixture.workbench': 'hearthford.carpentry',
+  'fixture.loom': 'hearthford.tailor',
+  'fixture.alchemy_table': 'hearthford.apothecary',
+  'fixture.tinker_bench': 'hearthford.tinker_shed',
+  'fixture.rune_stone': 'hearthford.rune_house',
+  camp_pot: 'hearthford.inn',
+};
+
+/** Creature areas Travelers fight in, with the creature of each. Creature ids are from content. */
+export const FIGHT_AREAS: readonly { place: string; creature: string }[] = [
+  { place: 'millbrook.fields', creature: 'creature.grain_rat' },
+  { place: 'millbrook.fields', creature: 'creature.meadow_hare' },
+  { place: 'millbrook.fields', creature: 'creature.mossling' },
+  { place: 'reedmouth.jetty', creature: 'creature.reed_crab' },
+  { place: 'reedmouth.jetty', creature: 'creature.marsh_leech' },
+  { place: 'stonecrop.quarry', creature: 'creature.rubblet' },
+  { place: 'stonecrop.quarry', creature: 'creature.crag_hawk' },
+  { place: 'cairnmoor.well', creature: 'creature.moorhound' },
+  { place: 'cairnmoor.well', creature: 'creature.barrow_bones' },
+];
+
+/** Social places and their weights. */
+export const SOCIAL_PLACES: readonly (readonly [string, number])[] = [
+  ['hearthford.square', 5],
+  ['hearthford.inn', 4],
+  ['hearthford.market_street', 2],
+];
+export const TRADE_PLACE = 'hearthford.market_street';

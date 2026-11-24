@@ -31,6 +31,7 @@ import { craftSystem } from './crafting';
 import { elementsSystem } from './elements';
 import { tradeSystem } from './trade';
 import { scheduleSystem } from './systems/schedule';
+import { travelersSystem } from './travelers/crowd';
 import { snareSystem } from './gadgets';
 import { deedsSystem, pathsSystem } from './systems/deeds';
 import { channelSystem } from './combat/techniques';
@@ -78,6 +79,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   boardsSystem,
   tradeSystem,
   scheduleSystem,
+  travelersSystem,
   hintsSystem,
   // Last, so they see every event the other systems sent this tick. Trials run before skills,
   // so a pass releases banked XP in the same tick. A system that emits an event `skillsSystem` or
