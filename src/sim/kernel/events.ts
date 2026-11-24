@@ -293,7 +293,23 @@ export type SimEvent =
   /** A login catch-up finished. `away` is at most six things that changed (rank-ups, big purses). */
   | { type: 'travelersAway'; away: TravelerAway[] }
   /** The player used the context button on a promoted Traveler: the UI opens its profile card. */
-  | { type: 'travelerInspect'; slot: number };
+  | { type: 'travelerInspect'; slot: number }
+  // ---- Chat (M5-05). ----
+  /** The fact a chat line came from, sent just before the line: an event of this tick or a state. */
+  | { type: 'chatSource'; id: string; fact: string }
+  /** A Traveler said something. `source` is the id of the `chatSource` or event it came from. */
+  | {
+      type: 'travelerSpoke';
+      channel: 'world' | 'local';
+      slot: number;
+      text: string;
+      glyphs: string[];
+      source: string;
+      template: string;
+      reply: boolean;
+      /** The slot values the line was filled with, for the dev chat view and the tests. */
+      slots: Record<string, string>;
+    };
 
 /** One thing the Travelers did while the player was away. */
 export type TravelerAway =

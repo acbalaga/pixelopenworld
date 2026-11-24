@@ -162,3 +162,48 @@ test('a minute of the square at the evening peak, as a frame sequence', async ({
   }
   expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
 });
+
+test('Travelers talk: the ticker and the chat sheet fill with real lines, glyphs inline', async ({
+  page,
+}) => {
+  const problems = await watchProblems(page);
+  const evening = new Date();
+  evening.setDate(evening.getDate() + ((3 - evening.getDay() + 7) % 7));
+  evening.setHours(21, 10, 0, 0);
+  await page.clock.install({ time: evening });
+  await page.goto('/?region=dawnmeadow&at=192,196&time=dusk&weather=clear&foes=0&nosave=1&kit=dev');
+  await page.clock.resume();
+  await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
+  // Lines arrive from the crowd. The old scripted ticker is gone.
+  await expect(page.locator('.pow-chat-line').first()).toBeVisible({ timeout: 90_000 });
+  const first = await page.locator('.pow-chat-line').first().textContent();
+  expect(first ?? '').not.toContain('Brin restock the bread yet');
+  if (process.env.POW_EVIDENCE) {
+    // Keep going until a glyph line shows, for the picture.
+    await page.evaluate(() => {
+      const pow = (window as unknown as { __pow: { say(f: string, t: string): void } }).__pow;
+      pow.say('lilfern', 'so good to see everyone tonight :heart: :sparkle:');
+      pow.say('Marrow', 'smithy is open, copper ingots x4 :coin:');
+    });
+    await expect(page.locator('.pow-glyph').first()).toBeVisible();
+    const dir = join(DIR, '..', 'pow-m5-05');
+    mkdirSync(dir, { recursive: true });
+    await page.keyboard.press('Backquote');
+    await page.screenshot({ path: join(dir, 'ticker-100.png') });
+    await page.locator('.pow-chat-lane').click();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: join(dir, 'sheet-100.png') });
+    await page.evaluate(() =>
+      document.getElementById('ui-root')?.style.setProperty('--text-scale', '1.6'),
+    );
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: join(dir, 'sheet-160.png') });
+    await page
+      .locator('.pow-chat-close, [aria-label*="lose"]')
+      .first()
+      .click()
+      .catch(() => undefined);
+    await page.screenshot({ path: join(dir, 'ticker-160.png') });
+  }
+  expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
+});

@@ -13,6 +13,7 @@ import { initialLives } from './travelers/generate';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
+import type { ChatState } from './chat/engine';
 import type { ClockInput } from './kernel/scheduler';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
@@ -671,6 +672,8 @@ export interface SimState {
   clock?: ClockInput;
   /** Transient. Who is online and what they are doing (M5-03). Made on first use. */
   crowd?: Crowd;
+  /** Transient. Chat budget, repeat window and queued lines (M5-05). Made on first use. */
+  chat?: ChatState;
   /** Transient. Chunk streaming state, or absent when the whole map is resident (tests). */
   stream?: StreamState | null;
 }

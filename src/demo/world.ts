@@ -84,7 +84,7 @@ import { fill } from '../content/strings/skills';
 import { NPCS } from '../content/dialogue';
 import { pinnedLine } from '../sim/requestLog';
 import { TalkSheet } from '../ui/dom/talk';
-import { ChatTicker, PinnedLine } from '../ui/dom/ambient';
+import { PinnedLine } from '../ui/dom/ambient';
 import { drawFloaters } from '../ui/messages/floaters';
 import { quickCount, quickItem, quickNext, quickSlotOf } from '../ui/hud/quickSlot';
 import { calloutFor } from '../ui/combat/callout';
@@ -1129,8 +1129,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     return p ? { x: Math.round(p.x / 256), y: Math.round(p.y / 256) - 4 } : null;
   };
 
-  // Scripted chat, scaffolding until M5.
-  const chat = new ChatTicker(router, state.tick / 30);
+  // Dev builds can show where each chat line came from (`?chatdebug=1`).
+  const chatDebug = import.meta.env.DEV && params.get('chatdebug') === '1';
 
   // Autosave (tech/02): every 60 seconds of play, on room changes and Trials, when the page is
   // hidden or closed. One save runs at a time. `data-saved-seq` and `data-saved-hash` let tests
@@ -1264,7 +1264,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   let meter: DevOverlay | null = null;
   if (import.meta.env.DEV && !fly) {
     void import('../dev/slice').then((mod) =>
-      mod.installSliceHooks({ state, who, settings, command: (c) => pendingCommands.push(c) }),
+      mod.installSliceHooks({
+        state,
+        who,
+        settings,
+        command: (c) => pendingCommands.push(c),
+        say: (from, text) => router.post({ lane: 'chat', from, text, channel: 'world' }),
+      }),
     );
   }
   if (import.meta.env.DEV) {
@@ -1491,7 +1497,6 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             shownHint = hint;
           }
         }
-        chat.update(state.tick / 30);
         if (state.tick - lastSaveTick >= AUTOSAVE_TICKS) {
           lastSaveTick = state.tick;
           requestSave('timer');
@@ -1499,8 +1504,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
-        for (const e of state.events.list)
-          if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot));
+        {
+          const ids = identitiesOf(state.seed);
+          for (const e of state.events.list) {
+            if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot));
+            else if (e.type === 'travelerSpoke')
+              router.post({
+                lane: 'chat',
+                from: ids[e.slot]?.handle ?? 'someone',
+                text: chatDebug ? `${e.text} [${e.template} ${e.source}]` : e.text,
+                channel: e.channel,
+              });
+          }
+        }
         for (const e of state.events.list) {
           const c = calloutFor(state, who, e);
           if (c) feedback.callout(c.id, c.text, c.boss ? HURT : GOLD, now);

@@ -27,6 +27,8 @@ export interface SliceHookContext {
   settings: SettingsStore;
   /** Queues a command for the next tick, the way the UI does. */
   command: (c: Command) => void;
+  /** Posts a World chat line (dev screenshots). */
+  say: (from: string, text: string) => void;
 }
 
 /** The view a test reads. Plain data, no live references. */
@@ -44,6 +46,8 @@ export interface PowDevApi {
   snapshot(): PowSnapshot;
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
+  /** Posts a line to the World chat as a named speaker, for screenshots of glyph lines. */
+  say(from: string, text: string): void;
   /** The crowd (M5-04): who is online, who is an entity, and their handles. */
   crowd(): { online: number; entities: number; handles: string[] };
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
@@ -173,6 +177,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     },
     giveXp(skill, amount) {
       addXp(state, who, skill, amount);
+    },
+    say(from, text) {
+      ctx.say(from, text);
     },
     crowd() {
       const c = state.crowd;

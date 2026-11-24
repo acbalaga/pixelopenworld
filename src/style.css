@@ -2315,3 +2315,12 @@ canvas {
   height: calc(var(--px) * 32);
   image-rendering: pixelated;
 }
+
+/* Chat glyphs (M5-05): 8 x 8 pixel images inline with clear text, at the line's height. */
+.pow-glyph {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.12em;
+  image-rendering: pixelated;
+}

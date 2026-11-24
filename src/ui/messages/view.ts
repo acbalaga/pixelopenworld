@@ -1,4 +1,5 @@
 import { UI_STRINGS as S } from '../../content/strings/ui';
+import { richNodes } from '../dom/glyph';
 import type { Rect } from '../../platform/input/layout';
 import type { SettingsStore } from '../../platform/settings';
 import type { LaneRects } from './layout';
@@ -172,8 +173,8 @@ export class MessageView {
           if (l.from) {
             const n = el('span', 'pow-chat-name');
             n.textContent = `${l.from}:`;
-            add(p, n, document.createTextNode(` ${l.text}`));
-          } else p.textContent = l.text;
+            add(p, n, ...richNodes(` ${l.text}`));
+          } else add(p, ...richNodes(l.text));
           return p;
         }),
       );
@@ -221,8 +222,8 @@ export class MessageView {
           if (l.from) {
             const n = el('span', 'pow-chat-name');
             n.textContent = `${l.from}:`;
-            add(p, n, document.createTextNode(` ${l.text}`));
-          } else p.textContent = l.text;
+            add(p, n, ...richNodes(` ${l.text}`));
+          } else add(p, ...richNodes(l.text));
           return p;
         }),
       );
