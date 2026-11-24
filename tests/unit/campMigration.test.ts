@@ -27,6 +27,7 @@ describe('schema 28 to 29 migration (camps)', () => {
       expect(sk.camp).toEqual({ at: null, acc: 0, used: {}, sleepHour: -1 });
       delete (sk as { camp?: unknown }).camp;
     }
+    delete (s as { travelers?: unknown }).travelers;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

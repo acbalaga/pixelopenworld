@@ -9,6 +9,10 @@
 import { canonical } from '../sim/state';
 import type { SavePlain } from './types';
 
+/** The compact encoding of the Traveler lives (M5-02) lives with the sim and is re-exported here. */
+export { decodeLives, encodeLives } from '../sim/travelers/codec';
+import { fromBase64, toBase64 } from '../sim/travelers/codec';
+
 const enum Tag {
   Null = 0,
   False = 1,
@@ -19,6 +23,8 @@ const enum Tag {
   Str = 6,
   Arr = 7,
   Obj = 8,
+  /** Raw bytes (M5-02): the Traveler lives, which the sim text carries as base64. */
+  Bytes = 9,
 }
 
 const enc = new TextEncoder();
@@ -70,11 +76,13 @@ class Out {
   }
 }
 
-type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
+type Json = null | boolean | number | string | Uint8Array | Json[] | { [k: string]: Json };
 
 function collect(v: Json, table: Map<string, number>): void {
   if (typeof v === 'string') {
     if (!table.has(v)) table.set(v, table.size);
+  } else if (v instanceof Uint8Array) {
+    // Bytes carry no strings.
   } else if (Array.isArray(v)) {
     for (const x of v) collect(x, table);
   } else if (v !== null && typeof v === 'object') {
@@ -105,17 +113,22 @@ function write(v: Json, out: Out, table: Map<string, number>): void {
   } else if (typeof v === 'string') {
     out.byte(Tag.Str);
     out.varint(table.get(v) as number);
+  } else if (v instanceof Uint8Array) {
+    out.byte(Tag.Bytes);
+    out.varint(v.length);
+    out.bytes(v);
   } else if (Array.isArray(v)) {
     out.byte(Tag.Arr);
     out.varint(v.length);
     for (const x of v) write(x, out, table);
   } else {
-    const keys = Object.keys(v);
+    const obj = v as { [k: string]: Json };
+    const keys = Object.keys(obj);
     out.byte(Tag.Obj);
     out.varint(keys.length);
     for (const k of keys) {
       out.varint(table.get(k) as number);
-      write(v[k] as Json, out, table);
+      write(obj[k] as Json, out, table);
     }
   }
 }
@@ -217,6 +230,10 @@ function read(inp: In, table: string[], depth: number): Json {
       }
       return out;
     }
+    case Tag.Bytes: {
+      const n = inp.varint();
+      return inp.take(n).slice();
+    }
     default:
       throw new Error(`bad tag ${tag}`);
   }
@@ -240,9 +257,14 @@ export function unpackValue(bytes: Uint8Array): unknown {
  * text on unpack. A `sim` that is not canonical is refused, since it could not round trip.
  */
 export function packSave(plain: SavePlain): Uint8Array {
-  const parsed: unknown = JSON.parse(plain.sim);
+  const parsed = JSON.parse(plain.sim) as Record<string, unknown>;
   if (canonical(parsed) !== plain.sim) throw new Error('sim text is not canonical');
-  return packValue({ ...plain, sim: parsed });
+  // The Traveler lives are bytes in the sim text as base64. Write them as bytes.
+  const sim: Record<string, unknown> =
+    typeof parsed.travelers === 'string'
+      ? { ...parsed, travelers: fromBase64(parsed.travelers) }
+      : parsed;
+  return packValue({ ...plain, sim });
 }
 
 /** The inverse of {@link packSave}. Checks the fields every save must have. */
@@ -259,5 +281,8 @@ export function unpackSave(bytes: Uint8Array): SavePlain {
     raw.sim === null
   )
     throw new Error('not a save');
-  return { ...raw, sim: canonical(raw.sim) } as SavePlain;
+  const sim = raw.sim as Record<string, unknown>;
+  const text =
+    sim.travelers instanceof Uint8Array ? { ...sim, travelers: toBase64(sim.travelers) } : sim;
+  return { ...raw, sim: canonical(text) } as SavePlain;
 }

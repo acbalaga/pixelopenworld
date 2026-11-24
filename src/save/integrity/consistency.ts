@@ -123,7 +123,13 @@ export function consistency(v: View): Reason[] {
   const { plain, sim, avatar, inv, storage, skills, pools, journal, ledger } = v;
 
   // The stored summary and ledger copy are the ones the sim gives.
-  if (canonical(plain.summary) !== canonical(deriveSummary(sim, plain.playSeconds)))
+  // A save below schema 30 predates the Traveler totals (M5-02), so they are left out of its summary.
+  const want: Partial<ReturnType<typeof deriveSummary>> = deriveSummary(sim, plain.playSeconds);
+  if (plain.schema < 30) {
+    delete want.travelerPoints;
+    delete want.travelerCoin;
+  }
+  if (canonical(plain.summary) !== canonical(want))
     fail('SUMMARY_MISMATCH', 'stored summary differs from the one recomputed from the sim');
   if (canonical(plain.ledger) !== canonical(ledger))
     fail('LEDGER_COPY_MISMATCH', 'the save ledger differs from the sim ledger');

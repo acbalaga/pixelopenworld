@@ -1,0 +1,133 @@
+import type { GuildDef } from './types';
+
+/**
+ * The twelve guilds (design/12 section 7). In M5 every guild exists, recruits and chats. Only
+ * Lantern Players and Hearth and Home get halls in Hearthford (M5-08 builds them), so `hall` is
+ * null here and the guilds meet in the Hearthford inn's back room until then. Ids are saved, so
+ * the order never changes.
+ */
+export const GUILDS: readonly GuildDef[] = [
+  {
+    id: 1,
+    name: 'Iron Oath',
+    culture: 'Hardcore raiders. Schedules, roles, kill counts.',
+    tone: 'terse, strategic, "o7"',
+    home: 4,
+    hall: null,
+    joinsBy: 'Any Arms skill 30 and Renown',
+    voices: ['terse', 'veteran', 'shouty'],
+  },
+  {
+    id: 2,
+    name: 'The Brass Union',
+    culture: 'Crafting union. Quality standards, apprentices.',
+    tone: 'nerdy, proud, shop talk',
+    home: 4,
+    hall: null,
+    joinsBy: 'Any craft rank 25',
+    voices: ['nerdy', 'terse', 'dry'],
+  },
+  {
+    id: 3,
+    name: 'Society of the Folded Map',
+    culture: 'Cartographers. Map percent, corrections.',
+    tone: 'formal, precise',
+    home: 7,
+    hall: null,
+    joinsBy: 'Cartography 20 or a member friend',
+    voices: ['formal', 'nerdy'],
+  },
+  {
+    id: 4,
+    name: 'Lantern Players',
+    culture: 'Roleplay troupe. Stays in character.',
+    tone: 'roleplay voice, theatrical',
+    home: 1,
+    hall: null,
+    joinsBy: 'A member friend or Performance 10',
+    voices: ['roleplay', 'formal', 'jokey'],
+  },
+  {
+    id: 5,
+    name: 'Quiet Hooks',
+    culture: 'Fishing club. Records, patience.',
+    tone: 'slow, kind, fish jokes',
+    home: 3,
+    hall: null,
+    joinsBy: 'Fishing 20',
+    voices: ['chatty', 'kind', 'sleepy'],
+  },
+  {
+    id: 6,
+    name: 'Brine Ledger Company',
+    culture: 'Merchant house. Prices, margins, rivals.',
+    tone: 'merchant, brisk',
+    home: 3,
+    hall: null,
+    joinsBy: 'Bartering 20 and coin held',
+    voices: ['merchant', 'dry'],
+  },
+  {
+    id: 7,
+    name: 'Hearth and Home',
+    culture: 'Newbie-friendly social guild. Helps everyone.',
+    tone: 'chatty, kind, many greetings',
+    home: 1,
+    hall: null,
+    joinsBy: 'Anyone, after one shared activity',
+    voices: ['chatty', 'kind', 'jokey'],
+  },
+  {
+    id: 8,
+    name: 'Greenhand Circle',
+    culture: 'Farmers and cooks. Seasons, recipes, festivals.',
+    tone: 'kind, homely',
+    home: 1,
+    hall: null,
+    joinsBy: 'Cooking or Farming 15',
+    voices: ['kind', 'chatty'],
+  },
+  {
+    id: 9,
+    name: 'The Ninth Bell',
+    culture: 'Duelists. Sporting rivalry, ladders.',
+    tone: 'jokey trash talk, never cruel',
+    home: 6,
+    hall: null,
+    joinsBy: 'Win three duels',
+    voices: ['jokey', 'veteran', 'excitable'],
+  },
+  {
+    id: 10,
+    name: 'Wardens of the Fog',
+    culture: 'Tamers and foragers.',
+    tone: 'glyphy, warm, creature talk',
+    home: 2,
+    hall: null,
+    joinsBy: 'Taming 15 or a tamed creature',
+    voices: ['glyphy', 'kind', 'chatty'],
+  },
+  {
+    id: 11,
+    name: 'Stiltwalkers',
+    culture: 'Alchemists and sneaks.',
+    tone: 'dry, few words, odd humor',
+    home: 5,
+    hall: null,
+    joinsBy: 'Alchemy or Stealth 25',
+    voices: ['dry', 'terse', 'lowercase'],
+  },
+  {
+    id: 12,
+    name: 'Summit Club',
+    culture: 'Speedrunners and climbers. Times, routes.',
+    tone: 'excitable, numbers',
+    home: 6,
+    hall: null,
+    joinsBy: 'An Athletics Trial under par',
+    voices: ['excitable', 'terse', 'veteran'],
+  },
+];
+
+/** Guild by id, or undefined for 0 (none) and anything unknown. */
+export const guildById = (id: number): GuildDef | undefined => GUILDS.find((g) => g.id === id);

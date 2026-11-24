@@ -693,6 +693,21 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       if (sk) sk.camp = { at: null, acc: 0, used: {}, sleepHour: -1 };
     return { ...old, schema: 29, sim: serializeState(deserializeState(JSON.stringify(raw))) };
   },
+  /**
+   * 29 to 30 (M5-02): the sim gains `travelers`, the lives of the 240 Travelers. A save made
+   * before has none, so each starts as a fresh generation from the save's world seed (the
+   * identities are derived from the same seed and are never saved). The summary gains the Traveler
+   * totals, so it is recomputed.
+   */
+  29: (old) => {
+    const s = deserializeState(old.sim);
+    return {
+      ...old,
+      schema: 30,
+      sim: serializeState(s),
+      summary: deriveSummary(s, old.playSeconds),
+    };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */
