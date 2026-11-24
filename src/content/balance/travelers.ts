@@ -715,3 +715,35 @@ export const SOCIAL_PLACES: readonly (readonly [string, number])[] = [
   ['hearthford.market_street', 2],
 ];
 export const TRADE_PLACE = 'hearthford.market_street';
+
+/** Travelers as entities near the player (POW-M5-04). Speeds are sub-pixels per tick unless noted. */
+export const ENTITY = {
+  /** Most Travelers promoted at once. Past it the nearest win. */
+  cap: 30,
+  /** Ticks between promotion and demotion checks. */
+  checkTicks: 30,
+  /**
+   * Walking pace: TRAVEL_TILES_PER_MINUTE tiles in an in-game minute (60 ticks), so a promoted
+   * Traveler keeps the abstract clock's pace. 9 tiles of 16 px over 60 ticks is 2.4 px a tick.
+   */
+  speedSubPx: Math.round((TRAVEL_TILES_PER_MINUTE * 16 * 256) / ABSTRACT_TICKS),
+  /** The chunk radius a Traveler is promoted inside, and the one it is demoted outside. */
+  promoteRadius: 1,
+  demoteRadius: 2,
+  /** With no streaming window (tests, demos), promote within this many px of the avatar. */
+  flatRangePx: 768,
+  /** Ticks standing still before an idle Traveler shows AFK: two in-game minutes. */
+  afkTicks: 120,
+  /** Ticks a login or logout shimmer lasts. */
+  shimmerTicks: 24,
+  /** Arrival tolerance at a goal, px. */
+  arrivePx: 4,
+  /** Ticks without progress before a walker gives up and stands. */
+  stuckTicks: 90,
+  /** A fighting Traveler looks for a creature within this many px, and swings inside `engagePx`. */
+  seekPx: 220,
+  /** Stats from the build (design/12: their build sets their numbers). */
+  hpBase: 60,
+  hpPerPoint: 1.2,
+  defensePerPoints: 12,
+} as const;

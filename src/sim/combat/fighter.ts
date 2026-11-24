@@ -13,6 +13,7 @@ import { blocking, facingOf, hitAngle256 } from './guard';
 import { breaksGuard, knockPx, propertyPct, refundOf, staggerPoints } from './properties';
 import { inShape, len } from './geometry';
 import { recordKill } from '../ledger';
+import { isTravelerEntity } from '../travelers/kind';
 import { elementPct } from '../weatherEffects';
 
 /** A fresh set of pools at full. */
@@ -368,6 +369,10 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
   if (sf) sf.hitstop = Math.max(sf.hitstop, C.hitstop.attacker + bonus);
 
   if (pools.hp === 0) {
+    if (f.team === 1 && isTravelerEntity(state, h.src)) {
+      const ai = getComp(e, dst, 'ai');
+      if (ai) ai.noLoot = true;
+    }
     kill(state, dst);
     const kind = getComp(e, dst, 'combatant')?.kind;
     if (kind && f.team === 1)
@@ -438,7 +443,7 @@ export function kill(state: SimState, id: EntityId): void {
   f.atk = null;
   f.dv = { x: 0, y: 0 };
   f.lock = null;
-  if (f.team === 1) {
+  if (f.team === 1 && !getComp(state.entities, id, 'ai')?.noLoot) {
     const kind = getComp(state.entities, id, 'combatant')?.kind;
     if (kind) recordKill(state, kind);
   }

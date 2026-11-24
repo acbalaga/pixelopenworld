@@ -2299,3 +2299,19 @@ canvas {
   opacity: 0.45;
   cursor: default;
 }
+
+/* A Traveler's profile card (M5-04): the shared detail sheet, shown over the world. */
+.pow-traveler-card {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.pow-traveler-card .pow-part-sheet {
+  pointer-events: auto;
+}
+.pow-traveler-doll {
+  width: calc(var(--px) * 24);
+  height: calc(var(--px) * 32);
+  image-rendering: pixelated;
+}

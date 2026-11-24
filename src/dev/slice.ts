@@ -16,6 +16,8 @@ import type { SimState } from '../sim/state';
 import type { StatusId } from '../content/combat/statuses';
 import { elementHitsWorld } from '../sim/elements';
 import { applyStatus } from '../sim/statuses';
+import { onlineCount } from '../sim/travelers/crowd';
+import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
 
 /** What the hooks need from the running scene. */
@@ -42,6 +44,10 @@ export interface PowDevApi {
   snapshot(): PowSnapshot;
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
+  /** The crowd (M5-04): who is online, who is an entity, and their handles. */
+  crowd(): { online: number; entities: number; handles: string[] };
+  /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
+  travelerFight(creatureId: string): string | null;
   /** Puts items in the bag, as if gathered. */
   giveItem(item: string, qty: number, q?: 0 | 1 | 2 | 3, dur?: number): void;
   /** Pays XP to a skill, as if earned. For screenshots and checks of the Skills tab. */
@@ -167,6 +173,39 @@ export function installSliceHooks(ctx: SliceHookContext): void {
     },
     giveXp(skill, amount) {
       addXp(state, who, skill, amount);
+    },
+    crowd() {
+      const c = state.crowd;
+      return {
+        online: c ? onlineCount(c) : 0,
+        entities: c ? c.ents.size : 0,
+        handles: c ? travelerViews(state).map((v) => v.handle) : [],
+      };
+    },
+    travelerFight(creatureId) {
+      const c = state.crowd;
+      const me = getComp(state.entities, who, 'pos');
+      const view = c
+        ? travelerViews(state).sort(
+            (a, b) =>
+              Math.hypot(a.x - (me?.x ?? 0) / 256, a.y - (me?.y ?? 0) / 256) -
+              Math.hypot(b.x - (me?.x ?? 0) / 256, b.y - (me?.y ?? 0) / 256),
+          )[0]
+        : undefined;
+      if (!c || !view) return null;
+      const slot = view.slot;
+      c.doing[slot] = {
+        kind: 'fight',
+        place: state.travelers[slot]!.place,
+        left: 600,
+        eta: 0,
+        from: 0,
+        total: 0,
+        skill: -1,
+        thing: creatureId,
+      };
+      spawnCreature(state, creatureId, Math.round(view.x) + 28, Math.round(view.y));
+      return view.handle;
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');

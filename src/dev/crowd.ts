@@ -14,7 +14,7 @@ export function crowdLines(state: SimState, limit = 12): string {
   const crowd = state.crowd;
   if (!crowd) return 'crowd: asleep (no clock)';
   const ids = identitiesOf(state.seed);
-  const lines: string[] = [`crowd: ${onlineCount(crowd)} online`];
+  const lines: string[] = [`crowd: ${onlineCount(crowd)} online, ${crowd.ents.size} entities`];
   let shown = 0;
   for (const t of ids) {
     if (!crowd.online[t.slot]) continue;

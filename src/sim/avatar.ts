@@ -13,6 +13,7 @@ import { newSkills } from './skills';
 import { interactFixture } from './systems/fixtures';
 import { hintSeen } from './systems/hints';
 import { interactNpc, talk } from './systems/npcs';
+import { interactTraveler } from './travelers/interact';
 import { buy, buyback, haggle, mend, sell } from './trade';
 import { assign, swapLoadout } from './combat/techniques';
 import { newDeeds, showPath, wearPath } from './systems/deeds';
@@ -95,6 +96,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   if (c.type === 'interact') {
     interactFixture(state, who);
     interactNpc(state, who);
+    interactTraveler(state, who);
   } else if (c.type === 'hint') hintSeen(state, who, c.id);
   else if (c.type === 'talk') talk(state, who, c);
   else if (c.type === 'buy') buy(state, who, c);
