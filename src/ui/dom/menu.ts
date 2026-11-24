@@ -1309,6 +1309,11 @@ export class MenuSheet {
       (v) => st.set({ showGiverMarks: v }),
     );
     toggle(
+      sys.showNames,
+      () => st.get().showNames,
+      (v) => st.set({ showNames: v }),
+    );
+    toggle(
       sys.haptics,
       () => st.get().haptics,
       (v) => st.set({ haptics: v }),

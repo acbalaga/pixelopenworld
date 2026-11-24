@@ -38,6 +38,8 @@ export interface Settings {
   minimap: boolean;
   /** Show a mark over people who have work for you (POW-M4-22D). A UI setting, outside the save. */
   showGiverMarks: boolean;
+  /** Show the name and title over other people's heads, Travelers included (M5-04). A UI setting, outside the save. */
+  showNames: boolean;
   /** Download the region being played in the background, so it plays offline (M4-03). */
   prefetchRegions: boolean;
   /** Regions the player keeps for offline play. They are fetched whole and stay cached. */
@@ -85,6 +87,7 @@ export class SettingsStore {
       closedSections: [],
       minimap: true,
       showGiverMarks: true,
+      showNames: true,
       prefetchRegions: true,
       pinnedRegions: [],
       quickItems: [],
@@ -120,6 +123,7 @@ export class SettingsStore {
       next.menuScroll === this.value.menuScroll &&
       next.minimap === this.value.minimap &&
       next.showGiverMarks === this.value.showGiverMarks &&
+      next.showNames === this.value.showNames &&
       next.prefetchRegions === this.value.prefetchRegions &&
       next.pinnedRegions.length === this.value.pinnedRegions.length &&
       next.pinnedRegions.every((x, i) => x === this.value.pinnedRegions[i]) &&

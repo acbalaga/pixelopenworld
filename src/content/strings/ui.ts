@@ -261,6 +261,7 @@ export const UI_STRINGS = {
     mute: 'Mute audio',
     minimap: 'Show the minimap',
     giverMarks: 'Show who has work',
+    showNames: 'Show names over people',
     prefetchRegions: 'Download the region for offline play',
     pinRegion: 'Keep this region for offline play',
     scheme: 'Controls',
@@ -421,6 +422,16 @@ export const UI_STRINGS = {
     free: 'A mirror. Looking costs nothing.',
   },
   /** Shared Menu parts (M4-18). */
+  travelerCard: {
+    noGuild: 'No guild',
+    guild: 'Guild: {guild}',
+    met: 'You have met.',
+    notMet: 'You have not met.',
+    skills: 'Best at',
+    noSkills: 'Still finding their feet.',
+    bands: ['Novice', 'Practiced', 'Skilled', 'Expert', 'Master'],
+    close: 'Close',
+  },
   parts: {
     closeSheet: 'Close details',
     sectionToggle: '{title}, {count}',

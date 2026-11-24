@@ -2,6 +2,7 @@ import {
   ABSTRACT_TICKS,
   ACTIVITY_MINUTES,
   ACTIVITY_WEIGHTS,
+  ENTITY,
   FIGHT_AREAS,
   GATHER_PLACES,
   OUTCOME,
@@ -33,6 +34,13 @@ import { PLACE_LIST, placeIdx, skillIdx } from './lists';
 import { catchUp, expectedPoints, playHoursOf, type AwayEvent } from './progress';
 import { dayIndexOf, localMinute, MIN_PER_DAY, sessionsFor, type Session } from './schedule';
 import type { TravelerIdentity, TravelerLife } from './types';
+import {
+  entityTick,
+  logoutEntity,
+  promoteSystem,
+  type Shimmer,
+  type TravelerEnt,
+} from './entities';
 
 /**
  * The crowd while unseen (POW-M5-03, design/12 3.2 and 3.3). Real time reaches the sim as a
@@ -51,6 +59,9 @@ export interface Doing {
   /** Minutes of the activity left, and minutes of walking left before it starts. */
   left: number;
   eta: number;
+  /** The place the trip began at, and the minutes it takes in all (0 if there was no trip). */
+  from: number;
+  total: number;
   /** Skill index it trains, or -1. */
   skill: number;
   /** Node id, creature id or recipe id, or `buy:<item>:<qty>` or `sell` for trade. */
@@ -69,6 +80,13 @@ export interface Crowd {
   today: Session[][];
   yesterday: Session[][];
   lastMinute: number;
+  /** Promoted Travelers (M5-04): entity id to its behavior state, and slot to entity id (-1 none). */
+  ents: Map<number, TravelerEnt>;
+  entOf: Int32Array;
+  /** Slots that just logged in and have not been promoted yet, so their arrival shimmers. */
+  justIn: Set<number>;
+  /** Login and logout shimmers in progress. */
+  fx: Shimmer[];
   caughtUp: boolean;
   /** What the login catch-up found. */
   away: AwayEvent[];
@@ -85,6 +103,10 @@ export function newCrowd(seed: number): Crowd {
     today: [],
     yesterday: [],
     lastMinute: -1,
+    ents: new Map(),
+    entOf: new Int32Array(TRAVELER_COUNT).fill(-1),
+    justIn: new Set(),
+    fx: [],
     caughtUp: false,
     away: [],
   };
@@ -183,7 +205,7 @@ function pickMinutes(state: SimState, c: Choice): number {
 const gatherDoing = (state: SimState, node: string, minutes: number): Doing => {
   const skill = nodeSkill(node);
   const place = placeIdx(GATHER_PLACES[`skill.${NODES[node]!.tag}`] ?? 'millbrook.fields');
-  return { kind: 'gather', place, left: minutes, eta: 0, skill, thing: node };
+  return { kind: 'gather', place, left: minutes, eta: 0, from: 0, total: 0, skill, thing: node };
 };
 
 /** Picks the next thing for an online Traveler. Pure in the state and the travelers stream. */
@@ -212,6 +234,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
           place: placeIdx(STATION_PLACES[rc.station]!),
           left: pickMinutes(state, 'craft'),
           eta: 0,
+          from: 0,
+          total: 0,
           skill: skillIdx(`skill.${rc.craft}`),
           thing: rc.id,
         };
@@ -229,6 +253,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
           place: placeIdx(TRADE_PLACE),
           left: pickMinutes(state, 'trade'),
           eta: 0,
+          from: 0,
+          total: 0,
           skill: -1,
           thing: `buy:${missing.item}:${need}`,
         };
@@ -250,6 +276,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
       place: placeIdx(area.place),
       left: pickMinutes(state, 'fight'),
       eta: 0,
+      from: 0,
+      total: 0,
       skill: arms.length > 0 ? pick(r, arms) : -1,
       thing: area.creature,
     };
@@ -262,6 +290,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
         place: placeIdx(TRADE_PLACE),
         left: pickMinutes(state, 'trade'),
         eta: 0,
+        from: 0,
+        total: 0,
         skill: -1,
         thing: 'sell',
       };
@@ -273,6 +303,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
       place: here,
       left: pickMinutes(state, 'afk'),
       eta: 0,
+      from: 0,
+      total: 0,
       skill: -1,
       thing: '',
     };
@@ -282,6 +314,8 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
     place: placeIdx(spot),
     left: pickMinutes(state, 'social'),
     eta: 0,
+    from: 0,
+    total: 0,
     skill: -1,
     thing: '',
   };
@@ -335,6 +369,7 @@ function work(
   clock: ClockInput,
   t: TravelerIdentity,
   d: Doing,
+  real: boolean,
 ): void {
   const life = state.travelers[t.slot]!;
   const stock = crowd.stock[t.slot]!;
@@ -374,7 +409,10 @@ function work(
           });
       }
       nudge(state, crowd, clock, t, d.skill);
-      if (chance(r, OUTCOME.deathChance * c.tier)) {
+      // A promoted Traveler can really fall in a fight, so the roll does not apply to it. The die is
+      // still cast, so the stream is the same whether or not the Traveler is on screen.
+      const fell = chance(r, OUTCOME.deathChance * c.tier);
+      if (!real && fell) {
         life.coin -= Math.floor((life.coin * OUTCOME.deathCoinPct) / 100);
         emit(state.events, {
           type: 'travelerDied',
@@ -458,6 +496,7 @@ function trade(state: SimState, crowd: Crowd, t: TravelerIdentity, d: Doing): vo
 
 function login(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
   crowd.online[t.slot] = 1;
+  crowd.justIn.add(t.slot);
   crowd.doing[t.slot] = null;
   emit(state.events, {
     type: 'travelerLoggedIn',
@@ -467,7 +506,9 @@ function login(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
 }
 
 function logout(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
+  logoutEntity(state, crowd, t.slot);
   crowd.online[t.slot] = 0;
+  crowd.justIn.delete(t.slot);
   crowd.doing[t.slot] = null;
   const life = state.travelers[t.slot]!;
   life.activity = actIdx('afk');
@@ -475,12 +516,20 @@ function logout(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
 }
 
 /** One abstract step for an online, unpromoted Traveler. */
-function stepTraveler(state: SimState, crowd: Crowd, clock: ClockInput, t: TravelerIdentity): void {
+function stepTraveler(
+  state: SimState,
+  crowd: Crowd,
+  clock: ClockInput,
+  t: TravelerIdentity,
+  real = false,
+): void {
   const life = state.travelers[t.slot]!;
   let d = crowd.doing[t.slot] ?? null;
   if (!d || (d.eta === 0 && d.left <= 0)) {
     d = chooseNext(state, crowd, t);
     d.eta = routeMinutes(life.place, d.place);
+    d.from = life.place;
+    d.total = d.eta;
     crowd.doing[t.slot] = d;
     life.activity = actIdx(d.eta > 0 ? 'travel' : d.kind);
     life.subject = d.skill < 0 ? 0 : d.skill;
@@ -495,7 +544,7 @@ function stepTraveler(state: SimState, crowd: Crowd, clock: ClockInput, t: Trave
     return;
   }
   life.place = d.place;
-  work(state, crowd, clock, t, d);
+  work(state, crowd, clock, t, d, real);
   d.left--;
 }
 
@@ -515,6 +564,9 @@ export function travelersSystem(state: SimState): void {
   if (!clock) return;
   const crowd = crowdOf(state);
   if (!crowd.caughtUp) loginCatchUp(state, crowd, clock);
+  // Entities move every tick, and promotion is checked a few times a second.
+  if (state.worldTick % ENTITY.checkTicks === 0) promoteSystem(state, crowd);
+  entityTick(state, crowd);
   const minute = Math.floor(state.worldTick / ABSTRACT_TICKS);
   if (minute === crowd.lastMinute) return;
   crowd.lastMinute = minute;
@@ -528,6 +580,8 @@ export function travelersSystem(state: SimState): void {
     const was = crowd.online[t.slot] === 1;
     if (on && !was) login(state, crowd, t);
     else if (!on && was) logout(state, crowd, t);
-    if (on && !crowd.promoted[t.slot]) stepTraveler(state, crowd, clock, t);
+    if (!on) continue;
+    if (!crowd.promoted[t.slot]) stepTraveler(state, crowd, clock, t);
+    else if ((crowd.entOf[t.slot] ?? -1) >= 0) stepTraveler(state, crowd, clock, t, true);
   }
 }

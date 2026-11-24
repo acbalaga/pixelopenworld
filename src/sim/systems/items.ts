@@ -21,7 +21,7 @@ function dropLoot(state: SimState): void {
     const kind = getComp(state.entities, e.id, 'combatant')?.kind;
     const p = getComp(state.entities, e.id, 'pos');
     const def = kind ? CREATURES[kind] : undefined;
-    if (!def || !p) continue;
+    if (!def || !p || getComp(state.entities, e.id, 'ai')?.noLoot) continue;
     for (const d of rollDrops(state.rng.loot, def.drops)) {
       const s = B.loot.scatterPx;
       const dx = int(state.rng.loot, -s, s) * SUBPX;

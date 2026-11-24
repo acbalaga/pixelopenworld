@@ -1,4 +1,4 @@
-import { createStore, spawn, setComp, type EntityStore } from './kernel/entities';
+import { createStore, destroy, spawn, setComp, type EntityStore } from './kernel/entities';
 import { createEventQueue, type EventQueue } from './kernel/events';
 import { createStreams, int, type RngStreams } from './kernel/rng';
 import { px, type Direction, type Vec } from './kernel/fixed';
@@ -412,6 +412,11 @@ export interface Ai {
    * gone, so it is never lost.
    */
   loot?: { stack: ItemStack; owner: number; t: number };
+  /**
+   * Struck down by a Traveler (M5-04): it leaves no drops and counts no kill, so the crowd never
+   * pays the player. Absent means false.
+   */
+  noLoot?: true;
 }
 
 /** Keeps `cap` of a creature alive near its position. */
@@ -751,6 +756,22 @@ export function canonical(v: unknown): string {
     .join(',')}}`;
 }
 
+/**
+ * The entity store as it is saved. Promoted Travelers (M5-04) are rebuilt from their lives, so
+ * they never go into a save: a copy without them is written when any exist.
+ */
+function entitiesForSave(state: SimState): EntityStore<Components> {
+  const kinds = state.entities.comps.interactable;
+  let any = false;
+  for (let i = 0; i < kinds.length && !any; i++)
+    any = !!state.entities.alive[i] && (kinds[i]?.kind.startsWith('traveler:') ?? false);
+  if (!any) return state.entities;
+  const copy = structuredClone(state.entities);
+  for (let i = 0; i < kinds.length; i++)
+    if (copy.alive[i] && copy.comps.interactable[i]?.kind.startsWith('traveler:')) destroy(copy, i);
+  return copy;
+}
+
 function persistent(state: SimState): Omit<
   SimState,
   'events' | 'world' | 'worldTick' | 'stream' | 'travelers'
@@ -761,7 +782,7 @@ function persistent(state: SimState): Omit<
     seed: state.seed,
     tick: state.tick,
     rng: state.rng,
-    entities: state.entities,
+    entities: entitiesForSave(state),
     ledger: state.ledger,
     deltas: state.deltas,
     map: state.map,

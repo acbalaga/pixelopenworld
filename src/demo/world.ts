@@ -13,9 +13,13 @@ import coreUrl from '../../baked/atlas-core.png?url';
 import uiUrl from '../../baked/atlas-ui.png?url';
 import panelBase from '../../baked/ui-panel-base.png?url';
 import panelPressed from '../../baked/ui-panel-pressed.png?url';
-import { randomDoll } from '../content/dolls/parts';
+import { randomDoll, type DollSpec } from '../content/dolls/parts';
 import { FONTS } from '../content/fonts';
 import { PALETTE } from '../content/sprites/palette';
+import { TRAVELER_SHIMMER } from '../content/sprites/travelerShimmer';
+import { identitiesOf } from '../sim/travelers/generate';
+import { demoteAll, profileOf, travelerViews } from '../sim/travelers/entities';
+import { TravelerCard } from '../ui/dom/travelerCard';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
 import { SIGN_STRINGS } from '../content/strings/signs';
 import { BELL_ORDER } from '../content/world/dungeons/west';
@@ -464,6 +468,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   // Anim handles by sprite, action and facing, looked up once. A missing action (a rooted plant
   // has no walk) falls back to idle.
   const animCache = new Map<string, number>();
+  // Doll sprites for Travelers, made when a Traveler is first seen (M5-04).
+  const travelerDolls = new Set<number>();
+  const travelerDoll = (slot: number, look: DollSpec): string => {
+    const id = `char.traveler.${slot}`;
+    if (!travelerDolls.has(slot)) {
+      dolls.create(id, look);
+      travelerDolls.add(slot);
+    }
+    return id;
+  };
   const animOf = (id: string, name: string, facing: number): number => {
     const dir = FACE_NAME[facing as 0 | 2 | 4 | 6];
     const key = `${id}#${name}#${dir}`;
@@ -542,7 +556,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     guard: () => shieldWorn,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
-    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen,
+    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -572,6 +586,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     return null;
   })();
   const wantWeather = import.meta.env.DEV ? params.get('weather') : null;
+  const crowdOff = import.meta.env.DEV && params.get('crowd') === '0';
   state.region = regionId;
   if (wantWeather && (WEATHER as readonly string[]).includes(wantWeather))
     state.weatherOverride = wantWeather as Weather;
@@ -1039,6 +1054,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
   });
   const FACING = { up: 0, right: 2, down: 4, left: 6 } as const;
+  // A Traveler's profile card (M5-04), opened with the context button on a promoted Traveler.
+  let cardOpen = false;
+  const travelerCard = new TravelerCard(root, {
+    drawDoll: (canvas, slot) => {
+      const look = identitiesOf(state.seed)[slot]?.look;
+      if (!look) return;
+      const h = atlas.animFrame(animOf(travelerDoll(slot, look), 'idle', 4), 0);
+      blit(canvas, h);
+    },
+    onOpenChange: (open) => {
+      cardOpen = open;
+      if (open) input.sampler.keyboard.reset();
+    },
+  });
   const talk = new TalkSheet(root, {
     read: () => ({ state, who }),
     send: (c) => pendingCommands.push(c),
@@ -1115,6 +1144,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const saver = new AutoSaver(
     async () => {
       if (!saves || retired) return;
+      // Promoted Travelers are rebuilt from their lives and never saved: write them back first.
+      demoteAll(state);
       const h = hashState(state);
       const seq = await saves.commit({
         sim: state,
@@ -1439,11 +1470,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         stepWorld(state, who, {
           commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
           worldTick: worldNow(),
-          clock: {
-            nowMs: trustedNow,
-            epochMs: worldEpoch,
-            tzOffsetMin: tzOffset(trustedNow),
-          },
+          // Dev builds can put the crowd to sleep (`?crowd=0`), for frame-budget comparisons.
+          ...(crowdOff
+            ? {}
+            : {
+                clock: {
+                  nowMs: trustedNow,
+                  epochMs: worldEpoch,
+                  tzOffsetMin: tzOffset(trustedNow),
+                },
+              }),
         });
         {
           // Hints are notices with a glyph (design/09): posted once, retracted when acted on.
@@ -1463,6 +1499,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         }
         const now = performance.now();
         feedback.onEvents(state.events.list, now, centerOf, who, settings.get().reducedMotion);
+        for (const e of state.events.list)
+          if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot));
         for (const e of state.events.list) {
           const c = calloutFor(state, who, e);
           if (c) feedback.callout(c.id, c.text, c.boss ? HURT : GOLD, now);
@@ -1760,6 +1798,64 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             Math.round(np.x / 256),
             Math.round(np.y / 256) - atlas.originY(frame) + 3 - 2 + bob,
           );
+        }
+      }
+      // Travelers near the player (M5-04): dolls, shimmers, and names in pixel text over their heads.
+      if (!dark && state.crowd) {
+        const ids = identitiesOf(state.seed);
+        const names = settings.get().showNames && !talkOpen;
+        const shim = TRAVELER_SHIMMER;
+        for (const tv of travelerViews(state)) {
+          const doll = travelerDoll(tv.slot, tv.look);
+          const a = animOf(doll, tv.anim, tv.face);
+          const frame = atlas.animFrame(a, now);
+          const wx = Math.round(tv.x);
+          const wy = Math.round(tv.y);
+          renderer.drawSprite(Layer.Objects, frame, wx, wy, atlas.animFlip(a));
+          if (!names) continue;
+          const font = chooseTextRenderer({
+            text: tv.handle,
+            lines: 1,
+            physicalMmPerLogicalPx: vp.current.mmPerLogicalPx,
+          });
+          if (font.renderer !== 'pixel') continue;
+          const sx = wx - Math.round(camera.x + shake.x);
+          const head = wy - Math.round(camera.y + shake.y) - atlas.originY(frame) - 2;
+          // Baked labels: one draw each (the outline is part of the sprite), centered over the head.
+          let y = head - 9;
+          if (tv.title) {
+            const lh = fonts.small.bake(tv.title, GREY, DARK);
+            renderer.drawSprite(Layer.Hud, lh, sx - (atlas.width(lh) >> 1), y);
+            y -= 9;
+          }
+          const nh = fonts.small.bake(tv.handle, INK, DARK);
+          renderer.drawSprite(Layer.Hud, nh, sx - (atlas.width(nh) >> 1), y);
+          if (tv.afk) {
+            const zh = fonts.small.bake('zzz', GREY, DARK);
+            renderer.drawSprite(Layer.Hud, zh, sx + 8, y - 9);
+          }
+        }
+        // Logging in and out: the doll fades while a column of light rises and thins.
+        for (const fx of state.crowd.fx) {
+          const doll = travelerDoll(fx.slot, ids[fx.slot]!.look);
+          const a = animOf(doll, 'idle', fx.face);
+          const frame = atlas.animFrame(a, now);
+          const k = Math.min(shim.ticks - 1, fx.t);
+          const alpha = shim.alpha[fx.kind === 'in' ? k : shim.ticks - 1 - k] ?? 1;
+          const wx = Math.round(fx.x);
+          const wy = Math.round(fx.y);
+          const w = shim.column[k] ?? 1;
+          renderer.drawRect(
+            Layer.Objects,
+            wx - (w >> 1),
+            wy - 30,
+            w,
+            30,
+            PALETTE[shim.glow] as string,
+            0.45 * (1 - k / shim.ticks),
+            'lighter',
+          );
+          renderer.drawSprite(Layer.Objects, frame, wx, wy, atlas.animFlip(a), alpha);
         }
       }
       // The sky: weather particles, the tint of the hour and the weather, and the lights of the

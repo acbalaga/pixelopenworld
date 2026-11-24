@@ -291,7 +291,9 @@ export type SimEvent =
   | { type: 'travelerCrafted'; slot: number; item: string; qty: number; recipe: string }
   | { type: 'travelerSold'; slot: number; item: string; qty: number; price: number }
   /** A login catch-up finished. `away` is at most six things that changed (rank-ups, big purses). */
-  | { type: 'travelersAway'; away: TravelerAway[] };
+  | { type: 'travelersAway'; away: TravelerAway[] }
+  /** The player used the context button on a promoted Traveler: the UI opens its profile card. */
+  | { type: 'travelerInspect'; slot: number };
 
 /** One thing the Travelers did while the player was away. */
 export type TravelerAway =
