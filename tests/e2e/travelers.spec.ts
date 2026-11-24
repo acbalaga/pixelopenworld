@@ -135,3 +135,30 @@ Budgets (tech/04): 60 fps in a busy hub, never below 45; render under 8 ms; tick
   expect(crowd.tick!).toBeLessThan(6);
   expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
 });
+
+test('a minute of the square at the evening peak, as a frame sequence', async ({ page }) => {
+  const problems = await watchProblems(page);
+  const evening = new Date();
+  evening.setDate(evening.getDate() + ((3 - evening.getDay() + 7) % 7));
+  evening.setHours(21, 10, 0, 0);
+  await page.clock.install({ time: evening });
+  await page.goto('/?region=dawnmeadow&at=192,196&time=dusk&weather=clear&foes=0&nosave=1&kit=dev');
+  await page.clock.resume();
+  await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => (window as unknown as { __pow?: Pow }).__pow?.crowd().entities ?? 0),
+      { timeout: 90_000 },
+    )
+    .toBeGreaterThan(8);
+  await page.keyboard.press('Backquote');
+  const dir = join(DIR, '..', 'pow-m5-14');
+  if (process.env.POW_EVIDENCE) mkdirSync(dir, { recursive: true });
+  for (let i = 0; i < 6; i++) {
+    if (process.env.POW_EVIDENCE)
+      await page.screenshot({ path: join(dir, `frame-${i}.png`), scale: 'css' });
+    await page.waitForTimeout(10_000);
+  }
+  expect(problems).toEqual({ console: [], pageErrors: [], csp: [], failedRequests: [] });
+});

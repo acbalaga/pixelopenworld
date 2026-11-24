@@ -1,6 +1,7 @@
 import { WEAPONS } from '../../content/combat/attacks';
 import {
   ABSTRACT_TICKS,
+  BEHAVIOR,
   ENTITY,
   TRAVEL_TILES_PER_MINUTE,
   TRAVELER_COUNT,
@@ -8,6 +9,9 @@ import {
 import { PATH_LIST } from '../../content/paths';
 import { PATH_STRINGS } from '../../content/strings/paths';
 import { PLACES } from '../../content/people/places';
+import { RECIPES } from '../../content/items/recipes';
+import { SHOPS } from '../../content/dialogue';
+import { dayPhase } from '../time';
 import type { DollSpec } from '../../content/dolls/parts';
 import { startComboStep } from '../combat/commands';
 import { newFighter, newPools } from '../combat/fighter';
@@ -33,7 +37,14 @@ import type { TravelerIdentity } from './types';
  * creates or loses an item or a coin. Entity state is not saved: it is rebuilt from the life.
  */
 
-export type EntMode = 'walk' | 'stand' | 'sit' | 'idle' | 'afk' | 'gather' | 'fight';
+export type EntMode =
+  'walk' | 'stand' | 'sit' | 'idle' | 'afk' | 'gather' | 'fight' | 'craft' | 'shop' | 'dance';
+
+/** An emote in progress: what it is and ticks since it began. */
+export interface Emote {
+  kind: string;
+  t: number;
+}
 
 export interface TravelerEnt {
   slot: number;
@@ -46,8 +57,15 @@ export interface TravelerEnt {
   /** Ticks without progress toward a goal, and ticks spent standing still. */
   stuck: number;
   still: number;
-  /** Work animation while gathering, or ''. */
+  /** Work animation while gathering or crafting, or ''. */
   work: string;
+  /** The emote showing, the tick the next one starts, and the group this Traveler stands with. */
+  emote: Emote | null;
+  nextEmote: number;
+  group: { x: number; y: number; size: number } | null;
+  /** Dancing for the rest of this activity (decided once when it starts). */
+  dancing: boolean;
+  lastDoing: Doing | null;
   lastX: number;
   lastY: number;
 }
@@ -173,6 +191,11 @@ export function newEnt(slot: number): TravelerEnt {
     stuck: 0,
     still: 0,
     work: '',
+    emote: null,
+    nextEmote: 0,
+    group: null,
+    dancing: false,
+    lastDoing: null,
     lastX: 0,
     lastY: 0,
   };
@@ -238,7 +261,10 @@ export function demote(
       const dest = standPx(slot, d.place);
       if (dest) {
         const tiles = (Math.abs(dest.x - pos.x / SUBPX) + Math.abs(dest.y - pos.y / SUBPX)) / TILE;
-        d.eta = Math.max(1, Math.ceil(tiles / TRAVEL_TILES_PER_MINUTE));
+        const here = Math.max(1, Math.ceil(tiles / TRAVEL_TILES_PER_MINUTE));
+        // The abstract clock keeps its own count unless the walk has really fallen behind or run
+        // ahead of it (a blocked road): then the entity's own estimate wins.
+        if (Math.abs(here - d.eta) > ENTITY.etaSlackMinutes) d.eta = here;
       }
     } else if (d.eta === 0) life.place = d.place;
   }
@@ -270,6 +296,7 @@ export function logoutEntity(state: SimState, crowd: Crowd, slot: number): void 
 export function promoteSystem(state: SimState, crowd: Crowd): void {
   const w = whereIsPlayer(state);
   if (!w) return;
+  formGroups(state, crowd);
   // Demote: gone, out of the loaded ring, or logged out without the system noticing.
   for (const [id, ent] of [...crowd.ents]) {
     if (!state.entities.alive[id]) {
@@ -418,15 +445,153 @@ function walkTo(state: SimState, id: EntityId, ent: TravelerEnt, gx: number, gy:
   return false;
 }
 
-function idleMode(d: Doing | null, ent: TravelerEnt): EntMode {
-  if (!d) return 'stand';
-  if (d.kind === 'afk') return ent.still >= ENTITY.afkTicks ? 'afk' : 'idle';
-  if (d.kind === 'social')
-    return d.place === PLACE_LIST.indexOf('hearthford.inn') ? 'sit' : 'stand';
-  return 'idle';
+/**
+ * A number in [0, 1) from the seed, a slot, a salt and a counter. The entity layer's own dice: it
+ * never draws from the sim's streams, so what a Traveler does on screen cannot change what the
+ * crowd does off it.
+ */
+export function hash01(seed: number, slot: number, salt: number, n: number): number {
+  let h =
+    (seed ^
+      Math.imul(slot + 1, 0x9e3779b1) ^
+      Math.imul(salt + 7, 0x85ebca6b) ^
+      Math.imul(n + 3, 0xc2b2ae35)) >>>
+    0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-/** One tick of every promoted Traveler: walk, stand, work, fight. */
+const TIE_GROUP: readonly string[] = ['friend', 'sibling', 'mentor'];
+
+/**
+ * Who stands together. Promoted Travelers socializing or idling at the same place form a group when
+ * they are friends (a standing tie) or share a guild: two to five, around the lowest slot's spot.
+ * Recomputed with each promotion check, so a group forms and breaks up as people come and go.
+ */
+function formGroups(state: SimState, crowd: Crowd): void {
+  const ids = identitiesOf(crowd.seed);
+  const byPlace = new Map<number, number[]>();
+  for (const ent of crowd.ents.values()) {
+    ent.group = null;
+    const d = crowd.doing[ent.slot];
+    if (!d || d.eta > 0 || (d.kind !== 'social' && d.kind !== 'afk')) continue;
+    const list = byPlace.get(d.place) ?? [];
+    list.push(ent.slot);
+    byPlace.set(d.place, list);
+  }
+  const mates = (a: number, b: number): boolean => {
+    const ia = ids[a]!;
+    if (ia.ties.some((t) => t.slot === b && TIE_GROUP.includes(t.kind))) return true;
+    const ga = state.travelers[a]!.guild;
+    return ga !== 0 && ga === state.travelers[b]!.guild;
+  };
+  for (const [place, slots] of byPlace) {
+    slots.sort((a, b) => a - b);
+    const taken = new Set<number>();
+    for (const lead of slots) {
+      if (taken.has(lead)) continue;
+      const group = [lead];
+      for (const o of slots)
+        if (o !== lead && !taken.has(o) && group.length < BEHAVIOR.groupMax && mates(lead, o))
+          group.push(o);
+      if (group.length < 2) continue;
+      const anchor = standPx(lead, place);
+      if (!anchor) continue;
+      group.forEach((slot, k) => {
+        taken.add(slot);
+        const e = crowd.ents.get(crowd.entOf[slot] ?? -1);
+        if (!e) return;
+        const a = (k / group.length) * Math.PI * 2;
+        e.group = {
+          x: anchor.x + Math.round(Math.cos(a) * BEHAVIOR.groupRadiusPx),
+          y: anchor.y + Math.round(Math.sin(a) * BEHAVIOR.groupRadiusPx * 0.6),
+          size: group.length,
+        };
+      });
+    }
+  }
+}
+
+/** The nearest station fixture of a kind near a point, as the spot to stand at (just south). */
+function stationFor(
+  state: SimState,
+  x: number,
+  y: number,
+  kind: string,
+): { x: number; y: number } | null {
+  let best: { x: number; y: number } | null = null;
+  let bestD = 12 * TILE;
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    if (state.entities.comps.fixture[id]!.kind !== kind) continue;
+    const p = state.entities.comps.pos[id]!;
+    const d = Math.hypot(p.x / SUBPX - x, p.y / SUBPX - y);
+    if (d < bestD) {
+      best = { x: p.x / SUBPX, y: p.y / SUBPX + 12 };
+      bestD = d;
+    }
+  }
+  return best;
+}
+
+/** The counter at the shop: just south of the shopkeeper. */
+function counterOf(state: SimState, npcId: string): { x: number; y: number } | null {
+  for (const id of query(state.entities, 'npc', 'pos'))
+    if (state.entities.comps.npc[id]!.id === npcId) {
+      const p = state.entities.comps.pos[id]!;
+      return { x: p.x / SUBPX, y: p.y / SUBPX + 14 };
+    }
+  return null;
+}
+
+const phaseName = (state: SimState): string => dayPhase(state.worldTick);
+
+/** A new activity: decide whether the Traveler dances, once, and reset the emote clock. */
+function noteDoing(state: SimState, crowd: Crowd, ent: TravelerEnt, d: Doing | null): void {
+  if (ent.lastDoing === d) return;
+  ent.lastDoing = d;
+  ent.dancing = false;
+  if (!d || d.kind !== 'social') return;
+  const place = PLACES[PLACE_LIST[d.place] ?? ''];
+  if (!place || place.indoors) return;
+  const chance = BEHAVIOR.danceChance[phaseName(state)] ?? 0;
+  ent.dancing = hash01(crowd.seed, ent.slot, 11, state.tick >> 6) < chance;
+}
+
+/** What a Traveler does with its idle moments: an emote now and then, sleep when AFK. */
+function emoteTick(state: SimState, crowd: Crowd, ent: TravelerEnt): void {
+  const idle =
+    ent.mode === 'stand' ||
+    ent.mode === 'idle' ||
+    ent.mode === 'sit' ||
+    ent.mode === 'afk' ||
+    ent.mode === 'dance';
+  if (ent.emote) {
+    if (++ent.emote.t >= BEHAVIOR.emoteTicks) ent.emote = null;
+    return;
+  }
+  if (!idle) return;
+  if (ent.mode === 'afk') {
+    ent.emote = { kind: 'sleep', t: 0 };
+    return;
+  }
+  if (state.tick < ent.nextEmote) return;
+  const [lo, hi] = BEHAVIOR.emoteGapTicks;
+  ent.nextEmote =
+    state.tick + lo + Math.floor(hash01(crowd.seed, ent.slot, 21, state.tick >> 5) * (hi - lo));
+  const names = Object.keys(BEHAVIOR.emotes);
+  const total = names.reduce((a, k) => a + (BEHAVIOR.emotes[k] ?? 0), 0);
+  let x = hash01(crowd.seed, ent.slot, 31, state.tick >> 5) * total;
+  for (const k of names) {
+    x -= BEHAVIOR.emotes[k] ?? 0;
+    if (x < 0) {
+      ent.emote = { kind: k, t: 0 };
+      return;
+    }
+  }
+}
+
+/** One tick of every promoted Traveler: walk, stand, work, shop, dance, emote, fight. */
 export function entityTick(state: SimState, crowd: Crowd): void {
   for (const [id, ent] of crowd.ents) {
     const f = state.entities.comps.fighter[id];
@@ -435,11 +600,13 @@ export function entityTick(state: SimState, crowd: Crowd): void {
     const d = crowd.doing[ent.slot] ?? null;
     if (f.state !== 'idle') {
       ent.mode = f.state === 'attack' ? 'fight' : 'idle';
+      ent.emote = null;
       continue;
     }
     const x = p.x / SUBPX;
     const y = p.y / SUBPX;
     ent.work = '';
+    noteDoing(state, crowd, ent, d);
     if (!d) {
       ent.mode = 'stand';
       ent.still++;
@@ -468,16 +635,38 @@ export function entityTick(state: SimState, crowd: Crowd): void {
     const dest = standPx(ent.slot, d.place);
     let goal = dest;
     let work = '';
-    if (d.eta === 0 && d.kind === 'gather') {
-      const n = nodeFor(state, dest?.x ?? x, dest?.y ?? y, d.thing);
-      if (n) {
-        goal = n;
-        work = 'work_reach';
+    let facing: 0 | 2 | 4 | 6 | null = null;
+    let atWork: EntMode = 'idle';
+    if (d.eta === 0) {
+      if (d.kind === 'gather') {
+        const n = nodeFor(state, dest?.x ?? x, dest?.y ?? y, d.thing);
+        if (n) {
+          goal = n;
+          work = 'work_reach';
+          atWork = 'gather';
+        }
+      } else if (d.kind === 'craft') {
+        const station = RECIPES[d.thing]?.station ?? '';
+        const at = stationFor(state, dest?.x ?? x, dest?.y ?? y, station);
+        work = BEHAVIOR.stationAnim[station] ?? 'work_hands';
+        atWork = 'craft';
+        if (at) goal = at;
+        facing = 0;
+      } else if (d.kind === 'trade') {
+        const at = counterOf(state, SHOPS['shop.brin']?.npc ?? 'npc.shopkeeper');
+        if (at) {
+          goal = { x: at.x + (ent.slot % 3) * 6 - 6, y: at.y };
+          facing = 0;
+          atWork = 'shop';
+        }
+      } else if ((d.kind === 'social' || d.kind === 'afk') && ent.group) {
+        goal = { x: ent.group.x, y: ent.group.y };
       }
     }
     if (!goal) {
       ent.mode = 'stand';
       ent.still++;
+      emoteTick(state, crowd, ent);
       continue;
     }
     const arrived = walkTo(state, id, ent, goal.x, goal.y);
@@ -485,13 +674,22 @@ export function entityTick(state: SimState, crowd: Crowd): void {
     if (moving) {
       ent.mode = 'walk';
       ent.still = 0;
+      ent.emote = null;
     } else {
       ent.still++;
+      if (facing !== null) ent.face = facing;
       if (work) {
-        ent.mode = 'gather';
+        ent.mode = atWork;
         ent.work = work;
-      } else ent.mode = idleMode(d, ent);
+      } else if (d.kind === 'social' && ent.dancing && d.eta === 0) ent.mode = 'dance';
+      else if (atWork === 'shop') ent.mode = 'shop';
+      else if (d.kind === 'afk') ent.mode = ent.still >= ENTITY.afkTicks ? 'afk' : 'idle';
+      else if (d.kind === 'social')
+        ent.mode =
+          d.place === PLACE_LIST.indexOf('hearthford.inn') ? 'sit' : ent.group ? 'idle' : 'stand';
+      else ent.mode = 'idle';
     }
+    emoteTick(state, crowd, ent);
   }
   // Shimmers age out.
   for (let i = crowd.fx.length - 1; i >= 0; i--) {
@@ -525,9 +723,33 @@ export interface TravelerView {
   title: string;
   afk: boolean;
   look: DollSpec;
+  /** What the Traveler is doing, for tests and the dev overlay. */
+  mode: EntMode;
+  /** Pixel text over the name for an emote (`o/`, `xD`, `zzz`), or ''. */
+  glyph: string;
+  /** Drawn this many px lower: a seated Traveler sits in its chair. */
+  dy: number;
+  /** Standing with a group of this size, or 0. */
+  group: number;
 }
 
 /** Every promoted Traveler, in draw order (by y), for the renderer. */
+/** The doll animation an emote plays, and the pixel text shown with it. Poses reuse the doll's frames. */
+const EMOTE_POSE: Readonly<Record<string, string>> = {
+  wave: 'work_reach',
+  cheer: 'work_swing',
+  bow: 'hurt',
+  laugh: 'idle',
+  sleep: 'hurt',
+};
+const EMOTE_GLYPH: Readonly<Record<string, string>> = {
+  wave: 'o/',
+  cheer: '\\o/',
+  bow: 'o7',
+  laugh: 'xD',
+  sleep: 'zzz',
+};
+
 export function travelerViews(state: SimState): TravelerView[] {
   const crowd = state.crowd;
   if (!crowd) return [];
@@ -538,18 +760,14 @@ export function travelerViews(state: SimState): TravelerView[] {
     const f = state.entities.comps.fighter[id];
     if (!p || !f) continue;
     const t = ids[ent.slot]!;
-    const anim =
-      f.state === 'attack'
-        ? 'attack'
-        : f.state === 'hurt' || f.state === 'stagger'
-          ? 'hurt'
-          : f.state === 'dead'
-            ? 'hurt'
-            : ent.mode === 'walk'
-              ? 'walk'
-              : ent.mode === 'gather'
-                ? ent.work
-                : 'idle';
+    const pose = ent.emote ? EMOTE_POSE[ent.emote.kind] : undefined;
+    let anim: string;
+    if (f.state === 'attack') anim = 'attack';
+    else if (f.state === 'hurt' || f.state === 'stagger' || f.state === 'dead') anim = 'hurt';
+    else if (pose !== undefined) anim = pose;
+    else if (ent.mode === 'walk' || ent.mode === 'dance') anim = 'walk';
+    else if (ent.mode === 'gather' || ent.mode === 'craft') anim = ent.work;
+    else anim = 'idle';
     out.push({
       id,
       slot: ent.slot,
@@ -561,6 +779,10 @@ export function travelerViews(state: SimState): TravelerView[] {
       title: titleOf(state, ent.slot),
       afk: ent.mode === 'afk',
       look: t.look,
+      mode: ent.mode,
+      glyph: ent.emote ? (EMOTE_GLYPH[ent.emote.kind] ?? '') : '',
+      dy: ent.mode === 'sit' ? 3 : 0,
+      group: ent.group?.size ?? 0,
     });
   }
   return out.sort((a, b) => a.y - b.y || a.slot - b.slot);
