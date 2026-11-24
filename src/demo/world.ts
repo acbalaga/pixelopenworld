@@ -1811,8 +1811,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           const frame = atlas.animFrame(a, now);
           const wx = Math.round(tv.x);
           const wy = Math.round(tv.y);
-          renderer.drawSprite(Layer.Objects, frame, wx, wy, atlas.animFlip(a));
-          if (!names) continue;
+          renderer.drawSprite(Layer.Objects, frame, wx, wy + tv.dy, atlas.animFlip(a));
+          if (!names && !tv.glyph) continue;
           const font = chooseTextRenderer({
             text: tv.handle,
             lines: 1,
@@ -1820,19 +1820,23 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           });
           if (font.renderer !== 'pixel') continue;
           const sx = wx - Math.round(camera.x + shake.x);
-          const head = wy - Math.round(camera.y + shake.y) - atlas.originY(frame) - 2;
+          const head = wy + tv.dy - Math.round(camera.y + shake.y) - atlas.originY(frame) - 2;
           // Baked labels: one draw each (the outline is part of the sprite), centered over the head.
           let y = head - 9;
-          if (tv.title) {
-            const lh = fonts.small.bake(tv.title, GREY, DARK);
-            renderer.drawSprite(Layer.Hud, lh, sx - (atlas.width(lh) >> 1), y);
+          if (names) {
+            if (tv.title) {
+              const lh = fonts.small.bake(tv.title, GREY, DARK);
+              renderer.drawSprite(Layer.Hud, lh, sx - (atlas.width(lh) >> 1), y);
+              y -= 9;
+            }
+            const nh = fonts.small.bake(tv.handle, INK, DARK);
+            renderer.drawSprite(Layer.Hud, nh, sx - (atlas.width(nh) >> 1), y);
             y -= 9;
           }
-          const nh = fonts.small.bake(tv.handle, INK, DARK);
-          renderer.drawSprite(Layer.Hud, nh, sx - (atlas.width(nh) >> 1), y);
-          if (tv.afk) {
-            const zh = fonts.small.bake('zzz', GREY, DARK);
-            renderer.drawSprite(Layer.Hud, zh, sx + 8, y - 9);
+          // An emote shows as a glyph over the name, with its pose.
+          if (tv.glyph) {
+            const gh = fonts.small.bake(tv.glyph, GOLD, DARK);
+            renderer.drawSprite(Layer.Hud, gh, sx - (atlas.width(gh) >> 1), y);
           }
         }
         // Logging in and out: the doll fades while a column of light rises and thins.

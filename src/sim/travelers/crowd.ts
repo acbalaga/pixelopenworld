@@ -2,6 +2,7 @@ import {
   ABSTRACT_TICKS,
   ACTIVITY_MINUTES,
   ACTIVITY_WEIGHTS,
+  BEHAVIOR,
   ENTITY,
   FIGHT_AREAS,
   GATHER_PLACES,
@@ -64,6 +65,8 @@ export interface Doing {
   total: number;
   /** Skill index it trains, or -1. */
   skill: number;
+  /** Already sent indoors by the weather, so it is not sent again. */
+  sheltered?: true;
   /** Node id, creature id or recipe id, or `buy:<item>:<qty>` or `sell` for trade. */
   thing: string;
 }
@@ -308,7 +311,23 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
       skill: -1,
       thing: '',
     };
-  const spot = weighted(r, SOCIAL_PLACES);
+  // At night the inn pulls more of the crowd.
+  const night = dayPhase(state.worldTick) === 'night';
+  const spot = weighted(
+    r,
+    SOCIAL_PLACES.map(
+      ([pl, w], k) =>
+        [
+          pl,
+          w *
+            (night ? (BEHAVIOR.nightPlaceFactor[pl] ?? 1) : 1) *
+            // A guild has a corner it favors, so guildmates tend to be found together.
+            (life.guild !== 0 && life.guild % SOCIAL_PLACES.length === k
+              ? BEHAVIOR.guildPlaceBias
+              : 1),
+        ] as const,
+    ),
+  );
   return {
     kind: 'social',
     place: placeIdx(spot),
@@ -494,7 +513,17 @@ function trade(state: SimState, crowd: Crowd, t: TravelerIdentity, d: Doing): vo
 
 // ---- The tick ----
 
+/** A Traveler who crafts arrives with a few of the inputs for its first recipes, once. */
+function packStock(crowd: Crowd, t: TravelerIdentity): void {
+  const stock = crowd.stock[t.slot]!;
+  if (Object.keys(stock).length > 0) return;
+  for (const rc of craftRecipes)
+    if (rc.tier === 1 && t.focus.includes(`skill.${rc.craft}`))
+      for (const i of rc.ingredients) stock[i.item] = (stock[i.item] ?? 0) + i.qty * 2;
+}
+
 function login(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
+  packStock(crowd, t);
   crowd.online[t.slot] = 1;
   crowd.justIn.add(t.slot);
   crowd.doing[t.slot] = null;
@@ -533,6 +562,21 @@ function stepTraveler(
     crowd.doing[t.slot] = d;
     life.activity = actIdx(d.eta > 0 ? 'travel' : d.kind);
     life.subject = d.skill < 0 ? 0 : d.skill;
+  }
+  // Rain, a storm or snow sends anyone who is only idling indoors.
+  if (
+    d.eta === 0 &&
+    (d.kind === 'social' || d.kind === 'afk') &&
+    !d.sheltered &&
+    BEHAVIOR.shelterWeather.includes(weatherOn(state, state.worldTick)) &&
+    !PLACES[PLACE_LIST[d.place] ?? '']?.indoors
+  ) {
+    d.place = placeIdx(weighted(state.rng.travelers, BEHAVIOR.shelterPlaces));
+    d.sheltered = true;
+    d.from = life.place;
+    d.eta = routeMinutes(life.place, d.place);
+    d.total = d.eta;
+    life.activity = actIdx(d.eta > 0 ? 'travel' : d.kind);
   }
   if (d.eta > 0) {
     d.eta--;

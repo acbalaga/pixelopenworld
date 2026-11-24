@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROGRESS } from '../../src/content/balance/travelers';
+import { OUTCOME, PROGRESS } from '../../src/content/balance/travelers';
 import { createAvatar } from '../../src/sim/avatar';
 import { spawnCreature } from '../../src/sim/combat/enemy';
 import { stepWorld } from '../../src/sim/step';
@@ -127,6 +127,19 @@ describe('promotion and demotion', () => {
 describe('the round trip', () => {
   /** A promoted run and a purely abstract run of the same 600 ticks must agree on every life. */
   it('changes nothing the abstract model would not: 1,000 seeded round trips', () => {
+    // A fall in a fight is the one thing the entity layer replaces with the real thing: on screen
+    // a Traveler dies to a creature, off screen to a roll. The roll is off for this comparison.
+    const outcome = OUTCOME as { deathChance: number };
+    const kept = outcome.deathChance;
+    outcome.deathChance = 0;
+    try {
+      roundTrips();
+    } finally {
+      outcome.deathChance = kept;
+    }
+  }, 120_000);
+
+  function roundTrips(): void {
     for (let seed = 1; seed <= 1000; seed++) {
       const a = world(seed, SQUARE);
       const b = world(seed, FAR);
@@ -140,7 +153,7 @@ describe('the round trip', () => {
       expect(crowdOf(a).stock).toEqual(crowdOf(b).stock);
       if (seed <= 3) expect(crowdOf(a).promoted.some((v) => v === 1)).toBe(false);
     }
-  }, 120_000);
+  }
 
   it('keeps every life inside the bounds the abstract model accepts', () => {
     const s = world(8, SQUARE);

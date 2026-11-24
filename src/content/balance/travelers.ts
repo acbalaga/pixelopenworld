@@ -714,7 +714,8 @@ export const SOCIAL_PLACES: readonly (readonly [string, number])[] = [
   ['hearthford.inn', 4],
   ['hearthford.market_street', 2],
 ];
-export const TRADE_PLACE = 'hearthford.market_street';
+/** Travelers shop at Brin's counter (M5-14). */
+export const TRADE_PLACE = 'hearthford.brin_shop';
 
 /** Travelers as entities near the player (POW-M5-04). Speeds are sub-pixels per tick unless noted. */
 export const ENTITY = {
@@ -738,6 +739,8 @@ export const ENTITY = {
   shimmerTicks: 24,
   /** Arrival tolerance at a goal, px. */
   arrivePx: 4,
+  /** A trip's minutes left are only reset from the entity's position past this many minutes of difference. */
+  etaSlackMinutes: 2,
   /** Ticks without progress before a walker gives up and stands. */
   stuckTicks: 90,
   /** A fighting Traveler looks for a creature within this many px, and swings inside `engagePx`. */
@@ -746,4 +749,46 @@ export const ENTITY = {
   hpBase: 60,
   hpPerPoint: 1.2,
   defensePerPoints: 12,
+} as const;
+
+/**
+ * What promoted Travelers do besides the main activity (POW-M5-14). Entity-layer randomness never
+ * touches the sim's streams: it is a hash of the seed, the slot and the tick, so the crowd's
+ * outcomes are the same on screen and off.
+ */
+export const BEHAVIOR = {
+  /** Chance a Traveler who is socializing in the open dances, by day phase. */
+  danceChance: { dawn: 0.02, day: 0.05, dusk: 0.3, night: 0.18 } as Record<string, number>,
+  /** Chance per festival day on top (festivals arrive in M6; the hook is here). */
+  festivalDanceBoost: 0.4,
+  /** Ticks between emotes while standing about, as a range, and how long one shows. */
+  emoteGapTicks: [900, 2700] as readonly [number, number],
+  emoteTicks: 60,
+  /** Relative odds of each emote. Sleep is only for a Traveler that is AFK. */
+  emotes: { wave: 4, cheer: 2, bow: 1, laugh: 3 } as Record<string, number>,
+  /** Friends and guildmates standing in the same place gather in a group of up to this many. */
+  groupMax: 5,
+  /** Radius of the ring a group stands in, px, and the gap a group keeps from its anchor. */
+  groupRadiusPx: 16,
+  /** Weather that sends Travelers who are only idling indoors. */
+  shelterWeather: ['rain', 'storm', 'snow'] as readonly string[],
+  /** Where they go, as weights. */
+  shelterPlaces: [
+    ['hearthford.inn', 6],
+    ['hearthford.brin_shop', 1],
+  ] as readonly (readonly [string, number])[],
+  /** Factor on the social place a guild favors. */
+  guildPlaceBias: 6,
+  /** At night the inn pulls more of the social crowd. Factors on the social place weights. */
+  nightPlaceFactor: { 'hearthford.inn': 3 } as Record<string, number>,
+  /** Station kind to the doll's work animation. */
+  stationAnim: {
+    'fixture.anvil': 'work_swing',
+    'fixture.workbench': 'work_hands',
+    'fixture.loom': 'work_hands',
+    'fixture.alchemy_table': 'work_stir',
+    'fixture.tinker_bench': 'work_hands',
+    'fixture.rune_stone': 'work_hands',
+    camp_pot: 'work_stir',
+  } as Record<string, string>,
 } as const;
