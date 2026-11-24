@@ -9,8 +9,6 @@ export const DEVIATIONS: Readonly<Record<string, string>> = {
     'Stone Fist is a point-blank burst on a fixed cadence, so a creature this small dies to the same number of casts whatever its Health within a few points (3.2 s, just under the band). A gap between builds, accepted (owner decision, see the report notes).',
   'stone|creature.crag_hawk':
     'Stone Fist is a point-blank burst on a fixed cadence, so a creature this small dies to the same number of casts whatever its Health within a few points (3.2 s, just under the band). A gap between builds, accepted (owner decision, see the report notes).',
-  'unarmed|creature.hollowhorn':
-    'Wraps give breath back on every hit, so an Unarmed fight is either a clean run or a long one (median 106 s, spread to 150 s), as it is against the cave miniboss.',
   'archery|creature.hollowhorn':
     'A bow stands off a field boss whose melee reach is short, so its damage is not interrupted (about 50 s against a 60 to 90 s band). Fighting from a distance is what the family is for.',
   'heavy|creature.hollowhorn':
