@@ -9,7 +9,20 @@ export interface Tickable {
   tick: number;
   /** Transient. The tick the world clock reads, from trusted time. See {@link TickInput}. */
   worldTick?: number;
+  /** Transient. Real time for the crowd (M5-03). See {@link TickInput.clock}. */
+  clock?: ClockInput;
   events: EventQueue;
+}
+
+/**
+ * Real time as the platform gives it (M5-03): trusted ms, the save's epoch in trusted ms, and the
+ * device's offset from UTC in minutes. The sim never reads a clock, so this is how Travelers know
+ * the hour. It is never saved.
+ */
+export interface ClockInput {
+  nowMs: number;
+  epochMs: number;
+  tzOffsetMin: number;
 }
 
 /** Input for one tick. */
@@ -21,6 +34,8 @@ export interface TickInput {
    * pass it. It is never saved.
    */
   worldTick?: number;
+  /** Real time for the crowd. Absent in tests and demos, and then the crowd sleeps. */
+  clock?: ClockInput;
 }
 
 /**
@@ -35,6 +50,7 @@ export function tick<S extends Tickable>(
 ): number {
   state.tick++;
   state.worldTick = input.worldTick ?? state.tick;
+  if (input.clock) state.clock = input.clock;
   clearEvents(state.events);
   const rejected = dispatch(state, input.commands, handle);
   for (const system of systems) system(state);

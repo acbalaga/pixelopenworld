@@ -181,6 +181,13 @@ export const wallNow = (): number => Date.now();
 /** A date for display (file names). Built from a trusted ms value, never from the device. */
 export const dateAt = (ms: number): Date => new Date(ms);
 
+/**
+ * Minutes the device's local time is ahead of UTC at a trusted time (M5-03). The Travelers' schedules
+ * run on real local time, so the platform hands the sim this next to trusted time. Reads the
+ * device's time zone through `Date`, the one place it is read.
+ */
+export const deviceTzOffsetMin = (ms: number): number => -new Date(ms).getTimezoneOffset() || 0;
+
 /** The real environment: the device clock, `performance`, and `GET /api/time` with a timeout. */
 export function browserClockEnv(timeoutMs = 2500): ClockEnv {
   return {

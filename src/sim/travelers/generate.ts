@@ -28,7 +28,6 @@ import {
   PLATEAU_RANGE,
   SCHEDULE_WEIGHTS,
   START_COIN,
-  START_POINTS,
   TEMPER_WEIGHTS,
   TIE_CHANCE,
   TIE_KIND_WEIGHTS,
@@ -39,11 +38,12 @@ import {
 import { isBlocked } from '../../content/travelers/blocklist';
 import { HAND_TUNED } from '../../content/travelers/handTuned';
 import * as N from '../../content/travelers/names';
-import type { Tie } from '../../content/travelers/types';
+import type { ScheduleId, Tie } from '../../content/travelers/types';
 import { type Culture } from '../../content/travelers/names';
 import { ACTIVITIES } from '../../content/travelers/types';
 import { chance, createStream, int, next, pick, weighted, type Rng } from '../kernel/rng';
 import { PLACE_LIST, SKILL_LIST, skillIdx } from './lists';
+import { expectedPoints } from './progress';
 import type { TravelerIdentity, TravelerLife } from './types';
 
 /**
@@ -238,6 +238,7 @@ function generatedIdentity(
   slot: number,
   taken: ReadonlySet<string>,
   b: Build,
+  schedule: ScheduleId,
 ): TravelerIdentity {
   const r = slotStream(seed, slot);
   const archetype = weighted(r, ARCHETYPE_WEIGHTS);
@@ -271,7 +272,6 @@ function generatedIdentity(
   b.pairUse.set(pairKey(look.hair, look.hairColor), bestUse + 1);
 
   const voice = weighted(r, VOICE_AFFINITY[archetype]);
-  const schedule = weighted(r, SCHEDULE_WEIGHTS);
   const home = weighted(r, HOME_WEIGHTS);
   const guild = chance(r, GUILD_START_SHARE) ? weighted(r, GUILD_AFFINITY[archetype]) : 0;
   return {
@@ -315,14 +315,44 @@ function assignTies(seed: number, ids: TravelerIdentity[]): void {
   for (let i = 0; i < ids.length; i++) ids[i] = { ...ids[i]!, ties: ties[i]! };
 }
 
+/**
+ * Schedule shapes for the generated slots by exact quota (largest remainder over the weights),
+ * dealt out in a seeded shuffle. Each save therefore has the same mix of shapes, and the online
+ * count follows the same curve whatever the seed.
+ */
+function scheduleQuota(seed: number, count: number): ScheduleId[] {
+  const total = SCHEDULE_WEIGHTS.reduce((a, [, w]) => a + w, 0);
+  const raw = SCHEDULE_WEIGHTS.map(([id, w]) => ({ id, exact: (w / total) * count }));
+  const out: ScheduleId[] = [];
+  const parts = raw.map((r) => ({
+    id: r.id,
+    n: Math.floor(r.exact),
+    rem: r.exact - Math.floor(r.exact),
+  }));
+  let left = count - parts.reduce((a, p) => a + p.n, 0);
+  for (const p of [...parts].sort((a, b) => b.rem - a.rem)) {
+    if (left <= 0) break;
+    p.n++;
+    left--;
+  }
+  for (const p of parts) for (let i = 0; i < p.n; i++) out.push(p.id);
+  const r = createStream((seed ^ 0x5c4ed) >>> 0, 'travelers');
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = int(r, 0, i);
+    [out[i], out[j]] = [out[j] as ScheduleId, out[i] as ScheduleId];
+  }
+  return out;
+}
+
 function buildAll(seed: number): TravelerIdentity[] {
+  const quota = scheduleQuota(seed, TRAVELER_COUNT - HAND_TUNED_COUNT);
   const b: Build = { ids: [], pairUse: new Map() };
   const taken = new Set<string>();
   for (let slot = 0; slot < TRAVELER_COUNT; slot++) {
     const id =
       slot < HAND_TUNED_COUNT
         ? handTunedIdentity(seed, slot)
-        : generatedIdentity(seed, slot, taken, b);
+        : generatedIdentity(seed, slot, taken, b, quota[slot - HAND_TUNED_COUNT] as ScheduleId);
     taken.add(normalizeHandle(id.handle));
     if (slot < HAND_TUNED_COUNT) {
       const k = pairKey(id.look.hair, id.look.hairColor);
@@ -381,12 +411,12 @@ export function initialLife(t: TravelerIdentity): TravelerLife {
     'travelers',
   );
   const build: [number, number][] = [];
-  for (const skill of t.focus) {
+  t.focus.forEach((skill, k) => {
     const i = skillIdx(skill);
     if (i < 0) throw new Error(`unknown focus skill ${skill}`);
-    const pts = Math.min(t.plateau, rangeInt(r, START_POINTS[t.archetype]));
+    const pts = expectedPoints(t, k, 0, 0);
     if (pts > 0) build.push([i, pts]);
-  }
+  });
   build.sort((a, b) => a[0] - b[0]);
   const place = PLACE_LIST.indexOf(weighted(r, START_PLACES));
   return {

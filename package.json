@@ -31,6 +31,7 @@
     "map:png": "tsx tools/render-map.ts",
     "xp-report": "tsx tools/xp-report.ts",
     "traveler-gallery": "tsx tools/traveler-gallery.ts",
+    "crowd-report": "tsx tools/crowd-report/index.ts",
     "fight-sim": "tsx tools/fight-sim/index.ts",
     "doll-sheet": "tsx tools/doll-sheet/index.ts",
     "sim-bot": "tsx tools/sim-bot/index.ts",

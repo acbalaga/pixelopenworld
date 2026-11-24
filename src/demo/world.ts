@@ -38,6 +38,7 @@ import { BUILD_ID } from '../shared/version';
 import { itemName } from '../ui/menu/model';
 import {
   TrustedClock,
+  deviceTzOffsetMin,
   browserClockEnv,
   dateAt,
   mergeClockMemory,
@@ -575,6 +576,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   if (wantWeather && (WEATHER as readonly string[]).includes(wantWeather))
     state.weatherOverride = wantWeather as Weather;
   const worldNow = (): number => frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch);
+  // The device's offset from UTC, looked up once a real minute: it only changes at a DST step.
+  let tzAt = -Infinity;
+  let tzMin = 0;
+  const tzOffset = (nowMs: number): number => {
+    if (nowMs - tzAt >= 60_000 || nowMs < tzAt) {
+      tzMin = deviceTzOffsetMin(nowMs);
+      tzAt = nowMs;
+    }
+    return tzMin;
+  };
   state.worldTick = worldNow();
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
   // developer `?at=` overrides that. A region with no wake table (dev regions) starts at its
@@ -1226,14 +1237,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     );
   }
   if (import.meta.env.DEV) {
-    void import('../dev/overlay').then((mod) => {
+    void Promise.all([import('../dev/overlay'), import('../dev/crowd')]).then(([mod, crowdDev]) => {
       meter = new mod.DevOverlay(() => ({
         entities: state.entities.capacity - state.entities.free.length,
         drawCalls: renderer.drawCalls,
         logicalWidth: renderer.width,
         logicalHeight: renderer.height,
         scale: vp.current.scale,
-        extra: `chunks ${world.size} built ${chunkRenderer.chunksBuilt} stalls ${chunkRenderer.stalls} | terrain blits ${renderer.terrainBlits}`,
+        extra: `chunks ${world.size} built ${chunkRenderer.chunksBuilt} stalls ${chunkRenderer.stalls} | terrain blits ${renderer.terrainBlits}\n${crowdDev.crowdLines(state)}`,
       }));
     });
   }
@@ -1424,9 +1435,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           const slot = item ? quickSlotOf(inv, item) : -1;
           if (slot >= 0) pendingCommands.push({ type: 'use', slot });
         }
+        const trustedNow = clock.trustedNow();
         stepWorld(state, who, {
           commands: [...pendingCommands.splice(0), ...mapper.map(rec)],
           worldTick: worldNow(),
+          clock: {
+            nowMs: trustedNow,
+            epochMs: worldEpoch,
+            tzOffsetMin: tzOffset(trustedNow),
+          },
         });
         {
           // Hints are notices with a glyph (design/09): posted once, retracted when acted on.

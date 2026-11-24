@@ -12,8 +12,14 @@ import {
   saleCeiling,
   xpCeiling,
 } from './bounds';
+import { identitiesOf } from '../../sim/travelers/generate';
+import { SKILL_LIST } from '../../sim/travelers/lists';
+import { buildCeiling, expectedPoints, playHoursOf } from '../../sim/travelers/progress';
 import type { Reason } from './reasons';
 import type { View } from './view';
+
+/** Real days of slack on a Traveler's expected build: the trusted epoch and the wall clock differ. */
+const TRAVELER_DAY_SLACK = 2;
 
 const sum = (t: Record<string, number>): number => Object.values(t).reduce((a, b) => a + b, 0);
 
@@ -30,6 +36,24 @@ export function plausibility(v: View): Reason[] {
   const elapsed = (plain.createdAt - plain.startedAt) / 1000;
   if (seconds > elapsed + PLAY_SLACK_SECONDS)
     fail('PLAYTIME_EXCEEDS_ELAPSED', `${seconds} s played in ${Math.round(elapsed)} s`);
+
+  // Travelers (M5-03): no build runs past the formula for this save's play time and real days, plus
+  // the band. A Traveler's build is never a source of player value, so this guards consistency only.
+  const hours = Math.max(playHoursOf(v.sim.tick), seconds / 3600);
+  const days = Math.max(0, elapsed / 86400) + TRAVELER_DAY_SLACK;
+  for (const t of identitiesOf(v.sim.seed)) {
+    const life = v.sim.travelers[t.slot];
+    if (!life) continue;
+    for (const [skill, pts] of life.build) {
+      const id = SKILL_LIST[skill] as string;
+      const k = t.focus.indexOf(id);
+      const ceiling = k < 0 ? 0 : buildCeiling(expectedPoints(t, k, hours, days));
+      if (pts > ceiling) {
+        fail('TRAVELER_BUILD', `${t.handle} has ${pts} in ${id}, ceiling ${ceiling}`);
+        break;
+      }
+    }
+  }
 
   // XP per skill against the fastest every source can pay.
   for (const [id, earned] of Object.entries(ledger.xpEarned)) {

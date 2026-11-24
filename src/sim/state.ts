@@ -12,6 +12,8 @@ import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
+import type { Crowd } from './travelers/crowd';
+import type { ClockInput } from './kernel/scheduler';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
 export interface Body {
@@ -660,6 +662,10 @@ export interface SimState {
   region?: string;
   /** Transient. Dev only: forces the weather, for screenshots and tests. */
   weatherOverride?: import('../content/balance/time').Weather;
+  /** Transient. Real time from the platform (M5-03). Absent in tests and demos: the crowd then sleeps. */
+  clock?: ClockInput;
+  /** Transient. Who is online and what they are doing (M5-03). Made on first use. */
+  crowd?: Crowd;
   /** Transient. Chunk streaming state, or absent when the whole map is resident (tests). */
   stream?: StreamState | null;
 }
