@@ -41,8 +41,15 @@ export const TRIGGERS = [
   'state.lfg',
   'state.question',
   'state.answer',
-  /** Reserved for the player's public deeds (M5-15 fills these in with `playerPassed` and others). */
+  /** A generic nod to a public deed of the player. */
   'playerDeed',
+  /** The player's public deeds that exist today (M5-15): a boss resolved, a Trial passed, a rank, a Singular. */
+  'deed.boss',
+  'deed.trial',
+  'deed.rank',
+  'deed.singular',
+  /** The player passed a Traveler on a board. Emitted by the rankings ticket (M5-09). */
+  'deed.passed',
 ] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 
@@ -72,6 +79,10 @@ export interface When {
   weather?: readonly string[];
   /** In-game day phases: dawn, day, dusk, night. */
   phase?: readonly string[];
+  /** Only these hand-tuned Travelers say it (their own lines, design/12 section 6). */
+  handle?: readonly string[];
+  /** Only while the speaker is doing one of these activities (design/12 3.2). */
+  doing?: readonly string[];
 }
 
 export interface ChatTemplate {
@@ -85,12 +96,16 @@ export interface ChatTemplate {
   weight: number;
   /** In-game minutes before the same speaker may use this template again. */
   cooldownMin: number;
+  /** For a question: the kind of rumor that answers it. */
+  topic?: Rumor['about'];
 }
 
 /** A two-to-five line exchange between two Travelers with a tie (design/12 4.5). */
 export interface ChatExchange {
   id: string;
   tie: TieKind;
+  /** Only these two hand-tuned Travelers say it: `a` is the first handle, `b` the second. */
+  between?: readonly [string, string];
   lines: readonly { role: 'a' | 'b'; text: string }[];
   weight: number;
 }

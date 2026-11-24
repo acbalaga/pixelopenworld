@@ -1,4 +1,5 @@
-import { ARCHETYPES, TIE_KINDS, VOICE_IDS } from '../travelers/types';
+import { HAND_TUNED } from '../travelers/handTuned';
+import { ACTIVITIES, ARCHETYPES, TIE_KINDS, VOICE_IDS } from '../travelers/types';
 import { isBlocked } from '../travelers/blocklist';
 import { PLACES } from '../people/places';
 import { DUNGEONS } from '../world/dungeons';
@@ -103,6 +104,10 @@ export function validateChat(c: ChatContent): string[] {
     for (const v of t.when?.voice ?? [])
       if (!(VOICE_IDS as readonly string[]).includes(v)) errors.push(`${w}: voice ${v}`);
     for (const p of t.when?.phase ?? []) if (!PHASES.includes(p)) errors.push(`${w}: phase ${p}`);
+    for (const h of t.when?.handle ?? [])
+      if (!HAND_TUNED.some((x) => x.handle === h)) errors.push(`${w}: handle ${h}`);
+    for (const a of t.when?.doing ?? [])
+      if (!(ACTIVITIES as readonly string[]).includes(a)) errors.push(`${w}: doing ${a}`);
   }
   // Banter is carried by the exchanges, so it needs no single-line template.
   for (const cat of CATEGORIES)
@@ -115,6 +120,15 @@ export function validateChat(c: ChatContent): string[] {
     seen.add(x.id);
     if (!(TIE_KINDS as readonly string[]).includes(x.tie)) errors.push(`${w}: tie ${x.tie}`);
     if (x.lines.length < 2 || x.lines.length > 5) errors.push(`${w}: ${x.lines.length} lines`);
+    if (x.between) {
+      const [h1, h2] = x.between;
+      const a = HAND_TUNED.find((y) => y.handle === h1);
+      const b = HAND_TUNED.find((y) => y.handle === h2);
+      if (!a || !b) errors.push(`${w}: between names an unknown handle`);
+      else if (!a.ties.some((tie) => tie.slot === b.slot && tie.kind === x.tie))
+        if (!b.ties.some((tie) => tie.slot === a.slot && tie.kind === x.tie))
+          errors.push(`${w}: ${h1} and ${h2} have no ${x.tie} tie`);
+    }
     x.lines.forEach((l, i) => {
       if (l.role !== (i % 2 === 0 ? 'a' : 'b')) errors.push(`${w}[${i}]: role order`);
       checkText(`${w}[${i}]`, l.text, errors, glyphIds);

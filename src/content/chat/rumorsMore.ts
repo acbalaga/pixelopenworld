@@ -1,0 +1,210 @@
+import type { Rumor } from './types';
+
+/**
+ * The rest of the rumor table (POW-M5-15, design/12 4.6). About one in four of the whole table is
+ * wrong or half right. A wrong one swaps a true detail for a plausible one and costs nothing worse
+ * than a wasted minute. Every true rumor here matches content as baked: the recipes, drops and
+ * places in `content/`. None touches the hidden layer.
+ */
+const R = (id: string, about: Rumor['about'], text: string, truth: boolean): Rumor => ({
+  id: `rumor.${id}`,
+  about,
+  text,
+  true: truth,
+});
+
+export const MORE_RUMORS: readonly Rumor[] = [
+  // Recipes: what goes into what.
+  R(
+    'iron_ingot',
+    'recipe',
+    'an iron ingot is two iron ore and a lump of coal, same as copper',
+    true,
+  ),
+  R('oak_plank', 'recipe', 'two oak logs make one oak plank at the carpentry', true),
+  R(
+    'ash_plank',
+    'recipe',
+    'ash logs make ash planks, two to one, and ash is the better wood',
+    true,
+  ),
+  R('bread_flax', 'recipe', 'plain bread is two flax fiber and a pinch of salt', true),
+  R('bread_milk', 'recipe', 'plain bread wants flour and a spoon of milk, i am fairly sure', false),
+  R('roast_salt', 'recipe', 'roast meat is raw meat and a pinch of salt. that is all', true),
+  R('stew_berry', 'recipe', 'hearty stew is raw meat, sunwort and a red berry', true),
+  R('stew_beans', 'recipe', 'hearty stew is meat, beans and a carrot, if you ask me', false),
+  R('fish_baked', 'recipe', 'baked fish is a river fish and salt, in the oven', true),
+  R('compote', 'recipe', 'berry compote takes one red berry and one blue berry', true),
+  R('compote_honey', 'recipe', 'berry compote needs two red berries and a drop of honey', false),
+  R('mushroom_soup', 'recipe', 'mushroom soup is a glowcap, dewmint and salt', true),
+  R('trail_biscuit', 'recipe', 'a trail biscuit is flax fiber and salt, nothing more', true),
+  R(
+    'sword_bronze',
+    'recipe',
+    'a bronze sword is two copper ingots, an oak plank and a leather strip',
+    true,
+  ),
+  R('sword_bronze_iron', 'recipe', 'a bronze sword wants an iron ingot and a leather strip', false),
+  R('pick_copper', 'recipe', 'a copper pick is two copper ingots and an oak plank', true),
+  R('dagger_wood', 'recipe', 'a wooden dagger is two oak planks, nothing else', true),
+  R(
+    'bow_short',
+    'recipe',
+    'a short bow takes two oak planks and a flax fiber for the string',
+    true,
+  ),
+  R(
+    'bow_short_ash',
+    'recipe',
+    'a short bow takes two ash planks and a bit of gut for the string',
+    false,
+  ),
+  R('health_minor', 'recipe', 'a minor health potion is a sunwort and a dew vial', true),
+  R('stamina_tonic', 'recipe', 'a stamina tonic is dewmint and a dew vial', true),
+  R('stamina_wrong', 'recipe', 'a stamina tonic is sunwort and a red berry', false),
+  R('antidote', 'recipe', 'an antidote is sunwort, salt and a dew vial', true),
+  R('leather', 'recipe', 'leather is a rough hide and a pinch of salt at the tanning stand', true),
+  R('linen', 'recipe', 'two flax fibers weave into one linen cloth', true),
+  R('wool_cloth', 'recipe', 'two wool tufts make one wool cloth', true),
+  R(
+    'wool_cap',
+    'recipe',
+    'a wool cap is a single wool cloth, the easiest thing a tailor makes',
+    true,
+  ),
+  R('snare', 'recipe', 'a snare is two thread spools and an oak plank', true),
+  R('fishing_net', 'recipe', 'a fishing net is a wool cloth and a flax fiber', true),
+  R(
+    'repair_kit',
+    'recipe',
+    'a repair kit is a leather strip, a thread spool and a whetstone',
+    true,
+  ),
+  R('bell_charm', 'recipe', 'a bell charm is a copper ingot and a thread spool', true),
+  R('spark_flint', 'recipe', 'a spark flint is a copper ingot and some spark dust', true),
+  R('iron_sword', 'recipe', 'an iron sword is two iron ingots and an oak plank', true),
+  R(
+    'ash_rod',
+    'recipe',
+    'an ash rod is an ash plank and a thread spool. a good first fishing rod',
+    true,
+  ),
+
+  // Creatures: what they drop and how they behave.
+  R(
+    'hare_hide',
+    'creature',
+    'meadow hares drop raw meat and rough hide, and they run when hurt',
+    true,
+  ),
+  R('ram_wool', 'creature', 'downs rams drop wool tufts most of the time. good for a tailor', true),
+  R('ram_feather', 'creature', 'downs rams drop crow feathers most of the time', false),
+  R('rubblet_drops', 'creature', 'rubblets in the quarry drop quartz, clay and copper ore', true),
+  R('rubblet_meat', 'creature', 'rubblets drop raw meat and hide in the quarry', false),
+  R('crab_salt', 'creature', 'reed crabs on the Reedmouth jetty drop salt now and then', true),
+  R('crab_quartz', 'creature', 'reed crabs at the jetty drop quartz, and nothing else', false),
+  R(
+    'hound_hide',
+    'creature',
+    'moorhounds drop rough hide and bone shards, if you can beat them',
+    true,
+  ),
+  R('hawk_feather', 'creature', 'crag hawks drop crow feathers, more often than not', true),
+  R('bones_shard', 'creature', 'barrow bones drop bone shards, nearly always', true),
+  R('mole_clay', 'creature', 'burrow moles drop clay, half the time', true),
+  R('mole_wool', 'creature', 'burrow moles drop wool tufts, half the time', false),
+  R('leech_sludge', 'creature', 'marsh leeches drop sludge, and they are hostile on sight', true),
+  R('rat_swarm', 'creature', 'grain rats come in swarms, so do not fight them in the open', true),
+  R('rat_alone', 'creature', 'grain rats never come in groups, one at a time', false),
+  R(
+    'wasp_pods',
+    'creature',
+    'thistle wasps drop seed pods. keep your distance, they are territorial',
+    true,
+  ),
+  R('mossling_moss', 'creature', 'mosslings drop moss tufts, and they are curious by day', true),
+  R('fox_curious', 'creature', 'foxes are curious. let them come to you', true),
+  R('boar_hide', 'creature', 'bramble boars drop boar hide and raw meat. worth the charge', true),
+  R('boar_stand_still', 'creature', 'stand still when a boar charges and it will miss you', false),
+
+  // Places: where they are and what they hold.
+  R(
+    'millbrook_creatures',
+    'place',
+    'the Millbrook fields have grain rats, hares and mosslings. a good place to learn',
+    true,
+  ),
+  R(
+    'jetty_creatures',
+    'place',
+    'the Reedmouth jetty has reed crabs and marsh leeches. bring a shield',
+    true,
+  ),
+  R(
+    'quarry_creatures',
+    'place',
+    'the quarry holds rubblets and crag hawks. mind the hawks, they come from above',
+    true,
+  ),
+  R(
+    'cairnmoor_creatures',
+    'place',
+    'the Cairnmoor well has moorhounds and barrow bones. a night for strong gear',
+    true,
+  ),
+  R('quarry_wrong', 'place', 'the quarry holds reed crabs and marsh leeches', false),
+  R(
+    'inn_rest',
+    'place',
+    'the inn is the nicest place to rest, and the bed there wakes you in town',
+    true,
+  ),
+  R(
+    'shop_sells',
+    'place',
+    'Brin buys most things at half price and sells the basics at full. shop around',
+    true,
+  ),
+  R(
+    'chapel_near',
+    'place',
+    'the wayside chapel is a quiet place to stop if the road gets long',
+    true,
+  ),
+  R('mill_grain', 'place', 'the mill sells flour and grinds your own grain for a fee', false),
+
+  // Tips and general know-how.
+  R(
+    'herb_patch',
+    'tip',
+    'herb patches give sunwort and dewmint, and they regrow after a while',
+    true,
+  ),
+  R('berry_bush', 'tip', 'berry bushes give red and blue berries, and they regrow too', true),
+  R('berry_wrong', 'tip', 'berry bushes give sunwort as well as berries, if you are lucky', false),
+  R('copper_vein', 'tip', 'a copper vein gives copper ore and sometimes coal', true),
+  R(
+    'iron_vein',
+    'tip',
+    'an iron vein gives iron ore, coal and quartz, in that order of luck',
+    true,
+  ),
+  R('oak_ash', 'tip', 'oak is the common wood and ash is the better one. cut ash if you can', true),
+  R('flax_field', 'tip', 'flax grows in the Millbrook fields, along the ditch edges', false),
+  R('fish_best', 'tip', 'the fish bite best when the sun is low, morning or evening', true),
+  R('fish_noon', 'tip', 'the fish bite best at noon, when the sun is high', false),
+  R('food_buffs', 'tip', 'a good dish lasts a long time. eat before the dungeon, not in it', true),
+  R('rank_slow', 'tip', 'ranks come slow, mastery slower. choose the skill you love', true),
+  R('waystone_rest', 'tip', 'a Waystone remembers you. touch each one you pass', true),
+  R('repair_kits', 'tip', 'a repair kit saves the gear. carry one on a long run', true),
+  R(
+    'shield_parry',
+    'tip',
+    'a shield parry needs a tight window, but it breaks the guard of a boar',
+    false,
+  ),
+  R('dodge_window', 'tip', 'the dodge window is short, but a perfect dodge rewards the bold', true),
+  R('stagger_break', 'tip', 'break a creature stagger bar and it is open to a heavy hit', true),
+  R('sell_player', 'tip', 'sell to other players, not the shop. the prices are better', true),
+  R('board_post', 'tip', 'the job board posts the same jobs all week. do them in any order', false),
+];

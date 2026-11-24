@@ -1,11 +1,12 @@
 import type { Rumor } from './types';
+import { MORE_RUMORS } from './rumorsMore';
 
 /**
  * Hints and rumors Travelers repeat when asked (design/12 4.6). About one in four is wrong or half
  * right. A wrong one is plausible and harmless: a wrong time of day, a wrong ingredient, never a
  * trap that costs the player an item. None touches the hidden layer.
  */
-export const RUMORS: readonly Rumor[] = [
+const CORE: readonly Rumor[] = [
   {
     id: 'rumor.boar_stand',
     about: 'creature',
@@ -103,3 +104,6 @@ export const RUMORS: readonly Rumor[] = [
     true: true,
   },
 ];
+
+/** The core rumors and the full set (POW-M5-15). */
+export const RUMORS: readonly Rumor[] = [...CORE, ...MORE_RUMORS];

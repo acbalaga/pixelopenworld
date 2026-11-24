@@ -1,0 +1,532 @@
+import type { ChatTemplate } from '../types';
+import { L, T } from './helper';
+
+/**
+ * Trade talk (POW-M5-15): sales that just happened, crafts offered, loot that is surplus, and the
+ * idle chatter of a market. Every price, item and quantity comes from the event or the speaker's own
+ * focus. Weighted heavily, because trade is most of what a market says.
+ */
+export const TRADE: readonly ChatTemplate[] = [
+  // A sale that just happened.
+  T('trade.sold.n01', 'trade', 'travelerSold', [
+    'moved {qty} {item} for {price}c each',
+    'that is {qty} {item} gone at {price}c',
+  ]),
+  T('trade.sold.n02', 'trade', 'travelerSold', [
+    '{item} sold out. restocking tomorrow',
+    'sold the last of my {item}, {price}c a piece',
+  ]),
+  T(
+    'trade.sold.n03',
+    'trade',
+    'travelerSold',
+    ['{price}c each for {item}. i will take it', 'good price on {item} today, {price}c'],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.sold.n04',
+    'trade',
+    'travelerSold',
+    [
+      'hm, {item} only went for {price}c. prices are soft',
+      'market is soft on {item} right now, {price}c',
+    ],
+    { weight: 2 },
+  ),
+  T('trade.sold.n05', 'trade', 'travelerSold', [
+    'sold {item}. one more round and i can afford the upgrade',
+    'selling {item} to pay for my next recipe',
+  ]),
+  T(
+    'trade.sold.n06',
+    'trade',
+    'travelerSold',
+    [
+      'someone bought my {item} within a minute, should have priced higher',
+      '{item} went fast. underpriced it at {price}c',
+    ],
+    { when: { archetype: ['Crafter', 'Trader', 'Casual'] } },
+  ),
+  T('trade.sold.n07', 'trade', 'travelerSold', [
+    'bulk sale: {qty} {item}. my bag thanks you',
+    'cleared the bag, {qty} {item} sold',
+  ]),
+  T(
+    'trade.sold.n08',
+    'trade',
+    'travelerSold',
+    ['sold {item}, not my best price but fine', 'got {price}c on {item}. fine, it was clutter'],
+    { when: { archetype: ['Grinder', 'Veteran', 'Explorer'] } },
+  ),
+  T(
+    'trade.sold.n09',
+    'trade',
+    'travelerSold',
+    [
+      '{item} for {price}c. cheap but the bag was full',
+      'full bag, dumped {qty} {item} at {price}c',
+    ],
+    { when: { archetype: ['Grinder', 'Explorer', 'Newbie'] } },
+  ),
+  T(
+    'trade.sold.n10',
+    'trade',
+    'travelerSold',
+    ['first time anyone paid {price}c for {item}!', 'sold {item} and a coin is a coin, thank you'],
+    { when: { archetype: ['Newbie', 'Casual'] }, weight: 2 },
+  ),
+  T(
+    'trade.sold.n11',
+    'trade',
+    'travelerSold',
+    ['Another {qty} {item} sold. A fair market today.', 'The shop took {qty} {item} at {price}c.'],
+    { when: { voice: ['formal', 'roleplay'] } },
+  ),
+  T(
+    'trade.sold.n12',
+    'trade',
+    'travelerSold',
+    ['{item} at {price}c, markets are a mood', 'the {item} price keeps wobbling, {price}c today'],
+    { when: { archetype: ['Trader', 'Completionist'] } },
+  ),
+  L(
+    'trade.sold.n13',
+    'trade',
+    'travelerSold',
+    ['selling at {place}, {item} at {price}c', 'at {place} and {item} is moving'],
+    { weight: 2 },
+  ),
+  L('trade.sold.n14', 'trade', 'travelerSold', [
+    'the shop at {place} paid {price}c for {item}',
+    'just sold at {place}, {price}c each',
+  ]),
+  T(
+    'trade.sold.n15',
+    'trade',
+    'travelerSold',
+    ['{qty} {item}, done. back to work', 'sold. back to it'],
+    { when: { archetype: ['Grinder', 'Veteran'] }, weight: 2 },
+  ),
+  T(
+    'trade.sold.n16',
+    'trade',
+    'travelerSold',
+    [
+      'if you are selling {item}, the shop pays {price}c',
+      'shop pays {price}c for {item} right now',
+    ],
+    { weight: 2 },
+  ),
+
+  // A craft that just finished, offered or bragged about.
+  T('trade.craft.n01', 'trade', 'travelerCrafted', [
+    '{item} x{qty} done. cheap, whisper me',
+    'made {qty} {item}, anyone need some?',
+  ]),
+  T(
+    'trade.craft.n02',
+    'trade',
+    'travelerCrafted',
+    ['wts {item}, fresh off the station', '{item} fresh made, make an offer'],
+    { when: { archetype: ['Crafter', 'Trader'] } },
+  ),
+  T(
+    'trade.craft.n03',
+    'trade',
+    'travelerCrafted',
+    ['commissions open for {item}, bring materials', 'taking {item} orders, you supply the mats'],
+    { when: { archetype: ['Crafter'] } },
+  ),
+  T(
+    'trade.craft.n04',
+    'trade',
+    'travelerCrafted',
+    ['{skill} grind: {qty} {item} done, many to go', 'another {item} for the {skill} grind'],
+    { when: { archetype: ['Crafter', 'Grinder', 'Completionist'] } },
+  ),
+  T(
+    'trade.craft.n05',
+    'trade',
+    'travelerCrafted',
+    ['my {item} came out okay this time', 'made a {item}. only slightly crooked'],
+    { when: { archetype: ['Newbie', 'Casual'] } },
+  ),
+  T(
+    'trade.craft.n06',
+    'trade',
+    'travelerCrafted',
+    ['{item} ready at {place}', 'finished {item} at {place}'],
+    { channel: 'local' },
+  ),
+  T('trade.craft.n07', 'trade', 'travelerCrafted', [
+    '{skill} is slow but it adds up. {qty} {item} done',
+    'crafting {item} again. {skill} never sleeps',
+  ]),
+  T(
+    'trade.craft.n08',
+    'trade',
+    'travelerCrafted',
+    ['anyone short on {item}? i overshot', 'overcrafted {item}. take them off my hands'],
+    { weight: 2 },
+  ),
+  T('trade.craft.n09', 'trade', 'travelerCrafted', [
+    '{item} for friends, free if you cook me something',
+    'gift {item} for a good dish, i am not picky',
+  ]),
+  T(
+    'trade.craft.n10',
+    'trade',
+    'travelerCrafted',
+    [
+      'crafted {qty} {item}. margins are thin but the practice is real',
+      'making {item} for the practice, not the profit',
+    ],
+    { when: { archetype: ['Crafter', 'Completionist'] } },
+  ),
+  T(
+    'trade.craft.n11',
+    'trade',
+    'travelerCrafted',
+    ['Finished {qty} {item}. Quality over quantity.', 'A fine {item}, if I say so myself.'],
+    { when: { voice: ['formal', 'roleplay'] } },
+  ),
+  T(
+    'trade.craft.n12',
+    'trade',
+    'travelerCrafted',
+    ['{item} done, now i need coal again', 'out of coal after that {item}, someone sell me some'],
+    { when: { archetype: ['Crafter'] }, weight: 2 },
+  ),
+  T(
+    'trade.craft.n13',
+    'trade',
+    'travelerCrafted',
+    ['{item}! for a minute i thought it would burn', 'did not burn the {item}. progress'],
+    { when: { voice: ['jokey', 'newbie', 'excitable'] } },
+  ),
+  T(
+    'trade.craft.n14',
+    'trade',
+    'travelerCrafted',
+    ['{qty} {item}, listing now', 'listing {item} for whatever the board will bear'],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.craft.n15',
+    'trade',
+    'travelerCrafted',
+    [
+      'crafting math says {item} is worth making this week',
+      'ran the numbers and {item} wins. {qty} done',
+    ],
+    { when: { voice: ['nerdy'] } },
+  ),
+  T(
+    'trade.craft.n16',
+    'trade',
+    'travelerCrafted',
+    ['{item} done at {place}, who wants one?', 'new {item} at {place}, look at the shine'],
+    { channel: 'local', weight: 2 },
+  ),
+
+  // Loot that is surplus, or a find worth selling.
+  T('trade.loot.n01', 'trade', 'travelerLooted', [
+    'got {item} from a {creature}, selling cheap',
+    'too many {item}, who needs some?',
+  ]),
+  T(
+    'trade.loot.n02',
+    'trade',
+    'travelerLooted',
+    ['{qty} {item} dropped, bag is full. anyone buying?', '{item} x{qty} spare, make me an offer'],
+    { weight: 4 },
+  ),
+  T(
+    'trade.loot.n03',
+    'trade',
+    'travelerLooted',
+    ['{creature} gave me {item} again. selling', 'sell {item}, farmed off {creature} all morning'],
+    { when: { archetype: ['Grinder', 'Veteran'] } },
+  ),
+  T(
+    'trade.loot.n04',
+    'trade',
+    'travelerLooted',
+    ['who is buying {item}? i have {qty}', 'cheap {item} from the farm, whisper'],
+    { when: { archetype: ['Trader', 'Grinder'] } },
+  ),
+  T(
+    'trade.loot.n05',
+    'trade',
+    'travelerLooted',
+    ['{item} for a stack of coal?', 'trade my {item} for coal or ore, i am not picky'],
+    { when: { archetype: ['Crafter', 'Casual'] } },
+  ),
+  T(
+    'trade.loot.n06',
+    'trade',
+    'travelerLooted',
+    ['{item} again. must be the fifth today', 'the {creature} loves giving me {item}'],
+    { when: { archetype: ['Grinder'] }, weight: 2 },
+  ),
+  T(
+    'trade.loot.n07',
+    'trade',
+    'travelerLooted',
+    [
+      'is {item} worth anything? i have {qty}',
+      'can i sell {item} somewhere or is it vendor trash?',
+    ],
+    { when: { archetype: ['Newbie'] } },
+  ),
+  L('trade.loot.n08', 'trade', 'travelerLooted', [
+    '{item} dropped at {place}, spare if anyone needs',
+    'extra {item} here at {place}',
+  ]),
+  T(
+    'trade.loot.n09',
+    'trade',
+    'travelerLooted',
+    [
+      'keeping the {item}, but i will sell the rest',
+      'a few {item} to sell, the rest stays with me',
+    ],
+    { when: { archetype: ['Completionist', 'Crafter'] } },
+  ),
+  T(
+    'trade.loot.n10',
+    'trade',
+    'travelerLooted',
+    ['{item} for sale, no haggling, i have {qty}', 'WTS {item}, {qty} on hand'],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.loot.n11',
+    'trade',
+    'travelerLooted',
+    ['will trade {item} for dish or potion', 'give me a decent dish and the {item} is yours'],
+    { when: { archetype: ['Grinder', 'Explorer', 'Veteran'] } },
+  ),
+  T(
+    'trade.loot.n12',
+    'trade',
+    'travelerLooted',
+    [
+      'anyone need {item}? i can give it free if you are just starting',
+      'free {item} for newer folks, whisper me',
+    ],
+    { when: { voice: ['kind'] }, weight: 2 },
+  ),
+  T(
+    'trade.loot.n13',
+    'trade',
+    'travelerLooted',
+    ['{item} off a {creature}. a gift for the shop', 'this {item} is going straight to the shop'],
+    { weight: 2 },
+  ),
+  T(
+    'trade.loot.n14',
+    'trade',
+    'travelerLooted',
+    [
+      'looting {creature} for {item}, if you need some',
+      'farming {item} from {creature}, let me know',
+    ],
+    { weight: 2 },
+  ),
+
+  // The idle talk of a market: wants, offers, price checks and moods.
+  T(
+    'trade.idle.n01',
+    'trade',
+    'state.idle',
+    ['buying {item}, name your price', 'wtb {item}, whisper me'],
+    { when: { doing: ['trade'] } },
+  ),
+  T(
+    'trade.idle.n02',
+    'trade',
+    'state.idle',
+    ['price check on {item}?', 'what is {item} going for lately?'],
+    { weight: 4 },
+  ),
+  T('trade.idle.n03', 'trade', 'state.idle', [
+    'looking for {item}, will pay fair',
+    'need {item}, paying well',
+  ]),
+  T(
+    'trade.idle.n04',
+    'trade',
+    'state.idle',
+    ['anyone selling {item}?', 'any {item} on the board?'],
+    { weight: 4 },
+  ),
+  T(
+    'trade.idle.n05',
+    'trade',
+    'state.idle',
+    ['selling {item}, make an offer', 'trading {item}, offers welcome'],
+    { when: { archetype: ['Trader', 'Crafter'] } },
+  ),
+  T(
+    'trade.idle.n06',
+    'trade',
+    'state.idle',
+    ['{item} prices up again. someone is hoarding', 'prices on {item} are strange this week'],
+    { when: { archetype: ['Trader', 'Veteran', 'Completionist'] } },
+  ),
+  T(
+    'trade.idle.n07',
+    'trade',
+    'state.idle',
+    [
+      'do not undercut each other on {item}, we all lose',
+      'if we all hold {item} at the same price we all win',
+    ],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.idle.n08',
+    'trade',
+    'state.idle',
+    [
+      'market tip: {item} sells best around dusk',
+      'try selling {item} in the evening, the crowd is better',
+    ],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.idle.n09',
+    'trade',
+    'state.idle',
+    ['who has spare {item}? i will pay a premium', 'short on {item}, will pay extra'],
+    { when: { archetype: ['Crafter'] } },
+  ),
+  T(
+    'trade.idle.n10',
+    'trade',
+    'state.idle',
+    ['swapping {item} for something to eat', 'will give {item} for a good dish'],
+    { when: { archetype: ['Grinder', 'Explorer'] } },
+  ),
+  T(
+    'trade.idle.n11',
+    'trade',
+    'state.idle',
+    [
+      'every {item} price i see is different',
+      'is it me or does {item} cost a different amount everywhere',
+    ],
+    { when: { archetype: ['Newbie', 'Casual'] } },
+  ),
+  T(
+    'trade.idle.n12',
+    'trade',
+    'state.idle',
+    [
+      'do not buy {item} from the shop, make it yourself',
+      'crafting {item} is cheaper than buying it',
+    ],
+    { when: { archetype: ['Crafter', 'Veteran'] } },
+  ),
+  L(
+    'trade.idle.n13',
+    'trade',
+    'state.idle',
+    ['looking at {item} here, it is a fair price', 'the stall at {place} has {item} today'],
+    { when: { doing: ['trade'] } },
+  ),
+  T(
+    'trade.idle.n14',
+    'trade',
+    'state.idle',
+    ['{skill} {rank}, selling what i make', 'crafting at {skill} {rank} and the prices still hurt'],
+    { when: { archetype: ['Crafter', 'Trader'] } },
+  ),
+  T(
+    'trade.idle.n15',
+    'trade',
+    'state.idle',
+    ['wts {item}, best offer in the next ten minutes', 'selling {item}, offers close soon'],
+    { when: { archetype: ['Trader'] } },
+  ),
+  T(
+    'trade.idle.n16',
+    'trade',
+    'state.idle',
+    ['need {item}, can give a hand with a dungeon run in return', 'trade a run for {item}?'],
+    { when: { archetype: ['Veteran', 'Grinder'] } },
+  ),
+  T(
+    'trade.idle.n17',
+    'trade',
+    'state.idle',
+    ['{item} for sale, free delivery to the square', 'sell {item}, i will meet you at the square'],
+    { when: { archetype: ['Trader', 'Crafter'] } },
+  ),
+  T(
+    'trade.idle.n18',
+    'trade',
+    'state.idle',
+    ['{item} is cheap today. stock up', 'cheap {item}, stock up while you can'],
+    { when: { archetype: ['Trader', 'Veteran'] } },
+  ),
+  T(
+    'trade.idle.n19',
+    'trade',
+    'state.idle',
+    ['Looking to buy {item}. Fair offers only.', 'Selling {item}. Fair offers only.'],
+    { when: { voice: ['formal'] } },
+  ),
+  T(
+    'trade.idle.n20',
+    'trade',
+    'state.idle',
+    ['lf {item} for a recipe, thanks in advance', 'anyone have a {item} to sell?'],
+    { when: { voice: ['newbie', 'chatty', 'kind'] } },
+  ),
+  T(
+    'trade.idle.n21',
+    'trade',
+    'state.idle',
+    ['i can craft {item} if you bring the mats', 'bring mats and i craft {item}'],
+    { when: { archetype: ['Crafter'] } },
+  ),
+  T(
+    'trade.idle.n22',
+    'trade',
+    'state.idle',
+    ['coal is the real currency', 'everyone needs coal and nobody wants to mine it'],
+    { weight: 3 },
+  ),
+  T(
+    'trade.idle.n23',
+    'trade',
+    'state.idle',
+    [
+      'the shop sells low and buys lower, do not use it if you can help it',
+      'player prices beat the shop every time',
+    ],
+    { weight: 3 },
+  ),
+  T(
+    'trade.idle.n24',
+    'trade',
+    'state.idle',
+    [
+      'whoever keeps buying all the dewmint, please save some',
+      'dewmint is gone again, someone is stockpiling',
+    ],
+    { weight: 2 },
+  ),
+  T(
+    'trade.idle.n25',
+    'trade',
+    'state.idle',
+    [
+      'anyone want to split a big craft? i have mats for half',
+      'looking for a crafting partner, I have half the mats',
+    ],
+    { when: { archetype: ['Crafter', 'Socializer'] } },
+  ),
+];
