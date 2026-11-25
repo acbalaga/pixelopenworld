@@ -25,17 +25,13 @@ const scenes = (page: Page): Promise<string[]> =>
   page.evaluate(() => (window as unknown as { __pow: Pow }).__pow.crowd().scenes);
 
 for (const [name, kind, url] of [
-  ['wish', 'wish', '/?region=dawnmeadow&at=187,199&time=day&weather=clear&foes=0&nosave=1&kit=dev'],
+  ['wish', 'wish', '/?region=dawnmeadow&at=187,199&weather=clear&foes=0&nosave=1&kit=dev'],
   [
     'dance',
     'dance',
-    '/?region=dawnmeadow&at=174,213&time=dusk&weather=clear&foes=0&nosave=1&kit=dev',
+    '/?region=dawnmeadow&at=174,213&tick=54000&weather=clear&foes=0&nosave=1&kit=dev',
   ],
-  [
-    'dummy',
-    'dummy',
-    '/?region=dawnmeadow&at=173,201&time=day&weather=clear&foes=0&nosave=1&kit=dev',
-  ],
+  ['dummy', 'dummy', '/?region=dawnmeadow&at=173,201&weather=clear&foes=0&nosave=1&kit=dev'],
 ] as const) {
   test(`a ${name} scene shows on screen`, async ({ page }) => {
     const problems = await watchProblems(page);
@@ -55,7 +51,7 @@ test('a ghost story at the river camp shows two Travelers and the story in Local
   const problems = await watchProblems(page);
   await evening(
     page,
-    '/?region=dawnmeadow&at=236,200&time=night&weather=clear&foes=0&nosave=1&kit=dev',
+    '/?region=dawnmeadow&at=236,200&tick=61300&weather=clear&foes=0&nosave=1&kit=dev',
   );
   await expect
     .poll(

@@ -591,7 +591,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   state.region = regionId;
   if (wantWeather && (WEATHER as readonly string[]).includes(wantWeather))
     state.weatherOverride = wantWeather as Weather;
-  const worldNow = (): number => frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch);
+  // Dev builds can start the world part way through its day (`?tick=54000` is the start of dusk),
+  // and the crowd and the chat keep running, unlike `?time=`, which freezes the clock.
+  const devTickOffset = import.meta.env.DEV ? Math.max(0, Number(params.get('tick')) || 0) : 0;
+  const worldNow = (): number =>
+    frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch) + devTickOffset;
   // The device's offset from UTC, looked up once a real minute: it only changes at a DST step.
   let tzAt = -Infinity;
   let tzMin = 0;
