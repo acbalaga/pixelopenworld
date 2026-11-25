@@ -202,6 +202,10 @@ function eligible(c: Ctx, t: TravelerIdentity, tpl: ChatTemplate, channel?: Chan
     const kind = c.state.crowd!.doing[t.slot]?.kind;
     if (kind === undefined || !w.doing.includes(kind)) return false;
   }
+  if (w?.place) {
+    const d = c.state.crowd!.doing[t.slot];
+    if (!d || d.eta > 0 || !w.place.includes(PLACE_LIST[d.place] ?? '')) return false;
+  }
   if (tpl.channel === 'local' && !c.state.crowd!.promoted[t.slot]) return false;
   if (c.chat.recent[tpl.channel].includes(tpl.id)) return false;
   if ((c.chat.cooldown.get(`${t.slot}|${tpl.id}`) ?? -1) > c.minute) return false;

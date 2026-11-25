@@ -8,6 +8,8 @@
 export interface PlaceSpot {
   rect: { x: number; y: number; w: number; h: number };
   slots: readonly (readonly [number, number])[];
+  /** A tile the people at this place face and keep off: the fire or bedroll of a camp. */
+  focus?: readonly [number, number];
 }
 
 export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
@@ -223,6 +225,33 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [6, 86],
       [3, 87],
       [8, 87],
+    ],
+  },
+  // The river rest point (POW-M5-26): the one bedroll within 60 walking tiles of the square. The
+  // slots ring it at one to two tiles and never stand on it.
+  'wayside.river_camp': {
+    rect: { x: 233, y: 193, w: 7, h: 5 },
+    focus: [236, 195],
+    slots: [
+      [234, 195],
+      [238, 195],
+      [236, 193],
+      [236, 197],
+      [234, 193],
+      [238, 197],
+    ],
+  },
+  // The north meadow rest point, 76 walking tiles from the square (the camp ring is 80).
+  'wayside.meadow_camp': {
+    rect: { x: 212, y: 137, w: 7, h: 6 },
+    focus: [215, 140],
+    slots: [
+      [213, 140],
+      [217, 140],
+      [215, 138],
+      [215, 142],
+      [213, 138],
+      [217, 142],
     ],
   },
 };

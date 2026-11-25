@@ -1,4 +1,5 @@
 import {
+  CAMP,
   ABSTRACT_TICKS,
   ACTIVITY_MINUTES,
   ACTIVITY_WEIGHTS,
@@ -211,6 +212,27 @@ const gatherDoing = (state: SimState, node: string, minutes: number): Doing => {
   return { kind: 'gather', place, left: minutes, eta: 0, from: 0, total: 0, skill, thing: node };
 };
 
+/**
+ * A camp this Traveler goes to for a `social` or `afk` choice, or null. Only at dusk and night, and
+ * never in rain or a storm. Rolls on the travelers stream only when a camp is possible, so the
+ * rest of the day is unchanged.
+ */
+function campFor(state: SimState, crowd: Crowd, t: TravelerIdentity): string | null {
+  if (CAMP.places.length === 0) return null;
+  if (!CAMP.phases.includes(dayPhase(state.worldTick))) return null;
+  if (CAMP.noWeather.includes(weatherOn(state, state.worldTick))) return null;
+  const r = state.rng.travelers;
+  if (!chance(r, CAMP.chance[t.archetype])) return null;
+  const open = CAMP.places.filter((id) => {
+    const at = placeIdx(id);
+    let n = 0;
+    for (let i = 0; i < crowd.doing.length; i++)
+      if (i !== t.slot && crowd.online[i] && crowd.doing[i]?.place === at) n++;
+    return n < CAMP.max;
+  });
+  return open.length > 0 ? pick(r, open) : null;
+}
+
 /** Picks the next thing for an online Traveler. Pure in the state and the travelers stream. */
 export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): Doing {
   const r = state.rng.travelers;
@@ -300,11 +322,25 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
       };
     choice = 'social';
   }
-  if (choice === 'afk')
+  if (choice === 'afk') {
+    const camp = campFor(state, crowd, t);
     return {
       kind: 'afk',
-      place: here,
+      place: camp ? placeIdx(camp) : here,
       left: pickMinutes(state, 'afk'),
+      eta: 0,
+      from: 0,
+      total: 0,
+      skill: -1,
+      thing: '',
+    };
+  }
+  const camp = campFor(state, crowd, t);
+  if (camp)
+    return {
+      kind: 'social',
+      place: placeIdx(camp),
+      left: pickMinutes(state, 'social'),
       eta: 0,
       from: 0,
       total: 0,

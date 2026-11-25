@@ -108,6 +108,7 @@ export function validateChat(c: ChatContent): string[] {
       if (!HAND_TUNED.some((x) => x.handle === h)) errors.push(`${w}: handle ${h}`);
     for (const a of t.when?.doing ?? [])
       if (!(ACTIVITIES as readonly string[]).includes(a)) errors.push(`${w}: doing ${a}`);
+    for (const pl of t.when?.place ?? []) if (!PLACES[pl]) errors.push(`${w}: place ${pl}`);
   }
   // Banter is carried by the exchanges, so it needs no single-line template.
   for (const cat of CATEGORIES)

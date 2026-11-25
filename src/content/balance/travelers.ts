@@ -714,6 +714,30 @@ export const SOCIAL_PLACES: readonly (readonly [string, number])[] = [
   ['hearthford.inn', 4],
   ['hearthford.market_street', 2],
 ];
+/**
+ * Camps (POW-M5-26): a rest point near town where the abstract sim may send a `social` or `afk`
+ * choice at dusk and night. `chance` is the odds per such choice, by archetype. No camp choice is
+ * made in the listed weather.
+ */
+export const CAMP = {
+  places: ['wayside.river_camp', 'wayside.meadow_camp'] as readonly string[],
+  phases: ['dusk', 'night'] as readonly string[],
+  noWeather: ['rain', 'storm'] as readonly string[],
+  /** The most Travelers bound for or at one camp, so it never drains the square of its crowd. */
+  max: 5,
+  chance: {
+    Grinder: 0.05,
+    Explorer: 0.45,
+    Socializer: 0.2,
+    Crafter: 0.05,
+    Trader: 0.05,
+    Roleplayer: 0.45,
+    Completionist: 0.1,
+    Casual: 0.5,
+    Newbie: 0.2,
+    Veteran: 0.1,
+  } as Record<Archetype, number>,
+} as const;
 /** Travelers shop at Brin's counter (M5-14). */
 export const TRADE_PLACE = 'hearthford.brin_shop';
 
