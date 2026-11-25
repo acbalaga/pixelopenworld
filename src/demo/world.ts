@@ -601,6 +601,20 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     }
     return tzMin;
   };
+  // Dev builds can set the real local time the Travelers' schedules run on (`?localtime=HH:MM`,
+  // 24 hour), without touching the device clock (Gate G5a, POW-M5-13). It shifts the clock the
+  // crowd reads forward to the next time it is that hour, then time runs normally.
+  const localShiftMs = ((): number => {
+    const m = import.meta.env.DEV
+      ? /^(\d{1,2}):(\d{2})$/.exec(params.get('localtime') ?? '')
+      : null;
+    if (!m) return 0;
+    const target = Number(m[1]) * 60 + Number(m[2]);
+    if (Number(m[1]) > 23 || Number(m[2]) > 59) return 0;
+    const now = clock.trustedNow();
+    const cur = (((Math.floor(now / 60_000) + tzOffset(now)) % 1440) + 1440) % 1440;
+    return ((target - cur + 1440) % 1440) * 60_000;
+  })();
   state.worldTick = worldNow();
   // A new character wakes at one of the wake points, outside town and facing it (M4-14). A
   // developer `?at=` overrides that. A region with no wake table (dev regions) starts at its
@@ -1481,7 +1495,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             ? {}
             : {
                 clock: {
-                  nowMs: trustedNow,
+                  nowMs: trustedNow + localShiftMs,
                   epochMs: worldEpoch,
                   tzOffsetMin: tzOffset(trustedNow),
                 },

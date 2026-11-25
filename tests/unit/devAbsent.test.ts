@@ -22,6 +22,10 @@ describe('dev code check', () => {
     const dir = bundle({ 'assets/index-abc.js': 'e.id="pow-dev-overlay"' });
     expect(findDevLeaks(dir)).toHaveLength(1);
   });
+  it('flags the Gate G5a local time flag (M5-13)', () => {
+    const dir = bundle({ 'assets/index.js': 'e.get("localtime")' });
+    expect(findDevLeaks(dir)).toHaveLength(1);
+  });
   it('flags the map viewer route', () => {
     const dir = bundle({ 'assets/index.js': 'p==="/dev/map"' });
     expect(findDevLeaks(dir)).toHaveLength(1);
