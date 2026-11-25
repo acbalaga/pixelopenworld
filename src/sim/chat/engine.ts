@@ -382,6 +382,14 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
         slots: {},
       });
   };
+  // The player passed a Traveler on a board (M5-09): someone nearby remarks on it, naming them.
+  if (e.type === 'playerPassed') {
+    const passed = c.ids[e.slot];
+    const w = witnessFor(c, e.slot);
+    const dd = hash01(state.seed, 0x9a55ed, state.tick, index);
+    if (passed && w && dd < 0.6) say(w, 'deed.passed', { handle: passed.handle }, 'deed');
+    return;
+  }
   // The player's public deeds: someone nearby says something about it (design/12 4.2, M5-15).
   const deed = deedOf(c, e);
   if (deed) {

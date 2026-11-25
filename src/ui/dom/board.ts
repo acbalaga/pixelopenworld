@@ -4,11 +4,16 @@ import { boardPosted, boardReady, requestLog, type PostedView } from '../../sim/
 import type { Command } from '../../sim/kernel/commands';
 import type { SimEvent } from '../../sim/kernel/events';
 import type { SimState } from '../../sim/state';
+import { RANKING_STRINGS as RK } from '../../content/strings/rankings';
+import { factsOf } from '../../sim/rankings/system';
+import { RankingsPanel } from './rankingsPanel';
 
 /** What the board panel needs from the game. It reads words from `sim/requestLog` and sends commands. */
 export interface BoardDeps {
   read: () => { state: SimState; who: number };
   send: (c: Command) => void;
+  /** The percent of the region uncovered, for the rankings on the board's wall (M5-09). */
+  mapPercent?: () => number;
   /** Called with true when the panel opens and false when it closes, so play can pause its keys. */
   onOpenChange?: (open: boolean) => void;
 }
@@ -38,6 +43,8 @@ export class BoardSheet {
   private sheet: HTMLElement | null = null;
   private board = '';
   private sig = '';
+  private showRankings = false;
+  private rankings: RankingsPanel | null = null;
   private readonly onKey = (e: KeyboardEvent): void => {
     if (e.code !== 'Escape') return;
     e.stopPropagation();
@@ -67,6 +74,7 @@ export class BoardSheet {
   open(board: string): void {
     this.close();
     this.board = board;
+    this.showRankings = false;
     const sheet = el('section', 'pow-panel pow-sheet pow-board');
     sheet.setAttribute('role', 'dialog');
     sheet.setAttribute('aria-modal', 'true');
@@ -89,6 +97,8 @@ export class BoardSheet {
   private signature(): string {
     const { state, who } = this.deps.read();
     return JSON.stringify([
+      this.showRankings ? factsOf(state, who, this.deps.mapPercent?.() ?? 0) : null,
+      this.showRankings,
       boardPosted(state, this.board),
       boardReady(state, who, this.board),
       requestLog(state, who).filter((r) => r.board === this.board),
@@ -104,6 +114,37 @@ export class BoardSheet {
     const { state, who } = this.deps.read();
     sheet.textContent = '';
     put(sheet, el('h2', 'pow-sheet-title', T['request.board.title']));
+
+    // The board's wall also holds the rankings (M5-09): a tab pair, requests and rankings.
+    const tabs = el('div', 'pow-board-tabs');
+    for (const [key, label, on] of [
+      ['requests', RK.back, !this.showRankings],
+      ['rankings', RK.open, this.showRankings],
+    ] as const) {
+      const b = el('button', on ? 'pow-button pow-on' : 'pow-button', label);
+      b.type = 'button';
+      b.dataset.key = `board-tab-${key}`;
+      b.setAttribute('aria-pressed', String(on));
+      b.addEventListener('click', () => {
+        this.showRankings = key === 'rankings';
+        this.render(true);
+      });
+      tabs.appendChild(b);
+    }
+    sheet.appendChild(tabs);
+    if (this.showRankings) {
+      this.rankings ??= new RankingsPanel({
+        read: () => this.deps.read(),
+        mapPercent: () => this.deps.mapPercent?.() ?? 0,
+      });
+      this.rankings.render();
+      sheet.appendChild(this.rankings.root);
+      const closeR = el('button', 'pow-button', T['request.board.close']);
+      closeR.type = 'button';
+      closeR.addEventListener('click', () => this.close());
+      sheet.appendChild(closeR);
+      return;
+    }
 
     // Jobs this board gave: the ones that can be handed in now get the button, the ones still
     // short show how much of it the bag holds instead (POW-M4-22A).

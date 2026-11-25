@@ -82,6 +82,16 @@ export interface MapView {
 
 const TILE = 16;
 
+/** Percent of the ground uncovered: 0 when none, at least 1 once any is, at most 100. */
+const percentOf = (n: number, total: number): number =>
+  total === 0 ? 0 : Math.min(100, n === 0 ? 0 : Math.max(1, Math.floor((n * 100) / total)));
+
+/** The percent of the region uncovered, for the Rankings and anything else that needs only that. */
+export function mapPercentOf(state: SimState, ctx: MapContext): number {
+  const total = ctx.chunks.w * ctx.chunks.h * BLOCKS_PER_CHUNK * BLOCKS_PER_CHUNK;
+  return percentOf(countRevealed(state.map.fog[ctx.region] ?? {}), total);
+}
+
 export function mapView(state: SimState, who: EntityId, ctx: MapContext): MapView {
   const fog = state.map.fog[ctx.region] ?? {};
   const pos = getComp(state.entities, who, 'pos');
@@ -143,8 +153,7 @@ export function mapView(state: SimState, who: EntityId, ctx: MapContext): MapVie
     player: pos
       ? { x: Math.floor(pos.x / SUBPX / TILE), y: Math.floor((pos.y / SUBPX - 1) / TILE) }
       : null,
-    percent:
-      total === 0 ? 0 : Math.min(100, n === 0 ? 0 : Math.max(1, Math.floor((n * 100) / total))),
+    percent: percentOf(n, total),
     revealed: n,
     places,
     stones,

@@ -2324,3 +2324,67 @@ canvas {
   vertical-align: -0.12em;
   image-rendering: pixelated;
 }
+
+/* Rankings (POW-M5-09): the board picker, the list and the player's own row. Clear text, any scale. */
+.pow-board-tabs {
+  display: flex;
+  gap: calc(var(--px) * 2);
+  margin: 0 0 calc(var(--px) * 2);
+}
+.pow-board-tabs .pow-button[aria-pressed='true'] {
+  border-color: var(--pal-47);
+  border-bottom-width: 4px;
+  font-weight: bold;
+}
+.pow-rankings {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--px) * 2);
+}
+.pow-rank-select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  font: inherit;
+  color: var(--pal-3);
+  background: var(--pal-16);
+  border: 1px solid var(--pal-18);
+  border-radius: 0;
+}
+.pow-rank-yours {
+  margin: 0;
+}
+.pow-rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pow-rank-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2em 0.8em;
+  min-height: 40px;
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+  border-top: 1px solid var(--pal-18);
+}
+.pow-rank-n {
+  flex: 0 0 2.5em;
+  color: var(--pal-47);
+}
+.pow-rank-name {
+  flex: 1 1 8em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pow-rank-val {
+  flex: 0 1 auto;
+}
+.pow-rank-you {
+  background: var(--pal-16);
+  border-left: 3px solid var(--pal-47);
+}
+.pow-rank-gap {
+  padding: calc(var(--px) * 1) calc(var(--px) * 2);
+  color: var(--pal-47);
+}

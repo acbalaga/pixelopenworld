@@ -39,6 +39,9 @@ import { MapPane, type MapPaneDeps } from './mapPane';
 import { bestiaryView } from '../menu/bestiaryModel';
 import { chronicleLines } from '../menu/singularModel';
 import { finished, knownRecipes, underWay } from '../menu/journalModel';
+import { mapPercentOf } from '../menu/mapModel';
+import { factsOf } from '../../sim/rankings/system';
+import { RankingsPanel } from './rankingsPanel';
 
 export const TAB_IDS = [
   'character',
@@ -59,6 +62,7 @@ export const ENABLED_TABS: readonly TabId[] = [
   'bag',
   'map',
   'chronicle',
+  'social',
   'system',
 ];
 
@@ -165,6 +169,7 @@ export class MenuSheet {
   private baselined = false;
   /** The Map tab's pane. It outlives the tab's redraws so pan and zoom are kept. */
   private mapPane: MapPane | null = null;
+  private rankings: RankingsPanel | null = null;
 
   constructor(
     host: HTMLElement,
@@ -399,9 +404,17 @@ export class MenuSheet {
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
           this.detail?.kind === 'item' ? this.detail.id : '',
         ]);
+      case 'social':
+        return JSON.stringify([factsOf(state, who, this.mapPercent()), closed]);
       default:
         return '';
     }
+  }
+
+  /** The percent of the region uncovered, for the Rankings. Zero when there is no map to read. */
+  private mapPercent(): number {
+    const ctx = this.deps.map?.ctx;
+    return ctx ? mapPercentOf(this.deps.read().state, ctx) : 0;
   }
 
   private render(force: boolean): void {
@@ -428,6 +441,9 @@ export class MenuSheet {
         break;
       case 'chronicle':
         this.renderChronicle();
+        break;
+      case 'social':
+        this.renderSocial();
         break;
       case 'system':
         this.renderSystem();
@@ -499,6 +515,17 @@ export class MenuSheet {
    * The journal (POW-M4-22B): what is under way, what is finished, the recipes known, the
    * Bestiary, and the Singular lines. Nothing here names a place.
    */
+  /** The Social tab (M5-09): the rankings. Friends and the rest arrive with POW-M5-06. */
+  private renderSocial(): void {
+    put(this.body, header(S.tabs.social));
+    this.rankings ??= new RankingsPanel({
+      read: () => this.deps.read(),
+      mapPercent: () => this.mapPercent(),
+    });
+    this.rankings.render();
+    this.body.appendChild(this.rankings.root);
+  }
+
   private renderChronicle(): void {
     const { state, who } = this.deps.read();
     const now = underWay(state, who);

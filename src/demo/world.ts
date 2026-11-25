@@ -131,6 +131,7 @@ import { travelBlock } from '../sim/systems/waystones';
 import { MapImage } from '../render/mapImage';
 import { REGIONS } from '../content/world/regions';
 import { countRevealed } from '../sim/world/fog';
+import { mapPercentOf } from '../ui/menu/mapModel';
 import {
   applyPaletteVars,
   applyPanelImages,
@@ -1105,6 +1106,14 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   });
   const board = new BoardSheet(root, {
     read: () => ({ state, who }),
+    mapPercent: () =>
+      mapPercentOf(state, {
+        region: regionId,
+        regionName: regionId,
+        chunks: regionManifest.chunks,
+        landmarks: [],
+        waystones: [],
+      }),
     send: (c) => pendingCommands.push(c),
     onOpenChange: (open) => {
       talkOpen = open;
