@@ -142,3 +142,18 @@ export interface VoiceDef {
   /** Said on a farewell. */
   signoff: string;
 }
+
+/**
+ * A small scene (POW-M5-27): lines said by Travelers while something shows on screen. `wish` is one
+ * Traveler at the well, `wishCame` is said later when a real event of theirs follows (`on`), `dance`
+ * is a challenge (a), a reply (b) and a judge (c), `ghost` is a story told by two at a camp, and
+ * `dummy` is a low-rank Traveler arguing with the training dummy (a), with a friend teasing (b)
+ * when the lines have a `b`.
+ */
+export interface ChatScene {
+  id: string;
+  kind: 'wish' | 'wishCame' | 'dance' | 'ghost' | 'dummy';
+  on?: 'rank' | 'drop';
+  lines: readonly { role: 'a' | 'b' | 'c'; text: string }[];
+  weight: number;
+}

@@ -5,6 +5,7 @@ import {
   ENTITY,
   TRAVEL_TILES_PER_MINUTE,
   TRAVELER_COUNT,
+  WELL_SPOT,
 } from '../../content/balance/travelers';
 import { PATH_LIST } from '../../content/paths';
 import { PATH_STRINGS } from '../../content/strings/paths';
@@ -46,6 +47,14 @@ export interface Emote {
   t: number;
 }
 
+/** A small scene a promoted Traveler is in (POW-M5-27): at the well, dancing, or fighting the dummy. */
+export type SceneKind = 'wish' | 'dance' | 'dummy';
+export interface SceneState {
+  kind: SceneKind;
+  /** The sim tick it ends. */
+  until: number;
+}
+
 export interface TravelerEnt {
   slot: number;
   mode: EntMode;
@@ -65,6 +74,8 @@ export interface TravelerEnt {
   group: { x: number; y: number; size: number } | null;
   /** Dancing for the rest of this activity (decided once when it starts). */
   dancing: boolean;
+  /** A scene from the chat engine, which ends with its tick or when the activity changes. */
+  scene: SceneState | null;
   lastDoing: Doing | null;
   lastX: number;
   lastY: number;
@@ -201,6 +212,7 @@ export function newEnt(slot: number): TravelerEnt {
     nextEmote: 0,
     group: null,
     dancing: false,
+    scene: null,
     lastDoing: null,
     lastX: 0,
     lastY: 0,
@@ -603,6 +615,7 @@ function noteDoing(state: SimState, crowd: Crowd, ent: TravelerEnt, d: Doing | n
   if (ent.lastDoing === d) return;
   ent.lastDoing = d;
   ent.dancing = false;
+  ent.scene = null;
   if (!d || d.kind !== 'social') return;
   const place = PLACES[PLACE_LIST[d.place] ?? ''];
   if (!place || place.indoors || place.spot?.focus) return;
@@ -643,6 +656,23 @@ function emoteTick(state: SimState, crowd: Crowd, ent: TravelerEnt): void {
   }
 }
 
+/** Starts a scene on a promoted Traveler for `ticks`. False if they are not promoted or in one. */
+export function startScene(
+  state: SimState,
+  crowd: Crowd,
+  slot: number,
+  kind: SceneKind,
+  ticks: number,
+): boolean {
+  const ent = crowd.ents.get(crowd.entOf[slot] ?? -1);
+  if (!ent || ent.scene) return false;
+  ent.scene = { kind, until: state.tick + ticks };
+  return true;
+}
+
+/** The tile south of the well, as the spot to stand at to make a wish. */
+const WELL_PX = { x: WELL_SPOT.x * TILE + 8, y: WELL_SPOT.y * TILE + 14 };
+
 /** One tick of every promoted Traveler: walk, stand, work, shop, dance, emote, fight. */
 export function entityTick(state: SimState, crowd: Crowd): void {
   for (const [id, ent] of crowd.ents) {
@@ -664,7 +694,11 @@ export function entityTick(state: SimState, crowd: Crowd): void {
       ent.still++;
       continue;
     }
-    if (d.kind === 'fight' && d.eta === 0) {
+    if (ent.scene && state.tick >= ent.scene.until) {
+      if (ent.scene.kind === 'dummy') ent.emote = { kind: 'bow', t: 0 };
+      ent.scene = null;
+    }
+    if ((d.kind === 'fight' && d.eta === 0) || ent.scene?.kind === 'dummy') {
       const foe = nearestFoe(state, x, y, ENTITY.seekPx);
       if (foe !== null) {
         const fp = state.entities.comps.pos[foe]!;
@@ -721,6 +755,11 @@ export function entityTick(state: SimState, crowd: Crowd): void {
         if (fire) facing = cardinal(fire.x - (goal?.x ?? x), fire.y - (goal?.y ?? y), ent.face);
       }
     }
+    // A wish: walk to the well, face it, and toss a coin.
+    if (ent.scene?.kind === 'wish' && d.eta === 0) {
+      goal = WELL_PX;
+      facing = 0;
+    }
     if (!goal) {
       ent.mode = 'stand';
       ent.still++;
@@ -742,7 +781,11 @@ export function entityTick(state: SimState, crowd: Crowd): void {
       } else if (d.kind === 'social' && ent.dancing && d.eta === 0) ent.mode = 'dance';
       else if (atWork === 'shop') ent.mode = 'shop';
       else if (d.kind === 'afk') ent.mode = ent.still >= ENTITY.afkTicks ? 'afk' : 'idle';
-      else if (d.kind === 'social')
+      else if (ent.scene?.kind === 'dance') ent.mode = 'dance';
+      else if (ent.scene?.kind === 'wish') {
+        ent.mode = 'stand';
+        if (!ent.emote && ent.still >= 6) ent.emote = { kind: 'toss', t: 0 };
+      } else if (d.kind === 'social')
         ent.mode =
           d.place === PLACE_LIST.indexOf('hearthford.inn') || focusPx(d.place)
             ? 'sit'
@@ -842,7 +885,13 @@ export function travelerViews(state: SimState): TravelerView[] {
       afk: ent.mode === 'afk',
       look: t.look,
       mode: ent.mode,
-      glyph: ent.emote ? (EMOTE_GLYPH[ent.emote.kind] ?? '') : '',
+      glyph: ent.emote
+        ? ent.emote.kind === 'toss'
+          ? (ent.emote.t >> 3) & 1
+            ? '+'
+            : '*'
+          : (EMOTE_GLYPH[ent.emote.kind] ?? '')
+        : '',
       dy: ent.mode === 'sit' ? 3 : 0,
       group: ent.group?.size ?? 0,
     });
