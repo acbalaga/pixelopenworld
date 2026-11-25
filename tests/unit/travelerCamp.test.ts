@@ -27,7 +27,6 @@ const OPEN = { solidAt: (): number => 0 };
 const DUSK = (34 - 4) * 1800;
 const NIGHT = (38 - 4) * 1800;
 const CAMP_ID = 'wayside.river_camp';
-const CAMP_IDX = PLACE_LIST.indexOf(CAMP_ID);
 const CAMP_IDXS = new Set(CAMP.places.map((id) => PLACE_LIST.indexOf(id)));
 
 function world(seed: number, worldTick: number, at = { x: 192, y: 193 }): SimState {
