@@ -34,4 +34,9 @@ export const SLOTS_BY_TRIGGER: Readonly<Record<Trigger, readonly SlotName[]>> = 
   'state.question': [...base, 'item', 'creature', 'dungeon', 'place', 'skill'],
   'state.answer': [...base, 'rumor'],
   playerDeed: [...base, 'handle'],
+  'deed.boss': [...base, 'handle'],
+  'deed.trial': [...base, 'handle'],
+  'deed.rank': [...base, 'handle'],
+  'deed.singular': [...base, 'handle'],
+  'deed.passed': [...base, 'handle'],
 };

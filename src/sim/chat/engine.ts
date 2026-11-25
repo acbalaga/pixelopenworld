@@ -197,6 +197,11 @@ function eligible(c: Ctx, t: TravelerIdentity, tpl: ChatTemplate, channel?: Chan
   if (w?.voice && !w.voice.includes(t.voice)) return false;
   if (w?.weather && !w.weather.includes(c.weather)) return false;
   if (w?.phase && !w.phase.includes(c.phase)) return false;
+  if (w?.handle && !w.handle.includes(t.handle)) return false;
+  if (w?.doing) {
+    const kind = c.state.crowd!.doing[t.slot]?.kind;
+    if (kind === undefined || !w.doing.includes(kind)) return false;
+  }
   if (tpl.channel === 'local' && !c.state.crowd!.promoted[t.slot]) return false;
   if (c.chat.recent[tpl.channel].includes(tpl.id)) return false;
   if ((c.chat.cooldown.get(`${t.slot}|${tpl.id}`) ?? -1) > c.minute) return false;
@@ -331,6 +336,24 @@ function witnessFor(c: Ctx, not: number): TravelerIdentity | null {
   ] as TravelerIdentity;
 }
 
+/** A public deed of the player in this event, and how likely it is to be remarked on. */
+function deedOf(c: Ctx, e: SimEvent): { trigger: Trigger; chance: number } | null {
+  const me = findAvatar(c.state);
+  if (me === null) return null;
+  switch (e.type) {
+    case 'bossResolved':
+      return e.id === me ? { trigger: 'deed.boss', chance: 0.9 } : null;
+    case 'trialPassed':
+      return e.id === me ? { trigger: 'deed.trial', chance: 0.7 } : null;
+    case 'skillRankUp':
+      return e.id === me && e.points % 10 === 0 ? { trigger: 'deed.rank', chance: 0.4 } : null;
+    case 'singularDone':
+      return e.who === me ? { trigger: 'deed.singular', chance: 0.9 } : null;
+    default:
+      return null;
+  }
+}
+
 /** What an event says, if anything: a speaker, a trigger and the facts. */
 function fromEvent(c: Ctx, e: SimEvent, index: number): void {
   const { state, chat } = c;
@@ -359,6 +382,14 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
         slots: {},
       });
   };
+  // The player's public deeds: someone nearby says something about it (design/12 4.2, M5-15).
+  const deed = deedOf(c, e);
+  if (deed) {
+    const w = witnessFor(c, -1);
+    const dd = hash01(state.seed, 0x0deed, state.tick, index);
+    if (w && dd < deed.chance) say(w, deed.trigger, {}, 'deed');
+    return;
+  }
   if (!('slot' in e) || typeof e.slot !== 'number') return;
   const t = c.ids[e.slot];
   if (!t) return;
@@ -484,7 +515,7 @@ function chatter(c: Ctx): void {
         slots: {},
       });
     // A question may be answered, with a rumor that is right three times in four.
-    const topic = QUESTION_TOPIC[made.tpl.id];
+    const topic = made.tpl.topic ?? QUESTION_TOPIC[made.tpl.id];
     if (trigger === 'state.question' && topic && d() < CHAT.answerChance) {
       const answerer = witnessOrAny(c, t.slot, d);
       const rumors = RUMORS.filter((r2) => r2.about === topic);
@@ -540,7 +571,11 @@ function exchanges(c: Ctx): void {
   if (free.length === 0) return;
   const pair = free[Math.floor(d() * free.length)] as (typeof pairs)[number];
   chat.cooldown.set(`pair|${pair.a.slot}|${pair.b.slot}`, c.minute + 90);
-  const pool: readonly ChatExchange[] = EXCHANGES.filter((x) => x.tie === pair.kind);
+  const pool: readonly ChatExchange[] = EXCHANGES.filter(
+    (x) =>
+      x.tie === pair.kind &&
+      (!x.between || (x.between.includes(pair.a.handle) && x.between.includes(pair.b.handle))),
+  );
   if (pool.length === 0) return;
   const total = pool.reduce((a, x) => a + x.weight, 0);
   let r = d() * total;
@@ -557,8 +592,10 @@ function exchanges(c: Ctx): void {
   const lines: Queued[] = [];
   for (let i = 0; i < ex.lines.length; i++) {
     const line = ex.lines[i]!;
-    const who = line.role === 'a' ? pair.a : pair.b;
-    const other = line.role === 'a' ? pair.b : pair.a;
+    const first = ex.between && ex.between[0] !== pair.a.handle ? pair.b : pair.a;
+    const second = first === pair.a ? pair.b : pair.a;
+    const who = line.role === 'a' ? first : second;
+    const other = line.role === 'a' ? second : first;
     const filled = fill(line.text, { handle: other.handle, player: c.player });
     if (filled === null) return;
     const v = applyVoice(voiceOf(who.voice), filled, 'banter', d);

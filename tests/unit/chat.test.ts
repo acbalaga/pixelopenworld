@@ -37,7 +37,7 @@ describe('chat content', () => {
     expect(validateShippedChat()).toEqual([]);
   });
 
-  it('has about 120 templates across every category, 16 voices, 12 glyphs and 8 exchanges', () => {
+  it('has templates across every category, 16 voices, 12 glyphs and generic exchanges', () => {
     expect(TEMPLATES.length).toBeGreaterThanOrEqual(100);
     expect(new Set(TEMPLATES.map((t) => t.category)).size).toBeGreaterThanOrEqual(13);
     expect(VOICES).toHaveLength(16);
