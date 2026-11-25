@@ -3,7 +3,7 @@ import { Img, toSprite } from '../gen/img';
 
 /**
  * Giver marks (POW-M4-22D): a 7 x 9 speech bubble over a person who has work for you. `offer` is
- * a light bubble with a "?", `ready` a gold one with a tick. Drawn with the darkest neutral
+ * a light bubble with a "?", `ready` a gold one with a tick, `rest` a light one with a "z" over a rest point. Drawn with the darkest neutral
  * outline so both read at 1x on a phone. The origin is the bottom middle, where the tail ends.
  */
 const OUTLINE = 0;
@@ -49,7 +49,21 @@ const TICK = [
   [5, 2],
 ] as const;
 
+/** A "z": a rest point, a place to bed down (POW-M5-25). */
+const ZZZ = [
+  [2, 1],
+  [3, 1],
+  [4, 1],
+  [4, 2],
+  [3, 3],
+  [2, 4],
+  [2, 5],
+  [3, 5],
+  [4, 5],
+] as const;
+
 export const MARK_SPRITES: readonly SpriteDef[] = [
   toSprite('ui.mark_offer', 'ui', [3, 9], { base: bubble(LIGHT, GLYPH, QUESTION) }),
+  toSprite('ui.mark_rest', 'ui', [3, 9], { base: bubble(LIGHT, GLYPH, ZZZ) }),
   toSprite('ui.mark_ready', 'ui', [3, 9], { base: bubble(GOLD, GLYPH_READY, TICK) }),
 ];

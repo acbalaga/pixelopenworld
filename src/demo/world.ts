@@ -1839,6 +1839,25 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           );
         }
       }
+      // A mark over each rest point near the player, so a place to rest reads from a distance (M5-25).
+      if (marksOn)
+        for (const id of state.entities.comps.fixture.keys()) {
+          const fx = state.entities.comps.fixture[id];
+          const fp = state.entities.comps.pos[id];
+          if (!fx || !fp || FIXTURES[fx.kind]?.type !== 'rest') continue;
+          if (Math.hypot(apos.x - fp.x, apos.y - fp.y) / 256 > 20 * 16) continue;
+          const bob = settings.get().reducedMotion
+            ? 0
+            : Math.sin((now / 1000) * Math.PI * 2) > 0
+              ? -1
+              : 0;
+          renderer.drawSprite(
+            Layer.Overhead,
+            atlas.frame('ui.mark_rest', 'base'),
+            Math.round(fp.x / 256),
+            Math.round(fp.y / 256) - 12 - 2 + bob,
+          );
+        }
       // Travelers near the player (M5-04): dolls, shimmers, and names in pixel text over their heads.
       if (!dark && state.crowd) {
         const ids = identitiesOf(state.seed);

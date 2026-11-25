@@ -52,7 +52,8 @@ describe('origins are data and give nothing but flavor', () => {
       }
       expect([...seen].sort()).toEqual([...o.wakes].sort());
     }
-  });
+    // It builds a demo state 1,000 times per origin and runs near 30 s on a slow machine.
+  }, 120_000);
 
   it('a new character is identical across origins apart from position, look and the origin id', () => {
     const make = (origin: string): string => {

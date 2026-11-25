@@ -62,6 +62,10 @@ export const UI_STRINGS = {
     title: 'Bedroll',
     sleep: 'Sleep',
     slept: 'You sleep, and wake rested.',
+    campTitle: 'Camp',
+    campNote:
+      'A place to rest on the road. A night here leaves you rested for a while, less than a bed does.',
+    campSlept: 'You rest a while, and wake a little rested.',
     paths: 'Paths you wear (up to {max})',
     noPaths: 'You have not earned a Path yet.',
     wear: 'Wear',
