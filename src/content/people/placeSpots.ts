@@ -241,4 +241,17 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [238, 197],
     ],
   },
+  // The north meadow rest point, 76 walking tiles from the square (the camp ring is 80).
+  'wayside.meadow_camp': {
+    rect: { x: 212, y: 137, w: 7, h: 6 },
+    focus: [215, 140],
+    slots: [
+      [213, 140],
+      [217, 140],
+      [215, 138],
+      [215, 142],
+      [213, 138],
+      [217, 142],
+    ],
+  },
 };

@@ -28,6 +28,7 @@ const DUSK = (34 - 4) * 1800;
 const NIGHT = (38 - 4) * 1800;
 const CAMP_ID = 'wayside.river_camp';
 const CAMP_IDX = PLACE_LIST.indexOf(CAMP_ID);
+const CAMP_IDXS = new Set(CAMP.places.map((id) => PLACE_LIST.indexOf(id)));
 
 function world(seed: number, worldTick: number, at = { x: 192, y: 193 }): SimState {
   const s = createDemoState(seed, 0);
@@ -53,15 +54,16 @@ function run(s: SimState, ticks: number, each?: () => void): void {
 }
 
 describe('the camp place', () => {
-  const spot = PLACE_SPOTS[CAMP_ID]!;
-
-  it('is an outdoor wayside place added after the others, so saved place indices hold', () => {
-    expect(PLACES[CAMP_ID]).toMatchObject({ area: 'wayside', indoors: false });
-    expect(CAMP_IDX).toBe(PLACE_LIST.length - 1);
-    expect(PLACE_LIST.indexOf('wayside.chapel')).toBeLessThan(CAMP_IDX);
+  it('are outdoor wayside places added after the others, so saved place indices hold', () => {
+    expect(CAMP.places).toHaveLength(2);
+    for (const id of CAMP.places) {
+      expect(PLACES[id]).toMatchObject({ area: 'wayside', indoors: false });
+      expect(PLACE_LIST.indexOf(id)).toBeGreaterThan(PLACE_LIST.indexOf('wayside.chapel'));
+    }
+    expect(PLACE_LIST.slice(-2)).toEqual([...CAMP.places]);
   });
 
-  it('rings a rest point fixture, and no slot sits on it or on a solid tile, and each is reachable from the road', () => {
+  it('each ring a rest point fixture, and no slot sits on it or on a solid tile, and each is reachable from the road', () => {
     const files = bakeRegion(DAWNMEADOW, STAMPS);
     const chunks = new Map<string, ReturnType<typeof decodeChunk>>();
     const objs = new Map<string, string>();
@@ -72,8 +74,6 @@ describe('the camp place', () => {
       for (const o of c.objects)
         objs.set(`${c.cx * CHUNK_TILES + o.x},${c.cy * CHUNK_TILES + o.y}`, o.kind);
     }
-    const [fx, fy] = spot.focus!;
-    expect(objs.get(`${fx},${fy}`)).toBe('fixture.rest_point');
     const solid = (x: number, y: number): boolean => {
       const c = chunks.get(`${Math.floor(x / CHUNK_TILES)},${Math.floor(y / CHUNK_TILES)}`);
       if (!c) return true;
@@ -102,16 +102,21 @@ describe('the camp place', () => {
         q.push([x + dx, y + dy]);
       }
     }
-    expect(spot.slots.length).toBeGreaterThanOrEqual(4);
-    for (const [x, y] of spot.slots) {
-      const ring = Math.max(Math.abs(x - fx), Math.abs(y - fy));
-      expect(ring, `slot ${x},${y}`).toBeGreaterThanOrEqual(1);
-      expect(ring, `slot ${x},${y}`).toBeLessThanOrEqual(2);
-      expect(solid(x, y), `slot ${x},${y}`).toBe(false);
-      expect(seen.has(`${x},${y}`), `slot ${x},${y}`).toBe(true);
+    for (const id of CAMP.places) {
+      const spot = PLACE_SPOTS[id]!;
+      const [fx, fy] = spot.focus!;
+      expect(objs.get(`${fx},${fy}`), id).toBe('fixture.rest_point');
+      expect(spot.slots.length, id).toBeGreaterThanOrEqual(4);
+      for (const [x, y] of spot.slots) {
+        const ring = Math.max(Math.abs(x - fx), Math.abs(y - fy));
+        expect(ring, `${id} slot ${x},${y}`).toBeGreaterThanOrEqual(1);
+        expect(ring, `${id} slot ${x},${y}`).toBeLessThanOrEqual(2);
+        expect(solid(x, y), `${id} slot ${x},${y}`).toBe(false);
+        expect(seen.has(`${x},${y}`), `${id} slot ${x},${y}`).toBe(true);
+      }
+      // The walk from the square is inside the 80 tile ring (owner, 2026-11-25).
+      expect(seen.get(`${fx},${fy}`), id).toBeLessThanOrEqual(80);
     }
-    // And the walk from the square is within the 60 tiles the ticket allows.
-    expect(seen.get(`${fx},${fy}`)).toBeLessThanOrEqual(60);
   });
 });
 
@@ -125,7 +130,7 @@ describe('choosing a camp', () => {
     for (const t of identitiesOf(5).slice(0, 60))
       for (let i = 0; i < 40; i++) {
         const d = chooseNext(s, crowd, t);
-        if ((d.kind === 'social' || d.kind === 'afk') && d.place === CAMP_IDX) atCamp++;
+        if ((d.kind === 'social' || d.kind === 'afk') && CAMP_IDXS.has(d.place)) atCamp++;
       }
     return atCamp;
   };
@@ -166,7 +171,12 @@ describe('a camp at dusk', () => {
       run(s, 1800 + 7200, () => {
         if (s.worldTick < DUSK) return;
         for (const d of crowd.doing)
-          if (d && d.place === CAMP_IDX && d.eta === 0 && (d.kind === 'social' || d.kind === 'afk'))
+          if (
+            d &&
+            CAMP_IDXS.has(d.place) &&
+            d.eta === 0 &&
+            (d.kind === 'social' || d.kind === 'afk')
+          )
             seen = true;
       });
       if (seen) hits++;
@@ -199,10 +209,12 @@ describe('a camp at dusk', () => {
   }, 180_000);
 
   it('keeps camp slots round the fixture for every Traveler slot', () => {
-    const [fx, fy] = PLACE_SPOTS[CAMP_ID]!.focus!;
-    for (let slot = 0; slot < 200; slot++) {
-      const p = standPx(slot, CAMP_IDX)!;
-      expect(Math.hypot(p.x - (fx * 16 + 8), p.y - 6 - (fy * 16 + 8))).toBeGreaterThan(6);
+    for (const id of CAMP.places) {
+      const [cx, cy] = PLACE_SPOTS[id]!.focus!;
+      for (let slot = 0; slot < 200; slot++) {
+        const p = standPx(slot, PLACE_LIST.indexOf(id))!;
+        expect(Math.hypot(p.x - (cx * 16 + 8), p.y - 6 - (cy * 16 + 8))).toBeGreaterThan(6);
+      }
     }
   });
 });
@@ -212,6 +224,7 @@ describe('camp lines', () => {
 
   it('are ten idle lines, local, and only at a camp', () => {
     expect(lines.flatMap((t) => t.text)).toHaveLength(10);
+    for (const t of lines) expect(t.when!.place).toEqual([...CAMP.places]);
     for (const t of lines) {
       expect(t.channel).toBe('local');
       expect(t.trigger).toBe('state.idle');

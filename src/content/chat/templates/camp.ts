@@ -5,7 +5,10 @@ import { L } from './helper';
  * What people say beside a camp fire (POW-M5-26). Local only, so a Traveler must be near the
  * player, and gated by `place` so they fire only at a camp. Plain talk: tea, stew, tired feet.
  */
-const AT_CAMP = { place: ['wayside.river_camp'], doing: ['social', 'afk'] } as const;
+const AT_CAMP = {
+  place: ['wayside.river_camp', 'wayside.meadow_camp'],
+  doing: ['social', 'afk'],
+} as const;
 
 export const CAMP: readonly ChatTemplate[] = [
   L(

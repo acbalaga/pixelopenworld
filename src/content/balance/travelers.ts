@@ -720,7 +720,7 @@ export const SOCIAL_PLACES: readonly (readonly [string, number])[] = [
  * made in the listed weather.
  */
 export const CAMP = {
-  places: ['wayside.river_camp'] as readonly string[],
+  places: ['wayside.river_camp', 'wayside.meadow_camp'] as readonly string[],
   phases: ['dusk', 'night'] as readonly string[],
   noWeather: ['rain', 'storm'] as readonly string[],
   /** The most Travelers bound for or at one camp, so it never drains the square of its crowd. */
