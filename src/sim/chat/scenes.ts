@@ -40,6 +40,8 @@ export interface SceneInput {
   canSpeak: (slot: number) => boolean;
   /** Cooldown check and set for a Traveler in a kind of scene. */
   cooled: (kind: string, slot: number) => boolean;
+  /** Template ids said lately in Local, so a scene is not repeated inside the window. */
+  recent: readonly string[];
   dice: () => number;
 }
 
@@ -87,6 +89,7 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
     if (p === null) return false;
     return typeof place === 'string' ? p === place : place.includes(p);
   };
+  const fresh = (s: ChatScene): boolean => !inp.recent.includes(s.id);
   const social = (e: { slot: number }): boolean => crowd.doing[e.slot]?.kind === 'social';
   const pick = <T>(list: readonly T[]): T => list[Math.floor(dice() * list.length)] as T;
 
@@ -99,7 +102,7 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
         inp.canSpeak(e.slot) &&
         inp.cooled('wish', e.slot),
     );
-    const scene = c.length > 0 ? pickScene('wish', dice) : null;
+    const scene = c.length > 0 ? pickScene('wish', dice, fresh) : null;
     if (scene) {
       const w = pick(c);
       plans.push({
@@ -117,7 +120,7 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
     const c = promoted.filter(
       (e) => social(e) && at(e, 'hearthford.inn') && inp.cooled('dance', e.slot),
     );
-    const scene = c.length >= 2 ? pickScene('dance', dice) : null;
+    const scene = c.length >= 2 ? pickScene('dance', dice, fresh) : null;
     if (scene) {
       const lead = pick(c);
       const rest = c.filter((e) => e !== lead && mates(state, ids, lead.slot, e.slot));
@@ -146,7 +149,7 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
     for (const camp of CAMP.places) {
       const c = promoted.filter((e) => social(e) && at(e, camp) && inp.canSpeak(e.slot));
       if (c.length < 2) continue;
-      const scene = pickScene('ghost', dice);
+      const scene = pickScene('ghost', dice, fresh);
       if (!scene) break;
       const a = pick(c);
       const b = pick(c.filter((e) => e !== a));
@@ -203,6 +206,10 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
 }
 
 /** The scene for a wish that came true after `on`, or null. */
-export function cameTrue(on: 'rank' | 'drop', dice: () => number): ChatScene | null {
-  return pickScene('wishCame', dice, (s) => s.on === on);
+export function cameTrue(
+  on: 'rank' | 'drop',
+  dice: () => number,
+  recent: readonly string[],
+): ChatScene | null {
+  return pickScene('wishCame', dice, (s) => s.on === on && !recent.includes(s.id));
 }

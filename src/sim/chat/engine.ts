@@ -658,6 +658,7 @@ function scenes(c: Ctx, events: readonly SimEvent[]): void {
     used: (k) => chat.scenes.counts.get(key(k)) ?? 0,
     canSpeak: (slot) => canSpeak(c, slot),
     cooled: (k, slot) => (chat.cooldown.get(`scene|${k}|${slot}`) ?? -1) <= c.minute,
+    recent: chat.recent.local,
     dice: d,
   });
   for (const plan of plans) {
@@ -705,7 +706,11 @@ function scenes(c: Ctx, events: readonly SimEvent[]): void {
       !canSpeak(c, e.slot)
     )
       continue;
-    const scene = cameTrue(e.type === 'travelerRankUp' ? 'rank' : 'drop', d);
+    const scene = cameTrue(
+      e.type === 'travelerRankUp' ? 'rank' : 'drop',
+      d,
+      chat.recent[crowd.promoted[e.slot] ? 'local' : 'world'],
+    );
     if (!scene) continue;
     count('wishCame');
     const who = c.ids[e.slot]!;
@@ -735,6 +740,8 @@ function flush(c: Ctx): void {
     }
     q.splice(i, 1);
     if (!c.state.crowd!.online[item.slot]) continue;
+    // A line that is not a reply waits its speaker's gap: if they spoke meanwhile, it is dropped.
+    if (!item.reply && !canSpeak(c, item.slot)) continue;
     if (item.channel === 'local' && !c.state.crowd!.promoted[item.slot]) continue;
     speak(
       c,
