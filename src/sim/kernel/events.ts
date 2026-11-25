@@ -119,6 +119,8 @@ export type SimEvent =
   | { type: 'slept'; id: number; who: number }
   /** The bedroll was used: the client opens the Rest panel. */
   | { type: 'bedOpened'; id: number; who: number }
+  /** The avatar used a rest point in the wild (POW-M5-25): the camp panel opens. */
+  | { type: 'campOpened'; id: number; who: number }
   /** The inn mirror was used: the client opens the look editor (M4-19). */
   | { type: 'mirrorOpened'; id: number; who: number }
   | { type: 'statusApplied'; id: number; status: string; src: number; refreshed: boolean }

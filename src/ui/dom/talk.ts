@@ -79,6 +79,8 @@ export class TalkSheet {
   private ready = false;
   private storageOpen = false;
   private restOpen = false;
+  /** The rest panel is for a rest point in the wild: no Paths, a short rest (M5-25). */
+  private restCamp = false;
   private restMsg = '';
   private stationKind: string | null = null;
   private lastStation: string | null = null;
@@ -118,6 +120,7 @@ export class TalkSheet {
     this.shopId = null;
     this.storageOpen = false;
     this.restOpen = false;
+    this.restCamp = false;
     this.stationKind = null;
     this.deps.onOpenChange(false);
   }
@@ -218,8 +221,9 @@ export class TalkSheet {
     else if (e.type === 'storageOpened') this.openStorage();
     else if (e.type === 'stationOpened') this.openStation(e.station);
     else if (e.type === 'bedOpened') this.openRest();
+    else if (e.type === 'campOpened') this.openRest(true);
     else if (this.restOpen && e.type === 'slept') {
-      this.restMsg = S.rest.slept;
+      this.restMsg = this.restCamp ? S.rest.campSlept : S.rest.slept;
       this.renderRest();
     } else if (this.restOpen && e.type === 'pathWorn') this.renderRest();
     else if (e.type === 'craftStarted') this.close();
@@ -456,9 +460,10 @@ export class TalkSheet {
   }
 
   /** The Rest panel on a bedroll: sleep, wear and take off Paths, choose the title shown. */
-  openRest(): void {
-    this.mount('pow-shop pow-rest', S.rest.title);
+  openRest(camp = false): void {
+    this.mount('pow-shop pow-rest', camp ? S.rest.campTitle : S.rest.title);
     this.restOpen = true;
+    this.restCamp = camp;
     this.restMsg = '';
     this.renderRest();
   }
@@ -470,7 +475,7 @@ export class TalkSheet {
     const paths = state.entities.comps.paths[who];
     s.textContent = '';
     const head = el('header', 'pow-shop-head');
-    put(head, el('h2', 'pow-talk-name', S.rest.title));
+    put(head, el('h2', 'pow-talk-name', this.restCamp ? S.rest.campTitle : S.rest.title));
     const close = el('button', 'pow-button pow-close', S.rest.close);
     close.type = 'button';
     close.addEventListener('click', () => this.close());
@@ -480,6 +485,11 @@ export class TalkSheet {
     const sleep = el('button', 'pow-button pow-choice', S.rest.sleep);
     sleep.type = 'button';
     sleep.addEventListener('click', () => this.deps.send({ type: 'sleep' }));
+    if (this.restCamp) {
+      put(s, head, el('p', 'pow-hint', S.rest.campNote), msg, sleep);
+      this.ready = true;
+      return;
+    }
     put(
       s,
       head,

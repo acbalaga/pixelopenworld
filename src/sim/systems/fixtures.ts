@@ -46,11 +46,15 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'snare' ||
     def.type === 'torch' ||
     def.type === 'arena' ||
-    def.type === 'rest' ||
     def.type === 'vigil' ||
     def.type === 'vent'
   )
     return id;
+  // A rest point has no body, so nothing is blocked by it, but it can be used from the front (M5-25).
+  if (def.type === 'rest') {
+    setComp(state.entities, id, 'interactable', { kind });
+    return id;
+  }
   const size = px(def.size ?? TILE);
   // A hidden niche is a doorway in the wall: it does not block, and it cannot be used until revealed.
   // An arena door stands open until its arena starts.
@@ -297,6 +301,23 @@ function useBed(state: SimState, who: EntityId, id: EntityId): void {
   emit(state.events, { type: 'bedOpened', id, who });
 }
 
+/** A rest point in the wild opens the camp panel: sleep there for a short Rested. */
+function useRestPoint(state: SimState, who: EntityId, id: EntityId): void {
+  emit(state.events, { type: 'campOpened', id, who });
+}
+
+/** The rest point within reach of `who`, if any. */
+export function restPointNear(state: SimState, who: EntityId): EntityId | null {
+  const p = getComp(state.entities, who, 'pos');
+  if (!p) return null;
+  for (const id of query(state.entities, 'fixture', 'pos')) {
+    if (FIXTURES[getComp(state.entities, id, 'fixture')?.kind ?? '']?.type !== 'rest') continue;
+    const q = getComp(state.entities, id, 'pos');
+    if (q && Math.hypot(q.x - p.x, q.y - p.y) / SUBPX <= W.bedReachPx) return id;
+  }
+  return null;
+}
+
 /** The bed within reach of `who`, if any: wearing Paths and sleeping need one close by. */
 export function bedNear(state: SimState, who: EntityId): EntityId | null {
   const p = getComp(state.entities, who, 'pos');
@@ -313,9 +334,27 @@ export function bedNear(state: SimState, who: EntityId): EntityId | null {
 export function sleep(state: SimState, who: EntityId): boolean {
   const id = bedNear(state, who);
   if (getComp(state.entities, who, 'fighter')?.state !== 'idle') return false;
-  if (id === null) return sleepOutdoors(state, who);
+  if (id === null) {
+    // At a rest point the night is a short Rested, in a room or out of one (POW-M5-25).
+    const camp = restPointNear(state, who);
+    if (camp !== null) return sleepAtCamp(state, who, camp);
+    return sleepOutdoors(state, who);
+  }
   if (!applyStatus(state, who, 'rested', -1)) return false;
   emit(state.events, { type: 'slept', id, who });
+  return true;
+}
+
+/**
+ * Sleeping at a rest point: Rested for `campRestedShare` of a bedroll's length. Outdoors it is also
+ * the outdoor sleep (the Survival lump); in a room, like a dungeon's rest point, it is only the rest.
+ */
+function sleepAtCamp(state: SimState, who: EntityId, camp: EntityId): boolean {
+  const ticks = Math.floor(STATUSES.rested.ticks * W.campRestedShare);
+  if (!applyStatus(state, who, 'rested', -1, { ticks })) return false;
+  if (canSleepOutdoors(state, who))
+    emit(state.events, { type: 'sleptOutdoors', who, wake: wakePointAt(state, who) });
+  emit(state.events, { type: 'slept', id: camp, who });
   return true;
 }
 
@@ -434,6 +473,8 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return;
     case 'bed':
       return useBed(state, who, target);
+    case 'rest':
+      return useRestPoint(state, who, target);
     case 'mirror':
       emit(state.events, { type: 'mirrorOpened', id: target, who });
       return;

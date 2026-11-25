@@ -201,6 +201,51 @@ export function newEnt(slot: number): TravelerEnt {
   };
 }
 
+/** The tile a foot point stands on, as a pair the grid reads. */
+const tileOf = (x: number, y: number): { tx: number; ty: number } => ({
+  tx: Math.floor(x / TILE),
+  ty: Math.floor((y - 1) / TILE),
+});
+
+/** True when the foot point is on a tile nothing can stand on: a wall, a building, the map edge. */
+export function isBlockedAt(state: SimState, x: number, y: number): boolean {
+  const g = state.world;
+  if (!g) return false;
+  const { tx, ty } = tileOf(x, y);
+  return g.solidAt(tx, ty) !== 0;
+}
+
+/**
+ * The nearest open spot to a foot point, in px: the center of the closest tile that is not solid and
+ * is not a pocket (at least two of its four neighbors are open too), searched outward in rings. A
+ * point already on open ground is returned as it is. It never puts a Traveler inside a building
+ * (POW-M5-24: a crowded square used to leave some standing in walls).
+ */
+export function openSpot(state: SimState, x: number, y: number): { x: number; y: number } {
+  const g = state.world;
+  if (!g || !isBlockedAt(state, x, y)) return { x, y };
+  const { tx, ty } = tileOf(x, y);
+  const open = (a: number, b: number): boolean => g.solidAt(a, b) === 0;
+  const roomy = (a: number, b: number): boolean =>
+    open(a, b) &&
+    Number(open(a + 1, b)) +
+      Number(open(a - 1, b)) +
+      Number(open(a, b + 1)) +
+      Number(open(a, b - 1)) >=
+      2;
+  for (let r = 1; r <= 14; r++) {
+    let best: { a: number; b: number; d: number } | null = null;
+    for (let a = tx - r; a <= tx + r; a++)
+      for (let b = ty - r; b <= ty + r; b++) {
+        if (Math.max(Math.abs(a - tx), Math.abs(b - ty)) !== r || !roomy(a, b)) continue;
+        const d = (a - tx) ** 2 + (b - ty) ** 2;
+        if (!best || d < best.d) best = { a, b, d };
+      }
+    if (best) return { x: best.a * TILE + 8, y: best.b * TILE + 14 };
+  }
+  return { x, y };
+}
+
 function spawnEntity(
   state: SimState,
   crowd: Crowd,
@@ -209,6 +254,7 @@ function spawnEntity(
 ): EntityId {
   const e = spawn(state.entities);
   const C = state.entities;
+  at = openSpot(state, at.x, at.y);
   setComp(C, e, 'pos', { x: px(at.x), y: px(at.y) });
   setComp(C, e, 'vel', { x: 0, y: 0 });
   // Not solid: a Traveler never traps the player in a crowded square.
@@ -297,6 +343,20 @@ export function promoteSystem(state: SimState, crowd: Crowd): void {
   const w = whereIsPlayer(state);
   if (!w) return;
   formGroups(state, crowd);
+  // Anyone standing in a wall or a building goes back outside, to the nearest open ground.
+  for (const [id, ent] of crowd.ents) {
+    const p = state.entities.comps.pos[id];
+    if (!p || !isBlockedAt(state, p.x / SUBPX, p.y / SUBPX)) continue;
+    const out = openSpot(state, p.x / SUBPX, p.y / SUBPX);
+    p.x = px(out.x);
+    p.y = px(out.y);
+    ent.lastX = out.x;
+    ent.lastY = out.y;
+    ent.goalKey = '';
+    ent.path = [];
+    ent.pi = 0;
+    ent.stuck = 0;
+  }
   // Demote: gone, out of the loaded ring, or logged out without the system noticing.
   for (const [id, ent] of [...crowd.ents]) {
     if (!state.entities.alive[id]) {
