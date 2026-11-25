@@ -572,7 +572,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const at = params.get('at')?.split(',').map(Number);
   const hasAt = !!at && at.length === 2 && at.every(Number.isFinite);
   // A new character has its own creation seed. Developer paths without one keep seed 1.
-  const state = restored ?? createDemoState(entry?.seed ?? 1, 0);
+  // Dev builds can pick the seed (`?seed=3`) to stage a crowd for a screenshot.
+  const devSeed = import.meta.env.DEV ? Number(params.get('seed')) || 1 : 1;
+  const state = restored ?? createDemoState(entry?.seed ?? devSeed, 0);
   // Dev builds can freeze the time of day (`?time=dawn|day|dusk|night`) and force the weather
   // (`?weather=rain`), for screenshots and the frame-rate checks.
   const wantTime = import.meta.env.DEV ? params.get('time') : null;

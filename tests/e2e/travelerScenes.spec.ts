@@ -18,18 +18,17 @@ async function evening(page: Page, url: string): Promise<void> {
   await page.goto(url);
   await page.clock.resume();
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
-  await page.keyboard.press('Backquote');
 }
 
 const scenes = (page: Page): Promise<string[]> =>
-  page.evaluate(() => (window as unknown as { __pow: Pow }).__pow.crowd().scenes);
+  page.evaluate(() => (window as unknown as { __pow?: Pow }).__pow?.crowd().scenes ?? []);
 
 for (const [name, kind, url] of [
   ['wish', 'wish', '/?region=dawnmeadow&at=187,199&weather=clear&foes=0&nosave=1&kit=dev'],
   [
     'dance',
     'dance',
-    '/?region=dawnmeadow&at=174,213&tick=54000&weather=clear&foes=0&nosave=1&kit=dev',
+    '/?region=dawnmeadow&at=174,213&seed=3&tick=54000&weather=clear&foes=0&nosave=1&kit=dev',
   ],
   ['dummy', 'dummy', '/?region=dawnmeadow&at=173,201&weather=clear&foes=0&nosave=1&kit=dev'],
 ] as const) {
@@ -40,6 +39,8 @@ for (const [name, kind, url] of [
       .poll(async () => (await scenes(page)).includes(kind), { timeout: 240_000, intervals: [500] })
       .toBe(true);
     await page.waitForTimeout(1500);
+    await page.keyboard.press('Backquote');
+    await page.waitForTimeout(300);
     await shot(page, `m5-27-${name}`);
     expect(problems.pageErrors).toEqual([]);
   });
@@ -51,16 +52,19 @@ test('a ghost story at the river camp shows two Travelers and the story in Local
   const problems = await watchProblems(page);
   await evening(
     page,
-    '/?region=dawnmeadow&at=236,200&tick=61300&weather=clear&foes=0&nosave=1&kit=dev',
+    '/?region=dawnmeadow&at=236,198&tick=61300&weather=clear&foes=0&nosave=1&kit=dev',
   );
   await expect
     .poll(
-      async () => page.evaluate(() => (window as unknown as { __pow: Pow }).__pow.crowd().atCamp),
+      async () =>
+        page.evaluate(() => (window as unknown as { __pow?: Pow }).__pow?.crowd().atCamp ?? 0),
       { timeout: 240_000, intervals: [1000] },
     )
     .toBeGreaterThan(1);
   // The story is a few lines a few seconds apart. Give it time, and look for the scene's lines.
   await page.waitForTimeout(25_000);
+  await page.keyboard.press('Backquote');
+  await page.waitForTimeout(300);
   await shot(page, 'm5-27-ghost');
   expect(problems.pageErrors).toEqual([]);
 });
