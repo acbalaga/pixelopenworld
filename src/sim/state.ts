@@ -14,6 +14,7 @@ import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
 import type { ChatState } from './chat/engine';
+import type { RankingsMemo } from './rankings/system';
 import type { ClockInput } from './kernel/scheduler';
 
 /** Collision body, centered on `pos` horizontally and standing on it vertically. Sub-pixel units. */
@@ -674,6 +675,8 @@ export interface SimState {
   crowd?: Crowd;
   /** Transient. Chat budget, repeat window and queued lines (M5-05). Made on first use. */
   chat?: ChatState;
+  /** Transient. Where the player last stood on each board (M5-09), so a pass is announced once. */
+  rankings?: RankingsMemo;
   /** Transient. Chunk streaming state, or absent when the whole map is resident (tests). */
   stream?: StreamState | null;
 }

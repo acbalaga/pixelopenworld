@@ -294,6 +294,9 @@ export type SimEvent =
   | { type: 'travelersAway'; away: TravelerAway[] }
   /** The player used the context button on a promoted Traveler: the UI opens its profile card. */
   | { type: 'travelerInspect'; slot: number }
+  // ---- Rankings (M5-09). ----
+  /** The player newly passed a Traveler in the top of a board. `rank` is where the player now stands. */
+  | { type: 'playerPassed'; board: string; slot: number; rank: number }
   // ---- Chat (M5-05). ----
   /** The fact a chat line came from, sent just before the line: an event of this tick or a state. */
   | { type: 'chatSource'; id: string; fact: string }
