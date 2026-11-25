@@ -22,6 +22,12 @@ export class InputSampler {
     private readonly readPad: () => PadSnapshot | null = () => null,
   ) {}
 
+  /** Lets go of every key, finger and held button. Call when a panel opens over play. */
+  releaseAll(): void {
+    this.keyboard.reset();
+    this.touch.releaseAll();
+  }
+
   /** Call once per sim tick. Clears all edge events. */
   sample(now: number): InputRecord {
     const r = emptyRecord();
