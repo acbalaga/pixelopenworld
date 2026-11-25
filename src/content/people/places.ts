@@ -53,6 +53,8 @@ export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
     at('cairnmoor.well', 'cairnmoor', false),
     at('cairnmoor.shelter', 'cairnmoor', true),
     at('wayside.chapel', 'wayside', true),
+    // Appended last: place indices are saved, so new places never go in the middle.
+    at('wayside.river_camp', 'wayside', false),
   ].map((p) => {
     const spot = PLACE_SPOTS[p.id];
     return [p.id, spot ? { ...p, spot } : p];

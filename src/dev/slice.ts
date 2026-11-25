@@ -16,11 +16,14 @@ import type { SimState } from '../sim/state';
 import type { StatusId } from '../content/combat/statuses';
 import { elementHitsWorld } from '../sim/elements';
 import { applyStatus } from '../sim/statuses';
+import { PLACE_SPOTS } from '../content/people/placeSpots';
 import { onlineCount } from '../sim/travelers/crowd';
 import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
 
 /** What the hooks need from the running scene. */
+const CAMP_FIRE = PLACE_SPOTS['wayside.river_camp']!.focus!;
+
 export interface SliceHookContext {
   state: SimState;
   who: EntityId;
@@ -49,7 +52,7 @@ export interface PowDevApi {
   /** Posts a line to the World chat as a named speaker, for screenshots of glyph lines. */
   say(from: string, text: string): void;
   /** The crowd (M5-04): who is online, who is an entity, and their handles. */
-  crowd(): { online: number; entities: number; handles: string[] };
+  crowd(): { online: number; entities: number; handles: string[]; atCamp: number };
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
   travelerFight(creatureId: string): string | null;
   /** Puts items in the bag, as if gathered. */
@@ -187,6 +190,14 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         online: c ? onlineCount(c) : 0,
         entities: c ? c.ents.size : 0,
         handles: c ? travelerViews(state).map((v) => v.handle) : [],
+        // Travelers seated or asleep within 3 tiles of the river camp's bedroll (POW-M5-26).
+        atCamp: c
+          ? travelerViews(state).filter(
+              (v) =>
+                (v.mode === 'sit' || v.mode === 'afk') &&
+                Math.hypot(v.x - (CAMP_FIRE[0] * 16 + 8), v.y - (CAMP_FIRE[1] * 16 + 8)) < 48,
+            ).length
+          : 0,
       };
     },
     travelerFight(creatureId) {

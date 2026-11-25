@@ -99,6 +99,12 @@ export function standPx(slot: number, place: number): { x: number; y: number } |
   return { x: tile[0] * TILE + 8 + ox, y: tile[1] * TILE + 14 + oy };
 }
 
+/** The tile a place's people face (a camp's bedroll), as a px point, or null. */
+function focusPx(place: number): { x: number; y: number } | null {
+  const f = PLACES[PLACE_LIST[place] ?? '']?.spot?.focus;
+  return f ? { x: f[0] * TILE + 8, y: f[1] * TILE + 8 } : null;
+}
+
 /** Where a Traveler is expected to be now, from its life and what it is doing (px). */
 export function expectedPx(
   state: SimState,
@@ -599,7 +605,7 @@ function noteDoing(state: SimState, crowd: Crowd, ent: TravelerEnt, d: Doing | n
   ent.dancing = false;
   if (!d || d.kind !== 'social') return;
   const place = PLACES[PLACE_LIST[d.place] ?? ''];
-  if (!place || place.indoors) return;
+  if (!place || place.indoors || place.spot?.focus) return;
   const chance = BEHAVIOR.danceChance[phaseName(state)] ?? 0;
   ent.dancing = hash01(crowd.seed, ent.slot, 11, state.tick >> 6) < chance;
 }
@@ -706,7 +712,13 @@ export function entityTick(state: SimState, crowd: Crowd): void {
           atWork = 'shop';
         }
       } else if ((d.kind === 'social' || d.kind === 'afk') && ent.group) {
-        goal = { x: ent.group.x, y: ent.group.y };
+        // A camp group keeps its own slots around the fire, not a ring that could cross it.
+        const fire = focusPx(d.place);
+        if (!fire) goal = { x: ent.group.x, y: ent.group.y };
+      }
+      if ((d.kind === 'social' || d.kind === 'afk') && !work) {
+        const fire = focusPx(d.place);
+        if (fire) facing = cardinal(fire.x - (goal?.x ?? x), fire.y - (goal?.y ?? y), ent.face);
       }
     }
     if (!goal) {
@@ -732,7 +744,11 @@ export function entityTick(state: SimState, crowd: Crowd): void {
       else if (d.kind === 'afk') ent.mode = ent.still >= ENTITY.afkTicks ? 'afk' : 'idle';
       else if (d.kind === 'social')
         ent.mode =
-          d.place === PLACE_LIST.indexOf('hearthford.inn') ? 'sit' : ent.group ? 'idle' : 'stand';
+          d.place === PLACE_LIST.indexOf('hearthford.inn') || focusPx(d.place)
+            ? 'sit'
+            : ent.group
+              ? 'idle'
+              : 'stand';
       else ent.mode = 'idle';
     }
     emoteTick(state, crowd, ent);

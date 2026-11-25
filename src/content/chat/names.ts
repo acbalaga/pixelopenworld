@@ -26,6 +26,7 @@ export const PLACE_NAMES: Readonly<Record<string, string>> = {
   'cairnmoor.well': 'the Cairnmoor well',
   'cairnmoor.shelter': 'the Cairnmoor shelter',
   'wayside.chapel': 'the wayside chapel',
+  'wayside.river_camp': 'the river camp',
 };
 
 /** Dungeons a Traveler may look for a group in. */

@@ -141,7 +141,8 @@ describe('weather and the hour', () => {
       let social = 0;
       for (let i = 0; i < 1500; i++) {
         const d = chooseNext(s, crowd, t);
-        if (d.kind !== 'social') continue;
+        // A camp (M5-26) is its own pull at night. This is about the town's social places.
+        if (d.kind !== 'social' || PLACES[PLACE_LIST[d.place] ?? '']?.area === 'wayside') continue;
         social++;
         if (d.place === inn) n++;
       }

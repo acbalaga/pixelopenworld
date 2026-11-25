@@ -83,6 +83,8 @@ export interface When {
   handle?: readonly string[];
   /** Only while the speaker is doing one of these activities (design/12 3.2). */
   doing?: readonly string[];
+  /** Only while the speaker is at one of these places and has arrived (ids from the places table). */
+  place?: readonly string[];
 }
 
 export interface ChatTemplate {
