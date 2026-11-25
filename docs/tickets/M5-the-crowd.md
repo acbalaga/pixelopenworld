@@ -12,12 +12,13 @@ Executors on POW-M5-03, POW-M5-04, POW-M5-05 and POW-M5-15 also read design/08-l
 
 Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this refinement. 20 and up are reserved for Gate G4 findings (D24).
 
-| Wave | Tickets                                      | Notes                                                                                     |
-| ---- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| A    | 20, 21, 22 (done), and any later G4 findings | Gate G4 findings. Merge before wave B starts, as the owner asked.                         |
-| B    | 02, then 03, then 04, 05, 09, then 14, 15    | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
-| G5a  | 13, then the owner check                     | 13 needs 04, 14, 05 and 15.                                                               |
-| C    | 06, then 07, 08, 12. Also 10, 11.            | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
+| Wave         | Tickets                                      | Notes                                                                                     |
+| ------------ | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| A            | 20, 21, 22 (done), and any later G4 findings | Gate G4 findings. Merge before wave B starts, as the owner asked.                         |
+| B            | 02, then 03, then 04, 05, 09, then 14, 15    | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
+| G5a          | 13, then the owner check                     | 13 needs 04, 14, 05 and 15.                                                               |
+| C            | 06, then 07, 08, 12. Also 10, 11.            | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
+| G5a findings | 23, 24, 25 (done). 26, 27, 28. Then 29, 30.  | 26 now. 27 after 26. 28 any time. 29 after 06, 30 after 29 and 12. 11 needs 28.           |
 
 **Save schema bumps serialize.** Tickets 02, 06, 08, 10 and 12 each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
 
@@ -386,14 +387,14 @@ Acceptance:
 
 ### POW-M5-11 World events and calendar
 
-Size: L Depends: POW-M5-04, M4-09, Gate G5a Status: READY
+Size: L Depends: POW-M5-04, M4-09, Gate G5a, POW-M5-28 Status: READY
 Refs: design/07-simulated-mmo (World events), design/02-world (Time)
 
 Goal: scheduled things worth showing up for.
 
 Scope:
 
-- Event scheduler on the world clock from trusted time. Field raid (several per real day, a scaled field boss spawns in a Dawnmeadow creature area, Travelers converge, contribution rewards), settlement invasion (daily, creatures attack Hearthford's outskirts, defending raises Renown), market day (weekly, held in Hearthford until Port Brine exists, more listings and rare goods).
+- Event scheduler on the world clock from trusted time. Field raid (several per real day, a scaled field boss spawns in a Dawnmeadow creature area, Travelers converge using POW-M5-28's group formation and muster, the player can join, contribution rewards), settlement invasion (daily, creatures attack Hearthford's outskirts, defending raises Renown), market day (weekly, held in Hearthford until Port Brine exists, more listings and rare goods).
 - Calendar in the Menu with countdowns. System announcements in the System channel before each event.
 - The "maintenance" announcement mechanism with nothing behind it yet (M10 fills it).
 - Travelers react in chat (M5-15 lines on event events).
@@ -452,3 +453,139 @@ Goal: the player can tell which technique they threw and which big move a boss i
 Scope: on `techniqueUsed` by the avatar, the technique's name shows over its head in gold pixel text for about a second, drifting up (no drift under reduced motion). Bosses get an optional `callouts` map (attack id to string key in `src/content/strings/callouts.ts`); on `attackStarted` by a boss for a mapped attack, its name shows over the boss in red as the telegraph starts. Plain attacks and common creatures stay quiet. One callout per entity at a time. Timing in `UI_BALANCE.callout`. Render side only.
 Save: none. Integrity: none.
 Acceptance: unit tests (the avatar's technique shouts, someone else's does not, a mapped boss move shouts, an unmapped one and a common creature do not, every callout names a move in its boss's pattern and a string of at most 16 characters). Phone screenshot of a boss callout.
+
+---
+
+## Wave G5a findings
+
+From the owner's Gate G5a playtest on 2026-11-25 (evening and early morning, phone). The briefs and options are in `docs/proposals/m5-g5a-feedback-plan.md`. Ids 23 and up. Where a ticket says **Owner decision**, the ticket stays DRAFT until the owner answers, and the planning agent then writes the answer into the spec and sets READY.
+
+### POW-M5-23 Release touch input when a panel opens, move Orla
+
+Size: S Depends: none Status: DONE (PR #166)
+
+### POW-M5-24 Travelers outside buildings
+
+Size: S Depends: none Status: DONE (PR #167)
+
+### POW-M5-25 Usable rest points
+
+Size: S Depends: none Status: DONE (PR #167)
+
+### POW-M5-26 Travelers rest at rest points
+
+Size: M Depends: POW-M5-25, POW-M5-04 Status: READY
+Refs: design/12-travelers (3.2), docs/proposals/m5-g5a-feedback-plan.md (Brief 1), regions/01-dawnmeadow (rest points)
+
+Goal: at dusk a rest point near town looks like a camp, with Travelers sitting by it.
+Scope:
+
+- Add the rest points of `src/content/world/regions/dawnmeadow/spec.ts` that lie within 60 tiles walking distance of the Hearthford square (expect two or three; the PR lists which) as places in `src/content/people/places.ts` (`area: 'wayside'`, outdoors) with standing slots in `placeSpots.ts`. Slots ring the fixture at 1 to 2 tiles and never sit on it or on a solid tile. The others are not added (they are rarely promoted).
+- The abstract sim's `social` and `afk` choices may pick a camp place at dusk and night, weighted by archetype (Casual, Explorer and Roleplayer most) in `src/content/balance/travelers.ts`. Weather counts: no camp choice in rain or storm.
+- Promoted Travelers at a camp sit (the existing sit or idle pose) facing the fixture. `formGroups` already groups them by place, so camp groups form with no new rule.
+- Ten idle lines for camps in the existing template format, tagged so they fire only at a camp place ("stew is on", "five more minutes").
+
+Out of scope: a `rest` activity or any effect on the Traveler (Brief 1 option B). Ghost stories (POW-M5-27). Rest points outside the 60-tile ring.
+Save: none (places and weights are content; `doing.place` already saves a place index). If the place index range changes encoding, bump and migrate.
+Integrity: none.
+Acceptance:
+
+- Scenario over 10 seeds: at in-game dusk, at least one Traveler is at a camp place in 8 of 10.
+- Test: no camp slot is on the fixture tile or a solid tile, and every slot is reachable from the road.
+- Test: no camp choice is made in rain or storm.
+- Frame budget holds with a camp of 4 and 15 promoted Travelers in the loaded ring (trace).
+- Phone screenshot of a camp at dusk.
+
+### POW-M5-27 Traveler humor, first pass
+
+Size: M Depends: POW-M5-26 (for camp stories only), POW-M5-04, POW-M5-15 Status: DRAFT (Owner decision: which three ideas)
+Refs: design/12-travelers (4.5, 4.8), docs/proposals/m5-g5a-feedback-plan.md (Brief 5)
+
+Goal: three small funny things the player can see in the first minutes of a session.
+Scope (the brief's recommended three, replaced by the owner's pick):
+
+- Fountain wishes: a `social` Traveler at the square stands at the fountain, a coin toss animation (a 2-frame sparkle, no coin leaves their stock), and a wish line. Rarely, later in the same session, a "wish came true" line tied to a real event of theirs (a rank-up or a drop from the event stream, never invented).
+- Inn dance-offs: two or three friends or guild mates in a `social` group at the inn at dusk enter `dance` mode for 20 to 40 seconds, with a three-line exchange (challenge, reply, a judge). Uses `formGroups`.
+- Ghost stories at camp: a camp group (POW-M5-26) at night runs a three to five line exchange, silly not scary, with a "who screamed" punchline. No line about the hidden layer (design/08 delivery rules; the validator's no-world-explaining check covers it).
+- All lines in the existing template files under `src/content/chat/templates/`, in voice, passing the validator. At least 6 variants per idea.
+
+Out of scope: the other seven ideas in Brief 5. Any behaviour that moves coin or items.
+Save: none. Integrity: none.
+Acceptance:
+
+- Each idea fires at least once in a simulated real evening (19:00 to 23:00) on 8 of 10 seeds, and none fires more than its cap (balance data, default 3 per hour).
+- Template validator passes. No line names an unbaked place (D25).
+- Phone screenshot or short recording of each.
+
+### POW-M5-28 Traveler raid parties
+
+Size: M Depends: POW-M5-04, POW-M5-05 Status: DRAFT (Owner decision: timing and whether the fight is seen)
+Refs: design/07-simulated-mmo (World events), design/12-travelers (3.2, 3.3), regions/01-dawnmeadow (Field boss), docs/proposals/m5-g5a-feedback-plan.md (Brief 2)
+
+Goal: groups of Travelers form, go after Hollowhorn together, come back and talk about it.
+Scope (Brief 2 option A, Travelers only):
+
+- A new abstract activity `raid` with subject `hollowhorn` and a muster place (the Hearthford north gate, a new place with slots). A raid forms on a schedule from balance data (default every 3 real hours inside the busiest online windows) when at least 3 eligible Travelers are online: tier and focus fit, linked by a friend tie or a shared guild, Iron Oath preferred. Size 3 to 5.
+- Phases: muster (10 in-game minutes at the gate), travel together to Cairnmoor, fight, return to the square. The outcome is the crowd's existing abstract fight roll scaled by group size and tier (balance data): clear, wipe, or "boss not up" (it roams).
+- Events: `travelerRaidFormed`, `travelerRaidEnded` (outcome, drops). Chat lines for forming ("lf2m Hollowhorn, o7"), outcome ("down on the second try", "no drop again"), and a return line. Drops go to the Travelers' stock only.
+- Promoted: during muster and travel the group walks together (follow the leader at 1 to 2 tiles). The fight itself is decided abstractly. **Owner decision:** whether the player can watch the fight (see the PR's design query; default is no, the group is shown "between pulls" if the player arrives).
+- The player's Hollowhorn is never touched: its health, route, flags and drops are the player's. Travelers never reduce them.
+
+Out of scope: the player joining (POW-M5-11 field raid). Any reward to the player. Other field bosses (M8, M9).
+Save: none if raids are session only. If an in-progress raid must survive a reload, bump and migrate (default: a raid in progress at close ends as "called it" on load).
+Integrity: none (no value reaches the player). A test proves it.
+Acceptance:
+
+- Scenario over a simulated real week: raids form inside the online windows, each with 3 to 5 Travelers linked by a tie or a guild, and every raid ends with an outcome event and a chat line drawn from it.
+- Test: the player's Hollowhorn state and the player's ledger are byte-identical before and after 50 Traveler raids.
+- Frame budget holds with a promoted raid group of 5 and 15 promoted Travelers.
+- Phone screenshot of a muster at the north gate.
+
+POW-M5-11 change: its field raid reuses this ticket's group formation and muster, adds the player joining, the scaled boss, and contribution rewards. Depends gains POW-M5-28.
+
+### POW-M5-29 The Pit: finding it
+
+Size: M Depends: POW-M5-06 Status: DRAFT (Owner decision: where it is)
+Refs: design/12-travelers (4.6), design/08-lore-SPOILERS (Delivery rules, Clue families), docs/proposals/m5-g5a-feedback-plan.md (Brief 3)
+
+Goal: three rumors lead the player to a hidden fighting pit, opened by one world action.
+Placement rule (design authority): the Pit is not under Hearthford and is not a sealed room. design/08 puts "a sealed door under Hearthford" (the dev room) on the hour-10 lore path. A rumor-led hidden room under the same town would train players to read the sealed door as the arena's twin, or make the dev room feel like a second arena. Recommended site: the old working at the Stonecrop quarry lip, an open-air sunken ring reached by a hidden path behind the crane.
+Scope:
+
+- The Pit as a baked place with spectator and fighter slots, in the chosen site. Open air, lit by braziers, visible from its edge once found.
+- Three true rumors in `src/content/chat/rumors.ts`, each more specific, gated by a player flag so a Traveler says rumor 2 only after the player has heard rumor 1 and visited the area it points to, and rumor 3 only after rumor 2. Rumor 1 can be said from day 1. Wording never mentions the hidden layer.
+- One world action that opens the way (a loose plank or a stack of crates to move, an interactable fixture). Once opened it stays open (a world flag).
+- Travelers who like duels (temper `bold`, The Ninth Bell, NoScopeNed, Skarrow) may pick the Pit for `social` once the player has opened it.
+
+Out of scope: duels in the Pit (POW-M5-30). Prizes.
+Save: world flag "pit open" and the rumor progress flags. Schema bump and migration with a fixture test.
+Integrity: none.
+Acceptance:
+
+- Scenario: each rumor is said at least once in a simulated 7 real days, in order, and only after its gate.
+- The way opens only after the world action, and stays open after a reload.
+- Test: nothing else in the game requires the Pit (no quest, Trial, recipe or 100% item depends on it).
+- Phone screenshot of the Pit from its edge.
+
+### POW-M5-30 The Pit: duels
+
+Size: M Depends: POW-M5-29, POW-M5-12 Status: DRAFT (Owner decision: prizes)
+Refs: design/07-simulated-mmo (Rivals and duels), design/12-travelers (5), tech/02-save-security (Ledger)
+
+Goal: Travelers duel each other in the Pit, and the player can step in.
+Scope:
+
+- Traveler vs Traveler bouts: two promoted duel-minded Travelers in the Pit fight with M5-12's rule (first to 30% health lost), visible, with spectators who cheer by name. The winner is the abstract roll, the bout is staged to match.
+- Player vs Traveler: a "Next" board at the ring lists who is waiting. Challenging uses M5-12's acceptance by temper and regard, and the result goes on the Duels board and into memory once.
+- Lines: callouts from spectators, a sporting winner and loser line for each of the hand-tuned duelists.
+- **Owner decision, prizes.** Default: none, the Duels board and a Pit tally on the profile card are the reward. Any coin, item or title prize adds its ledger entry and validator rule here.
+
+Out of scope: a ranked ladder and a champion (later, if the owner asks). Wagers.
+Save: per Traveler Pit tally if shown on the profile card. Fold into M5-12's bump if it has not merged, else bump separately.
+Integrity: none with no prize. With a prize, the ledger entry and a per-day cap in balance data, and a test that a bout cannot be paid twice.
+Acceptance:
+
+- A duel in the Pit records one result on the Duels board and one memory entry (test).
+- Traveler bouts in the Pit end by the 30% rule, never with a down (test over 200 bouts).
+- Frame budget holds with 2 fighters and 8 spectators promoted.
+- Phone screenshot of a bout.
