@@ -132,7 +132,7 @@ function hearthford(): StampV2 {
   b.place('spawner.training_dummy', 8, 35);
   b.object(4, 33, 'tile.crate');
   b.object(5, 33, 'tile.crate');
-  b.place('npc.guard', 11, 34);
+  b.place('npc.guard', 13, 32);
 
   // The inn: facade, and a yard behind it with the bed, the chest, the pot and the mirror.
   b.building(3, 41, 15, 5, { roof: 'red', door: 7, label: 'inn facade' });

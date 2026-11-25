@@ -124,6 +124,21 @@ export class TouchController {
     }
   }
 
+  /**
+   * Lets go of every finger at once: the stick, any held button, a coast and the edge events
+   * waiting. A sheet that opens over the canvas swallows the finger-up, so without this the stick
+   * and a held button stay down behind it and the avatar keeps pushing (POW-M5-23).
+   */
+  releaseAll(): void {
+    this.pointers.clear();
+    this.stickPointer = null;
+    this.coastVec = null;
+    this.pressed = [];
+    this.dodge = null;
+    this.tap = null;
+    this.long = null;
+  }
+
   cancel(id: number): void {
     const p = this.pointers.get(id);
     if (p?.stick) this.stickPointer = null;

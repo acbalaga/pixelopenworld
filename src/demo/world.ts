@@ -730,7 +730,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
     onOpenChange: (open) => {
       mirrorOpen = open;
-      if (open) input.sampler.keyboard.reset();
+      if (open) input.sampler.releaseAll();
     },
   });
   // Item icons, looked up once.
@@ -1063,7 +1063,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         // that is still open, so the Menu would seem not to open. The panel closes instead.
         if (talk.isOpen) talk.close();
         if (board.isOpen) board.close();
-        input.sampler.keyboard.reset();
+        input.sampler.releaseAll();
         pendingCommands.push({ type: 'hint', id: 'hint.menu' });
       }
     },
@@ -1080,7 +1080,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
     onOpenChange: (open) => {
       cardOpen = open;
-      if (open) input.sampler.keyboard.reset();
+      if (open) input.sampler.releaseAll();
     },
   });
   const talk = new TalkSheet(root, {
@@ -1101,7 +1101,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (!open) giverMarkDirty = true;
       audio.setDucked(open);
       if (open && menu.isOpen) menu.close();
-      if (open) input.sampler.keyboard.reset();
+      if (open) input.sampler.releaseAll();
     },
   });
   const board = new BoardSheet(root, {
@@ -1118,7 +1118,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     onOpenChange: (open) => {
       talkOpen = open;
       if (open && menu.isOpen) menu.close();
-      if (open) input.sampler.keyboard.reset();
+      if (open) input.sampler.releaseAll();
     },
   });
   const pinned = new PinnedLine(root);
@@ -1680,7 +1680,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             requestSave('transition');
           } else if (e.type === 'mirrorOpened') mirror.open();
           else if (e.type === 'tabletRead') {
-            input.sampler.keyboard.reset();
+            input.sampler.releaseAll();
             notices.openTablet(
               state.entities.comps.fixture[e.id]?.kind === 'fixture.tw_order'
                 ? BELL_ORDER
