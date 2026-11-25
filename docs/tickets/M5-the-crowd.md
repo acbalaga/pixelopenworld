@@ -18,7 +18,7 @@ Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this 
 | B            | 02, then 03, then 04, 05, 09, then 14, 15    | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
 | G5a          | 13, then the owner check                     | 13 needs 04, 14, 05 and 15.                                                               |
 | C            | 06, then 07, 08, 12. Also 10, 11.            | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
-| G5a findings | 23, 24, 25 (done). 26, 27, 28. Then 29, 30.  | 26 now. 27 after 26. 28 any time. 29 after 06, 30 after 29 and 12. 11 needs 28.           |
+| G5a findings | 23, 24, 25 (done). 26, 27. Then 29, 30, 31.  | 26 now, 27 after 26. 29 and 31 after 06. 30 after 29 and 12. 28 withdrawn into 11.        |
 
 **Save schema bumps serialize.** Tickets 02, 06, 08, 10 and 12 each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
 
@@ -387,14 +387,14 @@ Acceptance:
 
 ### POW-M5-11 World events and calendar
 
-Size: L Depends: POW-M5-04, M4-09, Gate G5a, POW-M5-28 Status: READY
+Size: L Depends: POW-M5-04, M4-09, Gate G5a Status: READY
 Refs: design/07-simulated-mmo (World events), design/02-world (Time)
 
 Goal: scheduled things worth showing up for.
 
 Scope:
 
-- Event scheduler on the world clock from trusted time. Field raid (several per real day, a scaled field boss spawns in a Dawnmeadow creature area, Travelers converge using POW-M5-28's group formation and muster, the player can join, contribution rewards), settlement invasion (daily, creatures attack Hearthford's outskirts, defending raises Renown), market day (weekly, held in Hearthford until Port Brine exists, more listings and rare goods).
+- Event scheduler on the world clock from trusted time. Field raid (several per real day, a scaled field boss spawns in a Dawnmeadow creature area, Travelers converge in raid parties of 3 to 5 formed from friend ties and guild mates (Iron Oath first), muster at the Hearthford north gate and walk out together, the player can join, contribution rewards. G5a feedback, owner decision 2026-11-25: raids in groups arrive here, not in a separate ticket), settlement invasion (daily, creatures attack Hearthford's outskirts, defending raises Renown), market day (weekly, held in Hearthford until Port Brine exists, more listings and rare goods).
 - Calendar in the Menu with countdowns. System announcements in the System channel before each event.
 - The "maintenance" announcement mechanism with nothing behind it yet (M10 fills it).
 - Travelers react in chat (M5-15 lines on event events).
@@ -498,18 +498,19 @@ Acceptance:
 
 ### POW-M5-27 Traveler humor, first pass
 
-Size: M Depends: POW-M5-26 (for camp stories only), POW-M5-04, POW-M5-15 Status: DRAFT (Owner decision: which three ideas)
+Size: M Depends: POW-M5-26 (for camp stories only), POW-M5-04, POW-M5-15 Status: READY
 Refs: design/12-travelers (4.5, 4.8), docs/proposals/m5-g5a-feedback-plan.md (Brief 5)
 
-Goal: three small funny things the player can see in the first minutes of a session.
-Scope (the brief's recommended three, replaced by the owner's pick):
+Goal: four small funny things the player can see in the first minutes of a session.
+Scope (owner pick, 2026-11-25; snoring AFK is POW-M5-31 because it needs reply chips):
 
 - Fountain wishes: a `social` Traveler at the square stands at the fountain, a coin toss animation (a 2-frame sparkle, no coin leaves their stock), and a wish line. Rarely, later in the same session, a "wish came true" line tied to a real event of theirs (a rank-up or a drop from the event stream, never invented).
 - Inn dance-offs: two or three friends or guild mates in a `social` group at the inn at dusk enter `dance` mode for 20 to 40 seconds, with a three-line exchange (challenge, reply, a judge). Uses `formGroups`.
 - Ghost stories at camp: a camp group (POW-M5-26) at night runs a three to five line exchange, silly not scary, with a "who screamed" punchline. No line about the hidden layer (design/08 delivery rules; the validator's no-world-explaining check covers it).
+- Arguments with the dummy: a low-rank Traveler (Newbie or Casual, rank under 10) at the guard yard fights the training dummy, "loses" (gives up after a staged miss streak), demands a rematch and blames the dummy in Local. A friend sometimes teases them. The dummy is the existing fixture; Orla's spot (POW-M5-23) stays clear.
 - All lines in the existing template files under `src/content/chat/templates/`, in voice, passing the validator. At least 6 variants per idea.
 
-Out of scope: the other seven ideas in Brief 5. Any behaviour that moves coin or items.
+Out of scope: the other Brief 5 ideas. Snoring AFK (POW-M5-31). Any behaviour that moves coin or items.
 Save: none. Integrity: none.
 Acceptance:
 
@@ -519,42 +520,23 @@ Acceptance:
 
 ### POW-M5-28 Traveler raid parties
 
-Size: M Depends: POW-M5-04, POW-M5-05 Status: DRAFT (Owner decision: timing and whether the fight is seen)
-Refs: design/07-simulated-mmo (World events), design/12-travelers (3.2, 3.3), regions/01-dawnmeadow (Field boss), docs/proposals/m5-g5a-feedback-plan.md (Brief 2)
+Size: M Depends: none Status: WITHDRAWN (owner, 2026-11-25: wait for POW-M5-11)
 
-Goal: groups of Travelers form, go after Hollowhorn together, come back and talk about it.
-Scope (Brief 2 option A, Travelers only):
-
-- A new abstract activity `raid` with subject `hollowhorn` and a muster place (the Hearthford north gate, a new place with slots). A raid forms on a schedule from balance data (default every 3 real hours inside the busiest online windows) when at least 3 eligible Travelers are online: tier and focus fit, linked by a friend tie or a shared guild, Iron Oath preferred. Size 3 to 5.
-- Phases: muster (10 in-game minutes at the gate), travel together to Cairnmoor, fight, return to the square. The outcome is the crowd's existing abstract fight roll scaled by group size and tier (balance data): clear, wipe, or "boss not up" (it roams).
-- Events: `travelerRaidFormed`, `travelerRaidEnded` (outcome, drops). Chat lines for forming ("lf2m Hollowhorn, o7"), outcome ("down on the second try", "no drop again"), and a return line. Drops go to the Travelers' stock only.
-- Promoted: during muster and travel the group walks together (follow the leader at 1 to 2 tiles). The fight itself is decided abstractly. **Owner decision:** whether the player can watch the fight (see the PR's design query; default is no, the group is shown "between pulls" if the player arrives).
-- The player's Hollowhorn is never touched: its health, route, flags and drops are the player's. Travelers never reduce them.
-
-Out of scope: the player joining (POW-M5-11 field raid). Any reward to the player. Other field bosses (M8, M9).
-Save: none if raids are session only. If an in-progress raid must survive a reload, bump and migrate (default: a raid in progress at close ends as "called it" on load).
-Integrity: none (no value reaches the player). A test proves it.
-Acceptance:
-
-- Scenario over a simulated real week: raids form inside the online windows, each with 3 to 5 Travelers linked by a tie or a guild, and every raid ends with an outcome event and a chat line drawn from it.
-- Test: the player's Hollowhorn state and the player's ledger are byte-identical before and after 50 Traveler raids.
-- Frame budget holds with a promoted raid group of 5 and 15 promoted Travelers.
-- Phone screenshot of a muster at the north gate.
-
-POW-M5-11 change: its field raid reuses this ticket's group formation and muster, adds the player joining, the scaled boss, and contribution rewards. Depends gains POW-M5-28.
+The G5a "raids in groups" feedback is met by POW-M5-11's field raid, which now forms raid parties from ties and guilds and musters them at the north gate. The id is not reused.
 
 ### POW-M5-29 The Pit: finding it
 
-Size: M Depends: POW-M5-06 Status: DRAFT (Owner decision: where it is)
+Size: M Depends: POW-M5-06 Status: READY
 Refs: design/12-travelers (4.6), design/08-lore-SPOILERS (Delivery rules, Clue families), docs/proposals/m5-g5a-feedback-plan.md (Brief 3)
 
 Goal: three rumors lead the player to a hidden fighting pit, opened by one world action.
-Placement rule (design authority): the Pit is not under Hearthford and is not a sealed room. design/08 puts "a sealed door under Hearthford" (the dev room) on the hour-10 lore path. A rumor-led hidden room under the same town would train players to read the sealed door as the arena's twin, or make the dev room feel like a second arena. Recommended site: the old working at the Stonecrop quarry lip, an open-air sunken ring reached by a hidden path behind the crane.
+Placement rule (design authority): the Pit is not under Hearthford and is not a sealed room. design/08 puts "a sealed door under Hearthford" (the dev room) on the hour-10 lore path. A rumor-led hidden room under the same town would train players to read the sealed door as the arena's twin, or make the dev room feel like a second arena. Site (owner decision, 2026-11-25): the old working at the Stonecrop quarry lip, an open-air sunken ring reached by a hidden path behind the crane. Bake it into the Dawnmeadow region and re-bake. It must not overlap the Stonecrop Deeps entrance, Garrick's camp or the quarry camp altar.
 Scope:
 
-- The Pit as a baked place with spectator and fighter slots, in the chosen site. Open air, lit by braziers, visible from its edge once found.
+- The Pit as a baked place (`area: 'stonecrop'`) with spectator and fighter slots. Open air, lit by braziers, visible from its edge once found.
 - Three true rumors in `src/content/chat/rumors.ts`, each more specific, gated by a player flag so a Traveler says rumor 2 only after the player has heard rumor 1 and visited the area it points to, and rumor 3 only after rumor 2. Rumor 1 can be said from day 1. Wording never mentions the hidden layer.
-- One world action that opens the way (a loose plank or a stack of crates to move, an interactable fixture). Once opened it stays open (a world flag).
+- Rumor wording points at the quarry, never at a town or anything underground ("the old cut past the crane", "they light braziers in it after dark").
+- One world action that opens the way: a stack of quarry crates behind the crane, an interactable fixture that slides aside. Once opened it stays open (a world flag).
 - Travelers who like duels (temper `bold`, The Ninth Bell, NoScopeNed, Skarrow) may pick the Pit for `social` once the player has opened it.
 
 Out of scope: duels in the Pit (POW-M5-30). Prizes.
@@ -569,7 +551,7 @@ Acceptance:
 
 ### POW-M5-30 The Pit: duels
 
-Size: M Depends: POW-M5-29, POW-M5-12 Status: DRAFT (Owner decision: prizes)
+Size: M Depends: POW-M5-29, POW-M5-12 Status: READY
 Refs: design/07-simulated-mmo (Rivals and duels), design/12-travelers (5), tech/02-save-security (Ledger)
 
 Goal: Travelers duel each other in the Pit, and the player can step in.
@@ -578,14 +560,36 @@ Scope:
 - Traveler vs Traveler bouts: two promoted duel-minded Travelers in the Pit fight with M5-12's rule (first to 30% health lost), visible, with spectators who cheer by name. The winner is the abstract roll, the bout is staged to match.
 - Player vs Traveler: a "Next" board at the ring lists who is waiting. Challenging uses M5-12's acceptance by temper and regard, and the result goes on the Duels board and into memory once.
 - Lines: callouts from spectators, a sporting winner and loser line for each of the hand-tuned duelists.
-- **Owner decision, prizes.** Default: none, the Duels board and a Pit tally on the profile card are the reward. Any coin, item or title prize adds its ledger entry and validator rule here.
+- Prize (owner decision, 2026-11-25): a cosmetic Pit honor. 5 Player vs Traveler wins in the Pit earn "Pit regular", 20 earn "Pit champion" (thresholds in `src/content/balance/`). The honor shows on the player's profile card and beside their entry on the Duels board, and Pit spectators cheer the player by it. It is not a Path: it grants no passive, does not count toward the 60 Paths, and does not replace the worn Path title over the player's head. No coin, no items.
 
-Out of scope: a ranked ladder and a champion (later, if the owner asks). Wagers.
-Save: per Traveler Pit tally if shown on the profile card. Fold into M5-12's bump if it has not merged, else bump separately.
-Integrity: none with no prize. With a prize, the ledger entry and a per-day cap in balance data, and a test that a bout cannot be paid twice.
+Out of scope: a ranked ladder and a Traveler champion (later, if the owner asks). Wagers. Coin or item prizes.
+Save: the player's Pit win count and honor tier. Fold into M5-12's bump if it has not merged, else bump separately, with a migration and a fixture test.
+Integrity: the honor creates no coin or item, so no ledger entry. The validator checks the honor tier matches the win count, and the win count does not exceed the duel results recorded (a test edits the count up and is caught).
 Acceptance:
 
 - A duel in the Pit records one result on the Duels board and one memory entry (test).
+- The 5th and 20th Pit wins grant the honor once, and a reload or an older save import does not grant it again (test).
 - Traveler bouts in the Pit end by the 30% rule, never with a down (test over 200 bouts).
 - Frame budget holds with 2 fighters and 8 spectators promoted.
 - Phone screenshot of a bout.
+
+### POW-M5-31 Snoring AFK
+
+Size: S Depends: POW-M5-06 Status: READY
+Refs: design/12-travelers (3.2, 4.7), docs/proposals/m5-g5a-feedback-plan.md (Brief 5)
+
+Goal: sleeping Travelers look asleep, and poking one is funny.
+Scope:
+
+- A promoted Traveler in `afk` for more than 5 in-game minutes shows a floating "z" (render only, the same mark style as the rest point "z" from POW-M5-25, smaller) and sits or lies down.
+- A "Poke" chip on that Traveler (the M5-06 chip row, or the profile card) wakes them: the "z" stops, a grumpy line in voice ("I was not asleep", "five more minutes"), and they stay `afk` but awake for the rest of the activity. A Friend wakes friendlier.
+- At most one poke reaction per Traveler per session. A poke records no memory and no regard (it is a joke, not an interaction).
+- At least 12 wake lines across voices, validator clean.
+
+Out of scope: anything that changes the Traveler's schedule or activity.
+Save: none. Integrity: none.
+Acceptance:
+
+- Test: the "z" shows only on promoted `afk` Travelers past the threshold, and never on a Traveler in any other activity.
+- Test: poking twice in one session gives one reaction. Regard and memory are unchanged after a poke.
+- Phone screenshot of a sleeping Traveler and the wake line.

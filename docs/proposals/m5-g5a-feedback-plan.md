@@ -135,3 +135,13 @@ Each is a small ticket (S), mostly chat plus a short behaviour, none touching th
 2. For Brief 3: is it fine that the arena has no prizes at first?
 3. For Brief 2: do you want A (Travelers raid on their own) before the full raid event, or wait for POW-M5-11?
 4. Which three of the ten humorous ideas should go first?
+
+## Owner answers (2026-11-25)
+
+| Question           | Answer                                                                                     | Ticket                   |
+| ------------------ | ------------------------------------------------------------------------------------------ | ------------------------ |
+| Where is the arena | Stonecrop quarry, open air, not under Hearthford (keeps clear of the sealed dev room door) | POW-M5-29                |
+| Arena prizes       | A cosmetic honor ("Pit regular", "Pit champion"), not a Path, no coin or items             | POW-M5-30                |
+| Traveler raids     | Wait for POW-M5-11. Its field raid now forms raid parties from ties and guilds             | POW-M5-11 (28 withdrawn) |
+| Humor first pass   | Fountain wishes, inn dance-offs, camp ghost stories, arguments with the dummy, snoring AFK | POW-M5-27, POW-M5-31     |
+| Camp Rested        | Not answered. Stays at half a bedroll (Brief 4 option C)                                   | none                     |
