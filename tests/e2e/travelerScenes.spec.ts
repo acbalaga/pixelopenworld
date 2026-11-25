@@ -62,7 +62,12 @@ test('a ghost story at the river camp shows two Travelers and the story in Local
     )
     .toBeGreaterThan(1);
   // The story is a few lines a few seconds apart. Give it time, and look for the scene's lines.
-  await page.waitForTimeout(25_000);
+  await expect
+    .poll(async () => (await page.locator('.pow-chat-lane').allInnerTexts()).join(' '), {
+      timeout: 120_000,
+      intervals: [500],
+    })
+    .toMatch(/lantern|cold voice|river at night|haunted|gather round|watching us|screamed/i);
   await page.keyboard.press('Backquote');
   await page.waitForTimeout(300);
   await shot(page, 'm5-27-ghost');
