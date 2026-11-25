@@ -11,6 +11,8 @@ export const DEV_MARKERS: readonly string[] = [
   '/dev/audio',
   '/dev/map',
   'dev-page',
+  // The Gate G5a local time flag (POW-M5-13).
+  'localtime',
   'src/dev/',
 ];
 
