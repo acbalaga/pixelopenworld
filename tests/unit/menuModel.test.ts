@@ -227,7 +227,7 @@ describe('fade when idle', () => {
 });
 
 describe('menu tabs', () => {
-  it('has all eight tabs from design/09, each named, and only the slice ones enabled', () => {
+  it('has all eight tabs from design/09, each named, and only the working ones enabled', () => {
     expect([...TAB_IDS]).toEqual([
       'character',
       'skills',
@@ -239,7 +239,15 @@ describe('menu tabs', () => {
       'system',
     ]);
     for (const t of TAB_IDS) expect(UI_STRINGS.tabs[t]).toBeTruthy();
-    expect([...ENABLED_TABS]).toEqual(['character', 'skills', 'bag', 'map', 'chronicle', 'system']);
+    expect([...ENABLED_TABS]).toEqual([
+      'character',
+      'skills',
+      'bag',
+      'map',
+      'chronicle',
+      'social',
+      'system',
+    ]);
   });
   it('has no em dashes in any HUD or Menu string', () => {
     const walk = (v: unknown): string[] =>
