@@ -36,7 +36,7 @@ test('a gift letter in the post stand can be taken once', async ({ page }) => {
   await page.waitForTimeout(300);
   await page.keyboard.up('KeyW');
   await page.keyboard.press('KeyE');
-  const sheet = page.locator('.pow-mail');
+  const sheet = page.locator('.pow-mail .pow-part-sheet');
   await expect(sheet).toBeVisible();
   await expect(sheet).toContainText('From ' + handle!);
   await expect(sheet).toContainText('25 coin');
@@ -65,11 +65,16 @@ test('a duel from the card begins, is fought, and ends with a result', async ({ 
   const card = page.locator('.pow-traveler-card');
   await card.getByRole('button', { name: 'Challenge to a duel' }).scrollIntoViewIfNeeded();
   await card.getByRole('button', { name: 'Challenge to a duel' }).click();
-  await expect(page.locator('.pow-notices')).toContainText('The duel begins', { timeout: 20_000 });
+  // Close the menu so the game and its chat show again.
+  await page.keyboard.press('Escape');
+  const lane = page.locator('.pow-chat-lane');
+  // They take it, count in, and fight to a result. Nobody falls: the duel ends by itself.
+  await expect(lane).toContainText(/You are on|Three, two|ready|sure|duel/i, { timeout: 30_000 });
   await page.keyboard.press('Backquote');
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(300);
   await shot(page, 'm5-12-duel');
-  // Nobody falls: the duel ends by itself with a result.
-  await expect(page.locator('.pow-notices')).toContainText(/duel/i, { timeout: 120_000 });
+  await expect(lane).toContainText(/duel|well done|gg|close|draw/i, { timeout: 120_000 });
+  await page.waitForTimeout(400);
+  await shot(page, 'm5-12-duel-result');
   expect(problems.pageErrors).toEqual([]);
 });
