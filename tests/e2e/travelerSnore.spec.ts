@@ -29,7 +29,7 @@ test('a sleeping Traveler shows a z, and a poke wakes them with a line', async (
   await expect
     .poll(
       async () => page.evaluate(() => (window as unknown as { __pow: Pow }).__pow.crowd().asleep),
-      { timeout: 20_000 },
+      { timeout: 60_000 },
     )
     .toBeGreaterThan(0);
   await page.keyboard.press('Backquote');

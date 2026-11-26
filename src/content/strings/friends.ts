@@ -53,6 +53,7 @@ export const FRIEND_STRINGS = {
   } as Record<string, string>,
   chips: {
     label: 'Reply to {name}',
+    reply: 'Reply',
     emotes: 'Emote',
     back: 'Back',
     you: 'You',

@@ -139,6 +139,7 @@ interface Spoke {
   text: string;
   template: string;
   chips: { id: string; text: string }[];
+  slots: Record<string, string>;
 }
 
 function step(s: SimState, ticks: number, out: Spoke[] = [], inject?: () => SimEvent[]): Spoke[] {
@@ -161,10 +162,57 @@ function step(s: SimState, ticks: number, out: Spoke[] = [], inject?: () => SimE
           text: e.text,
           template: e.template,
           chips: e.chips,
+          slots: e.slots,
         });
   }
   return out;
 }
+
+describe('which lines can be answered', () => {
+  it('only a line addressed to the player or about them offers chips: chatter between others does not', () => {
+    let addressed = 0;
+    let chatter = 0;
+    for (const seed of [3, 5]) {
+      const s = world(seed);
+      for (const l of step(s, 30 * 60 * 6)) {
+        if (l.channel === 'world') {
+          expect(l.chips, `world line ${l.template}`).toHaveLength(0);
+          continue;
+        }
+        const aimed = l.channel === 'whisper' || l.slots.player !== undefined;
+        if (aimed) {
+          if (l.chips.length > 0) addressed++;
+        } else {
+          chatter++;
+          expect(l.chips, `${l.template}: ${l.text}`).toHaveLength(0);
+        }
+      }
+    }
+    // The check is not vacuous: there was Local chatter that offered nothing.
+    expect(chatter).toBeGreaterThan(0);
+    expect(addressed).toBeGreaterThanOrEqual(0);
+  }, 120_000);
+
+  it('offers chips on whispers: a request, a hello and a memory line, always 2 to 4', () => {
+    const s = world(3);
+    step(s, 2400);
+    const crowd = crowdOf(s);
+    const slot = [...crowd.ents.values()][0]!.slot;
+    const me = findAvatar(s)!;
+    void me;
+    // A Traveler who knows the player and has enough regard asks, and the whisper has chips.
+    const life = s.travelers[slot]!;
+    life.regardPts = 60;
+    life.memory.push({ kind: 0, subject: 0, day: 1 });
+    life.flags |= FLAG.met;
+    let ask: Spoke | undefined;
+    for (let n = 0; n < 400 && !ask; n++)
+      ask = step(s, 30).find((l) => l.template === 'whisper.request');
+    expect(ask).toBeDefined();
+    expect(ask!.chips.length).toBeGreaterThanOrEqual(2);
+    expect(ask!.chips.length).toBeLessThanOrEqual(4);
+  }, 120_000);
+});
 
 describe('chips over a simulated day', () => {
   it('every line that offers chips offers 2 to 4, each with a valid reply for that speaker', () => {

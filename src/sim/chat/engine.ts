@@ -312,7 +312,7 @@ function speak(
 ): void {
   const { state, chat } = c;
   // A Local line from a template can be answered: the chips come from its category and regard.
-  const offered = chips ?? (reply ? [] : offerFor(c, slot, template, channel));
+  const offered = chips ?? (reply ? [] : offerFor(c, slot, template, channel, slots));
   emit(state.events, {
     type: 'travelerSpoke',
     channel,

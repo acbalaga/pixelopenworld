@@ -25,6 +25,7 @@ export class MessageView {
   private readonly lane: HTMLElement;
   private readonly laneLines: HTMLElement;
   private readonly collapse: HTMLButtonElement;
+  private readonly replyBtn: HTMLButtonElement;
   private readonly unread: HTMLButtonElement;
   private readonly sheet: HTMLElement;
   private readonly tabs: HTMLElement;
@@ -70,7 +71,18 @@ export class MessageView {
     this.unread = el('button', 'pow-chat-unread');
     this.unread.type = 'button';
     this.unread.addEventListener('click', () => this.setCollapsed(false));
-    add(this.lane, this.laneLines, this.collapse);
+    // A small Reply button shows while a line aimed at the player can be answered. It opens the chat
+    // sheet, where the chips are: nothing covers the game while the player is travelling.
+    this.replyBtn = el('button', 'pow-chat-reply');
+    this.replyBtn.type = 'button';
+    this.replyBtn.hidden = true;
+    this.replyBtn.textContent = F.chips.reply;
+    this.replyBtn.addEventListener('click', () => {
+      const o = this.chipOffer;
+      if (o) this.settings.set({ chatTab: o.channel });
+      this.openSheet();
+    });
+    add(this.lane, this.laneLines, this.replyBtn, this.collapse);
 
     this.sheet = el('section', 'pow-chat-sheet');
     this.sheet.setAttribute('role', 'region');
@@ -87,11 +99,11 @@ export class MessageView {
     add(head, this.tabs, close);
     this.list = el('div', 'pow-chat-list');
     this.list.setAttribute('role', 'log');
-    add(this.sheet, head, this.list);
     this.chipBar = el('div', 'pow-chips');
     this.chipBar.hidden = true;
     this.chipBar.setAttribute('role', 'group');
-    add(root, this.stack, this.banner, this.lane, this.unread, this.sheet, this.chipBar);
+    add(this.sheet, head, this.list, this.chipBar);
+    add(root, this.stack, this.banner, this.lane, this.unread, this.sheet);
     window.addEventListener('keydown', (e) => {
       if (this.sheetOpen && e.code === 'Escape') this.closeSheet();
     });
@@ -128,6 +140,7 @@ export class MessageView {
 
   /** Offers reply chips for a Traveler's line, or clears them with null (M5-06). */
   offer(o: ChipOffer | null): void {
+    this.replyBtn.hidden = o === null;
     this.chipOffer = o;
     this.chipEmotes = false;
     this.sigChips = '';
@@ -142,11 +155,6 @@ export class MessageView {
     this.unread.style.left = `${Math.round(r.chat.x)}px`;
     this.unread.style.top = `${Math.round(r.chat.y + r.chat.h - 28)}px`;
     this.sheet.style.top = `${Math.round(sheetTop)}px`;
-    // The chips sit just above the chat lane, or above the sheet while it is open.
-    const base = this.sheetOpen ? sheetTop : r.chat.y;
-    this.chipBar.style.left = `${Math.round(r.chat.x)}px`;
-    this.chipBar.style.bottom = `${Math.round(window.innerHeight - base + 6)}px`;
-    this.chipBar.style.width = `${Math.round(Math.min(window.innerWidth - r.chat.x - 8, 320))}px`;
   }
 
   /** Redraws what changed. Called once a frame. */
@@ -319,6 +327,8 @@ export interface ChipOffer {
   slot: number;
   from: string;
   chips: { id: string; text: string }[];
+  /** The chat tab the line is in. */
+  channel: 'local' | 'whisper';
   until: number;
 }
 

@@ -65,6 +65,8 @@ export interface PowDevApi {
   };
   /** Makes the nearest promoted Traveler a friend, with a memory of a fight, for screenshots (M5-06). Returns the handle. */
   befriend(): string | null;
+  /** Gives the nearest promoted Traveler a memory of the player and enough regard to ask to be friends. Returns the handle (M5-06). */
+  primeRequest(): string | null;
   /** Puts the nearest promoted Traveler to sleep, AFK past the threshold, and makes them a friend so the card is reachable. Returns the handle (M5-31). */
   putToSleep(): string | null;
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
@@ -216,6 +218,31 @@ export function installSliceHooks(ctx: SliceHookContext): void {
             ).length
           : 0,
       };
+    },
+    primeRequest() {
+      const c = state.crowd;
+      const me = getComp(state.entities, who, 'pos');
+      const view = c
+        ? travelerViews(state).sort(
+            (a, b) =>
+              Math.hypot(a.x - (me?.x ?? 0) / 256, a.y - (me?.y ?? 0) / 256) -
+              Math.hypot(b.x - (me?.x ?? 0) / 256, b.y - (me?.y ?? 0) / 256),
+          )[0]
+        : undefined;
+      if (!c || !view || !state.clock) return null;
+      const life = state.travelers[view.slot]!;
+      const now = localMinute(state.clock.nowMs, state.clock.tzOffsetMin);
+      remember(
+        life,
+        'foughtNear',
+        Object.keys(CREATURES).indexOf('creature.mossling'),
+        dayIndexOf(now),
+        now,
+      );
+      life.regardPts = 40;
+      life.regardTier = 2;
+      life.lastSeen = now;
+      return view.handle;
     },
     putToSleep() {
       const c = state.crowd;

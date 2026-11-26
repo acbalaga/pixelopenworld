@@ -1553,6 +1553,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                   slot: e.slot,
                   from: ids[e.slot]?.handle ?? 'someone',
                   chips: e.chips,
+                  channel: e.channel === 'whisper' ? 'whisper' : 'local',
                   until: performance.now() + UI_BALANCE.messages.chipShowMs,
                 });
             } else if (e.type === 'playerSpoke')

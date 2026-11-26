@@ -9,6 +9,7 @@ test.setTimeout(240_000);
 interface Pow {
   crowd(): { entities: number };
   befriend(): string | null;
+  primeRequest(): string | null;
 }
 
 async function ready(page: Page): Promise<void> {
@@ -24,28 +25,39 @@ async function ready(page: Page): Promise<void> {
 
 const URL = '/?region=dawnmeadow&at=192,196&seed=3&foes=0&nosave=1&kit=dev&localtime=20:30';
 
-test('a Traveler line offers 2 to 4 chips, tapping one says it and gets an answer', async ({
+test('a request is answered inside the chat sheet, and nothing covers the game until then', async ({
   page,
 }) => {
   const problems = await watchProblems(page);
   await page.goto(URL);
   await ready(page);
-  const bar = page.locator('.pow-chips');
-  await expect(bar).toBeVisible({ timeout: 150_000 });
+  // Nobody is talking to the player yet: no Reply button, and no chip bar over the game.
+  await expect(page.locator('.pow-chips')).toBeHidden();
+  await expect(page.locator('.pow-chat-reply')).toBeHidden();
+  const handle = await page.evaluate(() =>
+    (window as unknown as { __pow: Pow }).__pow.primeRequest(),
+  );
+  expect(handle).not.toBeNull();
+  // They whisper a friend request. The lane gets a small Reply button; nothing floats over the world.
+  const reply = page.locator('.pow-chat-reply');
+  await expect(reply).toBeVisible({ timeout: 120_000 });
+  await expect(page.locator('.pow-chips')).toBeHidden();
   await page.keyboard.press('Backquote');
   await page.waitForTimeout(300);
+  await shot(page, 'm5-06-lane-reply');
+  // The chips are in the chat sheet: 2 to 4, each at least 48 px tall.
+  await reply.click();
+  const bar = page.locator('.pow-chips');
+  await expect(bar).toBeVisible();
   const chips = bar.locator('.pow-chip[data-chip]:not([data-chip="emotes"])');
   const n = await chips.count();
   expect(n).toBeGreaterThanOrEqual(2);
   expect(n).toBeLessThanOrEqual(4);
-  // Every chip is a clear button at least 48 px tall.
-  for (let i = 0; i < n; i++) {
-    const box = await chips.nth(i).boundingBox();
-    expect(box!.height).toBeGreaterThanOrEqual(48);
-  }
+  for (let i = 0; i < n; i++)
+    expect((await chips.nth(i).boundingBox())!.height).toBeGreaterThanOrEqual(48);
   await shot(page, 'm5-06-chips');
-  await chips.first().click();
-  await expect(page.locator('.pow-chat-lane')).toContainText('You:', { timeout: 10_000 });
+  await bar.locator('[data-chip="friend.yes"]').click();
+  await expect(page.locator('.pow-chat-list')).toContainText('You:', { timeout: 10_000 });
   await shot(page, 'm5-06-chip-said');
   expect(problems.pageErrors).toEqual([]);
 });

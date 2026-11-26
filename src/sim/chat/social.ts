@@ -118,14 +118,20 @@ export function daysAgoText(day: number, today: number): string {
   return n === 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`;
 }
 
-/** Stores the chips a line offers, if it is a line the player can answer. Returns the chips. */
+/**
+ * Stores the chips a line offers, if it is a line the player can answer. Only a line that is
+ * addressed to the player, or about them, can be answered: one that names them (`{player}`, which
+ * covers the reactions to their public deeds). Chatter between other people is not for them to
+ * answer, so nothing offers chips for it. Returns the chips.
+ */
 export function offerFor(
   c: Ctx,
   slot: number,
   template: string,
   channel: 'world' | 'local' | 'whisper',
+  slots: Record<string, string>,
 ): { id: string; text: string }[] {
-  if (channel === 'world') return [];
+  if (channel === 'world' || slots.player === undefined) return [];
   const category = CATEGORY_OF.get(template);
   if (!category) return [];
   const life = c.state.travelers[slot];
