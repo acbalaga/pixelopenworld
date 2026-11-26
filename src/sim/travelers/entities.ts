@@ -26,6 +26,9 @@ import type { Crowd, Doing } from './crowd';
 import { identitiesOf } from './generate';
 import { TRAVELER_KIND, travelerSlotOf } from './kind';
 import { PLACE_LIST, SKILL_LIST } from './lists';
+import { localMinute } from './schedule';
+import { recentMemory, tierNow } from './social';
+import { FLAG } from '../../content/travelers/types';
 import { findPath, type Tile } from './path';
 import type { TravelerIdentity } from './types';
 
@@ -911,6 +914,13 @@ export interface ProfileCard {
   /** Up to three skill ids with a rank band, never exact points. */
   skills: { skill: string; band: number }[];
   met: boolean;
+  /** Regard tier 0 to 3 now, whether they are a friend, and whether they have asked to be (M5-06). */
+  tier: number;
+  friend: boolean;
+  requestIn: boolean;
+  requestOut: boolean;
+  /** The newest memory entries of the player, newest first. */
+  memory: { kind: number; subject: number; day: number }[];
 }
 
 /** Rank bands of 25 points: 0 Novice, 1 Practiced, 2 Skilled, 3 Expert, 4 Master. */
@@ -930,8 +940,15 @@ export function profileOf(state: SimState, slot: number): ProfileCard {
     guild: life.guild,
     look: t.look,
     skills,
-    // Bit 5 of the flags is "met" (design/12 section 1). M5-06 owns the rest of the bits.
-    met: ((life.flags >>> 5) & 1) === 1,
+    met: (life.flags & FLAG.met) !== 0,
+    tier: tierNow(
+      life,
+      state.clock ? localMinute(state.clock.nowMs, state.clock.tzOffsetMin) : life.lastSeen,
+    ),
+    friend: (life.flags & FLAG.friend) !== 0,
+    requestIn: (life.flags & FLAG.requestIn) !== 0,
+    requestOut: (life.flags & FLAG.requestOut) !== 0,
+    memory: recentMemory(life).map((m) => ({ ...m })),
   };
 }
 

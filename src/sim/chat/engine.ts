@@ -24,6 +24,18 @@ import { dayPhase, weatherOn } from '../time';
 import { crowdOf, onlineCount } from '../travelers/crowd';
 import { startScene } from '../travelers/entities';
 import { cameTrue, planScenes } from './scenes';
+import {
+  friendAsks,
+  loginHellos,
+  memoryLines,
+  offerFor,
+  processInbox,
+  memorable,
+  recordMemories,
+  touchNear,
+  type Inbox,
+  type Offer,
+} from './social';
 import { hash01 } from '../travelers/dice';
 import { identitiesOf } from '../travelers/generate';
 import { PLACE_LIST, SKILL_LIST } from '../travelers/lists';
@@ -43,16 +55,20 @@ import { applyVoice, glyphsIn } from './voice';
 
 type Slots = { [K in SlotName]?: string | undefined };
 type Channel = 'world' | 'local';
+/** Where a line can be said: the two public channels, or a whisper to the player. */
+type SayChannel = Channel | 'whisper';
 
-interface Queued {
+export interface Queued {
   due: number;
   slot: number;
-  channel: Channel;
+  channel: SayChannel;
   text: string;
   template: string;
   source: string;
   reply: boolean;
   slots: Record<string, string>;
+  /** Reply chips the line offers, for a whisper or a line from social chat. */
+  chips?: { id: string; text: string }[];
 }
 
 export interface ChatState {
@@ -69,6 +85,11 @@ export interface ChatState {
   lastPhase: string;
   /** Small scenes (M5-27): how many ran this real hour by kind, and who made a wish and when. */
   scenes: { counts: Map<string, number>; wished: Map<number, number> };
+  /** Social chat (M5-06): chips on offer by Traveler, player commands waiting, requests, memory lines said. */
+  offers: Map<number, Offer>;
+  inbox: Inbox[];
+  asked: Map<number, number>;
+  said: Set<number>;
 }
 
 export function newChatState(): ChatState {
@@ -83,6 +104,10 @@ export function newChatState(): ChatState {
     lastWeather: '',
     lastPhase: '',
     scenes: { counts: new Map(), wished: new Map() },
+    offers: new Map(),
+    inbox: [],
+    asked: new Map(),
+    said: new Set(),
   };
 }
 
@@ -126,7 +151,7 @@ function topRank(state: SimState, t: TravelerIdentity): { skill: string; rank: n
   return { skill: SKILL_LIST[best[0]] as string, rank: Math.floor(best[1] / 5) * 5 };
 }
 
-interface Ctx {
+export interface Ctx {
   state: SimState;
   chat: ChatState;
   ids: readonly TravelerIdentity[];
@@ -136,6 +161,9 @@ interface Ctx {
   weather: string;
   phase: string;
   player: string;
+  /** The real local minute and day index now, for regard and memory. */
+  real: number;
+  day: number;
 }
 
 function placeName(index: number): string | undefined {
@@ -271,14 +299,17 @@ function make(
 function speak(
   c: Ctx,
   slot: number,
-  channel: Channel,
+  channel: SayChannel,
   text: string,
   template: string,
   source: string,
   reply: boolean,
   slots: Record<string, string> = {},
+  chips?: { id: string; text: string }[],
 ): void {
   const { state, chat } = c;
+  // A Local line from a template can be answered: the chips come from its category and regard.
+  const offered = chips ?? (reply ? [] : offerFor(c, slot, template, channel));
   emit(state.events, {
     type: 'travelerSpoke',
     channel,
@@ -289,10 +320,13 @@ function speak(
     template,
     reply,
     slots,
+    chips: offered,
   });
-  const r = chat.recent[channel];
-  if (!reply && !template.startsWith('exchange.')) r.push(template);
-  while (r.length > CHAT.windowLines) r.shift();
+  if (channel !== 'whisper') {
+    const r = chat.recent[channel];
+    if (!reply && !template.startsWith('exchange.')) r.push(template);
+    while (r.length > CHAT.windowLines) r.shift();
+  }
   chat.lastSpoke[slot] = state.tick;
   const tpl = template;
   chat.cooldown.set(`${slot}|${tpl}`, c.minute + (cooldownOf(tpl) || 30));
@@ -752,6 +786,7 @@ function flush(c: Ctx): void {
       item.source,
       item.reply,
       item.slots,
+      item.chips,
     );
     sent++;
   }
@@ -760,31 +795,64 @@ function flush(c: Ctx): void {
 /** The share of the budget at a local hour. */
 export const hourShare = (hour: number): number => CHAT.hour[Math.floor(hour) % 24] as number;
 
+/** What the social code needs of the engine, passed in so the two files do not import each other. */
+export interface Helpers {
+  enqueue(c: Ctx, q: Queued): void;
+  canSpeak(c: Ctx, slot: number, reply?: boolean): boolean;
+  source(c: Ctx, id: string, fact: string): string;
+  voice(c: Ctx, slot: number, text: string, d: () => number): string;
+  dice(c: Ctx, salt: number): () => number;
+}
+
+const HELPERS: Helpers = {
+  enqueue,
+  canSpeak,
+  source,
+  voice: (c, slot, text, d) => applyVoice(voiceOf(c.ids[slot]!.voice), text, 'banter', d).text,
+  dice: (c, salt) => diceFor(c.state, c.chat, salt),
+};
+
+/** Puts a player command (a chip or a friend action) in line for the chat step. */
+export function queueChatCommand(state: SimState, item: Inbox): void {
+  const chat = (state.chat ??= newChatState());
+  if (chat.inbox.length < 8) chat.inbox.push(item);
+}
+
+function contextOf(state: SimState, chat: ChatState, minute: number): Ctx {
+  const crowd = state.crowd!;
+  const clock = state.clock!;
+  const local = localMinute(clock.nowMs, clock.tzOffsetMin);
+  const hour = (local - dayIndexOf(local) * MIN_PER_DAY) / 60;
+  const who = findAvatar(state);
+  return {
+    state,
+    chat,
+    ids: identitiesOf(crowd.seed),
+    minute,
+    hour,
+    tod: hourShare(hour),
+    weather: weatherOn(state, state.worldTick),
+    phase: dayPhase(state.worldTick),
+    player: (who === null ? undefined : state.entities.comps.avatar[who]?.handle) ?? 'friend',
+    real: local,
+    day: dayIndexOf(local),
+  };
+}
+
 /**
  * The chat system. Runs after the crowd, once per abstract minute. It reads the events of this tick
- * and the state, and sends `travelerSpoke` events. It does nothing without a crowd.
+ * and the state, and sends `travelerSpoke` events. It does nothing without a crowd. The player's
+ * commands (chips, friend actions) are handled on the tick they arrive.
  */
 export function chatSystem(state: SimState): void {
   const crowd = state.crowd;
   const clock = state.clock;
   if (!crowd || !clock || !crowd.caughtUp) return;
   const chat = (state.chat ??= newChatState());
+  if (chat.inbox.length > 0) processInbox(contextOf(state, chat, crowd.lastMinute), HELPERS);
   if (crowd.lastMinute === chat.lastMinute) return;
   chat.lastMinute = crowd.lastMinute;
-  const local = localMinute(clock.nowMs, clock.tzOffsetMin);
-  const hour = (local - dayIndexOf(local) * MIN_PER_DAY) / 60;
-  const who = findAvatar(state);
-  const ctx: Ctx = {
-    state,
-    chat,
-    ids: identitiesOf(crowd.seed),
-    minute: crowd.lastMinute,
-    hour,
-    tod: hourShare(hour),
-    weather: weatherOn(state, state.worldTick),
-    phase: dayPhase(state.worldTick),
-    player: (who === null ? undefined : state.entities.comps.avatar[who]?.handle) ?? 'friend',
-  };
+  const ctx = contextOf(state, chat, crowd.lastMinute);
   const speakers = onlineCount(crowd);
   chat.tokens.world = Math.min(
     CHAT.tokenCap,
@@ -795,12 +863,28 @@ export function chatSystem(state: SimState): void {
     chat.tokens.local + crowd.ents.size * CHAT.tokensPerSpeaker.local * ctx.tod,
   );
   const events = [...state.events.list];
+  touchNear(ctx);
   events.forEach((e, i) => fromEvent(ctx, e, i));
   flush(ctx);
   exchanges(ctx);
   scenes(ctx, events);
+  loginHellos(ctx, HELPERS, events);
+  friendAsks(ctx, HELPERS);
+  memoryLines(ctx, HELPERS);
   chatter(ctx);
   chat.lastWeather = ctx.weather;
   chat.lastPhase = ctx.phase;
   void crowdOf;
+}
+
+/**
+ * Memory of what the player did (POW-M5-06). Runs every tick, after the systems that send the
+ * events it reads (a kill, passing a Traveler on a board), because the engine's own step only
+ * sees the events of the tick an abstract minute turns.
+ */
+export function socialSystem(state: SimState): void {
+  const crowd = state.crowd;
+  if (!crowd || !state.clock || !crowd.caughtUp || !state.events.list.some(memorable)) return;
+  const chat = (state.chat ??= newChatState());
+  recordMemories(contextOf(state, chat, crowd.lastMinute), state.events.list);
 }

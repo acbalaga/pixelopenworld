@@ -27,7 +27,7 @@ export default defineConfig({
     {
       name: 'dev-tools',
       testMatch:
-        /(devtools|requestsHandIn|stationSheet|sliceRun|streaming|weather|dawnmeadow|waystone|rootway|travelers|rankings|restPoint|travelerCamp|travelerScenes)\.spec\.ts/,
+        /(devtools|requestsHandIn|stationSheet|sliceRun|streaming|weather|dawnmeadow|waystone|rootway|travelers|rankings|restPoint|travelerCamp|travelerScenes|travelerSocial)\.spec\.ts/,
       use: { baseURL: DEV },
     },
   ],

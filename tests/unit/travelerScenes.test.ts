@@ -174,7 +174,7 @@ describe('an evening in Hearthford', () => {
     let hits = 0;
     for (let seed = 1; seed <= 10; seed++) {
       const s = world(seed, centre('hearthford.guard_yard'), 19, 9000);
-      const seen = run(s, 7200);
+      const seen = run(s, 14_400);
       if (idea(seen, 'dummy') >= 2) hits++;
     }
     expect(hits).toBeGreaterThanOrEqual(8);

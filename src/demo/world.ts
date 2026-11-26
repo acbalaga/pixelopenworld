@@ -969,6 +969,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   };
   const menu = new MenuSheet(root, {
     region: regionId,
+    openTraveler: (slot) => travelerCard.open(profileOf(state, slot), state),
     map: {
       ctx: {
         region: regionId,
@@ -1088,7 +1089,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       cardOpen = open;
       if (open) input.sampler.releaseAll();
     },
+    onFriend: (slot, op) => pendingCommands.push({ type: 'friend', slot, op }),
   });
+  messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
   const talk = new TalkSheet(root, {
     read: () => ({ state, who }),
     send: (c) => pendingCommands.push(c),
@@ -1536,12 +1539,26 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         {
           const ids = identitiesOf(state.seed);
           for (const e of state.events.list) {
-            if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot));
-            else if (e.type === 'travelerSpoke')
+            if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot), state);
+            else if (e.type === 'travelerSpoke') {
               router.post({
                 lane: 'chat',
                 from: ids[e.slot]?.handle ?? 'someone',
                 text: chatDebug ? `${e.text} [${e.template} ${e.source}]` : e.text,
+                channel: e.channel,
+              });
+              if (e.chips.length > 0)
+                messageView.offer({
+                  slot: e.slot,
+                  from: ids[e.slot]?.handle ?? 'someone',
+                  chips: e.chips,
+                  until: performance.now() + UI_BALANCE.messages.chipShowMs,
+                });
+            } else if (e.type === 'playerSpoke')
+              router.post({
+                lane: 'chat',
+                from: 'You',
+                text: e.text,
                 channel: e.channel,
               });
           }

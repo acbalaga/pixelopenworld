@@ -17,7 +17,10 @@ import type { StatusId } from '../content/combat/statuses';
 import { elementHitsWorld } from '../sim/elements';
 import { applyStatus } from '../sim/statuses';
 import { PLACE_SPOTS } from '../content/people/placeSpots';
+import { CREATURES } from '../content/creatures';
 import { onlineCount } from '../sim/travelers/crowd';
+import { dayIndexOf, localMinute } from '../sim/travelers/schedule';
+import { makeFriends, remember } from '../sim/travelers/social';
 import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
 
@@ -59,6 +62,8 @@ export interface PowDevApi {
     atCamp: number;
     scenes: string[];
   };
+  /** Makes the nearest promoted Traveler a friend, with a memory of a fight, for screenshots (M5-06). Returns the handle. */
+  befriend(): string | null;
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
   travelerFight(creatureId: string): string | null;
   /** Puts items in the bag, as if gathered. */
@@ -207,6 +212,29 @@ export function installSliceHooks(ctx: SliceHookContext): void {
             ).length
           : 0,
       };
+    },
+    befriend() {
+      const c = state.crowd;
+      const me = getComp(state.entities, who, 'pos');
+      const view = c
+        ? travelerViews(state).sort(
+            (a, b) =>
+              Math.hypot(a.x - (me?.x ?? 0) / 256, a.y - (me?.y ?? 0) / 256) -
+              Math.hypot(b.x - (me?.x ?? 0) / 256, b.y - (me?.y ?? 0) / 256),
+          )[0]
+        : undefined;
+      if (!c || !view || !state.clock) return null;
+      const life = state.travelers[view.slot]!;
+      const now = localMinute(state.clock.nowMs, state.clock.tzOffsetMin);
+      remember(
+        life,
+        'foughtNear',
+        Object.keys(CREATURES).indexOf('creature.mossling'),
+        dayIndexOf(now),
+        now,
+      );
+      makeFriends(life, now);
+      return view.handle;
     },
     travelerFight(creatureId) {
       const c = state.crowd;

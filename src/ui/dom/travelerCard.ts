@@ -1,7 +1,10 @@
 import { GUILDS } from '../../content/travelers/guilds';
 import { SKILLS } from '../../content/skills';
+import { FRIEND_STRINGS as F } from '../../content/strings/friends';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import type { ProfileCard } from '../../sim/travelers/entities';
+import type { SimState } from '../../sim/state';
+import { memoryLine } from '../menu/friendsModel';
 import { detailSheet, el, put } from './parts';
 
 /**
@@ -19,6 +22,8 @@ export class TravelerCard {
       /** Paints the Traveler's doll (24 x 32) into the canvas. */
       drawDoll: (canvas: HTMLCanvasElement, slot: number) => void;
       onOpenChange: (open: boolean) => void;
+      /** Sends a friend action for the Traveler on the card (M5-06). */
+      onFriend: (slot: number, op: 'request' | 'accept' | 'decline' | 'remove') => void;
     },
   ) {}
 
@@ -26,7 +31,7 @@ export class TravelerCard {
     return this.wrap !== null;
   }
 
-  open(card: ProfileCard): void {
+  open(card: ProfileCard, state?: SimState): void {
     this.close();
     const L = S.travelerCard;
     const icon = document.createElement('canvas');
@@ -47,7 +52,12 @@ export class TravelerCard {
       icon,
       desc,
       lines: skills.length > 0 ? skills : [L.noSkills],
-      extra: [el('p', 'pow-part-sheet-desc', card.met ? L.met : L.notMet)],
+      extra: [
+        el('p', 'pow-part-sheet-desc', card.met ? L.met : L.notMet),
+        el('p', 'pow-part-sheet-desc', F.card.regard.replace('{tier}', F.tiers[card.tier] ?? '')),
+        ...this.historyBlock(card, state),
+        ...this.friendBlock(card),
+      ],
       onClose: () => this.close(),
     });
     const wrap = el('div', 'pow-traveler-card');
@@ -56,6 +66,39 @@ export class TravelerCard {
     this.wrap = wrap;
     sheet.title.focus();
     this.opts.onOpenChange(true);
+  }
+
+  private historyBlock(card: ProfileCard, state?: SimState): HTMLElement[] {
+    const lines = state ? card.memory.map((m) => memoryLine(state, m)).filter((x) => x !== '') : [];
+    const ul = el('ul', 'pow-card-history');
+    for (const l of lines) put(ul, el('li', 'pow-card-history-row', l));
+    return [
+      el('h4', 'pow-card-history-title', F.card.history),
+      lines.length > 0 ? ul : el('p', 'pow-part-sheet-desc', F.card.noHistory),
+    ];
+  }
+
+  private friendBlock(card: ProfileCard): HTMLElement[] {
+    const act = (label: string, op: 'request' | 'accept' | 'decline' | 'remove'): HTMLElement => {
+      const b = el('button', 'pow-button pow-card-action', label);
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        this.opts.onFriend(card.slot, op);
+        this.close();
+      });
+      return b;
+    };
+    if (card.friend)
+      return [el('p', 'pow-part-sheet-desc', F.card.isFriend), act(F.card.removeFriend, 'remove')];
+    if (card.requestIn)
+      return [
+        el('p', 'pow-part-sheet-desc', F.card.theyAsked),
+        act(F.accept, 'accept'),
+        act(F.decline, 'decline'),
+      ];
+    if (card.requestOut) return [el('p', 'pow-part-sheet-desc', F.card.pending)];
+    if (!card.met) return [el('p', 'pow-part-sheet-desc', F.card.needMeet)];
+    return [act(F.card.addFriend, 'request')];
   }
 
   close(): void {

@@ -1,0 +1,58 @@
+/**
+ * Friends, profile history and reply chips text (POW-M5-06). Plain, no em dashes. Nothing here
+ * explains anything about the hidden layer.
+ */
+export const FRIEND_STRINGS = {
+  title: 'Friends',
+  none: 'No friends yet. Travelers who get to know you may ask.',
+  requests: 'Asking to be friends',
+  online: 'Online',
+  offline: 'Offline',
+  at: 'at {place}',
+  accept: 'Accept',
+  decline: 'Decline',
+  open: 'Profile',
+  tiers: ['Stranger', 'Acquaintance', 'Friend', 'Close Friend'],
+  doing: {
+    travel: 'on the road',
+    gather: 'gathering',
+    fight: 'fighting',
+    craft: 'crafting',
+    trade: 'trading',
+    social: 'chatting',
+    afk: 'away',
+    party: 'in a party',
+    dungeon: 'in a dungeon',
+  } as Record<string, string>,
+  card: {
+    regard: 'Regard: {tier}',
+    history: 'Shared history',
+    noHistory: 'Nothing yet.',
+    addFriend: 'Add friend',
+    removeFriend: 'Remove friend',
+    pending: 'Friend request sent. They will answer when they are next online.',
+    theyAsked: 'They asked to be friends.',
+    isFriend: 'Friends.',
+    needMeet: 'Meet them first.',
+  },
+  /** Shared history lines by memory kind. `{subject}` and `{when}` fill in. */
+  memory: {
+    foughtNear: 'You fought a {subject} near them, {when}.',
+    partied: 'You played together, {when}.',
+    helpedDown: 'You helped them up, {when}.',
+    traded: 'You traded, {when}.',
+    gifted: 'You gave them a gift, {when}.',
+    duelWon: 'You won a duel, {when}.',
+    duelLost: 'They won a duel, {when}.',
+    stoodUp: 'You did not turn up, {when}.',
+    passedOnBoard: 'You passed them on the {subject} board, {when}.',
+    answered: 'You answered their question, {when}.',
+    ignoredRequest: 'You did not answer when they asked for help, {when}.',
+  } as Record<string, string>,
+  chips: {
+    label: 'Reply to {name}',
+    emotes: 'Emote',
+    back: 'Back',
+    you: 'You',
+  },
+} as const;

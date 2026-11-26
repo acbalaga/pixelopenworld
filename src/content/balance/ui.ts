@@ -34,6 +34,8 @@ export const UI_BALANCE = {
    * rather than the logical pixel grid.
    */
   messages: {
+    /** Reply chips stay on screen this long (M5-06). The offer itself lasts a minute in the sim. */
+    chipShowMs: 25_000,
     /** A notice shows this long, plus `noticePerCharMs` for every character past `noticeFreeChars`. */
     noticeBaseMs: 2600,
     noticePerCharMs: 40,

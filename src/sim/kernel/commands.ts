@@ -62,6 +62,10 @@ export type Command =
   | { type: 'talk'; npc: string; node: string; choice: number }
   /** The interface reports that the action a hint asked for happened (the Menu opened). */
   | { type: 'hint'; id: string }
+  /** Answer a Traveler with a reply chip or an emote (M5-06). The sim checks the chip is on offer. */
+  | { type: 'chip'; slot: number; chip: string }
+  /** A friend action on a Traveler, from the profile card or a request (M5-06). */
+  | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' }
   | { type: 'buy'; shop: string; item: string; qty: number }
   /** Sell from bag slot `slot` to the shop in front of you. */
   | { type: 'sell'; shop: string; slot: number; qty: number }
@@ -230,6 +234,18 @@ export function validateCommand(raw: unknown): Validated {
         command: { type: 'talk', npc: r.npc, node: r.node, choice: r.choice as number },
       };
     }
+    case 'chip':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      if (typeof r.chip !== 'string' || !/^[a-z]{1,12}(\.[a-z]{1,12})?$/.test(r.chip))
+        return { ok: false, reason: 'bad chip' };
+      return { ok: true, command: { type: 'chip', slot: r.slot as number, chip: r.chip } };
+    case 'friend':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      if (r.op !== 'request' && r.op !== 'accept' && r.op !== 'decline' && r.op !== 'remove')
+        return { ok: false, reason: 'bad friend action' };
+      return { ok: true, command: { type: 'friend', slot: r.slot as number, op: r.op } };
     case 'hint':
       if (typeof r.id !== 'string' || !/^hint\.[a-z_]{1,24}$/.test(r.id))
         return { ok: false, reason: 'bad hint' };

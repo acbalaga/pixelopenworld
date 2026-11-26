@@ -308,6 +308,16 @@ describe('the chat engine over a simulated day', () => {
       b.events.list.length = 0;
       travelersSystem(b);
     }
+    // Regard and memory (M5-06) are the one thing chat writes into a Traveler's life. Set aside, the
+    // sim is byte-identical: chat changes nothing the crowd does.
+    for (const s of [a, b])
+      for (const l of s.travelers) {
+        l.regardTier = 0;
+        l.regardPts = 0;
+        l.flags = 0;
+        l.memory = [];
+        l.lastSeen = 0;
+      }
     expect(serializeState(a)).toBe(serializeState(b));
     const c = createDemoState(7, 0);
     chatSystem(c);
