@@ -26,6 +26,7 @@ export function factsOf(state: SimState, who: number, mapPercent = 0): PlayerFac
     bestiary: Object.keys(c.journal[who]?.bestiary ?? {}).length,
     mapPercent,
     fishLanded: fish,
+    duelWins: state.mail.duels.wins,
   };
 }
 

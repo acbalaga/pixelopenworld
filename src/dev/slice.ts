@@ -20,6 +20,7 @@ import { PLACE_SPOTS } from '../content/people/placeSpots';
 import { CREATURES } from '../content/creatures';
 import { onlineCount } from '../sim/travelers/crowd';
 import { dayIndexOf, localMinute } from '../sim/travelers/schedule';
+import { deliver } from '../sim/mail';
 import { makeFriends, remember } from '../sim/travelers/social';
 import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
@@ -65,6 +66,8 @@ export interface PowDevApi {
   };
   /** Makes the nearest promoted Traveler a friend, with a memory of a fight, for screenshots (M5-06). Returns the handle. */
   befriend(): string | null;
+  /** Puts two letters in the mailbox, a note and a gift, from the nearest promoted Traveler, for screenshots (M5-12). */
+  deliverLetters(): string | null;
   /** Gives the nearest promoted Traveler a memory of the player and enough regard to ask to be friends. Returns the handle (M5-06). */
   primeRequest(): string | null;
   /** Puts the nearest promoted Traveler to sleep, AFK past the threshold, and makes them a friend so the card is reachable. Returns the handle (M5-31). */
@@ -218,6 +221,23 @@ export function installSliceHooks(ctx: SliceHookContext): void {
             ).length
           : 0,
       };
+    },
+    deliverLetters() {
+      const c = state.crowd;
+      const me = getComp(state.entities, who, 'pos');
+      const view = c
+        ? travelerViews(state).sort(
+            (a, b) =>
+              Math.hypot(a.x - (me?.x ?? 0) / 256, a.y - (me?.y ?? 0) / 256) -
+              Math.hypot(b.x - (me?.x ?? 0) / 256, b.y - (me?.y ?? 0) / 256),
+          )[0]
+        : undefined;
+      if (!c || !view || !state.clock) return null;
+      const day = dayIndexOf(localMinute(state.clock.nowMs, state.clock.tzOffsetMin));
+      const base = { slot: view.slot, day, subject: 0, item: '', qty: 0, coin: 0 };
+      deliver(state, { ...base, tpl: 'letter.news.n01' });
+      deliver(state, { ...base, tpl: 'letter.gift.coin.n01', coin: 25 });
+      return view.handle;
     },
     primeRequest() {
       const c = state.crowd;

@@ -179,6 +179,11 @@ export type SimEvent =
   | { type: 'bossObjective'; id: number; boss: string; step: string }
   | { type: 'bossResolved'; id: number; boss: string; how: 'fight' | 'objective' }
   | { type: 'chestOpened'; id: number; who: number }
+  /** A duel was taken, and how it ended: `player` won, `traveler` won, or a draw (M5-12). */
+  | { type: 'duelStarted'; slot: number }
+  | { type: 'duelEnded'; slot: number; result: 'player' | 'traveler' | 'draw' }
+  /** A Rival turned up at a dungeon the player keeps going to (M5-12). */
+  | { type: 'rivalAppeared'; slot: number; dungeon: string }
   /** The player opened a mailbox (M5-12). */
   | { type: 'mailOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */

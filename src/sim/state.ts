@@ -10,6 +10,7 @@ import type { Deltas } from './world/deltas';
 import type { StreamState } from './world/stream';
 import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
+import type { DuelState } from './duel';
 import { newMailbox, type Mailbox } from './mail';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
@@ -664,6 +665,8 @@ export interface SimState {
   travelers: TravelerLife[];
   /** Letters, the duel record and dungeon entries (M5-12). Saved. */
   mail: Mailbox;
+  /** The duel in progress, if any (M5-12). Session only: never saved. */
+  duel?: DuelState | undefined;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */

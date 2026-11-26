@@ -66,6 +66,8 @@ export type Command =
   | { type: 'chip'; slot: number; chip: string }
   /** Read a letter, or claim its attachment, once (M5-12). */
   | { type: 'mail'; op: 'read' | 'claim'; id: number }
+  /** Challenge a Traveler to a duel (M5-12). */
+  | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
   | { type: 'poke'; slot: number }
   /** A friend action on a Traveler, from the profile card or a request (M5-06). */
@@ -249,6 +251,10 @@ export function validateCommand(raw: unknown): Validated {
       if (!Number.isInteger(r.id) || (r.id as number) < 1 || (r.id as number) > 1_000_000)
         return { ok: false, reason: 'bad letter' };
       return { ok: true, command: { type: 'mail', op: r.op, id: r.id as number } };
+    case 'duel':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      return { ok: true, command: { type: 'duel', slot: r.slot as number } };
     case 'poke':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
         return { ok: false, reason: 'bad traveler' };

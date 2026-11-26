@@ -33,6 +33,8 @@ export const CHIPS: Readonly<Record<string, Chip>> = Object.fromEntries(
       ['laugh', 'Laugh', 'emote'],
       ['friend.yes', 'Sure, friends', 'friend'],
       ['friend.no', 'Maybe later', 'friend'],
+      ['duel.yes', 'You are on', 'friend'],
+      ['duel.no', 'Not today', 'friend'],
     ] as const
   ).map(([id, text, kind]) => [id, { id, text, kind }]),
 );
@@ -60,6 +62,7 @@ export const CHIP_SETS: Readonly<Record<Category, readonly string[]>> = {
 
 /** The chips on a Traveler's friend request, and on a friend's hello. */
 export const REQUEST_CHIPS: readonly string[] = ['friend.yes', 'friend.no'];
+export const DUEL_CHIPS: readonly string[] = ['duel.yes', 'duel.no'];
 export const HELLO_CHIPS: readonly string[] = ['hi', 'how', 'more'];
 
 /** A reply line, with who it suits. A reply with no `temper` suits all. */
@@ -112,6 +115,18 @@ export const REPLIES: Readonly<Record<string, readonly Reply[]>> = {
     R('great, welcome to the list'),
     R('yes! finally', 'bold'),
     R('oh. ok. yes', 'shy'),
+  ],
+  'duel.yes': [
+    R('good. no hard feelings either way'),
+    R('here we go'),
+    R('ready when you are', 'bold'),
+    R('ok. gentle, please', 'shy'),
+  ],
+  'duel.no': [
+    R('fair enough, another time'),
+    R('no worries'),
+    R('your loss', 'bold'),
+    R('ok', 'shy'),
   ],
   'friend.no': [
     R('no worries, maybe later'),
@@ -213,5 +228,65 @@ export const WAKE = {
     R('thanks for the wake up, friend'),
     R('ha, you got me. hi'),
     R('good timing, i was dreaming about iron', 'bold'),
+  ],
+} as const satisfies Record<string, readonly Reply[]>;
+
+/**
+ * What Travelers say around a duel (POW-M5-12). Sporting always: nobody is cruel (design/07 rule 4).
+ * `ask` is a Traveler's challenge, whispered. `accept` and `refuse` answer the player's challenge.
+ * `go` is said as the count ends. `winner` is a Traveler who won, `loser` a Traveler who lost.
+ */
+export const DUEL_LINES = {
+  ask: [
+    R('fancy a duel? first to lose a third of their health'),
+    R('you and me, a friendly duel. what do you say?'),
+    R('i have been itching for a duel. you free?', 'bold'),
+    R('would you like a duel? only if you want to', 'shy'),
+  ],
+  accept: [
+    R('you are on'),
+    R('sure, a friendly one'),
+    R('finally! let us go', 'bold'),
+    R('ok. um. ok. let us do it', 'shy'),
+  ],
+  refuse: [
+    R('not today, sorry'),
+    R('maybe when i know you better'),
+    R('i am not in the mood. another time'),
+    R('i do not really duel. sorry', 'shy'),
+  ],
+  go: [R('three, two, one, go'), R('begin'), R('may the best swing win', 'bold')],
+  winner: [
+    R('good duel. you made me work for it'),
+    R('that was close. well fought'),
+    R('gg, and thank you for the match', 'bold'),
+    R('oh. i won? good duel', 'shy'),
+  ],
+  loser: [
+    R('well done, that was a clean win'),
+    R('you got me. good duel'),
+    R('next time, i promise. well fought', 'bold'),
+    R('wow. ok. good duel', 'shy'),
+  ],
+  draw: [R('we ran out of time. a draw'), R('call it even'), R('a fair draw')],
+} as const satisfies Record<string, readonly Reply[]>;
+
+/**
+ * What a Rival says (POW-M5-12). `appear` is said when a Rival turns up at a dungeon the player
+ * keeps going to: sporting, never cruel. `help` is said when the player is downed and a Rival is
+ * about. `{dungeon}` is a baked dungeon name; `{player}` is the player.
+ */
+export const RIVAL_LINES = {
+  appear: [
+    R('so you are here again, {player}. i will race you through {dungeon}'),
+    R('{dungeon} again? me too. may the best run win, {player}'),
+    R('saw you head for {dungeon}. i will not make it easy', 'bold'),
+    R('oh. {player}. i am in {dungeon} too. good luck', 'shy'),
+  ],
+  help: [
+    R('hang in there, {player}. i will hold them off'),
+    R('not on my watch, {player}. get up'),
+    R('i want the rematch, so do not stay down', 'bold'),
+    R('are you ok? i will cover you', 'shy'),
   ],
 } as const satisfies Record<string, readonly Reply[]>;

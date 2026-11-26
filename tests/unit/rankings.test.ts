@@ -46,6 +46,7 @@ const facts = (over: Partial<PlayerFacts> = {}): PlayerFacts => ({
   bestiary: 0,
   mapPercent: 0,
   fishLanded: 0,
+  duelWins: 0,
   ...over,
 });
 

@@ -15,7 +15,7 @@ import {
   type LetterTemplate,
 } from './letters';
 import { SCENES } from './scenes';
-import { WAKE } from './social';
+import { DUEL_LINES, RIVAL_LINES, WAKE } from './social';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
@@ -47,6 +47,8 @@ export interface ChatContent {
   wake?: readonly string[];
   /** Letter templates (M5-12): about 150, each kind using only its own slots. */
   letters?: readonly LetterTemplate[];
+  /** Other social lines (M5-12 duel and Rival lines): text checks, and only `{player}` and `{dungeon}`. */
+  other?: readonly string[];
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -253,6 +255,11 @@ export function validateChat(c: ChatContent): string[] {
       if (/\{/.test(t)) errors.push(`wake[${i}]: slot`);
     });
   }
+  (c.other ?? []).forEach((t, i) => {
+    checkText(`other[${i}]`, t, errors, glyphIds);
+    for (const m of t.matchAll(/\{([a-z]+)\}/g))
+      if (m[1] !== 'player' && m[1] !== 'dungeon') errors.push(`other[${i}]: {${m[1]}}`);
+  });
   validateLetters(c.letters ?? [], errors, glyphIds);
   validateScenes(c.scenes ?? [], errors, glyphIds, new Set(c.exchanges.map((x) => x.id)));
   for (const id of Object.keys(PLACE_NAMES))
@@ -273,4 +280,7 @@ export const validateShippedChat = (): string[] =>
     scenes: SCENES,
     wake: [...WAKE.grumpy, ...WAKE.friendly].map((r) => r.text),
     letters: LETTERS,
+    other: [...Object.values(DUEL_LINES), ...Object.values(RIVAL_LINES)].flatMap((l) =>
+      l.map((r) => r.text),
+    ),
   });
