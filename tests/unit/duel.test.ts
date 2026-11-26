@@ -117,7 +117,7 @@ describe('a duel', () => {
     expect(her.hp).toBeGreaterThanOrEqual(hp0);
     expect(duelFloor(s, ent)).toBe(0);
     // The result: the record, the memory (once), and the Duels board.
-    expect(s.mail.duels).toEqual({ wins: 1, losses: 0 });
+    expect(s.mail.duels).toEqual({ wins: 1, losses: 0, pit: 0, honor: 0 });
     const memories = s.travelers[slot]!.memory.filter((m) => MEMORY_KINDS[m.kind] === 'duelWon');
     expect(memories).toHaveLength(1);
     const board = computeBoard('duels', s.seed, s.travelers, factsOf(s, me));
@@ -162,7 +162,7 @@ describe('a duel', () => {
     s.entities.alive[crowdOf(s).entOf[slot]!] = false;
     const r = step(s, 5);
     expect(r.events.find((e) => e.type === 'duelEnded')).toMatchObject({ result: 'draw' });
-    expect(s.mail.duels).toEqual({ wins: 0, losses: 0 });
+    expect(s.mail.duels).toEqual({ wins: 0, losses: 0, pit: 0, honor: 0 });
   }, 120_000);
 });
 

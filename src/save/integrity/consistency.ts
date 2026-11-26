@@ -1,3 +1,5 @@
+import { boundsFor } from '../../sim/market';
+import { honorFor } from '../../content/balance/pit';
 import { SINGULARS } from '../../content/singulars';
 import { MAP_BALANCE } from '../../content/balance/map';
 import { WAYSTONES } from '../../content/world/waystones';
@@ -42,8 +44,19 @@ import {
 import type { Reason } from './reasons';
 import type { View } from './view';
 
-const COIN_SOURCES = ['loot', 'chest', 'request', 'sale', 'echo', 'seed', 'mailGift'];
-const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe'];
+const COIN_SOURCES = [
+  'loot',
+  'chest',
+  'request',
+  'sale',
+  'echo',
+  'seed',
+  'mailGift',
+  'guildRequest',
+  'marketSale',
+  'eventReward',
+];
+const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe', 'marketFee', 'marketBuy'];
 const ITEM_SOURCES = [
   'start',
   'loot',
@@ -56,6 +69,8 @@ const ITEM_SOURCES = [
   'shop',
   'buyback',
   'mailGift',
+  'guildRequest',
+  'market',
   'seed',
 ];
 
@@ -169,6 +184,44 @@ export function consistency(v: View): Reason[] {
   for (const st of inv.slots) if (st) checkStack(st, false);
   if (storage.slots.length > MAX_STORAGE_SLOTS) fail('BAG_SIZE', `storage ${storage.slots.length}`);
   for (const st of storage.slots) if (st) checkStack(st, false);
+  // The market (M5-10): coin from sales is at most what the sold listings fetched, items sold were
+  // listed, items bought are the items the market made, and no listing is out of its bounds.
+  {
+    const soldValue = ledger.marketSoldValue ?? 0;
+    if ((ledger.coinEarned.marketSale ?? 0) > soldValue)
+      fail('MARKET_INCOME', `market sales ${ledger.coinEarned.marketSale} of ${soldValue} sold`);
+    for (const [item, q] of Object.entries(ledger.marketSoldQty ?? {}))
+      if (q > (ledger.itemsListed?.[item] ?? 0))
+        fail('MARKET_INCOME', `${item}: sold ${q}, listed ${ledger.itemsListed?.[item] ?? 0}`);
+    for (const [item, q] of Object.entries(ledger.itemsBought ?? {}))
+      if (q !== (ledger.itemsMade.market?.[item] ?? 0))
+        fail('MARKET_INCOME', `${item}: bought ${q}, made ${ledger.itemsMade.market?.[item] ?? 0}`);
+    for (const l of sim.market?.listings ?? []) {
+      const b = boundsFor(l.item);
+      if (!b || !Number.isInteger(l.qty) || l.qty < 1 || l.price < b.floor || l.price > b.ceil)
+        fail('MARKET_INCOME', `listing ${l.id} ${l.item} x${l.qty} at ${l.price}`);
+    }
+  }
+  // The Pit honor (M5-30) follows the Pit wins, and the Pit wins are duels won.
+  const duels = sim.mail?.duels;
+  if (duels) {
+    const pit = duels.pit ?? 0;
+    if (!Number.isInteger(pit) || pit < 0 || pit > duels.wins)
+      fail('PIT_HONOR', `pit wins ${pit} of ${duels.wins} duels won`);
+    else if ((duels.honor ?? 0) !== honorFor(pit))
+      fail('PIT_HONOR', `honor ${duels.honor} for ${pit} pit wins`);
+  }
+  // The guild stashes (M5-08) hold what the player put in: the same rules as the storage chest.
+  for (const slots of Object.values(sim.guild?.stashes ?? {})) {
+    if (!Array.isArray(slots) || slots.length > 64) fail('BAG_SIZE', 'guild stash');
+    else for (const st of slots) if (st) checkStack(st, false);
+  }
+  if (
+    !Number.isInteger(sim.guild?.id ?? 0) ||
+    (sim.guild?.id ?? 0) < 0 ||
+    (sim.guild?.id ?? 0) > 12
+  )
+    fail('BAD_QUANTITY', `guild ${sim.guild?.id}`);
   for (const slot of Object.keys(inv.equipment)) {
     const st = inv.equipment[slot as keyof typeof inv.equipment];
     if (!(EQUIP_SLOTS as readonly string[]).includes(slot)) fail('EQUIP_SLOT', slot);

@@ -16,6 +16,8 @@ import { dayPhase } from '../time';
 import type { DollSpec } from '../../content/dolls/parts';
 import { startComboStep } from '../combat/commands';
 import { duelFoeOf } from '../duel';
+import { memberOf, partyEntTick } from '../party';
+import { boutEntTick } from '../pitBouts';
 import { newFighter, newPools } from '../combat/fighter';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { px, SUBPX } from '../kernel/fixed';
@@ -352,7 +354,9 @@ export function demote(
 export function demoteAll(state: SimState): void {
   const crowd = state.crowd;
   if (!crowd) return;
-  for (const id of [...crowd.ents.keys()]) demote(state, crowd, id, 'range');
+  // Party members stay with the player (M5-07): their entity is session state, like the party.
+  for (const [id, ent] of [...crowd.ents])
+    if (!memberOf(state, ent.slot)) demote(state, crowd, id, 'range');
 }
 
 /** Drops a logged-out Traveler's entity with a shimmer. */
@@ -392,6 +396,7 @@ export function promoteSystem(state: SimState, crowd: Crowd): void {
       continue;
     }
     const p = state.entities.comps.pos[id];
+    if (crowd.online[ent.slot] && memberOf(state, ent.slot)) continue;
     if (
       !crowd.online[ent.slot] ||
       !p ||
@@ -401,8 +406,18 @@ export function promoteSystem(state: SimState, crowd: Crowd): void {
   }
   const ids = identitiesOf(crowd.seed);
   const near: { slot: number; d: number; at: { x: number; y: number } }[] = [];
+  // A party member who is not on screen yet (they answered from across the map) arrives by the
+  // player, with a shimmer as if by Waystone.
+  for (const m of state.party?.members ?? []) {
+    if ((crowd.entOf[m.slot] ?? -1) >= 0 || !crowd.online[m.slot]) continue;
+    const at = { x: w.px + ((m.slot % 3) - 1) * 14, y: w.py + 10 };
+    spawnEntity(state, crowd, ids[m.slot]!, at);
+    crowd.justIn.delete(m.slot);
+    crowd.fx.push({ slot: m.slot, x: at.x, y: at.y, kind: 'in', t: 0, face: 4 });
+  }
+  const members = state.party?.members.length ?? 0;
   for (const t of ids) {
-    if (!crowd.online[t.slot]) continue;
+    if (!crowd.online[t.slot] || memberOf(state, t.slot)) continue;
     let at: { x: number; y: number } | null;
     const existing = crowd.entOf[t.slot] ?? -1;
     if (existing >= 0) {
@@ -414,10 +429,10 @@ export function promoteSystem(state: SimState, crowd: Crowd): void {
     near.push({ slot: t.slot, d: Math.hypot(at.x - w.px, at.y - w.py), at });
   }
   near.sort((a, b) => a.d - b.d || a.slot - b.slot);
-  const keep = new Set(near.slice(0, ENTITY.cap).map((n) => n.slot));
+  const keep = new Set(near.slice(0, ENTITY.cap - members).map((n) => n.slot));
   // Over the cap: the farthest promoted give way to nearer ones.
   for (const [id, ent] of [...crowd.ents])
-    if (!keep.has(ent.slot)) demote(state, crowd, id, 'range');
+    if (!keep.has(ent.slot) && !memberOf(state, ent.slot)) demote(state, crowd, id, 'range');
   for (const n of near) {
     if (!keep.has(n.slot) || (crowd.entOf[n.slot] ?? -1) >= 0) continue;
     const t = ids[n.slot]!;
@@ -697,6 +712,9 @@ export function entityTick(state: SimState, crowd: Crowd): void {
     const f = state.entities.comps.fighter[id];
     const p = state.entities.comps.pos[id];
     if (!f || !p || !state.entities.alive[id]) continue;
+    // Party members fight and follow by the party's rules (M5-07); duelists in a Pit bout by its (M5-30).
+    if (partyEntTick(state, id, ent)) continue;
+    if (boutEntTick(state, id, ent)) continue;
     const d = crowd.doing[ent.slot] ?? null;
     if (f.state !== 'idle') {
       ent.mode = f.state === 'attack' ? 'fight' : 'idle';

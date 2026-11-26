@@ -121,8 +121,8 @@ describe('the Pit as baked', () => {
     const spot = PLACE_SPOTS[PIT.place]!;
     expect(spot.slots.length).toBeGreaterThanOrEqual(8);
     for (const [x, y] of spot.slots) expect(solidAt(x, y, false), `${x},${y}`).toBe(false);
-    // The place is added last, so saved place indices hold.
-    expect(PLACE_LIST.indexOf(PIT.place)).toBe(PLACE_LIST.length - 1);
+    // The place was added after the camps and keeps its index: saved place indices hold.
+    expect(PLACE_LIST.indexOf(PIT.place)).toBe(24);
   });
 
   it('cannot be entered from the quarry until the crates are open, and then can from outside', () => {
@@ -144,6 +144,8 @@ describe('the Pit as baked', () => {
       expect(
         [
           'fixture.pit_crates',
+          // The "Next" board at the north rim (M5-30).
+          'fixture.pit_board',
           'tile.wall_stone_v',
           'tile.wall_stone_h',
           'tile.wall_stone_post',

@@ -29,6 +29,11 @@ describe('schema 20 to 21 migration (chunk deltas)', () => {
     delete (s as { map?: unknown }).map;
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
+    delete (s as { guild?: unknown }).guild;
+    delete (s as { market?: unknown }).market;
+    delete (s as { calendar?: unknown }).calendar;
+    delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
+    delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
     // Streaming adopts the old entities and folds the ones far from the avatar into deltas.
     const now = migrate(decoded, MIGRATIONS, LAST_SLICE_SCHEMA);
@@ -67,6 +72,11 @@ describe('schema 21 to 22 migration (dungeons and bosses)', () => {
     delete (s as { map?: unknown }).map;
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
+    delete (s as { guild?: unknown }).guild;
+    delete (s as { market?: unknown }).market;
+    delete (s as { calendar?: unknown }).calendar;
+    delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
+    delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 });

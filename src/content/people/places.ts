@@ -58,6 +58,12 @@ export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
     at('wayside.meadow_camp', 'wayside', false),
     // The Pit (M5-29). Not in the chat place names: nobody names it until the player has found it.
     at('stonecrop.pit', 'stonecrop', false),
+    // Guild halls (M5-08): two in Hearthford, and the inn's back room for the rest.
+    hearth('hall_lantern', 'hall_lantern', false),
+    hearth('hall_hearth', 'hall_hearth', false),
+    hearth('inn_back_room', 'inn_back_room', false),
+    // The north gate (M5-11): raid parties muster here before walking out together.
+    hearth('gate_n', 'gate_n', false),
   ].map((p) => {
     const spot = PLACE_SPOTS[p.id];
     return [p.id, spot ? { ...p, spot } : p];

@@ -1,0 +1,73 @@
+{
+  "expectedHash": "10f3180349b650",
+  "plain": {
+    "schema": 33,
+    "saveId": "fixture33",
+    "seq": 1,
+    "prevHash": "",
+    "createdAt": 1700000000000,
+    "playSeconds": 140,
+    "look": {
+      "body": "a",
+      "skin": "light",
+      "hair": "short",
+      "hairColor": "brown",
+      "top": "tunic",
+      "topColor": "blue",
+      "bottom": "trousers",
+      "bottomColor": "brown",
+      "mainHand": "sword",
+      "offHand": "none"
+    },
+    "sim": "{\"deltas\":{},\"entities\":{\"alive\":[true],\"capacity\":1,\"comps\":{\"ai\":[null],\"avatar\":[{\"coin\":0,\"facing\":4,\"full\":true,\"fullTicks\":4000,\"handle\":\"Traveler\",\"intent\":4,\"origin\":\"origin.unremembered\",\"respawn\":{\"x\":43008,\"y\":44544},\"sprinting\":true,\"winded\":false}],\"board\":[null],\"body\":[{\"h\":2048,\"solid\":true,\"w\":2560}],\"boss\":[null],\"channel\":[null],\"cloud\":[null],\"combatant\":[{\"defense\":0,\"kind\":\"avatar\",\"name\":\"You\",\"power\":5,\"skillRank\":0,\"tier\":0,\"weapon\":\"sword\"}],\"craft\":[null],\"deeds\":[{\"counts\":{},\"distinct\":{},\"fight\":{\"hurt\":false,\"kills\":0,\"live\":false},\"near\":[],\"resetAt\":{}}],\"echo\":[null],\"fighter\":[{\"aim\":{\"x\":0,\"y\":1},\"aiming\":-1,\"atk\":null,\"casting\":null,\"combo\":0,\"cooldowns\":[0,0,0,0],\"deadT\":0,\"dodgeStart\":-1000,\"dv\":{\"x\":0,\"y\":0},\"gap\":0,\"guard\":false,\"guardT\":1000,\"hit\":[],\"hitstop\":0,\"invuln\":0,\"lock\":null,\"queued\":false,\"scheme\":\"flow\",\"slots\":[null,null,null,null],\"state\":\"idle\",\"still\":0,\"t\":4000,\"team\":0}],\"fixture\":[null],\"gather\":[null],\"haggle\":[null],\"interactable\":[null],\"inventory\":[{\"equipment\":{\"accessory\":null,\"body\":{\"item\":\"item.outfit_ragged\",\"qty\":1},\"head\":null,\"legs\":null,\"main\":{\"dur\":40,\"item\":\"item.dagger_wood\",\"qty\":1},\"off\":null},\"recipes\":[\"recipe.copper_ingot\",\"recipe.iron_ingot\",\"recipe.pick_copper\",\"recipe.axe_copper\",\"recipe.oak_plank\",\"recipe.ash_plank\",\"recipe.bow_short\",\"recipe.cart_wheel\",\"recipe.dagger_wood\",\"recipe.shield_wood\",\"recipe.fishing_net\",\"recipe.cap_wool\",\"recipe.trousers_wool\",\"recipe.satchel\",\"recipe.pack\",\"recipe.cap_leather\",\"recipe.potion_health_s\",\"recipe.potion_stamina\",\"recipe.potion_focus\",\"recipe.enchant_power_1\",\"recipe.enchant_defense_1\",\"recipe.spark_flint\",\"recipe.water_flask\",\"recipe.bell_charm\"],\"slots\":[{\"item\":\"item.dish_bread\",\"qty\":1},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\"wear\":{\"hits\":0,\"taken\":0,\"uses\":0}}],\"journal\":[{\"bestiary\":{},\"flags\":[],\"hint\":null,\"hints\":[\"hint.move\",\"hint.menu\"],\"learnedVia\":{},\"pinned\":null,\"renown\":{},\"requests\":{},\"singulars\":{},\"tradeCoin\":{}}],\"knock\":[null],\"loadouts\":[{\"active\":0,\"sets\":[{\"main\":null,\"off\":null,\"slots\":[null,null,null,null]},{\"main\":null,\"off\":null,\"slots\":[null,null,null,null]}]}],\"node\":[null],\"npc\":[null],\"paths\":[{\"earned\":[],\"shown\":null,\"worn\":[]}],\"pickup\":[null],\"pools\":[{\"foc\":1000,\"focMax\":1000,\"hp\":104,\"hpMax\":104,\"lastCombat\":-150,\"lastSpend\":4000,\"sta\":148,\"staMax\":1020}],\"pos\":[{\"x\":1757677,\"y\":1737565}],\"projectile\":[null],\"skills\":[{\"awake\":[\"skill.cartography\",\"skill.athletics\"],\"camp\":{\"acc\":0,\"at\":null,\"sleepHour\":-1,\"used\":{}},\"fight\":{\"id\":0,\"last\":-1000000000},\"insight\":{},\"nightAcc\":0,\"offered\":[],\"passed\":[],\"points\":{\"skill.athletics\":4,\"skill.cartography\":7},\"seen\":[],\"stride\":{\"acc\":1026,\"x\":1757677,\"y\":1737565},\"trial\":{},\"xp\":{\"skill.athletics\":151,\"skill.cartography\":50}}],\"spawner\":[null],\"stagger\":[null],\"statuses\":[null],\"storage\":[{\"slots\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}],\"vel\":[{\"x\":0,\"y\":1000}]},\"free\":[]},\"guild\":{\"id\":0,\"paid\":[],\"progress\":[],\"stashes\":{},\"week\":-1},\"ledger\":{\"coinEarned\":{},\"coinSpent\":{},\"crafts\":{},\"itemsMade\":{\"start\":{\"item.dagger_wood\":1,\"item.dish_bread\":1,\"item.outfit_ragged\":1}},\"itemsSold\":{},\"kills\":{},\"marked\":{},\"masterworks\":{},\"requestRewards\":{},\"startKit\":2,\"xpEarned\":{\"skill.athletics\":861,\"skill.cartography\":1497}},\"mail\":{\"duels\":{\"honor\":0,\"losses\":0,\"pit\":0,\"wins\":0},\"entries\":[],\"gifts\":{\"day\":-1,\"n\":0},\"letters\":[],\"nextId\":1},\"map\":{\"fog\":{\"slice\":{\"-1,0\":\"0080808000000000\",\"0,-1\":\"00000000000000fe\",\"0,0\":\"fffffffffffe0000\",\"1,-1\":\"00000000000000ff\",\"1,0\":\"ffffffffffff0000\",\"10,-1\":\"00000000000000ff\",\"10,0\":\"ffffffffffff0000\",\"11,-1\":\"00000000000000ff\",\"11,0\":\"ffffffffffff0000\",\"12,-1\":\"00000000000000ff\",\"12,0\":\"ffffffffffff0000\",\"13,-1\":\"000000000000001f\",\"13,0\":\"3f7f7f7f7f7f7f7f\",\"13,1\":\"7f7f7f7f7f7f7f7f\",\"13,10\":\"7f7f7f7f7f7f7f7f\",\"13,11\":\"7f7f7f7f7f7f7f7f\",\"13,12\":\"7f7f7f7f7f7f7f7f\",\"13,13\":\"7f7f7f7f3e1c0000\",\"13,2\":\"7f7f7f7f7f7f7f7f\",\"13,3\":\"7f7f7f7f7f7f7f7f\",\"13,4\":\"7f7f7f7f7f7f7f7f\",\"13,5\":\"7f7f7f7f7f7f7f7f\",\"13,6\":\"7f7f7f7f7f7f7f7f\",\"13,7\":\"7f7f7f7f7f7f7f7f\",\"13,8\":\"7f7f7f7f7f7f7f7f\",\"13,9\":\"7f7f7f7f7f7f7f7f\",\"2,-1\":\"00000000000000ff\",\"2,0\":\"ffffffffffff0000\",\"3,-1\":\"00000000000000ff\",\"3,0\":\"ffffffffffff0000\",\"4,-1\":\"00000000000000ff\",\"4,0\":\"ffffffffffff0000\",\"5,-1\":\"00000000000000ff\",\"5,0\":\"ffffffffffff0000\",\"6,-1\":\"00000000000000ff\",\"6,0\":\"ffffffffffff0000\",\"7,-1\":\"00000000000000ff\",\"7,0\":\"ffffffffffff0000\",\"8,-1\":\"00000000000000ff\",\"8,0\":\"ffffffffffff0000\",\"9,-1\":\"00000000000000ff\",\"9,0\":\"ffffffffffff0000\"}},\"nextNote\":1,\"notes\":[],\"rumors\":[],\"waystones\":[]},\"rng\":{\"combat\":{\"s\":[420413201,-1207903316,-1777837945,-1530525803]},\"craft\":{\"s\":[1252242082,315897217,1528785445,-412559772]},\"loot\":{\"s\":[1410152336,-1780711576,320062518,-1616422334]},\"misc\":{\"s\":[-329140040,300278520,840514455,-1344520685]},\"requests\":{\"s\":[339968217,-165388608,2018381101,-2142323881]},\"start\":{\"s\":[508731799,-710382310,-1411863606,-570486503]},\"trade\":{\"s\":[-1204490270,-298521457,-1101171657,1849706210]},\"travelers\":{\"s\":[2044217891,-863371556,754268599,-1247763000]},\"world\":{\"s\":[1842053142,17477593,-1007474931,-252201940]}},\"seed\":5,\"tick\":4000,\"travelers\":\"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\"}",
+    "summary": {
+      "tick": 4000,
+      "playSeconds": 140,
+      "coin": 0,
+      "skillPoints": {
+        "skill.athletics": 4,
+        "skill.cartography": 7
+      },
+      "totalSkillPoints": 11,
+      "itemCount": 1,
+      "requestsDone": 0,
+      "flags": 0,
+      "travelerPoints": 6638,
+      "travelerCoin": 99108
+    },
+    "ledger": {
+      "coinEarned": {},
+      "coinSpent": {},
+      "xpEarned": {
+        "skill.cartography": 1497,
+        "skill.athletics": 861
+      },
+      "itemsMade": {
+        "start": {
+          "item.dish_bread": 1,
+          "item.dagger_wood": 1,
+          "item.outfit_ragged": 1
+        }
+      },
+      "kills": {},
+      "crafts": {},
+      "masterworks": {},
+      "marked": {},
+      "itemsSold": {},
+      "requestRewards": {},
+      "startKit": 2
+    },
+    "startedAt": 1700000000000,
+    "trust": {
+      "state": "intact",
+      "reasons": [],
+      "flaggedAt": null
+    },
+    "time": {
+      "epoch": 1700000000000,
+      "lastTrustedNow": 1700000000000,
+      "offset": 0,
+      "accrualUsedMs": 0
+    }
+  }
+}

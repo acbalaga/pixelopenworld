@@ -11,7 +11,10 @@ import type { StreamState } from './world/stream';
 import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
 import type { DuelState } from './duel';
-import { newMailbox, type Mailbox } from './mail';
+import { newMailbox, normalMailbox, type Mailbox } from './mail';
+import { newGuildState, type GuildState } from './guild';
+import { newMarket, type MarketState } from './market';
+import { newCalendar, type CalendarState, type WorldEventsState } from './worldEvents';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -421,6 +424,8 @@ export interface Ai {
    * pays the player. Absent means false.
    */
   noLoot?: true;
+  /** Brought by a world event (M5-11): a raid boss or an invader. */
+  ev?: 'raid' | 'invasion';
 }
 
 /** Keeps `cap` of a creature alive near its position. */
@@ -665,6 +670,22 @@ export interface SimState {
   travelers: TravelerLife[];
   /** Letters, the duel record and dungeon entries (M5-12). Saved. */
   mail: Mailbox;
+  /** The player's guild, the stashes and this week's goals (M5-08). Saved. */
+  guild: GuildState;
+  /** The market's prices, history and the player's listings (M5-10). Saved. */
+  market: MarketState;
+  /** The last world event fired per kind, and the last raid paid (M5-11). Saved. */
+  calendar: CalendarState;
+  /** Transient. World events running now (M5-11): rebuilt from the calendar after a load. */
+  worldEvents?: WorldEventsState | undefined;
+  /** Transient. A market day is on (M5-11 sets it): more demand and more Traveler stock. */
+  marketDay?: boolean;
+  /** Transient. What the player bought from Traveler listings this session (M5-10). */
+  marketTaken?: Map<string, number>;
+  /** The party, if any (M5-07). Session only: never saved, so a party in progress at close is gone. */
+  party?: import('./party').Party | undefined;
+  /** Bouts at the Pit (M5-30). Session only: never saved. */
+  pitBouts?: import('./pitBouts').PitState | undefined;
   /** The duel in progress, if any (M5-12). Session only: never saved. */
   duel?: DuelState | undefined;
   /** Transient. Excluded from serialization and hashing. */
@@ -740,6 +761,9 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     map: newMapState(),
     travelers: initialLives(seed),
     mail: newMailbox(),
+    guild: newGuildState(),
+    market: newMarket(),
+    calendar: newCalendar(),
     events: createEventQueue(),
     world: null,
   };
@@ -802,6 +826,9 @@ function persistent(state: SimState): Omit<
     // Absent only in tests that take the field off to compare a hash with an older fixture's.
     travelers: state.travelers ? livesToText(state.travelers) : undefined,
     mail: state.mail,
+    guild: state.guild,
+    market: state.market,
+    calendar: state.calendar,
   };
 }
 
@@ -821,6 +848,9 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     map?: MapState;
     travelers?: string;
     mail?: Mailbox;
+    guild?: GuildState;
+    market?: MarketState;
+    calendar?: CalendarState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -840,7 +870,13 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     // A state from before Travelers has none: they start as a fresh generation from the seed.
     travelers: raw.travelers === undefined ? initialLives(raw.seed) : livesFromText(raw.travelers),
     // A state from before the mailbox has an empty one.
-    mail: raw.mail ?? newMailbox(),
+    mail: normalMailbox(raw.mail),
+    // A state from before guilds has none: no guild, no stash.
+    guild: raw.guild ?? newGuildState(),
+    // A state from before the market has none: it opens at the target prices on the first hour.
+    market: raw.market ?? newMarket(),
+    // A state from before world events has fired none: the next slot fires at its time.
+    calendar: raw.calendar ?? newCalendar(),
     events: createEventQueue(),
     world,
   };

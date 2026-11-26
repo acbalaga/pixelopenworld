@@ -29,6 +29,8 @@ export interface Letter {
   coin: number;
   claimed: boolean;
   read: boolean;
+  /** Market proceeds (M5-10): the coin is the player's own sale, ledger `marketSale`. */
+  market?: true;
 }
 
 export interface Mailbox {
@@ -36,8 +38,11 @@ export interface Mailbox {
   nextId: number;
   /** Gifts sent on this real day, to hold the daily cap. */
   gifts: { day: number; n: number };
-  /** The player's duel record (POW-M5-12): the Duels board reads the wins. */
-  duels: { wins: number; losses: number };
+  /**
+   * The player's duel record (POW-M5-12): the Duels board reads the wins. `pit` counts the wins in
+   * the Pit and `honor` is the Pit honor they bring, 0 none, 1 Pit regular, 2 Pit champion (M5-30).
+   */
+  duels: { wins: number; losses: number; pit: number; honor: number };
   /** Dungeon entries by real day (kind id, day), for the Rivals, newest last. */
   entries: { dungeon: string; day: number }[];
 }
@@ -46,9 +51,18 @@ export const newMailbox = (): Mailbox => ({
   letters: [],
   nextId: 1,
   gifts: { day: -1, n: 0 },
-  duels: { wins: 0, losses: 0 },
+  duels: { wins: 0, losses: 0, pit: 0, honor: 0 },
   entries: [],
 });
+
+/** A mailbox as loaded: a state from before the mailbox has an empty one, and one from before the
+ * Pit honor (M5-30) gains its two counts at 0. */
+export function normalMailbox(m: Mailbox | undefined): Mailbox {
+  if (!m) return newMailbox();
+  m.duels.pit ??= 0;
+  m.duels.honor ??= 0;
+  return m;
+}
 
 /** True if the letter has something to claim. */
 export const hasAttachment = (l: Letter): boolean => l.coin > 0 || (l.item !== '' && l.qty > 0);
@@ -84,6 +98,39 @@ export function deliver(state: SimState, letter: Omit<Letter, 'id' | 'claimed' |
   return true;
 }
 
+/**
+ * Delivers market proceeds (M5-10) from the Traveler who bought. They are the player's own coin, so
+ * no gift cap applies, and a full mailbox still takes them: the player's money is never dropped.
+ */
+export function deliverProceeds(
+  state: SimState,
+  p: { slot: number; item: string; qty: number; coin: number; day: number },
+): void {
+  const m = state.mail;
+  if (m.letters.length >= MAIL.cap) {
+    const i = m.letters.findIndex((l) => l.read && (!hasAttachment(l) || l.claimed));
+    if (i >= 0) m.letters.splice(i, 1);
+  }
+  const tpl = MARKET_LETTERS[(p.qty + p.coin + m.nextId) % MARKET_LETTERS.length]!;
+  m.letters.push({
+    id: m.nextId++,
+    slot: p.slot,
+    tpl,
+    day: p.day,
+    subject: 0,
+    item: p.item,
+    qty: p.qty,
+    coin: p.coin,
+    claimed: false,
+    read: false,
+    market: true,
+  });
+  emit(state.events, { type: 'mailArrived', slot: p.slot });
+}
+
+/** The market proceeds letter templates (`content/chat/letters`, kind `market`). */
+const MARKET_LETTERS = ['market.sold.n01', 'market.sold.n02', 'market.sold.n03', 'market.sold.n04'];
+
 /** Marks a letter read. */
 export function readLetter(state: SimState, id: number): boolean {
   const l = state.mail.letters.find((x) => x.id === id);
@@ -102,8 +149,13 @@ export function claimLetter(state: SimState, who: EntityId, id: number): boolean
   if (!getComp(state.entities, who, 'avatar')) return false;
   l.claimed = true;
   l.read = true;
-  if (l.item !== '' && l.qty > 0) give(state, who, l.item, l.qty, 'mailGift');
-  if (l.coin > 0) earnCoin(state, who, l.coin, 'mailGift');
+  if (l.market) {
+    // A market sale: the item named is what was sold, not a gift. Only the coin comes.
+    if (l.coin > 0) earnCoin(state, who, l.coin, 'marketSale');
+  } else {
+    if (l.item !== '' && l.qty > 0) give(state, who, l.item, l.qty, 'mailGift');
+    if (l.coin > 0) earnCoin(state, who, l.coin, 'mailGift');
+  }
   emit(state.events, { type: 'mailClaimed', id: l.id, who });
   return true;
 }

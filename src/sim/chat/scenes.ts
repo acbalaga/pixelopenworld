@@ -188,7 +188,7 @@ export function planScenes(inp: SceneInput): ScenePlan[] {
       const scene = pickScene(
         'dummy',
         dice,
-        (s) => friend !== undefined || s.lines.every((l) => l.role === 'a'),
+        (s) => fresh(s) && (friend !== undefined || s.lines.every((l) => l.role === 'a')),
       );
       if (scene)
         plans.push({

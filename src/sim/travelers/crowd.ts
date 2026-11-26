@@ -36,6 +36,16 @@ import { dayPhase, weatherOn } from '../time';
 import { identitiesOf } from './generate';
 import { PLACE_LIST, placeIdx, skillIdx } from './lists';
 import { pitOpen } from './pit';
+import { memberOf, partyHoldsOnline } from '../party';
+import { GUILD } from '../../content/balance/guilds';
+import { GUILDS } from '../../content/travelers/guilds';
+import { hash01 } from './dice';
+
+/** The place each guild with a hall in Hearthford meets at (M5-08). The rest use the inn's back room. */
+const HALL_PLACE: Readonly<Record<number, string>> = {
+  4: 'hearthford.hall_lantern',
+  7: 'hearthford.hall_hearth',
+};
 import { catchUp, expectedPoints, playHoursOf, type AwayEvent } from './progress';
 import { dayIndexOf, localMinute, MIN_PER_DAY, sessionsFor, type Session } from './schedule';
 import type { TravelerIdentity, TravelerLife } from './types';
@@ -379,6 +389,21 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
       skill: -1,
       thing: '',
     };
+  // Guildmates keep to their hall now and then: two halls in Hearthford, the inn's back room for the
+  // rest (M5-08). Dice on the seed and the hour, so the crowd's stream is untouched.
+  if (life.guild !== 0 && hash01(crowd.seed, t.slot, 803, state.tick >> 11) < GUILD.hallChance) {
+    const hall = HALL_PLACE[life.guild] ?? 'hearthford.inn_back_room';
+    return {
+      kind: 'social',
+      place: placeIdx(hall),
+      left: pickMinutes(state, 'social'),
+      eta: 0,
+      from: 0,
+      total: 0,
+      skill: -1,
+      thing: '',
+    };
+  }
   // At night the inn pulls more of the crowd.
   const night = dayPhase(state.worldTick) === 'night';
   const spot = weighted(
@@ -592,6 +617,16 @@ function packStock(crowd: Crowd, t: TravelerIdentity): void {
 
 function login(state: SimState, crowd: Crowd, t: TravelerIdentity): void {
   packStock(crowd, t);
+  // Now and then a Traveler moves to another guild (M5-08). Decided by dice on the seed, the slot and
+  // the real day, so a reload never changes it and the crowd's stream is untouched.
+  const life = state.travelers[t.slot]!;
+  if (hash01(crowd.seed, t.slot, 801, crowd.day) < GUILD.switchPerDay) {
+    const to = 1 + Math.floor(hash01(crowd.seed, t.slot, 802, crowd.day) * GUILDS.length);
+    if (to !== life.guild) {
+      life.guild = to;
+      emit(state.events, { type: 'travelerSwitchedGuild', slot: t.slot, guild: to });
+    }
+  }
   crowd.online[t.slot] = 1;
   crowd.justIn.add(t.slot);
   crowd.doing[t.slot] = null;
@@ -691,8 +726,14 @@ export function travelersSystem(state: SimState): void {
     const on = inSession(crowd, t.slot, m);
     const was = crowd.online[t.slot] === 1;
     if (on && !was) login(state, crowd, t);
-    else if (!on && was) logout(state, crowd, t);
+    else if (!on && was) {
+      // A party member gives notice and sees the fight out before going (M5-07).
+      if (partyHoldsOnline(state, t.slot)) continue;
+      logout(state, crowd, t);
+    }
     if (!on) continue;
+    // A party member's minutes are the party's: no abstract step.
+    if (memberOf(state, t.slot)) continue;
     if (!crowd.promoted[t.slot]) stepTraveler(state, crowd, clock, t);
     else if ((crowd.entOf[t.slot] ?? -1) >= 0) stepTraveler(state, crowd, clock, t, true);
   }

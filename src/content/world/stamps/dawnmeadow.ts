@@ -268,6 +268,8 @@ function quarryPit(): StampV2 {
   b.object(0, 6, 'tile.wall_stone_post');
   for (let x = 1; x < 10; x++) b.object(x, 6, 'tile.wall_stone_h');
   b.place('fixture.pit_crates', 0, 3);
+  // The "Next" board at the north rim (POW-M5-30): who is waiting for a duel.
+  b.place('fixture.pit_board', 5, 0);
   for (const [x, y] of [
     [2, 1],
     [8, 1],

@@ -1,4 +1,6 @@
+import { RAID, SCHEDULES } from '../../content/balance/events';
 import { MAIL } from '../../content/balance/mail';
+import { GUILD_PAY_CEILING } from '../../content/balance/guilds';
 import { RECIPES } from '../../content/items/recipes';
 import { SKILLS } from '../../content/skills';
 import {
@@ -125,6 +127,18 @@ export function plausibility(v: View): Reason[] {
       'MAIL_IMPLAUSIBLE',
       `mail gift items ${sum(ledger.itemsMade.mailGift ?? {})} in ${mailDays} days`,
     );
+  // WORLD EVENTS (M5-11). Raid pay is at most the most one raid pays, per raid fired, and raids
+  // fire no more often than their schedule allows in the days the save has lived.
+  const raids = ledger.eventsFired?.raid ?? 0;
+  const raidSlots = Math.ceil(((days + 1) * 1440) / (SCHEDULES.raid?.period ?? 360)) + 1;
+  if (raids > raidSlots) fail('EVENT_IMPLAUSIBLE', `${raids} raids in ${Math.ceil(days)} days`);
+  if ((e.eventReward ?? 0) > raids * RAID.coin[1])
+    fail('EVENT_IMPLAUSIBLE', `raid pay ${e.eventReward} for ${raids} raids`);
+  // GUILD REQUESTS (M5-08). A guild posts its goals once a real week, so the pay cannot pass the
+  // weeks the save has lived times the most one week of goals can pay.
+  const weeks = Math.ceil(days / 7) + 1;
+  if ((e.guildRequest ?? 0) > weeks * GUILD_PAY_CEILING)
+    fail('GUILD_IMPLAUSIBLE', `guild pay ${e.guildRequest} in ${weeks} weeks`);
   if ((e.seed ?? 0) > coinCeiling(seconds, kills, spent))
     fail('COIN_IMPLAUSIBLE', `seeded coin ${e.seed} in ${seconds} s`);
   return out;

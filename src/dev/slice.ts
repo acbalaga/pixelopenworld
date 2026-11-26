@@ -24,6 +24,12 @@ import { deliver } from '../sim/mail';
 import { makeFriends, remember } from '../sim/travelers/social';
 import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
+import { identitiesOf } from '../sim/travelers/generate';
+import { travelerListings } from '../sim/party';
+import { startBout } from '../sim/pitBouts';
+import { addFlag } from '../sim/travelers/pit';
+import { PIT } from '../content/balance/travelers';
+import { PLACE_LIST } from '../sim/travelers/lists';
 
 /** What the hooks need from the running scene. */
 const CAMP_FIRE = PLACE_SPOTS['wayside.river_camp']!.focus!;
@@ -51,6 +57,12 @@ export interface PowSnapshot {
 /** Test and playtest access. Dev builds only. */
 export interface PowDevApi {
   snapshot(): PowSnapshot;
+  /** Dev only: opens the Pit, sends ten online Travelers there, and starts a bout once two are near (M5-30). */
+  stagePit(): number;
+  /** Dev only: puts the player in a guild, as if they had joined (M5-08). */
+  joinGuild(id: number): void;
+  /** The party (M5-07): member handles, and the listings on the finder. */
+  party(): { members: string[]; listings: number };
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
   /** Posts a line to the World chat as a named speaker, for screenshots of glyph lines. */
@@ -344,6 +356,41 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       };
       spawnCreature(state, creatureId, Math.round(view.x) + 28, Math.round(view.y));
       return view.handle;
+    },
+    stagePit() {
+      const c = state.crowd;
+      if (!c) return 0;
+      addFlag(state, PIT.flags.open);
+      const idx = PLACE_LIST.indexOf(PIT.place);
+      const ten: number[] = [];
+      for (let slot = 0; slot < 240 && ten.length < 10; slot++) if (c.online[slot]) ten.push(slot);
+      for (const slot of ten) {
+        c.doing[slot] = {
+          kind: 'social',
+          place: idx,
+          left: 1e6,
+          eta: 0,
+          from: idx,
+          total: 0,
+          skill: -1,
+          thing: '',
+        };
+        state.travelers[slot]!.place = idx;
+        state.travelers[slot]!.guild = PIT.guilds[0]!;
+      }
+      const near = ten.filter((slot) => (c.entOf[slot] ?? -1) >= 0);
+      if (near.length >= 2 && !state.pitBouts?.bout) startBout(state, near[0]!, near[1]!);
+      return near.length;
+    },
+    joinGuild(id) {
+      state.guild = { id, stashes: state.guild.stashes, week: -1, progress: [], paid: [] };
+    },
+    party() {
+      const ids = identitiesOf(state.seed);
+      return {
+        members: (state.party?.members ?? []).map((m) => ids[m.slot]?.handle ?? ''),
+        listings: travelerListings(state).length,
+      };
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');

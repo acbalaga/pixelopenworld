@@ -1,0 +1,226 @@
+import { G, type GuildLine } from './types';
+
+const iron = G(1);
+const brass = G(2);
+const map = G(3);
+const lantern = G(4);
+
+/** Iron Oath: terse, strategic, o7. Brass Union: shop talk. Folded Map: precise. Lantern Players: in character. */
+export const GUILD_LINES_A: readonly GuildLine[] = [
+  iron('hi', 'hello', 'o7', 'on. o7', 'online. who is up for a clear'),
+  iron('bye', 'bye', 'off. o7', 'logging. same time tomorrow', 'out. keep the schedule'),
+  iron(
+    'welcome',
+    'welcome',
+    'welcome {player}. o7',
+    '{player}, welcome. learn the route, bring food',
+  ),
+  iron('rank', 'rank', 'gz {handle}', '{handle} {skill} up. good', 'nice {handle}. keep pushing'),
+  iron('loot', 'loot', 'gz on the {item}', '{item}. noted for the log'),
+  iron('goal', 'goal', 'weekly goal done. clean work', 'goal cleared. next one'),
+  iron('i1', 'idle', 'roll call for the rootway at 21', 'need a second striker tonight'),
+  iron('i2', 'idle', 'kill count this week is low. step it up', 'boar times are slipping'),
+  iron('i3', 'idle', 'pull, burst, reset. no heroics', 'stack on the vanguard, dodge the charge'),
+  iron('i4', 'idle', 'food check. everyone has dishes?', 'repair before the run'),
+  iron('i5', 'idle', 'logs posted. read them', 'two wipes yesterday. we fix that today'),
+  iron('i6', 'idle', 'who has the moorhound route', 'cairnmoor clear in ten'),
+  iron('n1', 'night', 'late shift. o7', 'still on. one more clear'),
+  iron('n2', 'night', 'night farm. quiet is good', 'nobody else out. efficient'),
+  iron('i7', 'idle', 'ready check', 'gear check in five'),
+
+  brass('hi', 'hello', 'morning, shop is open', 'hey all, anvil is warm'),
+  brass('bye', 'bye', 'closing up the bench, night', 'off to bed, leave the tools tidy'),
+  brass(
+    'welcome',
+    'welcome',
+    'welcome {player}! apprentices sweep first, then we talk quality',
+    'a new hand! welcome {player}',
+  ),
+  brass(
+    'rank',
+    'rank',
+    '{handle} hit a new {skill} rank, proud of you',
+    'look at {handle} go, {skill} up',
+  ),
+  brass('loot', 'loot', 'a {item}? i can work with that', 'save that {item} for the bench'),
+  brass(
+    'goal',
+    'goal',
+    'the weekly order is filled, good work all',
+    'quota met, the union thanks you',
+  ),
+  brass(
+    'i1',
+    'idle',
+    'reminder: masterwork or it goes back in the furnace',
+    'quality first, always',
+  ),
+  brass(
+    'i2',
+    'idle',
+    'anyone else think copper ingots run a bit soft this week?',
+    'flux ratio is everything, people',
+  ),
+  brass(
+    'i3',
+    'idle',
+    'who is selling oak planks under shop price, i want names',
+    'plank prices are a crime',
+  ),
+  brass(
+    'i4',
+    'idle',
+    'tip: let the hammer rest between taps, the sweet spot is wider',
+    'slow taps, better marks',
+  ),
+  brass(
+    'i5',
+    'idle',
+    'my maker mark looked crooked today and i cannot let it go',
+    'is it just me or is the loom sticky',
+  ),
+  brass('i6', 'idle', 'thread spools wanted, paying fair', 'need leather strips for an order'),
+  brass('n1', 'night', 'night shift at the forge, best time', 'quiet bench, good work'),
+  brass(
+    'i7',
+    'idle',
+    'apprentice question of the day: why quench? discuss',
+    'show me your best piece this week',
+  ),
+  brass('i8', 'idle', 'a good tool pays for itself twice', 'never sell your first masterwork'),
+
+  map('hi', 'hello', 'Good evening, cartographers.', 'Present. Charts ready.'),
+  map('bye', 'bye', 'Signing off. Correct your margins.', 'Logging off. The map will keep.'),
+  map(
+    'welcome',
+    'welcome',
+    'Welcome, {player}. Please mark your corrections in pencil.',
+    'The Society welcomes {player}.',
+  ),
+  map(
+    'rank',
+    'rank',
+    'Congratulations, {handle}, on {skill}.',
+    'Noted: {handle} advances in {skill}.',
+  ),
+  map('loot', 'loot', 'A {item}. Record where it was found.', 'Location of the {item}, please.'),
+  map('goal', 'goal', 'The weekly survey is complete.', 'Survey quota satisfied. Thank you all.'),
+  map(
+    'i1',
+    'idle',
+    'The quarry path on most charts is drawn two tiles too far west.',
+    'Correction: the jetty is north of the reeds, not east.',
+  ),
+  map(
+    'i2',
+    'idle',
+    'Current coverage of Dawnmeadow among members: respectable.',
+    'Map percent report due Sunday.',
+  ),
+  map(
+    'i3',
+    'idle',
+    'Please do not call the moor a swamp. It is a moor.',
+    'A reminder on terminology: a ford is not a bridge.',
+  ),
+  map(
+    'i4',
+    'idle',
+    'Has anyone verified the second well near Cairnmoor?',
+    'I require a witness for a waystone placement.',
+  ),
+  map(
+    'i5',
+    'idle',
+    'The fog of an unexplored chunk is an invitation, not an obstacle.',
+    'Every blank is a question.',
+  ),
+  map(
+    'n1',
+    'night',
+    'Night surveys are imprecise. Proceed carefully.',
+    'Lantern recommended for the eastern paths.',
+  ),
+  map('i6', 'idle', 'Compass declination is fine today.', 'Rulers out, everyone.'),
+  map('i7', 'idle', 'Field notes are due. Legibly, please.', 'Kindly date your sketches.'),
+
+  lantern(
+    'hi',
+    'hello',
+    '*sweeps onto the stage* Good evening, dear troupe!',
+    'Hark! I have arrived.',
+  ),
+  lantern(
+    'bye',
+    'bye',
+    '*bows deeply* Until the next act.',
+    'Exit, pursued by a sleepy feeling. Goodnight!',
+  ),
+  lantern(
+    'welcome',
+    'welcome',
+    'A new player joins our company! Welcome, {player}, to the boards!',
+    '*tosses a rose* Welcome, {player}!',
+  ),
+  lantern(
+    'rank',
+    'rank',
+    'Our {handle} grows ever more skilled in {skill}! Applause!',
+    '*claps* Bravo, {handle}!',
+  ),
+  lantern(
+    'loot',
+    'loot',
+    'Lo! A {item}, fit for a prop!',
+    'A {item}! That shall go in the second act.',
+  ),
+  lantern(
+    'goal',
+    'goal',
+    'The week is done and the curtain falls. Well played, all!',
+    'Our labors are complete! Take a bow.',
+  ),
+  lantern(
+    'i1',
+    'idle',
+    'Rehearsal tonight in the hall. Bring your best villain voice.',
+    'Who will play the cursed knight this week?',
+  ),
+  lantern(
+    'i2',
+    'idle',
+    '*stares into the lamp* Dost thou ever wonder at the wind?',
+    '*adjusts hat dramatically*',
+  ),
+  lantern(
+    'i3',
+    'idle',
+    'I have written a ballad about the bramble boar. It has eleven verses.',
+    'Who stole my wooden sword prop?',
+  ),
+  lantern(
+    'i4',
+    'idle',
+    'Remember, troupe: stay in character, even when you die to a mossling.',
+    'A true player never breaks the scene.',
+  ),
+  lantern(
+    'i5',
+    'idle',
+    'The lanterns are lit and the stage awaits.',
+    'Gather, gather! A tale is about to begin.',
+  ),
+  lantern(
+    'n1',
+    'night',
+    '*whispers* The night is the best audience.',
+    'By moonlight we perform for the owls.',
+  ),
+  lantern(
+    'i6',
+    'idle',
+    'Our cloaks need mending before the next performance.',
+    'Costume check, my friends!',
+  ),
+  lantern('i7', 'idle', 'Alas, I forgot my lines again.', 'Prithee, who has the script?'),
+];

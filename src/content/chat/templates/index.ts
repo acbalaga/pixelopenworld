@@ -12,6 +12,7 @@ import { WEATHER } from './weather';
 import { REACTIONS } from './reactions';
 import { SOCIAL } from './social';
 import { CAMP } from './camp';
+import { EVENTS } from './events';
 
 /**
  * Every chat template. About 120 for M5-05 to test the engine; POW-M5-15 grows the set to about 600. Files are by theme, ids by category.
@@ -29,6 +30,7 @@ export const TEMPLATES: readonly ChatTemplate[] = [
   ...DEEDS,
   ...INDIVIDUALS,
   ...CAMP,
+  ...EVENTS,
 ];
 
 /** Every exchange: the generic ones by tie kind and the pair-specific ones. */

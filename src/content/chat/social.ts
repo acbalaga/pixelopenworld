@@ -35,6 +35,8 @@ export const CHIPS: Readonly<Record<string, Chip>> = Object.fromEntries(
       ['friend.no', 'Maybe later', 'friend'],
       ['duel.yes', 'You are on', 'friend'],
       ['duel.no', 'Not today', 'friend'],
+      ['guild.yes', 'I would like to join', 'friend'],
+      ['guild.no', 'Not right now', 'friend'],
     ] as const
   ).map(([id, text, kind]) => [id, { id, text, kind }]),
 );
@@ -63,6 +65,7 @@ export const CHIP_SETS: Readonly<Record<Category, readonly string[]>> = {
 /** The chips on a Traveler's friend request, and on a friend's hello. */
 export const REQUEST_CHIPS: readonly string[] = ['friend.yes', 'friend.no'];
 export const DUEL_CHIPS: readonly string[] = ['duel.yes', 'duel.no'];
+export const GUILD_CHIPS: readonly string[] = ['guild.yes', 'guild.no'];
 export const HELLO_CHIPS: readonly string[] = ['hi', 'how', 'more'];
 
 /** A reply line, with who it suits. A reply with no `temper` suits all. */
@@ -127,6 +130,18 @@ export const REPLIES: Readonly<Record<string, readonly Reply[]>> = {
     R('no worries'),
     R('your loss', 'bold'),
     R('ok', 'shy'),
+  ],
+  'guild.yes': [
+    R('welcome in!'),
+    R('great, you are in'),
+    R('yes! welcome to the guild', 'bold'),
+    R('oh good. welcome', 'shy'),
+  ],
+  'guild.no': [
+    R('no rush, the offer stands'),
+    R('fair, maybe later'),
+    R('your loss, ha. another time', 'bold'),
+    R('ok. maybe later', 'shy'),
   ],
   'friend.no': [
     R('no worries, maybe later'),
@@ -290,3 +305,31 @@ export const RIVAL_LINES = {
     R('are you ok? i will cover you', 'shy'),
   ],
 } as const satisfies Record<string, readonly Reply[]>;
+
+/** Guild invitations and answers (POW-M5-08), whispered. `{guild}` is the guild's name. */
+export const GUILD_WHISPERS = {
+  invite: [
+    R('hey, want to join {guild}? you would fit right in'),
+    R('we have room in {guild}, interested?'),
+    R('you should join {guild}. i will vouch for you', 'bold'),
+    R('um, would you like to join {guild}? no pressure', 'shy'),
+  ],
+  officer: [
+    R('i look after recruits for {guild}. you meet our bar. want in?'),
+    R('{guild} is recruiting and you qualify. interested?'),
+    R('officer of {guild} here. we want you. join?', 'bold'),
+    R('hello. i help run {guild}. would you like to join us?', 'shy'),
+  ],
+  notYet: [
+    R('not yet, {guild} has a bar to meet. keep at it'),
+    R('soon maybe. {guild} wants a bit more first'),
+    R('come back when you are ready, {guild} will be here', 'bold'),
+    R('sorry, {guild} has rules. not yet', 'shy'),
+  ],
+  inGuild: [
+    R('you are already in a guild, you would have to leave it first'),
+    R('one guild at a time, friend'),
+    R('loyalty first, ha. leave yours and ask again', 'bold'),
+    R('oh, you have a guild already', 'shy'),
+  ],
+} as const;

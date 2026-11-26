@@ -66,6 +66,28 @@ export type Command =
   | { type: 'chip'; slot: number; chip: string }
   /** Read a letter, or claim its attachment, once (M5-12). */
   | { type: 'mail'; op: 'read' | 'claim'; id: number }
+  /** The party finder and the party frames (M5-07). */
+  | { type: 'party'; op: 'post' | 'join' | 'leave' | 'cancel'; activity?: string; slot?: number }
+  /** Guilds (M5-08): leave, move a stack in or out of the stash, give to a goal, take its pay, ask a member. */
+  | {
+      type: 'guild';
+      op: 'leave' | 'stash' | 'give' | 'claim';
+      dir?: 'in' | 'out';
+      slot?: number;
+      goal?: number;
+    }
+  | { type: 'guildAsk'; slot: number }
+  /** The market terminal (M5-10): list from a bag slot, take a listing down, buy from a Traveler. */
+  | {
+      type: 'market';
+      op: 'list' | 'cancel' | 'buy';
+      slot?: number;
+      qty?: number;
+      price?: number;
+      id?: number;
+      item?: string;
+      seller?: number;
+    }
   /** Challenge a Traveler to a duel (M5-12). */
   | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
@@ -251,6 +273,78 @@ export function validateCommand(raw: unknown): Validated {
       if (!Number.isInteger(r.id) || (r.id as number) < 1 || (r.id as number) > 1_000_000)
         return { ok: false, reason: 'bad letter' };
       return { ok: true, command: { type: 'mail', op: r.op, id: r.id as number } };
+    case 'guild': {
+      const op = r.op;
+      if (op !== 'leave' && op !== 'stash' && op !== 'give' && op !== 'claim')
+        return { ok: false, reason: 'bad guild action' };
+      if (op === 'leave') return { ok: true, command: { type: 'guild', op } };
+      if (op === 'stash') {
+        if (r.dir !== 'in' && r.dir !== 'out') return { ok: false, reason: 'bad stash move' };
+        if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 63)
+          return { ok: false, reason: 'bad slot' };
+        return { ok: true, command: { type: 'guild', op, dir: r.dir, slot: r.slot as number } };
+      }
+      if (!Number.isInteger(r.goal) || (r.goal as number) < 0 || (r.goal as number) > 7)
+        return { ok: false, reason: 'bad goal' };
+      return { ok: true, command: { type: 'guild', op, goal: r.goal as number } };
+    }
+    case 'market': {
+      const n = (v: unknown, max: number): boolean =>
+        Number.isInteger(v) && (v as number) >= 0 && (v as number) <= max;
+      if (r.op === 'list') {
+        if (!n(r.slot, 63) || !n(r.qty, 999) || !n(r.price, 1_000_000))
+          return { ok: false, reason: 'bad listing' };
+        return {
+          ok: true,
+          command: {
+            type: 'market',
+            op: 'list',
+            slot: r.slot as number,
+            qty: r.qty as number,
+            price: r.price as number,
+          },
+        };
+      }
+      if (r.op === 'cancel') {
+        if (!n(r.id, 1_000_000)) return { ok: false, reason: 'bad listing' };
+        return { ok: true, command: { type: 'market', op: 'cancel', id: r.id as number } };
+      }
+      if (r.op === 'buy') {
+        if (typeof r.item !== 'string' || !/^item\.[a-z0-9_]{1,40}$/.test(r.item))
+          return { ok: false, reason: 'bad item' };
+        if (!n(r.seller, 4095) || !n(r.qty, 999)) return { ok: false, reason: 'bad buy' };
+        return {
+          ok: true,
+          command: {
+            type: 'market',
+            op: 'buy',
+            item: r.item,
+            seller: r.seller as number,
+            qty: r.qty as number,
+          },
+        };
+      }
+      return { ok: false, reason: 'bad market action' };
+    }
+    case 'guildAsk':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      return { ok: true, command: { type: 'guildAsk', slot: r.slot as number } };
+    case 'party': {
+      if (r.op !== 'post' && r.op !== 'join' && r.op !== 'leave' && r.op !== 'cancel')
+        return { ok: false, reason: 'bad party action' };
+      if (r.op === 'post') {
+        if (typeof r.activity !== 'string' || !/^[a-z]+(\.[a-z0-9_]+){1,3}$/.test(r.activity))
+          return { ok: false, reason: 'bad activity' };
+        return { ok: true, command: { type: 'party', op: 'post', activity: r.activity } };
+      }
+      if (r.op === 'join') {
+        if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+          return { ok: false, reason: 'bad traveler' };
+        return { ok: true, command: { type: 'party', op: 'join', slot: r.slot as number } };
+      }
+      return { ok: true, command: { type: 'party', op: r.op } };
+    }
     case 'duel':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
         return { ok: false, reason: 'bad traveler' };

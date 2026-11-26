@@ -40982,7 +40982,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 936,
+          "x": 1038,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41002,7 +41002,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 945,
+          "x": 1047,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41022,7 +41022,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 954,
+          "x": 1056,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41042,7 +41042,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 963,
+          "x": 1065,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41062,7 +41062,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 972,
+          "x": 1074,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41082,7 +41082,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 981,
+          "x": 1083,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41102,7 +41102,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 990,
+          "x": 1092,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41122,7 +41122,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 999,
+          "x": 1101,
           "y": 1526,
           "w": 8,
           "h": 8
@@ -41182,16 +41182,30 @@
         16
       ]
     },
-    "prop.hidden_niche": {
+    "prop.guild_board": {
       "anims": {},
       "frames": {
-        "closed": {
+        "base": {
           "x": 1225,
           "y": 1509,
           "w": 16,
           "h": 16
-        },
-        "open": {
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.guild_hearth": {
+      "anims": {},
+      "frames": {
+        "base": {
           "x": 1242,
           "y": 1509,
           "w": 16,
@@ -41208,7 +41222,7 @@
         16
       ]
     },
-    "prop.loom": {
+    "prop.guild_lantern": {
       "anims": {},
       "frames": {
         "base": {
@@ -41228,11 +41242,77 @@
         16
       ]
     },
+    "prop.hidden_niche": {
+      "anims": {},
+      "frames": {
+        "closed": {
+          "x": 1276,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        },
+        "open": {
+          "x": 1293,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.loom": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1310,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
     "prop.mailbox": {
       "anims": {},
       "frames": {
         "base": {
-          "x": 1276,
+          "x": 1327,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.market_terminal": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1344,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41252,58 +41332,6 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1293,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        15
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "prop.pit_crates": {
-      "anims": {},
-      "frames": {
-        "closed": {
-          "x": 1310,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        },
-        "open": {
-          "x": 1327,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        15
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "prop.plate": {
-      "anims": {},
-      "frames": {
-        "down": {
-          "x": 1344,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        },
-        "up": {
           "x": 1361,
           "y": 1509,
           "w": 16,
@@ -41320,7 +41348,7 @@
         16
       ]
     },
-    "prop.post_stand": {
+    "prop.party_board": {
       "anims": {},
       "frames": {
         "base": {
@@ -41340,31 +41368,11 @@
         16
       ]
     },
-    "prop.rock": {
+    "prop.pit_board": {
       "anims": {},
       "frames": {
         "base": {
           "x": 1395,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "prop.rune_stone": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 1412,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41380,22 +41388,42 @@
         16
       ]
     },
-    "prop.satchel": {
+    "prop.pit_crates": {
       "anims": {},
       "frames": {
         "closed": {
-          "x": 1429,
+          "x": 1412,
           "y": 1509,
           "w": 16,
           "h": 16
         },
         "open": {
+          "x": 1429,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.plate": {
+      "anims": {},
+      "frames": {
+        "down": {
           "x": 1446,
           "y": 1509,
           "w": 16,
           "h": 16
         },
-        "opening_0": {
+        "up": {
           "x": 1463,
           "y": 1509,
           "w": 16,
@@ -41412,7 +41440,7 @@
         16
       ]
     },
-    "prop.scarecrow": {
+    "prop.post_stand": {
       "anims": {},
       "frames": {
         "base": {
@@ -41432,7 +41460,7 @@
         16
       ]
     },
-    "prop.sign": {
+    "prop.rock": {
       "anims": {},
       "frames": {
         "base": {
@@ -41445,14 +41473,14 @@
       "group": "core",
       "origin": [
         8,
-        15
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "prop.snare": {
+    "prop.rune_stone": {
       "anims": {},
       "frames": {
         "base": {
@@ -41472,7 +41500,7 @@
         16
       ]
     },
-    "prop.stone_gap": {
+    "prop.satchel": {
       "anims": {},
       "frames": {
         "closed": {
@@ -41486,22 +41514,8 @@
           "y": 1509,
           "w": 16,
           "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        15
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "prop.tablet": {
-      "anims": {},
-      "frames": {
-        "base": {
+        },
+        "opening_0": {
           "x": 1565,
           "y": 1509,
           "w": 16,
@@ -41518,7 +41532,7 @@
         16
       ]
     },
-    "prop.tinker_bench": {
+    "prop.scarecrow": {
       "anims": {},
       "frames": {
         "base": {
@@ -41538,7 +41552,7 @@
         16
       ]
     },
-    "prop.torch": {
+    "prop.sign": {
       "anims": {},
       "frames": {
         "base": {
@@ -41546,9 +41560,115 @@
           "y": 1509,
           "w": 16,
           "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.snare": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1616,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.stone_gap": {
+      "anims": {},
+      "frames": {
+        "closed": {
+          "x": 1633,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        },
+        "open": {
+          "x": 1650,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.tablet": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1667,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.tinker_bench": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1684,
+          "y": 1509,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        15
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "prop.torch": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 1701,
+          "y": 1509,
+          "w": 16,
+          "h": 16
         },
         "lit": {
-          "x": 1616,
+          "x": 1718,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41588,7 +41708,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1633,
+          "x": 1735,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41628,7 +41748,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1650,
+          "x": 1752,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41668,7 +41788,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1667,
+          "x": 1769,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41708,7 +41828,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1684,
+          "x": 1786,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41748,7 +41868,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1701,
+          "x": 1803,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41788,7 +41908,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1718,
+          "x": 1820,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41828,7 +41948,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1735,
+          "x": 1837,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41868,7 +41988,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1752,
+          "x": 1854,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41908,7 +42028,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1769,
+          "x": 1871,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41948,7 +42068,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1786,
+          "x": 1888,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -41988,7 +42108,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1803,
+          "x": 1905,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42028,7 +42148,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1820,
+          "x": 1922,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42068,7 +42188,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1837,
+          "x": 1939,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42108,7 +42228,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1854,
+          "x": 1956,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42148,7 +42268,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1871,
+          "x": 1973,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42188,7 +42308,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1888,
+          "x": 1990,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42228,7 +42348,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1905,
+          "x": 2007,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42268,7 +42388,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 1922,
+          "x": 2024,
           "y": 1509,
           "w": 16,
           "h": 16
@@ -42336,14 +42456,14 @@
       "anims": {},
       "frames": {
         "closed": {
-          "x": 1939,
-          "y": 1509,
+          "x": 1,
+          "y": 1526,
           "w": 16,
           "h": 16
         },
         "open": {
-          "x": 1956,
-          "y": 1509,
+          "x": 18,
+          "y": 1526,
           "w": 16,
           "h": 16
         }
@@ -42362,14 +42482,14 @@
       "anims": {},
       "frames": {
         "closed": {
-          "x": 1973,
-          "y": 1509,
+          "x": 35,
+          "y": 1526,
           "w": 16,
           "h": 16
         },
         "open": {
-          "x": 1990,
-          "y": 1509,
+          "x": 52,
+          "y": 1526,
           "w": 16,
           "h": 16
         }
@@ -42388,8 +42508,8 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 2007,
-          "y": 1509,
+          "x": 69,
+          "y": 1526,
           "w": 16,
           "h": 16
         }
@@ -42405,126 +42525,6 @@
       ]
     },
     "tile.barrel": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 2024,
-          "y": 1509,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.board": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 1,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.cave_arch": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 18,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.cave_floor_0": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 35,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        0,
-        0
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.cave_floor_1": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 52,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        0,
-        0
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.cave_wall_face": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 69,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.cave_wall_top": {
       "anims": {},
       "frames": {
         "base": {
@@ -42544,7 +42544,7 @@
         16
       ]
     },
-    "tile.cobble_0": {
+    "tile.board": {
       "anims": {},
       "frames": {
         "base": {
@@ -42556,15 +42556,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.cobble_1": {
+    "tile.cave_arch": {
       "anims": {},
       "frames": {
         "base": {
@@ -42576,15 +42576,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.crate": {
+    "tile.cave_floor_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -42596,15 +42596,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.crop_barley_0": {
+    "tile.cave_floor_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -42616,15 +42616,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.crop_barley_1": {
+    "tile.cave_wall_face": {
       "anims": {},
       "frames": {
         "base": {
@@ -42644,11 +42644,31 @@
         16
       ]
     },
-    "tile.dirt": {
+    "tile.cave_wall_top": {
       "anims": {},
       "frames": {
         "base": {
           "x": 188,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.cobble_0": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 205,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -42664,27 +42684,7 @@
         16
       ]
     },
-    "tile.fence_h": {
-      "anims": {},
-      "frames": {
-        "base": {
-          "x": 205,
-          "y": 1526,
-          "w": 16,
-          "h": 16
-        }
-      },
-      "group": "core",
-      "origin": [
-        8,
-        14
-      ],
-      "size": [
-        16,
-        16
-      ]
-    },
-    "tile.fence_post": {
+    "tile.cobble_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -42696,15 +42696,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.fence_v": {
+    "tile.crate": {
       "anims": {},
       "frames": {
         "base": {
@@ -42724,7 +42724,7 @@
         16
       ]
     },
-    "tile.grass_0": {
+    "tile.crop_barley_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -42736,15 +42736,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.grass_1": {
+    "tile.crop_barley_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -42756,15 +42756,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.grass_2": {
+    "tile.dirt": {
       "anims": {},
       "frames": {
         "base": {
@@ -42784,7 +42784,7 @@
         16
       ]
     },
-    "tile.hay_bale": {
+    "tile.fence_h": {
       "anims": {},
       "frames": {
         "base": {
@@ -42804,7 +42804,7 @@
         16
       ]
     },
-    "tile.planks_0": {
+    "tile.fence_post": {
       "anims": {},
       "frames": {
         "base": {
@@ -42816,15 +42816,15 @@
       },
       "group": "core",
       "origin": [
-        0,
-        0
+        8,
+        14
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.reeds_0": {
+    "tile.fence_v": {
       "anims": {},
       "frames": {
         "base": {
@@ -42844,7 +42844,7 @@
         16
       ]
     },
-    "tile.reeds_1": {
+    "tile.grass_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -42856,15 +42856,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_0l": {
+    "tile.grass_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -42876,15 +42876,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_0m": {
+    "tile.grass_2": {
       "anims": {},
       "frames": {
         "base": {
@@ -42896,15 +42896,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_0r": {
+    "tile.hay_bale": {
       "anims": {},
       "frames": {
         "base": {
@@ -42924,7 +42924,7 @@
         16
       ]
     },
-    "tile.roof_red_1l": {
+    "tile.planks_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -42936,15 +42936,15 @@
       },
       "group": "core",
       "origin": [
-        8,
-        14
+        0,
+        0
       ],
       "size": [
         16,
         16
       ]
     },
-    "tile.roof_red_1m": {
+    "tile.reeds_0": {
       "anims": {},
       "frames": {
         "base": {
@@ -42964,7 +42964,7 @@
         16
       ]
     },
-    "tile.roof_red_1r": {
+    "tile.reeds_1": {
       "anims": {},
       "frames": {
         "base": {
@@ -42984,7 +42984,7 @@
         16
       ]
     },
-    "tile.roof_slate_0l": {
+    "tile.roof_red_0l": {
       "anims": {},
       "frames": {
         "base": {
@@ -43004,7 +43004,7 @@
         16
       ]
     },
-    "tile.roof_slate_0m": {
+    "tile.roof_red_0m": {
       "anims": {},
       "frames": {
         "base": {
@@ -43024,7 +43024,7 @@
         16
       ]
     },
-    "tile.roof_slate_0r": {
+    "tile.roof_red_0r": {
       "anims": {},
       "frames": {
         "base": {
@@ -43044,7 +43044,7 @@
         16
       ]
     },
-    "tile.roof_slate_1l": {
+    "tile.roof_red_1l": {
       "anims": {},
       "frames": {
         "base": {
@@ -43064,7 +43064,7 @@
         16
       ]
     },
-    "tile.roof_slate_1m": {
+    "tile.roof_red_1m": {
       "anims": {},
       "frames": {
         "base": {
@@ -43084,7 +43084,7 @@
         16
       ]
     },
-    "tile.roof_slate_1r": {
+    "tile.roof_red_1r": {
       "anims": {},
       "frames": {
         "base": {
@@ -43104,7 +43104,7 @@
         16
       ]
     },
-    "tile.roof_thatch_0l": {
+    "tile.roof_slate_0l": {
       "anims": {},
       "frames": {
         "base": {
@@ -43124,7 +43124,7 @@
         16
       ]
     },
-    "tile.roof_thatch_0m": {
+    "tile.roof_slate_0m": {
       "anims": {},
       "frames": {
         "base": {
@@ -43144,7 +43144,7 @@
         16
       ]
     },
-    "tile.roof_thatch_0r": {
+    "tile.roof_slate_0r": {
       "anims": {},
       "frames": {
         "base": {
@@ -43164,7 +43164,7 @@
         16
       ]
     },
-    "tile.roof_thatch_1l": {
+    "tile.roof_slate_1l": {
       "anims": {},
       "frames": {
         "base": {
@@ -43184,7 +43184,7 @@
         16
       ]
     },
-    "tile.roof_thatch_1m": {
+    "tile.roof_slate_1m": {
       "anims": {},
       "frames": {
         "base": {
@@ -43204,7 +43204,7 @@
         16
       ]
     },
-    "tile.roof_thatch_1r": {
+    "tile.roof_slate_1r": {
       "anims": {},
       "frames": {
         "base": {
@@ -43224,11 +43224,131 @@
         16
       ]
     },
-    "tile.sign_post": {
+    "tile.roof_thatch_0l": {
       "anims": {},
       "frames": {
         "base": {
           "x": 681,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_0m": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 698,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_0r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 715,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1l": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 732,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1m": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 749,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.roof_thatch_1r": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 766,
+          "y": 1526,
+          "w": 16,
+          "h": 16
+        }
+      },
+      "group": "core",
+      "origin": [
+        8,
+        14
+      ],
+      "size": [
+        16,
+        16
+      ]
+    },
+    "tile.sign_post": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 783,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43256,13 +43376,13 @@
       },
       "frames": {
         "flame_0": {
-          "x": 698,
+          "x": 800,
           "y": 1526,
           "w": 16,
           "h": 16
         },
         "flame_1": {
-          "x": 715,
+          "x": 817,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43282,7 +43402,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 732,
+          "x": 834,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43302,7 +43422,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 749,
+          "x": 851,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43322,7 +43442,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 766,
+          "x": 868,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43342,7 +43462,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 783,
+          "x": 885,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43362,7 +43482,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 800,
+          "x": 902,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43382,7 +43502,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 817,
+          "x": 919,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43402,7 +43522,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 834,
+          "x": 936,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43422,7 +43542,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 851,
+          "x": 953,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43442,7 +43562,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 868,
+          "x": 970,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43462,7 +43582,7 @@
       "anims": {},
       "frames": {
         "base": {
-          "x": 885,
+          "x": 987,
           "y": 1526,
           "w": 16,
           "h": 16
@@ -43490,13 +43610,13 @@
       },
       "frames": {
         "flow_0": {
-          "x": 902,
+          "x": 1004,
           "y": 1526,
           "w": 16,
           "h": 16
         },
         "flow_1": {
-          "x": 919,
+          "x": 1021,
           "y": 1526,
           "w": 16,
           "h": 16

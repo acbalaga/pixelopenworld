@@ -186,6 +186,48 @@ export type SimEvent =
   | { type: 'rivalAppeared'; slot: number; dungeon: string }
   /** The player opened a mailbox (M5-12). */
   | { type: 'mailOpened'; id: number; who: number }
+  /** Guilds (M5-08): joined, left, a hall used, the stash, a goal given to or paid, an invitation. */
+  | { type: 'guildJoined'; guild: number }
+  | { type: 'guildLeft'; guild: number }
+  | { type: 'guildHallOpened'; id: number; who: number; hall: number }
+  | { type: 'guildStashMoved'; item: string; qty: number; dir: 'in' | 'out' }
+  | { type: 'guildContributed'; goal: string; qty: number }
+  | { type: 'guildGoalDone'; goal: string; coin: number }
+  | { type: 'guildInvited'; slot: number; guild: number }
+  | { type: 'travelerSwitchedGuild'; slot: number; guild: number }
+  /** World events (M5-11): soon, started, ended; a raid setting out, its boss, its end; invasion waves and Renown; pay. */
+  | { type: 'worldEventSoon'; kind: string; inMin: number }
+  | { type: 'worldEventStarted'; kind: string; slot: number; site: string }
+  | { type: 'worldEventEnded'; kind: string; slot: number }
+  | { type: 'raidSetOut'; site: string; parties: number }
+  | { type: 'raidBossUp'; id: number; site: string }
+  | { type: 'raidEnded'; site: string; won: boolean }
+  | { type: 'invasionWave'; wave: number }
+  | { type: 'invasionRenown'; amount: number }
+  | { type: 'eventRewarded'; kind: string; coin: number }
+  /** The market (M5-10): listed, sold (proceeds by mail), cancelled, bought, a price moved, the terminal used. */
+  | { type: 'marketListed'; id: number; item: string; qty: number; price: number; fee: number }
+  | {
+      type: 'marketSold';
+      id: number;
+      item: string;
+      qty: number;
+      coin: number;
+      slot: number;
+      hour: number;
+    }
+  | { type: 'marketCancelled'; id: number; item: string; qty: number }
+  | { type: 'marketBought'; item: string; qty: number; coin: number; slot: number }
+  | { type: 'priceMoved'; item: string; from: number; to: number }
+  | { type: 'marketOpened'; id: number; who: number }
+  /** The Pit (M5-30): a bout between Travelers, a cheer, the "Next" board, the player's honor. */
+  | { type: 'pitBoutStarted'; a: number; b: number }
+  | { type: 'pitBoutEnded'; winner: number; loser: number; called: boolean }
+  | { type: 'pitCheer'; slot: number; for: number }
+  | { type: 'pitBoardOpened'; id: number; who: number }
+  | { type: 'pitHonor'; tier: number }
+  /** The party finder in the square was used (M5-07). */
+  | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */
   | { type: 'mailArrived'; slot: number }
   | { type: 'mailClaimed'; id: number; who: number }
@@ -317,7 +359,7 @@ export type SimEvent =
   /** A Traveler said something. `source` is the id of the `chatSource` or event it came from. */
   | {
       type: 'travelerSpoke';
-      channel: 'world' | 'local' | 'whisper';
+      channel: 'world' | 'local' | 'whisper' | 'party' | 'guild';
       slot: number;
       text: string;
       glyphs: string[];
@@ -328,6 +370,25 @@ export type SimEvent =
       slots: Record<string, string>;
       /** Reply chips the player may answer with (M5-06): 2 to 4, or none for a line nobody answers. */
       chips: { id: string; text: string }[];
+    }
+  /** Parties (M5-07). A Traveler joined, answered the player's listing, or left; notice, downs and loot. */
+  | { type: 'partyJoined'; slot: number; activity: string }
+  | { type: 'partyAnswered'; slot: number; activity: string }
+  | { type: 'partyLeft'; slot: number; why: 'session' | 'player' | 'full' }
+  | { type: 'partyPosted'; activity: string }
+  | { type: 'partyWarned'; slot: number }
+  | { type: 'partyBrb'; slot: number }
+  | { type: 'partyDowned'; slot: number }
+  | { type: 'partyRevived'; slot: number }
+  | { type: 'partyWipe' }
+  | { type: 'partyFightOver' }
+  | {
+      type: 'partyLootRoll';
+      item: string;
+      qty: number;
+      rolls: { slot: number; need: boolean; roll: number }[];
+      winner: number;
+      rare: boolean;
     }
   /** The player said something with a chip (M5-06). `slot` is who they said it to. */
   | { type: 'playerSpoke'; channel: 'local' | 'whisper'; slot: number; text: string }

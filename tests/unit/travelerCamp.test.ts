@@ -59,8 +59,9 @@ describe('the camp place', () => {
       expect(PLACES[id]).toMatchObject({ area: 'wayside', indoors: false });
       expect(PLACE_LIST.indexOf(id)).toBeGreaterThan(PLACE_LIST.indexOf('wayside.chapel'));
     }
-    // The camps come after the older places and before the Pit (M5-29), which is added last.
-    expect(PLACE_LIST.slice(-3, -1)).toEqual([...CAMP.places]);
+    // The camps come right after the older places, then the Pit (M5-29), then the guild halls
+    // (M5-08): indices are saved, so they never move.
+    expect(PLACE_LIST.slice(22, 24)).toEqual([...CAMP.places]);
   });
 
   it('each ring a rest point fixture, and no slot sits on it or on a solid tile, and each is reachable from the road', () => {

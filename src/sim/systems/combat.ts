@@ -18,6 +18,7 @@ import { len } from '../combat/geometry';
 import { destroy, getComp, query, spawn, setComp, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { dirStep, SUBPX } from '../kernel/fixed';
+import { isPartyEnt } from '../party';
 import type { SimState } from '../state';
 import { nudge } from './movement';
 import { launchProjectile } from './projectile';
@@ -224,6 +225,8 @@ function advanceDeath(state: SimState, id: EntityId): void {
   f.deadT++;
   const avatar = getComp(state.entities, id, 'avatar');
   if (!avatar) {
+    // A party member is downed, not gone: they get up after the fight (M5-07).
+    if (isPartyEnt(state, id)) return;
     if (f.deadT >= C.death.enemyLinger) destroy(state.entities, id);
     return;
   }

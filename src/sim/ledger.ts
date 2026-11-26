@@ -39,11 +39,32 @@ export interface Ledger {
    * 2 for new characters. The integrity check reads the kit it names.
    */
   startKit: 1 | 2;
+  /**
+   * The market (M5-10): items put up for sale and bought from Travelers, by item; items sold and
+   * the coin they sold for, before the cut. Absent in a save from before the market.
+   */
+  itemsListed?: Tally;
+  itemsBought?: Tally;
+  marketSoldQty?: Tally;
+  marketSoldValue?: number;
+  /** World events fired, by kind (M5-11). Bounds the raid pay. Absent before world events. */
+  eventsFired?: Tally;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
-export type CoinSource = 'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed' | 'mailGift';
-export type CoinSink = 'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe';
+export type CoinSource =
+  | 'loot'
+  | 'chest'
+  | 'request'
+  | 'sale'
+  | 'echo'
+  | 'seed'
+  | 'mailGift'
+  | 'guildRequest'
+  | 'marketSale'
+  | 'eventReward';
+export type CoinSink =
+  'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe' | 'marketFee' | 'marketBuy';
 export type ItemSource =
   | 'start'
   | 'loot'
@@ -57,6 +78,8 @@ export type ItemSource =
   | 'buyback'
   | 'singular'
   | 'mailGift'
+  | 'guildRequest'
+  | 'market'
   | 'seed';
 
 /** An empty ledger. */

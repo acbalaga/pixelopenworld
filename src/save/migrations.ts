@@ -717,6 +717,38 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 31, sim: serializeState(s) };
   },
+  /**
+   * 31 to 32 (M5-08): the sim gains `guild`: no guild, no stash, no goals. A save made before has
+   * never been in a guild, so nothing it holds is touched and the ledger has nothing to add.
+   */
+  31: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 32, sim: serializeState(s) };
+  },
+  /**
+   * 32 to 33 (M5-30): the duel record gains the Pit wins and the Pit honor, both 0. A save made
+   * before has won nothing in the Pit, so nothing is granted.
+   */
+  32: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 33, sim: serializeState(s) };
+  },
+  /**
+   * 33 to 34 (M5-10): the sim gains `market`: no listings, prices that open at their targets on the
+   * first hour played. A save made before has sold and bought nothing there, so the ledger is as it was.
+   */
+  33: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 34, sim: serializeState(s) };
+  },
+  /**
+   * 34 to 35 (M5-11): the sim gains `calendar`, the last world event fired per kind. A save made
+   * before has fired none, so the next slot of each fires at its time and nothing is replayed.
+   */
+  34: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 35, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

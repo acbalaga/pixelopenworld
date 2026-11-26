@@ -34,6 +34,11 @@ import { scheduleSystem } from './systems/schedule';
 import { travelersSystem } from './travelers/crowd';
 import { chatSystem, socialSystem } from './chat/engine';
 import { duelSystem } from './duel';
+import { partySystem } from './party';
+import { guildSystem } from './guild';
+import { pitBoutSystem } from './pitBouts';
+import { marketSystem } from './market';
+import { worldEventsSystem } from './worldEvents';
 import { pitSystem } from './travelers/pit';
 import { rankingsSystem } from './rankings/system';
 import { snareSystem } from './gadgets';
@@ -85,6 +90,11 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   tradeSystem,
   scheduleSystem,
   travelersSystem,
+  partySystem,
+  pitBoutSystem,
+  guildSystem,
+  worldEventsSystem,
+  marketSystem,
   chatSystem,
   rankingsSystem,
   socialSystem,

@@ -1,3 +1,4 @@
+import { PIT_HONOR_NAMES } from '../../content/strings/pit';
 import { RANKING_STRINGS as S } from '../../content/strings/rankings';
 import { boardPage, boardSummaries, type RankRow } from '../menu/rankingsModel';
 import type { SimState } from '../../sim/state';
@@ -12,12 +13,14 @@ export interface RankingsDeps {
 const fill = (t: string, v: Record<string, string | number>): string =>
   t.replace(/\{(\w+)\}/g, (_, k: string) => String(v[k] ?? ''));
 
-function line(r: RankRow, unit: string): HTMLElement {
+function line(r: RankRow, unit: string, honor = ''): HTMLElement {
   const li = el('li', r.isYou ? 'pow-rank-row pow-rank-you' : 'pow-rank-row');
+  // The Pit honor (M5-30) shows beside the player's own entry on the Duels board.
+  const you = honor ? `${r.handle}, ${honor} (${S.you})` : `${r.handle} (${S.you})`;
   put(
     li,
     el('span', 'pow-rank-n', String(r.rank)),
-    el('span', 'pow-rank-name', r.isYou ? `${r.handle} (${S.you})` : r.handle),
+    el('span', 'pow-rank-name', r.isYou ? you : r.handle),
     el('span', 'pow-rank-val', `${r.value.toLocaleString('en-US')} ${unit}`),
   );
   if (r.isYou) li.setAttribute('aria-current', 'true');
@@ -87,10 +90,11 @@ export class RankingsPanel {
     );
     if (page.total === 0) return;
     const ol = el('ol', 'pow-rank-list');
-    for (const r of page.top) put(ol, line(r, page.unit));
+    const honor = this.choice === 'duels' ? (PIT_HONOR_NAMES[state.mail.duels.honor] ?? '') : '';
+    for (const r of page.top) put(ol, line(r, page.unit, honor));
     if (page.near.length > 0) {
       put(ol, el('li', 'pow-rank-gap', '...'));
-      for (const r of page.near) put(ol, line(r, page.unit));
+      for (const r of page.near) put(ol, line(r, page.unit, honor));
     }
     put(this.root, ol);
   }

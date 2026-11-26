@@ -20,6 +20,17 @@ import { TRAVELER_SHIMMER } from '../content/sprites/travelerShimmer';
 import { identitiesOf } from '../sim/travelers/generate';
 import { demoteAll, profileOf, travelerViews } from '../sim/travelers/entities';
 import { MailSheet } from '../ui/dom/mailSheet';
+import { PartySheet } from '../ui/dom/partySheet';
+import { GuildSheet } from '../ui/dom/guildSheet';
+import { PitSheet } from '../ui/dom/pitSheet';
+import { MarketSheet } from '../ui/dom/marketSheet';
+import { MARKET_STRINGS } from '../content/strings/market';
+import { EVENT_STRINGS } from '../content/strings/events';
+import { PLACE_NAMES } from '../content/chat/names';
+import { PIT_HONOR_NAMES, PIT_STRINGS } from '../content/strings/pit';
+import { GUILD_STRINGS } from '../content/strings/guild';
+import { GUILDS } from '../content/travelers/guilds';
+import { PartyFrames } from '../ui/dom/partyFrames';
 import { TravelerCard } from '../ui/dom/travelerCard';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
 import { SIGN_STRINGS } from '../content/strings/signs';
@@ -561,7 +572,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
     keysEnabled: () =>
-      !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen && !mailOpen,
+      !menuOpen &&
+      !notices.tabletOpen &&
+      !talkOpen &&
+      !mirrorOpen &&
+      !cardOpen &&
+      !mailOpen &&
+      !partyOpen &&
+      !guildOpen &&
+      !pitOpen &&
+      !marketOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -1096,9 +1116,52 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     onFriend: (slot, op) => pendingCommands.push({ type: 'friend', slot, op }),
     onPoke: (slot) => pendingCommands.push({ type: 'poke', slot }),
     onDuel: (slot) => pendingCommands.push({ type: 'duel', slot }),
+    onGuildAsk: (slot) => pendingCommands.push({ type: 'guildAsk', slot }),
+    myGuild: () => state.guild.id,
   });
   messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
   // The mailbox in the inn yard and the post stand in the square (M5-12).
+  // The party finder in the square, and the party frames under the bars (M5-07).
+  let partyOpen = false;
+  const partySheet = new PartySheet(root, {
+    read: () => ({ state }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      partyOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
+  const partyFrames = new PartyFrames(root);
+  // The market terminal (M5-10).
+  let marketOpen = false;
+  const marketSheet = new MarketSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      marketOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
+  // The Pit's "Next" board (M5-30).
+  let pitOpen = false;
+  const pitSheet = new PitSheet(root, {
+    read: () => ({ state }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      pitOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
+  // A guild hall post (M5-08): goals, stash and leave for members, how to join for the rest.
+  let guildOpen = false;
+  const guildSheet = new GuildSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      guildOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
   let mailOpen = false;
   const mailSheet = new MailSheet(root, {
     read: () => ({ state, who }),
@@ -1557,6 +1620,60 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           for (const e of state.events.list) {
             if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot), state);
             else if (e.type === 'mailOpened') mailSheet.open();
+            else if (e.type === 'partyBoardOpened') partySheet.open();
+            else if (e.type === 'guildHallOpened') guildSheet.open(e.hall);
+            else if (e.type === 'pitBoardOpened') pitSheet.open();
+            else if (e.type === 'marketOpened') marketSheet.open();
+            // World events (M5-11): announced and begun in the System channel.
+            else if (e.type === 'worldEventSoon') {
+              const t = EVENT_STRINGS.soon[e.kind];
+              if (t)
+                router.post({
+                  lane: 'chat',
+                  channel: 'system',
+                  text: t.replace('{m}', String(e.inMin)),
+                });
+            } else if (e.type === 'worldEventStarted') {
+              const t = EVENT_STRINGS.started[e.kind];
+              if (t)
+                router.post({
+                  lane: 'chat',
+                  channel: 'system',
+                  text: t.replace('{place}', PLACE_NAMES[e.site] ?? 'Hearthford'),
+                });
+            } else if (e.type === 'raidEnded')
+              router.post({
+                lane: 'chat',
+                channel: 'system',
+                text: e.won ? EVENT_STRINGS.raidWon : EVENT_STRINGS.raidLost,
+              });
+            else if (e.type === 'eventRewarded')
+              notices.toast(EVENT_STRINGS.reward.replace('{coin}', String(e.coin)));
+            else if (e.type === 'invasionRenown') notices.toast(EVENT_STRINGS.renown);
+            else if (e.type === 'marketSold')
+              notices.toast(
+                MARKET_STRINGS.sold
+                  .replace('{qty}', String(e.qty))
+                  .replace('{item}', ITEM_STRINGS[`${e.item}.name`] ?? e.item),
+              );
+            else if (e.type === 'pitHonor')
+              notices.toast(
+                PIT_STRINGS.honorEarned.replace('{honor}', PIT_HONOR_NAMES[e.tier] ?? ''),
+              );
+            else if (e.type === 'guildJoined' || e.type === 'guildLeft') {
+              const name = GUILDS.find((g) => g.id === e.guild)?.name ?? '';
+              notices.toast(
+                (e.type === 'guildJoined' ? GUILD_STRINGS.joined : GUILD_STRINGS.left).replace(
+                  '{guild}',
+                  name,
+                ),
+              );
+              if (guildSheet.isOpen) guildSheet.refresh();
+            } else if (e.type === 'guildGoalDone')
+              notices.toast(GUILD_STRINGS.goalDone.replace('{coin}', String(e.coin)));
+            else if (e.type === 'partyLootRoll') partyFrames.showRoll(state, e, now);
+            else if (partySheet.isOpen && (e.type === 'partyJoined' || e.type === 'partyLeft'))
+              partySheet.refresh();
             else if (e.type === 'mailArrived') notices.toast(MAIL_STRINGS.arrived);
             else if (e.type === 'duelStarted') notices.toast(FRIEND_STRINGS.duel.begins);
             else if (e.type === 'duelEnded')
@@ -2203,6 +2320,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         menuOpen || talkOpen || mirrorOpen || notices.tabletOpen || messageView.open || panelStep,
       );
       messageView.setBusy(panelStep);
+      partyFrames.update(state, now);
       messageView.layout(lanes, cssBox.height * (1 - UI_BALANCE.messages.sheetFraction));
       messageView.render();
       drawFloaters(renderer, fonts.small, router, {
