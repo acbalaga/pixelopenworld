@@ -179,6 +179,8 @@ export type SimEvent =
   | { type: 'bossObjective'; id: number; boss: string; step: string }
   | { type: 'bossResolved'; id: number; boss: string; how: 'fight' | 'objective' }
   | { type: 'chestOpened'; id: number; who: number }
+  /** The player opened a mailbox (M5-12). */
+  | { type: 'mailOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */
   | { type: 'mailArrived'; slot: number }
   | { type: 'mailClaimed'; id: number; who: number }

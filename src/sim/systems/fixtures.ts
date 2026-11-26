@@ -458,6 +458,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useChest(state, who, target);
     case 'slide':
       return useSlide(state, who, target);
+    case 'mailbox':
+      emit(state.events, { type: 'mailOpened', id: target, who });
+      return;
     case 'block':
       return pushBlock(state, who, target);
     case 'resetpost':

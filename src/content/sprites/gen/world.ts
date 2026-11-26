@@ -309,6 +309,32 @@ function mirrorProp(): SpriteDef {
   return toSprite('prop.mirror', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/** The inn yard mailbox (POW-M5-12): a post with a wooden box, a slot, and a red flag. */
+function mailbox(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(7, 8, 8, 14, WOOD[1]);
+  im.rect(3, 3, 12, 8, WOOD[2]);
+  im.rect(3, 3, 12, 3, WOOD[3]);
+  im.rect(3, 8, 12, 8, WOOD[1]);
+  im.rect(5, 5, 10, 5, DARK);
+  im.rect(12, 1, 12, 5, GOLD[1]);
+  im.rect(11, 1, 13, 2, GOLD[2]);
+  return toSprite('prop.mailbox', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
+/** The post stand in the square (POW-M5-12): a stand with a little roof and a pouch hanging from it. */
+function postStand(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 2, 13, 4, METAL[1]);
+  im.rect(2, 2, 13, 2, METAL[2]);
+  im.rect(3, 5, 4, 14, WOOD[1]);
+  im.rect(11, 5, 12, 14, WOOD[1]);
+  im.rect(5, 8, 10, 13, WOOD[2]);
+  im.rect(5, 8, 10, 9, WOOD[3]);
+  im.rect(7, 10, 8, 11, GOLD[2]);
+  return toSprite('prop.post_stand', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /**
  * Quarry crates stacked in a gap in the rock (POW-M5-29): closed, a tall stack across the gap, and
  * open, the same crates shoved to one side with the gap clear.
@@ -890,6 +916,8 @@ export function worldSprites(): SpriteDef[] {
     mirrorProp(),
     satchel(),
     pitCrates(),
+    mailbox(),
+    postStand(),
     waystone(),
     lockedDoor(),
     gate(),
