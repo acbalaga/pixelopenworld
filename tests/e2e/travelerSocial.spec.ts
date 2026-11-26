@@ -68,6 +68,7 @@ test('a friend shows on the Social tab, and their card shows what you share', as
   await expect(card).toContainText('Shared history');
   await expect(card).toContainText(/fought a .* near them/);
   await expect(card).toContainText('Remove friend');
+  await card.getByText('Shared history').scrollIntoViewIfNeeded();
   await shot(page, 'm5-06-card');
   expect(problems.pageErrors).toEqual([]);
 });
