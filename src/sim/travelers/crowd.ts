@@ -36,6 +36,7 @@ import { dayPhase, weatherOn } from '../time';
 import { identitiesOf } from './generate';
 import { PLACE_LIST, placeIdx, skillIdx } from './lists';
 import { pitOpen } from './pit';
+import { memberOf, partyHoldsOnline } from '../party';
 import { catchUp, expectedPoints, playHoursOf, type AwayEvent } from './progress';
 import { dayIndexOf, localMinute, MIN_PER_DAY, sessionsFor, type Session } from './schedule';
 import type { TravelerIdentity, TravelerLife } from './types';
@@ -691,8 +692,14 @@ export function travelersSystem(state: SimState): void {
     const on = inSession(crowd, t.slot, m);
     const was = crowd.online[t.slot] === 1;
     if (on && !was) login(state, crowd, t);
-    else if (!on && was) logout(state, crowd, t);
+    else if (!on && was) {
+      // A party member gives notice and sees the fight out before going (M5-07).
+      if (partyHoldsOnline(state, t.slot)) continue;
+      logout(state, crowd, t);
+    }
     if (!on) continue;
+    // A party member's minutes are the party's: no abstract step.
+    if (memberOf(state, t.slot)) continue;
     if (!crowd.promoted[t.slot]) stepTraveler(state, crowd, clock, t);
     else if ((crowd.entOf[t.slot] ?? -1) >= 0) stepTraveler(state, crowd, clock, t, true);
   }

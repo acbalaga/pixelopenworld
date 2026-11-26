@@ -17,7 +17,10 @@ import {
 import { TEMPLATES } from '../../content/chat/templates';
 import type { Category } from '../../content/chat/types';
 import { CREATURES } from '../../content/creatures';
-import { SKILLS } from '../../content/skills';
+import { SKILLS, TRIALS } from '../../content/skills';
+import { ITEMS } from '../../content/items';
+import { ITEM_STRINGS } from '../../content/strings/items';
+import { PARTY_LINES } from '../../content/chat/party';
 import { FLAG, MEMORY_KINDS, type MemoryKind } from '../../content/travelers/types';
 import { findAvatar } from '../../shared/summary';
 import { emit, type SimEvent } from '../kernel/events';
@@ -140,10 +143,10 @@ export function offerFor(
   c: Ctx,
   slot: number,
   template: string,
-  channel: 'world' | 'local' | 'whisper',
+  channel: 'world' | 'local' | 'whisper' | 'party',
   slots: Record<string, string>,
 ): { id: string; text: string }[] {
-  if (channel === 'world' || slots.player === undefined) return [];
+  if (channel === 'world' || channel === 'party' || slots.player === undefined) return [];
   const category = CATEGORY_OF.get(template);
   if (!category) return [];
   const life = c.state.travelers[slot];
@@ -194,6 +197,7 @@ export function touchNear(c: Ctx): void {
 
 /** True if an event is one a Traveler may remember. */
 export const memorable = (e: SimEvent): boolean =>
+  e.type.startsWith('party') ||
   e.type === 'killed' ||
   e.type === 'playerPassed' ||
   e.type === 'duelStarted' ||
@@ -539,7 +543,7 @@ function say(
   slot: number,
   text: string,
   template: string,
-  channel: 'local' | 'world' | 'whisper',
+  channel: 'local' | 'world' | 'whisper' | 'party',
   d: () => number,
   due = c.minute + 1,
 ): void {
@@ -705,6 +709,110 @@ export function rivalOnEntry(c: Ctx, h: Helpers, events: readonly SimEvent[]): v
         );
         break;
       }
+    }
+  }
+}
+
+const ACTIVITY_WORD: Readonly<Record<string, string>> = { area: 'a hunt', trial: 'a Trial' };
+
+/** The name of a party's activity inside a line. */
+function activityWord(id: string): string {
+  if (DUNGEON_NAMES[id]) return DUNGEON_NAMES[id];
+  const c = CREATURES[id];
+  if (c) return `${c.name} hunting`;
+  const t = TRIALS[id];
+  if (t) return `the ${SKILLS[t.skill]?.name ?? ''} Trial`.replace('  ', ' ');
+  return ACTIVITY_WORD[id] ?? 'a run';
+}
+
+const itemWord = (id: string): string => {
+  const def = ITEMS[id];
+  return (def ? ITEM_STRINGS[def.nameKey] : undefined) ?? 'something';
+};
+
+/**
+ * Party chat (POW-M5-07). Every line follows a party event of this tick: a member joined or
+ * answered, gave notice, left, went down, got up, said brb, the party wiped or won, and the loot
+ * rolls. Lines are said in the member's voice in the Party channel.
+ */
+export function partyEvents(c: Ctx, h: Helpers, events: readonly SimEvent[]): void {
+  const now = c.minute;
+  const line = (slot: number, key: string, fills: Record<string, string> = {}, due = now): void => {
+    const list = PARTY_LINES[key];
+    const t = c.ids[slot];
+    if (!list || !t) return;
+    const d = h.dice(c, 9300 + slot * 7 + key.length + c.minute);
+    say(
+      c,
+      h,
+      slot,
+      lineFor(list, t, d, { player: c.player, ...fills }),
+      `party.${key}`,
+      'party',
+      d,
+      due,
+    );
+  };
+  const members = c.state.party?.members.map((m) => m.slot) ?? [];
+  const some = (salt: number): number | null => {
+    if (members.length === 0) return null;
+    const d = h.dice(c, 9400 + salt + c.minute);
+    return members[Math.floor(d() * members.length)] ?? null;
+  };
+  const answered = new Set(events.flatMap((e) => (e.type === 'partyAnswered' ? [e.slot] : [])));
+  for (const e of events) {
+    switch (e.type) {
+      case 'partyJoined':
+        // One who answered the player's listing says so first, then hello a minute on.
+        line(
+          e.slot,
+          'join',
+          { activity: activityWord(e.activity) },
+          answered.has(e.slot) ? now + 1 : now,
+        );
+        break;
+      case 'partyAnswered':
+        line(e.slot, 'answer', { activity: activityWord(e.activity) }, now);
+        break;
+      case 'partyWarned':
+        line(e.slot, 'warn');
+        break;
+      case 'partyLeft':
+        line(e.slot, e.why === 'player' ? 'parted' : 'leave');
+        break;
+      case 'partyDowned':
+        line(e.slot, 'down');
+        break;
+      case 'partyRevived':
+        line(e.slot, 'revive', {}, now + 1);
+        break;
+      case 'partyBrb':
+        line(e.slot, 'brb');
+        break;
+      case 'partyWipe': {
+        const s = some(1);
+        if (s !== null) line(s, 'wipe', {}, now + 1);
+        break;
+      }
+      case 'partyFightOver': {
+        const d = h.dice(c, 9500 + c.minute);
+        const s = some(2);
+        if (s !== null && d() < 0.35) line(s, 'fightOver', {}, now + 1);
+        break;
+      }
+      case 'partyLootRoll': {
+        const item = itemWord(e.item);
+        if (e.rare) {
+          const s = some(3);
+          if (s !== null) line(s, 'rare', { item });
+        }
+        for (const r of e.rolls)
+          line(r.slot, r.need ? 'need' : 'pass', { roll: String(r.roll), item });
+        line(e.winner, 'won', { item }, now + 1);
+        break;
+      }
+      default:
+        break;
     }
   }
 }

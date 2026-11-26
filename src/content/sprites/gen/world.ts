@@ -309,6 +309,26 @@ function mirrorProp(): SpriteDef {
   return toSprite('prop.mirror', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/**
+ * The party finder in the square (POW-M5-07): a board like the request board, with a pennant on
+ * top and three little figures pinned up side by side, a group looking for a fourth.
+ */
+function partyBoard(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 3, 13, 11, WOOD[1]);
+  im.rect(3, 4, 12, 10, WOOD[2]);
+  im.rect(7, 0, 7, 3, WOOD[0]);
+  im.rect(8, 0, 10, 1, WATER[2]);
+  im.rect(8, 2, 9, 2, WATER[1]);
+  for (const x of [4, 7, 10]) {
+    im.rect(x, 5, x + 1, 6, 3);
+    im.rect(x, 7, x + 1, 9, x === 7 ? FIRE[2] : WATER[2]);
+  }
+  im.rect(3, 11, 4, 14, WOOD[1]);
+  im.rect(11, 11, 12, 14, WOOD[1]);
+  return toSprite('prop.party_board', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** The inn yard mailbox (POW-M5-12): a post with a wooden box, a slot, and a red flag. */
 function mailbox(): SpriteDef {
   const im = new Img(16, 16);
@@ -918,6 +938,7 @@ export function worldSprites(): SpriteDef[] {
     pitCrates(),
     mailbox(),
     postStand(),
+    partyBoard(),
     waystone(),
     lockedDoor(),
     gate(),

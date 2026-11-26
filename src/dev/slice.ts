@@ -24,6 +24,8 @@ import { deliver } from '../sim/mail';
 import { makeFriends, remember } from '../sim/travelers/social';
 import { travelerViews } from '../sim/travelers/entities';
 import { learnTechnique } from '../sim/combat/techniques';
+import { identitiesOf } from '../sim/travelers/generate';
+import { travelerListings } from '../sim/party';
 
 /** What the hooks need from the running scene. */
 const CAMP_FIRE = PLACE_SPOTS['wayside.river_camp']!.focus!;
@@ -51,6 +53,8 @@ export interface PowSnapshot {
 /** Test and playtest access. Dev builds only. */
 export interface PowDevApi {
   snapshot(): PowSnapshot;
+  /** The party (M5-07): member handles, and the listings on the finder. */
+  party(): { members: string[]; listings: number };
   /** Places a creature one tile from the avatar, in the direction it faces. */
   spawnFoeAhead(creatureId: string): void;
   /** Posts a line to the World chat as a named speaker, for screenshots of glyph lines. */
@@ -344,6 +348,13 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       };
       spawnCreature(state, creatureId, Math.round(view.x) + 28, Math.round(view.y));
       return view.handle;
+    },
+    party() {
+      const ids = identitiesOf(state.seed);
+      return {
+        members: (state.party?.members ?? []).map((m) => ids[m.slot]?.handle ?? ''),
+        listings: travelerListings(state).length,
+      };
     },
     spawnFoeAhead(creatureId) {
       const pos = getComp(state.entities, who, 'pos');

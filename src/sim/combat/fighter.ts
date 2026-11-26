@@ -15,6 +15,7 @@ import { breaksGuard, knockPx, propertyPct, refundOf, staggerPoints } from './pr
 import { inShape, len } from './geometry';
 import { recordKill } from '../ledger';
 import { isTravelerEntity } from '../travelers/kind';
+import { isPartyEnt } from '../party';
 import { elementPct } from '../weatherEffects';
 
 /** A fresh set of pools at full. */
@@ -371,7 +372,9 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
   if (sf) sf.hitstop = Math.max(sf.hitstop, C.hitstop.attacker + bonus);
 
   if (pools.hp === 0) {
-    if (f.team === 1 && isTravelerEntity(state, h.src)) {
+    // A Traveler's kill is theirs, unless they are in the player's party: then the player's share
+    // drops as it would solo (M5-07), and the Travelers' shares are rolled by the party.
+    if (f.team === 1 && isTravelerEntity(state, h.src) && !isPartyEnt(state, h.src)) {
       const ai = getComp(e, dst, 'ai');
       if (ai) ai.noLoot = true;
     }

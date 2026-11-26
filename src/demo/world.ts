@@ -20,6 +20,8 @@ import { TRAVELER_SHIMMER } from '../content/sprites/travelerShimmer';
 import { identitiesOf } from '../sim/travelers/generate';
 import { demoteAll, profileOf, travelerViews } from '../sim/travelers/entities';
 import { MailSheet } from '../ui/dom/mailSheet';
+import { PartySheet } from '../ui/dom/partySheet';
+import { PartyFrames } from '../ui/dom/partyFrames';
 import { TravelerCard } from '../ui/dom/travelerCard';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
 import { SIGN_STRINGS } from '../content/strings/signs';
@@ -561,7 +563,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
     keysEnabled: () =>
-      !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen && !mailOpen,
+      !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen && !mailOpen && !partyOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -1099,6 +1101,17 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   });
   messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
   // The mailbox in the inn yard and the post stand in the square (M5-12).
+  // The party finder in the square, and the party frames under the bars (M5-07).
+  let partyOpen = false;
+  const partySheet = new PartySheet(root, {
+    read: () => ({ state }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      partyOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
+  const partyFrames = new PartyFrames(root);
   let mailOpen = false;
   const mailSheet = new MailSheet(root, {
     read: () => ({ state, who }),
@@ -1557,6 +1570,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           for (const e of state.events.list) {
             if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot), state);
             else if (e.type === 'mailOpened') mailSheet.open();
+            else if (e.type === 'partyBoardOpened') partySheet.open();
+            else if (e.type === 'partyLootRoll') partyFrames.showRoll(state, e, now);
+            else if (
+              partySheet.isOpen &&
+              (e.type === 'partyJoined' || e.type === 'partyLeft')
+            )
+              partySheet.refresh();
             else if (e.type === 'mailArrived') notices.toast(MAIL_STRINGS.arrived);
             else if (e.type === 'duelStarted') notices.toast(FRIEND_STRINGS.duel.begins);
             else if (e.type === 'duelEnded')
@@ -2203,6 +2223,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         menuOpen || talkOpen || mirrorOpen || notices.tabletOpen || messageView.open || panelStep,
       );
       messageView.setBusy(panelStep);
+      partyFrames.update(state, now);
       messageView.layout(lanes, cssBox.height * (1 - UI_BALANCE.messages.sheetFraction));
       messageView.render();
       drawFloaters(renderer, fonts.small, router, {

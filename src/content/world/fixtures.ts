@@ -54,7 +54,9 @@ export type FixtureType =
   /** Crates that slide aside when used, for good, and then no longer block (POW-M5-29). */
   | 'slide'
   /** A mailbox or post stand: using it opens the letters (POW-M5-12). */
-  | 'mailbox';
+  | 'mailbox'
+  /** The party finder: using it opens the listings (POW-M5-07). */
+  | 'partyBoard';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -195,6 +197,8 @@ const LIST: readonly FixtureDef[] = [
   // The mailbox in the inn yard and the post stand in the square (POW-M5-12).
   { kind: 'fixture.mailbox', type: 'mailbox', sprite: 'prop.mailbox', size: 10 },
   { kind: 'fixture.post_stand', type: 'mailbox', sprite: 'prop.post_stand', size: 12 },
+  // The party finder beside the request board in the square (POW-M5-07).
+  { kind: 'fixture.party_board', type: 'partyBoard', sprite: 'prop.party_board', size: 14 },
   { kind: 'fixture.scarecrow', type: 'site', sprite: 'prop.scarecrow', size: 10 },
   { kind: 'fixture.crow_mound', type: 'site', sprite: 'prop.crow_mound', size: 10 },
   // A set of firebricks in a crate: a stand-in for the Rootway R9, the Deeps and the Undermill.

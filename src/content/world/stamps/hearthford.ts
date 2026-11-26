@@ -69,6 +69,7 @@ function hearthford(): StampV2 {
   b.place('fixture.waystone', 21, 25);
   b.place('fixture.board', 34, 25);
   b.place('fixture.post_stand', 36, 25);
+  b.place('fixture.party_board', 32, 25);
   for (const x of [18, 19, 20]) b.object(x, 24, 'tile.board');
   // A well: water in a ring of barrels.
   b.ground(21, 32, Terrain.Water);

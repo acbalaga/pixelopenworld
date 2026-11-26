@@ -33,6 +33,7 @@ import {
   loginHellos,
   memoryLines,
   offerFor,
+  partyEvents,
   processInbox,
   memorable,
   recordMemories,
@@ -60,8 +61,8 @@ import { applyVoice, glyphsIn } from './voice';
 
 type Slots = { [K in SlotName]?: string | undefined };
 type Channel = 'world' | 'local';
-/** Where a line can be said: the two public channels, or a whisper to the player. */
-type SayChannel = Channel | 'whisper';
+/** Where a line can be said: the two public channels, a whisper to the player, or the party (M5-07). */
+type SayChannel = Channel | 'whisper' | 'party';
 
 export interface Queued {
   due: number;
@@ -339,7 +340,7 @@ function speak(
     slots,
     chips: offered,
   });
-  if (channel !== 'whisper') {
+  if (channel === 'world' || channel === 'local') {
     const r = chat.recent[channel];
     if (!reply && !template.startsWith('exchange.')) r.push(template);
     while (r.length > CHAT.windowLines) r.shift();
@@ -923,4 +924,5 @@ export function socialSystem(state: SimState): void {
   recordMemories(ctx, state.events.list);
   duelEvents(ctx, HELPERS, state.events.list);
   rivalOnEntry(ctx, HELPERS, state.events.list);
+  partyEvents(ctx, HELPERS, state.events.list);
 }

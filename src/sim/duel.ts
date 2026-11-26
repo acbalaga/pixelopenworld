@@ -51,7 +51,7 @@ export function acceptsDuel(
   temper: Temper,
   nowMin: number,
 ): boolean {
-  if (state.duel) return false;
+  if (state.duel || state.party?.members.some((m) => m.slot === slot)) return false;
   const life = state.travelers[slot];
   if (!life) return false;
   return regardNow(life, nowMin) >= DUELS.acceptAt[temper];

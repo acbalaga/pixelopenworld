@@ -186,6 +186,8 @@ export type SimEvent =
   | { type: 'rivalAppeared'; slot: number; dungeon: string }
   /** The player opened a mailbox (M5-12). */
   | { type: 'mailOpened'; id: number; who: number }
+  /** The party finder in the square was used (M5-07). */
+  | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */
   | { type: 'mailArrived'; slot: number }
   | { type: 'mailClaimed'; id: number; who: number }
@@ -317,7 +319,7 @@ export type SimEvent =
   /** A Traveler said something. `source` is the id of the `chatSource` or event it came from. */
   | {
       type: 'travelerSpoke';
-      channel: 'world' | 'local' | 'whisper';
+      channel: 'world' | 'local' | 'whisper' | 'party';
       slot: number;
       text: string;
       glyphs: string[];
@@ -328,6 +330,25 @@ export type SimEvent =
       slots: Record<string, string>;
       /** Reply chips the player may answer with (M5-06): 2 to 4, or none for a line nobody answers. */
       chips: { id: string; text: string }[];
+    }
+  /** Parties (M5-07). A Traveler joined, answered the player's listing, or left; notice, downs and loot. */
+  | { type: 'partyJoined'; slot: number; activity: string }
+  | { type: 'partyAnswered'; slot: number; activity: string }
+  | { type: 'partyLeft'; slot: number; why: 'session' | 'player' | 'full' }
+  | { type: 'partyPosted'; activity: string }
+  | { type: 'partyWarned'; slot: number }
+  | { type: 'partyBrb'; slot: number }
+  | { type: 'partyDowned'; slot: number }
+  | { type: 'partyRevived'; slot: number }
+  | { type: 'partyWipe' }
+  | { type: 'partyFightOver' }
+  | {
+      type: 'partyLootRoll';
+      item: string;
+      qty: number;
+      rolls: { slot: number; need: boolean; roll: number }[];
+      winner: number;
+      rare: boolean;
     }
   /** The player said something with a chip (M5-06). `slot` is who they said it to. */
   | { type: 'playerSpoke'; channel: 'local' | 'whisper'; slot: number; text: string }

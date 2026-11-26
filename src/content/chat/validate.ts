@@ -16,6 +16,7 @@ import {
 } from './letters';
 import { SCENES } from './scenes';
 import { DUEL_LINES, RIVAL_LINES, WAKE } from './social';
+import { PARTY_LINES } from './party';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
@@ -49,6 +50,8 @@ export interface ChatContent {
   letters?: readonly LetterTemplate[];
   /** Other social lines (M5-12 duel and Rival lines): text checks, and only `{player}` and `{dungeon}`. */
   other?: readonly string[];
+  /** Party chat lines (M5-07). */
+  party?: readonly string[];
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -260,6 +263,13 @@ export function validateChat(c: ChatContent): string[] {
     for (const m of t.matchAll(/\{([a-z]+)\}/g))
       if (m[1] !== 'player' && m[1] !== 'dungeon') errors.push(`other[${i}]: {${m[1]}}`);
   });
+  // Party chat (M5-07): its own slots, the run, a drop, a roll and the player.
+  (c.party ?? []).forEach((t, i) => {
+    checkText(`party[${i}]`, t, errors, glyphIds);
+    for (const m of t.matchAll(/\{([a-z]+)\}/g))
+      if (!['player', 'activity', 'item', 'roll'].includes(m[1]!))
+        errors.push(`party[${i}]: {${m[1]}}`);
+  });
   validateLetters(c.letters ?? [], errors, glyphIds);
   validateScenes(c.scenes ?? [], errors, glyphIds, new Set(c.exchanges.map((x) => x.id)));
   for (const id of Object.keys(PLACE_NAMES))
@@ -283,4 +293,5 @@ export const validateShippedChat = (): string[] =>
     other: [...Object.values(DUEL_LINES), ...Object.values(RIVAL_LINES)].flatMap((l) =>
       l.map((r) => r.text),
     ),
+    party: Object.values(PARTY_LINES).flatMap((l) => l.map((r) => r.text)),
   });

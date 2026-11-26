@@ -665,6 +665,8 @@ export interface SimState {
   travelers: TravelerLife[];
   /** Letters, the duel record and dungeon entries (M5-12). Saved. */
   mail: Mailbox;
+  /** The party, if any (M5-07). Session only: never saved, so a party in progress at close is gone. */
+  party?: import('./party').Party | undefined;
   /** The duel in progress, if any (M5-12). Session only: never saved. */
   duel?: DuelState | undefined;
   /** Transient. Excluded from serialization and hashing. */

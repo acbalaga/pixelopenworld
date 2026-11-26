@@ -2509,3 +2509,107 @@ canvas {
 .pow-mail-claim {
   min-height: 48px;
 }
+
+/* The party finder and the party frames (POW-M5-07). */
+.pow-party-head {
+  margin: 10px 0 6px;
+  font-size: 1rem;
+}
+.pow-party-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.pow-party-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--pal-18, #445);
+}
+.pow-party-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pow-party-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pow-party-meta {
+  opacity: 0.85;
+}
+.pow-party-btn,
+.pow-party-act {
+  min-height: 48px;
+}
+.pow-party-kind {
+  margin: 8px 0 4px;
+  opacity: 0.85;
+}
+.pow-party-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pow-party-frames {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 52px);
+  left: calc(env(safe-area-inset-left, 0px) + 4px);
+  width: min(46vw, 13rem);
+  pointer-events: none;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: #f4f0e6;
+  z-index: 3;
+}
+.pow-party-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.2rem;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 4px;
+  margin-bottom: 2px;
+  background: rgba(16, 16, 28, 0.72);
+  border-radius: 3px;
+}
+.pow-party-frame-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pow-party-frame-bar {
+  height: 6px;
+  background: #3a2430;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pow-party-frame-fill {
+  display: block;
+  height: 100%;
+  background: #d8483a;
+}
+.pow-party-frame-tag {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  opacity: 0.9;
+}
+.pow-party-frame-down .pow-party-frame-name {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.pow-party-roll {
+  margin-top: 4px;
+  padding: 4px 6px;
+  background: rgba(16, 16, 28, 0.82);
+  border: 1px solid #c9a227;
+  border-radius: 3px;
+}
+.pow-party-roll p {
+  margin: 0;
+}
+.pow-party-roll-title,
+.pow-party-roll-won {
+  font-weight: 600;
+}
