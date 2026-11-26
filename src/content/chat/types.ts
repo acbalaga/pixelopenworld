@@ -24,6 +24,16 @@ export const CATEGORIES = [
 ] as const;
 export type Category = (typeof CATEGORIES)[number];
 
+/**
+ * What a line asks of the player, when its category is too broad to say. A template with an
+ * `answers` intent offers the chips of that intent instead of its category's. `askHow` is a
+ * question about how the player did something, `strange` is a Traveler puzzled by an odd thing
+ * (the player can only shrug: no Traveler knows), `howGoes` asks how the player is, and `yesNo`
+ * asks something the player answers with yes, not yet or maybe.
+ */
+export const CHIP_INTENTS = ['askHow', 'strange', 'howGoes', 'yesNo'] as const;
+export type ChipIntent = (typeof CHIP_INTENTS)[number];
+
 /** What can make a template speak: a sim event, or a state the engine reads. */
 export const TRIGGERS = [
   'travelerLooted',
@@ -109,6 +119,8 @@ export interface ChatTemplate {
   cooldownMin: number;
   /** For a question: the kind of rumor that answers it. */
   topic?: Rumor['about'];
+  /** What the line asks of the player, when its category does not say (picks the reply chips). */
+  answers?: ChipIntent;
 }
 
 /** A two-to-five line exchange between two Travelers with a tie (design/12 4.5). */

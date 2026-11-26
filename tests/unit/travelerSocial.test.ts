@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { REGARD } from '../../src/content/balance/social';
-import { CHIPS, CHIP_SETS, EMOTE_CHIPS, REPLIES, WHISPERS } from '../../src/content/chat/social';
-import { CATEGORIES } from '../../src/content/chat/types';
+import {
+  CHIPS,
+  CHIP_SETS,
+  EMOTE_CHIPS,
+  HELLO_CHIPS,
+  INTENT_SETS,
+  MEMORY_CHIPS,
+  REPLIES,
+  WHISPERS,
+} from '../../src/content/chat/social';
+import { TEMPLATES } from '../../src/content/chat/templates';
+import { CATEGORIES, CHIP_INTENTS } from '../../src/content/chat/types';
 import { FLAG, MEMORY_KINDS } from '../../src/content/travelers/types';
 import { createAvatar } from '../../src/sim/avatar';
 import { chipsFor, replyFor, whisperFor } from '../../src/sim/chat/social';
@@ -74,6 +84,68 @@ describe('memory', () => {
 
   it('has a weight for every kind of memory', () => {
     for (const k of MEMORY_KINDS) expect(REGARD.weights[k], k).toBeDefined();
+  });
+});
+
+describe('chips fit the line they answer', () => {
+  // Chips that answer a question, a joke or a request: wrong after a hello or a compliment.
+  const WRONG_AFTER_PRAISE_OR_HELLO = ['joke', 'more', 'help', 'no'];
+  const addressed = TEMPLATES.filter(
+    (t) => t.channel === 'local' && t.text.some((x) => x.includes('{player}')),
+  );
+
+  it('every intent has 2 to 4 chips that exist and have replies', () => {
+    for (const intent of CHIP_INTENTS) {
+      const set = INTENT_SETS[intent];
+      expect(set.length, intent).toBeGreaterThanOrEqual(2);
+      expect(set.length, intent).toBeLessThanOrEqual(4);
+      for (const id of set) expect(REPLIES[id]?.length, `${intent}:${id}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('a hello, a compliment or a deed is never answered with a joke, "tell me more" or an offer of help', () => {
+    for (const t of addressed.filter((x) => !x.answers))
+      for (let tier = 0; tier <= 3; tier++)
+        for (const chip of chipsFor(t.category, tier))
+          expect(WRONG_AFTER_PRAISE_OR_HELLO, `${t.id} offers ${chip}`).not.toContain(chip);
+    for (const chip of HELLO_CHIPS) expect(WRONG_AFTER_PRAISE_OR_HELLO).not.toContain(chip);
+  });
+
+  it('a question about how the player did something offers answers to that question', () => {
+    const asks = addressed.filter((t) =>
+      t.text.some((x) =>
+        /how long|was it hard|how many tries|what was your time|teach me|how do you|share your secrets/.test(
+          x,
+        ),
+      ),
+    );
+    expect(asks.length).toBeGreaterThan(0);
+    for (const t of asks) expect(t.answers, t.id).toBe('askHow');
+  });
+
+  it('a Traveler puzzled by an odd thing can only be shrugged at: nobody knows (design/08 rule 5)', () => {
+    const odd = TEMPLATES.filter((t) => t.trigger === 'deed.singular' && t.answers === 'strange');
+    expect(odd.length).toBeGreaterThanOrEqual(3);
+    for (const t of odd)
+      for (let tier = 0; tier <= 3; tier++) {
+        const ids = chipsFor('strange', tier);
+        for (const bad of ['more', 'help', 'thanks', 'joke']) expect(ids, t.id).not.toContain(bad);
+      }
+    // And what they answer with confirms nothing.
+    for (const id of INTENT_SETS.strange)
+      for (const r of REPLIES[id]!)
+        expect(r.text, id).not.toMatch(/bell|truth|keeper|hidden|secret|find out/i);
+  });
+
+  it('a memory line is answered to match the memory, never with "tell me more" or a joke', () => {
+    for (const kind of MEMORY_KINDS) {
+      const set = MEMORY_CHIPS[kind];
+      expect(set, kind).toBeDefined();
+      for (const id of set!) expect(CHIPS[id], `${kind}:${id}`).toBeDefined();
+      for (const bad of ['joke', 'more']) expect(set, kind).not.toContain(bad);
+    }
+    expect(MEMORY_CHIPS.helpedDown).toContain('anytime');
+    expect(MEMORY_CHIPS.stoodUp).toContain('sorry');
   });
 });
 
