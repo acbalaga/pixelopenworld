@@ -241,3 +241,35 @@ describe('a fight near a Traveler, a request, a friend, a login', () => {
     expect(line!.text.toLowerCase()).toMatch(/fight|mossling/);
   }, 180_000);
 });
+
+describe('the friend list and the profile card', () => {
+  it('lists friends online first, with place and activity, and asks with Accept and Decline', async () => {
+    const { friendRows, requestRows, memoryLine } = await import('../../src/ui/menu/friendsModel');
+    const { profileOf } = await import('../../src/sim/travelers/entities');
+    const s = world(3);
+    step(s, 2400);
+    const crowd = crowdOf(s);
+    const online = [...crowd.ents.values()].map((e) => e.slot);
+    const offline = s.travelers.findIndex((_, i) => !crowd.online[i]);
+    expect(online.length).toBeGreaterThan(1);
+    makeFriends(s.travelers[online[0]!]!, 1_000_000);
+    makeFriends(s.travelers[offline]!, 1_000_000);
+    s.travelers[online[1]!]!.flags |= FLAG.requestIn;
+    const rows = friendRows(s);
+    expect(rows.map((r) => r.slot)).toEqual([online[0], offline]);
+    expect(rows[0]!.online).toBe(true);
+    expect(rows[0]!.doing.length).toBeGreaterThan(0);
+    expect(rows[1]!.online).toBe(false);
+    expect(requestRows(s).map((r) => r.slot)).toEqual([online[1]]);
+    // The card says what is shared in plain words, newest first.
+    const life = s.travelers[online[0]!]!;
+    remember(life, 'foughtNear', 0, 1, 1_000_000);
+    remember(life, 'answered', 0, 2, 1_000_001);
+    const card = profileOf(s, online[0]!);
+    expect(card.friend).toBe(true);
+    expect(card.memory[0]!.kind).toBe(MEMORY_KINDS.indexOf('answered'));
+    const lines = card.memory.map((m) => memoryLine(s, m));
+    expect(lines.every((l) => l.length > 0 && !/[–—{}]/.test(l))).toBe(true);
+    expect(lines.some((l) => /fought a .* near them/.test(l))).toBe(true);
+  }, 60_000);
+});
