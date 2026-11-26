@@ -30,6 +30,8 @@ describe('schema 28 to 29 migration (camps)', () => {
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
     delete (s as { guild?: unknown }).guild;
+    delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
+    delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

@@ -461,6 +461,9 @@ export function interactFixture(state: SimState, who: EntityId): void {
     case 'mailbox':
       emit(state.events, { type: 'mailOpened', id: target, who });
       return;
+    case 'pitBoard':
+      emit(state.events, { type: 'pitBoardOpened', id: target, who });
+      return;
     case 'guildHall':
       emit(state.events, { type: 'guildHallOpened', id: target, who, hall: def.hall ?? 0 });
       return;

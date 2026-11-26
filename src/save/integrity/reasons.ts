@@ -59,6 +59,7 @@ export const REASON_CODES = [
   'TRAVELER_BUILD',
   'MAIL_IMPLAUSIBLE',
   'GUILD_IMPLAUSIBLE',
+  'PIT_HONOR',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

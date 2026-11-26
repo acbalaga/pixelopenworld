@@ -366,6 +366,18 @@ function guildPost(id: string, cloth: Tones4, mark: 'lantern' | 'flame' | 'board
   return toSprite(id, 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/** The Pit's "Next" board (POW-M5-30): a slate on two posts with a chalked ladder of names. */
+function pitBoard(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 2, 13, 10, STONE[0]);
+  im.rect(3, 3, 12, 9, STONE[1]);
+  for (const y of [4, 6, 8]) im.rect(4, y, 4 + ((y * 3) % 7) + 3, y, 3);
+  im.rect(11, 4, 11, 4, FIRE[2]);
+  im.rect(3, 11, 4, 15, WOOD[1]);
+  im.rect(11, 11, 12, 15, WOOD[1]);
+  return toSprite('prop.pit_board', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** The inn yard mailbox (POW-M5-12): a post with a wooden box, a slot, and a red flag. */
 function mailbox(): SpriteDef {
   const im = new Img(16, 16);
@@ -976,6 +988,7 @@ export function worldSprites(): SpriteDef[] {
     mailbox(),
     postStand(),
     partyBoard(),
+    pitBoard(),
     guildPost('prop.guild_lantern', WATER, 'lantern'),
     guildPost('prop.guild_hearth', FIRE, 'flame'),
     guildPost('prop.guild_board', WOOD, 'board'),

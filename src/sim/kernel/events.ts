@@ -195,6 +195,12 @@ export type SimEvent =
   | { type: 'guildGoalDone'; goal: string; coin: number }
   | { type: 'guildInvited'; slot: number; guild: number }
   | { type: 'travelerSwitchedGuild'; slot: number; guild: number }
+  /** The Pit (M5-30): a bout between Travelers, a cheer, the "Next" board, the player's honor. */
+  | { type: 'pitBoutStarted'; a: number; b: number }
+  | { type: 'pitBoutEnded'; winner: number; loser: number; called: boolean }
+  | { type: 'pitCheer'; slot: number; for: number }
+  | { type: 'pitBoardOpened'; id: number; who: number }
+  | { type: 'pitHonor'; tier: number }
   /** The party finder in the square was used (M5-07). */
   | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */

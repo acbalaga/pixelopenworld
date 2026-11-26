@@ -144,6 +144,8 @@ describe('the Pit as baked', () => {
       expect(
         [
           'fixture.pit_crates',
+          // The "Next" board at the north rim (M5-30).
+          'fixture.pit_board',
           'tile.wall_stone_v',
           'tile.wall_stone_h',
           'tile.wall_stone_post',

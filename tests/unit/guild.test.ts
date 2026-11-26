@@ -279,6 +279,9 @@ describe('the save', () => {
     expect(JSON.parse(f.plain.sim)).not.toHaveProperty('guild');
     const before = deserializeState(f.plain.sim);
     delete (before as { guild?: unknown }).guild;
+    // Newer than the fixture too: the Pit counts (M5-30).
+    delete (before.mail.duels as { pit?: number }).pit;
+    delete (before.mail.duels as { honor?: number }).honor;
     expect(hashState(before)).toBe(f.expectedHash);
     const at32 = migrate(await decode(), MIGRATIONS, 32);
     expect(at32.schema).toBe(32);

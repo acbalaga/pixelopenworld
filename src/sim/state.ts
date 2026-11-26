@@ -11,7 +11,7 @@ import type { StreamState } from './world/stream';
 import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
 import type { DuelState } from './duel';
-import { newMailbox, type Mailbox } from './mail';
+import { newMailbox, normalMailbox, type Mailbox } from './mail';
 import { newGuildState, type GuildState } from './guild';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
@@ -670,6 +670,8 @@ export interface SimState {
   guild: GuildState;
   /** The party, if any (M5-07). Session only: never saved, so a party in progress at close is gone. */
   party?: import('./party').Party | undefined;
+  /** Bouts at the Pit (M5-30). Session only: never saved. */
+  pitBouts?: import('./pitBouts').PitState | undefined;
   /** The duel in progress, if any (M5-12). Session only: never saved. */
   duel?: DuelState | undefined;
   /** Transient. Excluded from serialization and hashing. */
@@ -848,7 +850,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     // A state from before Travelers has none: they start as a fresh generation from the seed.
     travelers: raw.travelers === undefined ? initialLives(raw.seed) : livesFromText(raw.travelers),
     // A state from before the mailbox has an empty one.
-    mail: raw.mail ?? newMailbox(),
+    mail: normalMailbox(raw.mail),
     // A state from before guilds has none: no guild, no stash.
     guild: raw.guild ?? newGuildState(),
     events: createEventQueue(),

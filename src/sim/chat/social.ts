@@ -21,6 +21,9 @@ import { SKILLS, TRIALS } from '../../content/skills';
 import { ITEMS } from '../../content/items';
 import { ITEM_STRINGS } from '../../content/strings/items';
 import { PARTY_LINES } from '../../content/chat/party';
+import { DUELIST_LINES, PIT_LINES } from '../../content/chat/pit';
+import { PIT_HONOR_NAMES } from '../../content/strings/pit';
+import { pitWatchers } from '../pitBouts';
 import { FLAG, MEMORY_KINDS, type MemoryKind } from '../../content/travelers/types';
 import { findAvatar } from '../../shared/summary';
 import { emit, type SimEvent } from '../kernel/events';
@@ -206,6 +209,7 @@ export function touchNear(c: Ctx): void {
 /** True if an event is one a Traveler may remember. */
 export const memorable = (e: SimEvent): boolean =>
   e.type.startsWith('party') ||
+  e.type.startsWith('pit') ||
   e.type === 'killed' ||
   e.type === 'playerPassed' ||
   e.type === 'duelStarted' ||
@@ -827,6 +831,56 @@ export function partyEvents(c: Ctx, h: Helpers, events: readonly SimEvent[]): vo
       }
       default:
         break;
+    }
+  }
+}
+
+/**
+ * Pit chat (POW-M5-30): spectators call a bout as it opens, cheer the fighters by name, and close
+ * it; the two fighters each say a sporting line, their own when they are one of the hand-tuned
+ * duelists. When the player duels in the Pit, the watchers cheer them by their Pit honor.
+ */
+export function pitEvents(c: Ctx, h: Helpers, events: readonly SimEvent[]): void {
+  const line = (
+    slot: number,
+    list: readonly Reply[],
+    template: string,
+    fills: Record<string, string> = {},
+  ): void => {
+    const t = c.ids[slot];
+    if (!t) return;
+    const d = h.dice(c, 9900 + slot * 3 + template.length + c.minute);
+    say(c, h, slot, lineFor(list, t, d, fills), template, 'local', d, c.minute);
+  };
+  const handle = (slot: number): string => c.ids[slot]?.handle ?? '';
+  const watcher = (salt: number, not: readonly number[] = []): number | null => {
+    const pool = pitWatchers(c.state).filter((s) => !not.includes(s));
+    if (pool.length === 0) return null;
+    return pool[Math.floor(h.dice(c, 9950 + salt + c.minute)() * pool.length)] ?? null;
+  };
+  for (const e of events) {
+    if (e.type === 'pitBoutStarted') {
+      const w = watcher(1, [e.a, e.b]);
+      if (w !== null) line(w, PIT_LINES.open, 'pit.open', { handle: handle(e.a) });
+    } else if (e.type === 'pitCheer') {
+      line(e.slot, PIT_LINES.cheer, 'pit.cheer', { handle: handle(e.for) });
+    } else if (e.type === 'pitBoutEnded') {
+      const own = (slot: number, won: boolean): Reply[] => {
+        const mine = DUELIST_LINES[handle(slot)];
+        return mine
+          ? [{ text: won ? mine.win : mine.lose }]
+          : [...(won ? PIT_LINES.winner : PIT_LINES.loser)];
+      };
+      line(e.winner, own(e.winner, true), 'pit.winner');
+      line(e.loser, own(e.loser, false), 'pit.loser');
+      const w = watcher(2, [e.winner, e.loser]);
+      if (w !== null) line(w, PIT_LINES.close, 'pit.close');
+    } else if (e.type === 'duelStarted' && c.state.duel?.pit) {
+      const honor = PIT_HONOR_NAMES[c.state.mail.duels.honor] ?? '';
+      for (const salt of [3, 4]) {
+        const w = watcher(salt, [e.slot]);
+        if (w !== null) line(w, PIT_LINES.player, 'pit.player', { honor: honor || c.player });
+      }
     }
   }
 }

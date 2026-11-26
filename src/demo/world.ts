@@ -22,6 +22,8 @@ import { demoteAll, profileOf, travelerViews } from '../sim/travelers/entities';
 import { MailSheet } from '../ui/dom/mailSheet';
 import { PartySheet } from '../ui/dom/partySheet';
 import { GuildSheet } from '../ui/dom/guildSheet';
+import { PitSheet } from '../ui/dom/pitSheet';
+import { PIT_HONOR_NAMES, PIT_STRINGS } from '../content/strings/pit';
 import { GUILD_STRINGS } from '../content/strings/guild';
 import { GUILDS } from '../content/travelers/guilds';
 import { PartyFrames } from '../ui/dom/partyFrames';
@@ -573,7 +575,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       !cardOpen &&
       !mailOpen &&
       !partyOpen &&
-      !guildOpen,
+      !guildOpen &&
+      !pitOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -1124,6 +1127,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
   });
   const partyFrames = new PartyFrames(root);
+  // The Pit's "Next" board (M5-30).
+  let pitOpen = false;
+  const pitSheet = new PitSheet(root, {
+    read: () => ({ state }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      pitOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
   // A guild hall post (M5-08): goals, stash and leave for members, how to join for the rest.
   let guildOpen = false;
   const guildSheet = new GuildSheet(root, {
@@ -1594,6 +1607,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (e.type === 'mailOpened') mailSheet.open();
             else if (e.type === 'partyBoardOpened') partySheet.open();
             else if (e.type === 'guildHallOpened') guildSheet.open(e.hall);
+            else if (e.type === 'pitBoardOpened') pitSheet.open();
+            else if (e.type === 'pitHonor')
+              notices.toast(
+                PIT_STRINGS.honorEarned.replace('{honor}', PIT_HONOR_NAMES[e.tier] ?? ''),
+              );
             else if (e.type === 'guildJoined' || e.type === 'guildLeft') {
               const name = GUILDS.find((g) => g.id === e.guild)?.name ?? '';
               notices.toast(

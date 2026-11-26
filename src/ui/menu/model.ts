@@ -1,3 +1,4 @@
+import { PIT_HONOR_NAMES } from '../../content/strings/pit';
 import { SKILLS_BALANCE as SB } from '../../content/balance/skills';
 import { TIME } from '../../content/balance/time';
 import { ITEMS } from '../../content/items';
@@ -73,6 +74,8 @@ export interface CharacterView {
   paths: PathRowView[];
   /** Both loadouts: the technique names in slots 2 to 4 (null for empty), and which is in use. */
   loadouts: LoadoutView[];
+  /** The Pit honor's name, or '' (M5-30). Cosmetic: shown here and on the Duels board. */
+  honor: string;
 }
 
 export interface LoadoutView {
@@ -269,7 +272,14 @@ export function characterView(state: SimState, who: number): CharacterView {
         ),
       }))
     : [];
-  return { pools, gear, coin: a?.coin ?? 0, paths: pathsView(state, who), loadouts };
+  return {
+    pools,
+    gear,
+    coin: a?.coin ?? 0,
+    paths: pathsView(state, who),
+    loadouts,
+    honor: PIT_HONOR_NAMES[state.mail.duels.honor] ?? '',
+  };
 }
 
 /** The Skills tab line for the Trial at a threshold: its authored hint, or "no one can test this yet". */

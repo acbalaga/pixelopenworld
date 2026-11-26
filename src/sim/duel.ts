@@ -7,6 +7,7 @@ import { SUBPX } from './kernel/fixed';
 import type { SimState } from './state';
 import { crowdOf } from './travelers/crowd';
 import { regardNow } from './travelers/social';
+import { pitWin, playerInPit } from './pitBouts';
 
 /**
  * Duels (POW-M5-12, design/07 Rivals and duels). A duel is non-lethal: the first to lose 30% of
@@ -26,6 +27,8 @@ export interface DuelState {
   begun: boolean;
   /** Health of each side at the start, to heal back to and to measure the loss by. */
   hp0: { me: number; them: number };
+  /** Begun in the Pit: a win counts toward the Pit honor (M5-30). */
+  pit?: true;
 }
 
 /** The ticks between the challenge being taken and the first blow. */
@@ -52,6 +55,8 @@ export function acceptsDuel(
   nowMin: number,
 ): boolean {
   if (state.duel || state.party?.members.some((m) => m.slot === slot)) return false;
+  const bout = state.pitBouts?.bout;
+  if (bout && (bout.a === slot || bout.b === slot)) return false;
   const life = state.travelers[slot];
   if (!life) return false;
   return regardNow(life, nowMin) >= DUELS.acceptAt[temper];
@@ -83,6 +88,7 @@ export function startDuel(state: SimState, slot: number): boolean {
     beginTick: state.tick + DUEL_COUNT_TICKS,
     begun: false,
     hp0: { me: myPools.hp, them: herPools.hp },
+    ...(playerInPit(state) ? { pit: true as const } : {}),
   };
   emit(state.events, { type: 'duelStarted', slot });
   return true;
@@ -107,8 +113,10 @@ function endDuel(state: SimState, result: 'player' | 'traveler' | 'draw'): void 
   if (herPools) herPools.hp = Math.min(herPools.hpMax, Math.max(herPools.hp, d.hp0.them));
   const myPools = me === null ? undefined : getComp(state.entities, me, 'pools');
   if (myPools) myPools.hp = Math.min(myPools.hpMax, Math.max(myPools.hp, d.hp0.me));
-  if (result === 'player') state.mail.duels.wins++;
-  else if (result === 'traveler') state.mail.duels.losses++;
+  if (result === 'player') {
+    state.mail.duels.wins++;
+    if (d.pit) pitWin(state);
+  } else if (result === 'traveler') state.mail.duels.losses++;
   emit(state.events, { type: 'duelEnded', slot: d.slot, result });
 }
 

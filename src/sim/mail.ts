@@ -36,8 +36,11 @@ export interface Mailbox {
   nextId: number;
   /** Gifts sent on this real day, to hold the daily cap. */
   gifts: { day: number; n: number };
-  /** The player's duel record (POW-M5-12): the Duels board reads the wins. */
-  duels: { wins: number; losses: number };
+  /**
+   * The player's duel record (POW-M5-12): the Duels board reads the wins. `pit` counts the wins in
+   * the Pit and `honor` is the Pit honor they bring, 0 none, 1 Pit regular, 2 Pit champion (M5-30).
+   */
+  duels: { wins: number; losses: number; pit: number; honor: number };
   /** Dungeon entries by real day (kind id, day), for the Rivals, newest last. */
   entries: { dungeon: string; day: number }[];
 }
@@ -46,9 +49,18 @@ export const newMailbox = (): Mailbox => ({
   letters: [],
   nextId: 1,
   gifts: { day: -1, n: 0 },
-  duels: { wins: 0, losses: 0 },
+  duels: { wins: 0, losses: 0, pit: 0, honor: 0 },
   entries: [],
 });
+
+/** A mailbox as loaded: a state from before the mailbox has an empty one, and one from before the
+ * Pit honor (M5-30) gains its two counts at 0. */
+export function normalMailbox(m: Mailbox | undefined): Mailbox {
+  if (!m) return newMailbox();
+  m.duels.pit ??= 0;
+  m.duels.honor ??= 0;
+  return m;
+}
 
 /** True if the letter has something to claim. */
 export const hasAttachment = (l: Letter): boolean => l.coin > 0 || (l.item !== '' && l.qty > 0);

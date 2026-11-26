@@ -725,6 +725,14 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 32, sim: serializeState(s) };
   },
+  /**
+   * 32 to 33 (M5-30): the duel record gains the Pit wins and the Pit honor, both 0. A save made
+   * before has won nothing in the Pit, so nothing is granted.
+   */
+  32: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 33, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

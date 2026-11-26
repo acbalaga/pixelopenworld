@@ -1,3 +1,4 @@
+import { PIT_STRINGS } from '../../content/strings/pit';
 import type { Trust } from '../../save/integrity/reasons';
 import { togglePin } from '../hud/quickSlot';
 import { createBackupSection, type BackupDeps } from './backup';
@@ -697,6 +698,10 @@ export class MenuSheet {
     }
     put(doll, left, av, right);
     this.body.appendChild(doll);
+    if (v.honor)
+      this.body.appendChild(
+        el('p', 'pow-char-honor', PIT_STRINGS.honorLine.replace('{honor}', v.honor)),
+      );
 
     const pools = el('ul', 'pow-pools');
     for (const p of v.pools) {

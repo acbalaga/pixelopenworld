@@ -1,3 +1,4 @@
+import { honorFor } from '../../content/balance/pit';
 import { SINGULARS } from '../../content/singulars';
 import { MAP_BALANCE } from '../../content/balance/map';
 import { WAYSTONES } from '../../content/world/waystones';
@@ -179,6 +180,15 @@ export function consistency(v: View): Reason[] {
   for (const st of inv.slots) if (st) checkStack(st, false);
   if (storage.slots.length > MAX_STORAGE_SLOTS) fail('BAG_SIZE', `storage ${storage.slots.length}`);
   for (const st of storage.slots) if (st) checkStack(st, false);
+  // The Pit honor (M5-30) follows the Pit wins, and the Pit wins are duels won.
+  const duels = sim.mail?.duels;
+  if (duels) {
+    const pit = duels.pit ?? 0;
+    if (!Number.isInteger(pit) || pit < 0 || pit > duels.wins)
+      fail('PIT_HONOR', `pit wins ${pit} of ${duels.wins} duels won`);
+    else if ((duels.honor ?? 0) !== honorFor(pit))
+      fail('PIT_HONOR', `honor ${duels.honor} for ${pit} pit wins`);
+  }
   // The guild stashes (M5-08) hold what the player put in: the same rules as the storage chest.
   for (const slots of Object.values(sim.guild?.stashes ?? {})) {
     if (!Array.isArray(slots) || slots.length > 64) fail('BAG_SIZE', 'guild stash');

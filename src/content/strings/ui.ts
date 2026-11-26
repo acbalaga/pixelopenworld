@@ -655,6 +655,7 @@ export const UI_STRINGS = {
       TRAVELER_BUILD: 'A Traveler has more skill than the time played allows.',
       MAIL_IMPLAUSIBLE: 'The gifts from mail are more than the days played allow.',
       GUILD_IMPLAUSIBLE: 'The pay from guild goals is more than the weeks played allow.',
+      PIT_HONOR: 'The Pit honor does not match the duels won there.',
       CHAIN_BROKEN: 'The save and its backup do not follow on from each other.',
     },
   },

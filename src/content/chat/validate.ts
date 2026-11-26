@@ -17,6 +17,7 @@ import {
 import { SCENES } from './scenes';
 import { DUEL_LINES, RIVAL_LINES, WAKE } from './social';
 import { PARTY_LINES } from './party';
+import { DUELIST_LINES, PIT_LINES } from './pit';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
@@ -50,6 +51,8 @@ export interface ChatContent {
   letters?: readonly LetterTemplate[];
   /** Other social lines (M5-12 duel and Rival lines): text checks, and only `{player}` and `{dungeon}`. */
   other?: readonly string[];
+  /** Pit chat lines (M5-30). */
+  pit?: readonly string[];
   /** Party chat lines (M5-07). */
   party?: readonly string[];
 }
@@ -263,6 +266,12 @@ export function validateChat(c: ChatContent): string[] {
     for (const m of t.matchAll(/\{([a-z]+)\}/g))
       if (m[1] !== 'player' && m[1] !== 'dungeon') errors.push(`other[${i}]: {${m[1]}}`);
   });
+  // Pit chat (M5-30): a duelist's name and the player's honor.
+  (c.pit ?? []).forEach((t, i) => {
+    checkText(`pit[${i}]`, t, errors, glyphIds);
+    for (const m of t.matchAll(/\{([a-z]+)\}/g))
+      if (!['handle', 'honor'].includes(m[1]!)) errors.push(`pit[${i}]: {${m[1]}}`);
+  });
   // Party chat (M5-07): its own slots, the run, a drop, a roll and the player.
   (c.party ?? []).forEach((t, i) => {
     checkText(`party[${i}]`, t, errors, glyphIds);
@@ -294,4 +303,8 @@ export const validateShippedChat = (): string[] =>
       l.map((r) => r.text),
     ),
     party: Object.values(PARTY_LINES).flatMap((l) => l.map((r) => r.text)),
+    pit: [
+      ...Object.values(PIT_LINES).flatMap((l) => l.map((r) => r.text)),
+      ...Object.values(DUELIST_LINES).flatMap((d) => [d.win, d.lose]),
+    ],
   });

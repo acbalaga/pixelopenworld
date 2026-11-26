@@ -162,6 +162,8 @@ export function asSchema5(s: SimState): SimState {
   delete (s as { travelers?: unknown }).travelers;
   delete (s as { mail?: unknown }).mail;
   delete (s as { guild?: unknown }).guild;
+  delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
+  delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
   // Schema 24: the map (fog, notes, rumors).
   delete (s as { map?: unknown }).map;
   delete (s.entities.comps as { boss?: unknown }).boss;

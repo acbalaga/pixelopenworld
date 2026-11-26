@@ -34,6 +34,7 @@ import {
   memoryLines,
   offerFor,
   partyEvents,
+  pitEvents,
   processInbox,
   memorable,
   recordMemories,
@@ -932,6 +933,7 @@ export function socialSystem(state: SimState): void {
   duelEvents(ctx, HELPERS, state.events.list);
   rivalOnEntry(ctx, HELPERS, state.events.list);
   partyEvents(ctx, HELPERS, state.events.list);
+  pitEvents(ctx, HELPERS, state.events.list);
   // Joining and goals happen on a command's tick, not a minute's: the guild hears them here.
   const guildNews = state.events.list.filter(
     (e) => e.type === 'guildJoined' || e.type === 'guildGoalDone',

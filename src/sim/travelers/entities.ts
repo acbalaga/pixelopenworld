@@ -17,6 +17,7 @@ import type { DollSpec } from '../../content/dolls/parts';
 import { startComboStep } from '../combat/commands';
 import { duelFoeOf } from '../duel';
 import { memberOf, partyEntTick } from '../party';
+import { boutEntTick } from '../pitBouts';
 import { newFighter, newPools } from '../combat/fighter';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { px, SUBPX } from '../kernel/fixed';
@@ -711,8 +712,9 @@ export function entityTick(state: SimState, crowd: Crowd): void {
     const f = state.entities.comps.fighter[id];
     const p = state.entities.comps.pos[id];
     if (!f || !p || !state.entities.alive[id]) continue;
-    // Party members fight and follow by the party's rules (M5-07).
+    // Party members fight and follow by the party's rules (M5-07); duelists in a Pit bout by its (M5-30).
     if (partyEntTick(state, id, ent)) continue;
+    if (boutEntTick(state, id, ent)) continue;
     const d = crowd.doing[ent.slot] ?? null;
     if (f.state !== 'idle') {
       ent.mode = f.state === 'attack' ? 'fight' : 'idle';
