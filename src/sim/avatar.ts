@@ -1,6 +1,7 @@
 import { queueChatCommand } from './chat/engine';
 import { claimLetter, readLetter } from './mail';
 import { partyCommand } from './party';
+import { guildCommand } from './guild';
 import { MOVEMENT as M } from '../content/balance/movement';
 import { addNote, removeNote } from './systems/map';
 import { travelTo } from './systems/waystones';
@@ -105,6 +106,8 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
     if (c.op === 'claim') claimLetter(state, who, c.id);
     else readLetter(state, c.id);
   } else if (c.type === 'party') partyCommand(state, c);
+  else if (c.type === 'guild') guildCommand(state, who, c);
+  else if (c.type === 'guildAsk') queueChatCommand(state, c);
   else if (c.type === 'chip' || c.type === 'friend' || c.type === 'poke' || c.type === 'duel')
     queueChatCommand(state, c);
   else if (c.type === 'talk') talk(state, who, c);

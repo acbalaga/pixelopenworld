@@ -42,7 +42,16 @@ import {
 import type { Reason } from './reasons';
 import type { View } from './view';
 
-const COIN_SOURCES = ['loot', 'chest', 'request', 'sale', 'echo', 'seed', 'mailGift'];
+const COIN_SOURCES = [
+  'loot',
+  'chest',
+  'request',
+  'sale',
+  'echo',
+  'seed',
+  'mailGift',
+  'guildRequest',
+];
 const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe'];
 const ITEM_SOURCES = [
   'start',
@@ -56,6 +65,7 @@ const ITEM_SOURCES = [
   'shop',
   'buyback',
   'mailGift',
+  'guildRequest',
   'seed',
 ];
 
@@ -169,6 +179,17 @@ export function consistency(v: View): Reason[] {
   for (const st of inv.slots) if (st) checkStack(st, false);
   if (storage.slots.length > MAX_STORAGE_SLOTS) fail('BAG_SIZE', `storage ${storage.slots.length}`);
   for (const st of storage.slots) if (st) checkStack(st, false);
+  // The guild stashes (M5-08) hold what the player put in: the same rules as the storage chest.
+  for (const slots of Object.values(sim.guild?.stashes ?? {})) {
+    if (!Array.isArray(slots) || slots.length > 64) fail('BAG_SIZE', 'guild stash');
+    else for (const st of slots) if (st) checkStack(st, false);
+  }
+  if (
+    !Number.isInteger(sim.guild?.id ?? 0) ||
+    (sim.guild?.id ?? 0) < 0 ||
+    (sim.guild?.id ?? 0) > 12
+  )
+    fail('BAD_QUANTITY', `guild ${sim.guild?.id}`);
   for (const slot of Object.keys(inv.equipment)) {
     const st = inv.equipment[slot as keyof typeof inv.equipment];
     if (!(EQUIP_SLOTS as readonly string[]).includes(slot)) fail('EQUIP_SLOT', slot);

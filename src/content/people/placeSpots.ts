@@ -271,4 +271,38 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [198, 35],
     ],
   },
+  // Guild halls (POW-M5-08): before homes 6 and 7, and the far end of the inn yard.
+  'hearthford.hall_lantern': {
+    rect: { x: 196, y: 216, w: 7, h: 3 },
+    slots: [
+      [198, 217],
+      [200, 217],
+      [202, 217],
+      [197, 218],
+      [199, 218],
+      [201, 218],
+    ],
+  },
+  'hearthford.hall_hearth': {
+    rect: { x: 205, y: 216, w: 7, h: 3 },
+    slots: [
+      [207, 217],
+      [209, 217],
+      [211, 217],
+      [206, 218],
+      [208, 218],
+      [210, 218],
+    ],
+  },
+  'hearthford.inn_back_room': {
+    rect: { x: 168, y: 215, w: 9, h: 2 },
+    slots: [
+      [169, 215],
+      [171, 215],
+      [173, 215],
+      [169, 216],
+      [171, 216],
+      [176, 215],
+    ],
+  },
 };

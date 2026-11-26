@@ -186,6 +186,15 @@ export type SimEvent =
   | { type: 'rivalAppeared'; slot: number; dungeon: string }
   /** The player opened a mailbox (M5-12). */
   | { type: 'mailOpened'; id: number; who: number }
+  /** Guilds (M5-08): joined, left, a hall used, the stash, a goal given to or paid, an invitation. */
+  | { type: 'guildJoined'; guild: number }
+  | { type: 'guildLeft'; guild: number }
+  | { type: 'guildHallOpened'; id: number; who: number; hall: number }
+  | { type: 'guildStashMoved'; item: string; qty: number; dir: 'in' | 'out' }
+  | { type: 'guildContributed'; goal: string; qty: number }
+  | { type: 'guildGoalDone'; goal: string; coin: number }
+  | { type: 'guildInvited'; slot: number; guild: number }
+  | { type: 'travelerSwitchedGuild'; slot: number; guild: number }
   /** The party finder in the square was used (M5-07). */
   | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */
@@ -319,7 +328,7 @@ export type SimEvent =
   /** A Traveler said something. `source` is the id of the `chatSource` or event it came from. */
   | {
       type: 'travelerSpoke';
-      channel: 'world' | 'local' | 'whisper' | 'party';
+      channel: 'world' | 'local' | 'whisper' | 'party' | 'guild';
       slot: number;
       text: string;
       glyphs: string[];

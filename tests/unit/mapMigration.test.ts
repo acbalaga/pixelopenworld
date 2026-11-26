@@ -25,6 +25,7 @@ describe('schema 23 to 24 migration (the map)', () => {
     delete (s as { map?: unknown }).map;
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
+    delete (s as { guild?: unknown }).guild;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 
@@ -52,6 +53,7 @@ describe('schema 24 to 25 migration (attuned Waystones)', () => {
     delete (s.map as { waystones?: unknown }).waystones;
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
+    delete (s as { guild?: unknown }).guild;
     expect(hashState(s)).toBe(f.expectedHash);
     expect(validateSave(migrate(decoded)).reasons.map((r) => r.code)).not.toContain('MAP_STATE');
   });

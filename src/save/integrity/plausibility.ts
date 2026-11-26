@@ -1,4 +1,5 @@
 import { MAIL } from '../../content/balance/mail';
+import { GUILD_PAY_CEILING } from '../../content/balance/guilds';
 import { RECIPES } from '../../content/items/recipes';
 import { SKILLS } from '../../content/skills';
 import {
@@ -125,6 +126,11 @@ export function plausibility(v: View): Reason[] {
       'MAIL_IMPLAUSIBLE',
       `mail gift items ${sum(ledger.itemsMade.mailGift ?? {})} in ${mailDays} days`,
     );
+  // GUILD REQUESTS (M5-08). A guild posts its goals once a real week, so the pay cannot pass the
+  // weeks the save has lived times the most one week of goals can pay.
+  const weeks = Math.ceil(days / 7) + 1;
+  if ((e.guildRequest ?? 0) > weeks * GUILD_PAY_CEILING)
+    fail('GUILD_IMPLAUSIBLE', `guild pay ${e.guildRequest} in ${weeks} weeks`);
   if ((e.seed ?? 0) > coinCeiling(seconds, kills, spent))
     fail('COIN_IMPLAUSIBLE', `seeded coin ${e.seed} in ${seconds} s`);
   return out;

@@ -73,7 +73,8 @@ export interface District {
     | 'guard_yard'
     | 'market'
     | 'home'
-    | 'gate';
+    | 'gate'
+    | 'hall';
   x: number;
   y: number;
   w: number;

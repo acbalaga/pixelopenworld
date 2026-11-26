@@ -58,6 +58,7 @@ export const REASON_CODES = [
   'PLAYTIME_EXCEEDS_ELAPSED',
   'TRAVELER_BUILD',
   'MAIL_IMPLAUSIBLE',
+  'GUILD_IMPLAUSIBLE',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

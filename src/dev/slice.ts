@@ -53,6 +53,8 @@ export interface PowSnapshot {
 /** Test and playtest access. Dev builds only. */
 export interface PowDevApi {
   snapshot(): PowSnapshot;
+  /** Dev only: puts the player in a guild, as if they had joined (M5-08). */
+  joinGuild(id: number): void;
   /** The party (M5-07): member handles, and the listings on the finder. */
   party(): { members: string[]; listings: number };
   /** Places a creature one tile from the avatar, in the direction it faces. */
@@ -348,6 +350,9 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       };
       spawnCreature(state, creatureId, Math.round(view.x) + 28, Math.round(view.y));
       return view.handle;
+    },
+    joinGuild(id) {
+      state.guild = { id, stashes: state.guild.stashes, week: -1, progress: [], paid: [] };
     },
     party() {
       const ids = identitiesOf(state.seed);

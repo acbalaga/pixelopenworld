@@ -48,6 +48,7 @@ import { PLACE_LIST, SKILL_LIST } from '../travelers/lists';
 import { dayIndexOf, localMinute, MIN_PER_DAY } from '../travelers/schedule';
 import type { TravelerIdentity } from '../travelers/types';
 import { applyVoice, glyphsIn } from './voice';
+import { guildChatter, guildInvites } from './guild';
 
 /**
  * The chat engine (POW-M5-05, design/12 section 4). It turns real sim events into lines in a
@@ -62,7 +63,7 @@ import { applyVoice, glyphsIn } from './voice';
 type Slots = { [K in SlotName]?: string | undefined };
 type Channel = 'world' | 'local';
 /** Where a line can be said: the two public channels, a whisper to the player, or the party (M5-07). */
-type SayChannel = Channel | 'whisper' | 'party';
+type SayChannel = Channel | 'whisper' | 'party' | 'guild';
 
 export interface Queued {
   due: number;
@@ -103,6 +104,8 @@ export interface ChatState {
   rivalHere: Map<number, { dungeon: string; minute: number }>;
   /** Travelers poked awake this session (M5-31). */
   poked: Set<number>;
+  /** Guild invitations open, by the Traveler who sent them, to the guild id (M5-08). */
+  guildInvites: Map<number, number>;
 }
 
 export function newChatState(): ChatState {
@@ -126,6 +129,7 @@ export function newChatState(): ChatState {
     rivalMisses: 0,
     rivalHere: new Map(),
     poked: new Set(),
+    guildInvites: new Map(),
   };
 }
 
@@ -724,7 +728,8 @@ function scenes(c: Ctx, events: readonly SimEvent[]): void {
     used: (k) => chat.scenes.counts.get(key(k)) ?? 0,
     canSpeak: (slot) => canSpeak(c, slot),
     cooled: (k, slot) => (chat.cooldown.get(`scene|${k}|${slot}`) ?? -1) <= c.minute,
-    recent: chat.recent.local,
+    // A scene already in line counts as said: two of the same must not be planned before the first is heard.
+    recent: [...chat.recent.local, ...chat.queue.map((q) => q.template)],
     dice: d,
   });
   for (const plan of plans) {
@@ -904,6 +909,8 @@ export function chatSystem(state: SimState): void {
   mailOnLogin(ctx, events, (salt) => diceFor(state, chat, salt + ctx.minute));
   friendAsks(ctx, HELPERS);
   duelAsks(ctx, HELPERS);
+  guildInvites(ctx, HELPERS);
+  guildChatter(ctx, HELPERS, events);
   memoryLines(ctx, HELPERS);
   chatter(ctx);
   chat.lastWeather = ctx.weather;
@@ -925,4 +932,9 @@ export function socialSystem(state: SimState): void {
   duelEvents(ctx, HELPERS, state.events.list);
   rivalOnEntry(ctx, HELPERS, state.events.list);
   partyEvents(ctx, HELPERS, state.events.list);
+  // Joining and goals happen on a command's tick, not a minute's: the guild hears them here.
+  const guildNews = state.events.list.filter(
+    (e) => e.type === 'guildJoined' || e.type === 'guildGoalDone',
+  );
+  if (guildNews.length > 0) guildChatter(ctx, HELPERS, guildNews, false);
 }

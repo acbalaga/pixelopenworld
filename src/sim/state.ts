@@ -12,6 +12,7 @@ import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
 import type { DuelState } from './duel';
 import { newMailbox, type Mailbox } from './mail';
+import { newGuildState, type GuildState } from './guild';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -665,6 +666,8 @@ export interface SimState {
   travelers: TravelerLife[];
   /** Letters, the duel record and dungeon entries (M5-12). Saved. */
   mail: Mailbox;
+  /** The player's guild, the stashes and this week's goals (M5-08). Saved. */
+  guild: GuildState;
   /** The party, if any (M5-07). Session only: never saved, so a party in progress at close is gone. */
   party?: import('./party').Party | undefined;
   /** The duel in progress, if any (M5-12). Session only: never saved. */
@@ -742,6 +745,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     map: newMapState(),
     travelers: initialLives(seed),
     mail: newMailbox(),
+    guild: newGuildState(),
     events: createEventQueue(),
     world: null,
   };
@@ -804,6 +808,7 @@ function persistent(state: SimState): Omit<
     // Absent only in tests that take the field off to compare a hash with an older fixture's.
     travelers: state.travelers ? livesToText(state.travelers) : undefined,
     mail: state.mail,
+    guild: state.guild,
   };
 }
 
@@ -823,6 +828,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     map?: MapState;
     travelers?: string;
     mail?: Mailbox;
+    guild?: GuildState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -843,6 +849,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     travelers: raw.travelers === undefined ? initialLives(raw.seed) : livesFromText(raw.travelers),
     // A state from before the mailbox has an empty one.
     mail: raw.mail ?? newMailbox(),
+    // A state from before guilds has none: no guild, no stash.
+    guild: raw.guild ?? newGuildState(),
     events: createEventQueue(),
     world,
   };

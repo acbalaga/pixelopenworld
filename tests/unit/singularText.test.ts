@@ -133,6 +133,7 @@ describe('schema 25 to 26 migration (Singular progress)', () => {
     }
     delete (s as { travelers?: unknown }).travelers;
     delete (s as { mail?: unknown }).mail;
+    delete (s as { guild?: unknown }).guild;
     expect(hashState(s)).toBe(f.expectedHash);
     const now = migrate(decoded);
     expect(now.schema).toBe(CURRENT_SCHEMA);

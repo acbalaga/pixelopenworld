@@ -70,6 +70,7 @@ const specSchema = z
               'market',
               'home',
               'gate',
+              'hall',
             ]),
             x: z.number().int(),
             y: z.number().int(),

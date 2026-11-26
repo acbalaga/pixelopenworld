@@ -5,6 +5,7 @@ import { UI_STRINGS as S } from '../../content/strings/ui';
 import type { ProfileCard } from '../../sim/travelers/entities';
 import type { SimState } from '../../sim/state';
 import { memoryLine } from '../menu/friendsModel';
+import { GUILD_STRINGS as GS } from '../../content/strings/guild';
 import { detailSheet, el, put } from './parts';
 
 /**
@@ -28,6 +29,10 @@ export class TravelerCard {
       onPoke: (slot: number) => void;
       /** Challenges the Traveler to a duel (M5-12). */
       onDuel: (slot: number) => void;
+      /** Asks the Traveler to let the player into their guild (M5-08). */
+      onGuildAsk?: (slot: number) => void;
+      /** The player's own guild id now, 0 for none (M5-08). */
+      myGuild?: () => number;
     },
   ) {}
 
@@ -62,6 +67,7 @@ export class TravelerCard {
         ...this.historyBlock(card, state),
         ...this.pokeBlock(card),
         ...this.duelBlock(card),
+        ...this.guildBlock(card),
         ...this.friendBlock(card),
       ],
       onClose: () => this.close(),
@@ -94,6 +100,20 @@ export class TravelerCard {
       this.close();
     });
     return [el('p', 'pow-part-sheet-desc', F.card.duelNote), b];
+  }
+
+  /** A member of a guild can be asked to let the player in, when the player is in no guild (M5-08). */
+  private guildBlock(card: ProfileCard): HTMLElement[] {
+    const guild = GUILDS.find((g) => g.id === card.guild);
+    if (!guild || !card.met || !this.opts.onGuildAsk || (this.opts.myGuild?.() ?? 0) !== 0)
+      return [];
+    const b = el('button', 'pow-button pow-card-action', GS.ask.replace('{guild}', guild.name));
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      this.opts.onGuildAsk?.(card.slot);
+      this.close();
+    });
+    return [el('p', 'pow-part-sheet-desc', GS.joinsBy.replace('{rule}', guild.joinsBy)), b];
   }
 
   /** A sleeping Traveler can be poked awake. It is a joke, so it is only here while they sleep. */

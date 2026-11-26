@@ -20,7 +20,8 @@ export interface TownPart {
     | 'guard_yard'
     | 'market'
     | 'home'
-    | 'gate';
+    | 'gate'
+    | 'hall';
   rect: Rect;
 }
 
@@ -185,6 +186,15 @@ function hearthford(): StampV2 {
     b.building(x, y, w, 5, { roof, door: Math.floor(w / 2), label: `home ${i + 1}` });
     part(`home_${i + 1}`, 'home', x, y, w, 5);
   });
+  // Guild halls (POW-M5-08): the Lantern Players meet before home 6, Hearth and Home before home 7,
+  // each by a banner post with the guild's stash and goal board. The other guilds meet in the inn's
+  // back room, the far end of the inn yard, until their own regions are baked.
+  b.place('fixture.guild_hall_lantern', 33, 52);
+  part('hall_lantern', 'hall', 32, 52, 7, 3);
+  b.place('fixture.guild_hall_hearth', 42, 52);
+  part('hall_hearth', 'hall', 41, 52, 7, 3);
+  b.place('fixture.guild_back_room', 13, 52);
+  part('inn_back_room', 'hall', 4, 51, 9, 2);
   b.rect(2, 10, 24, 4, Terrain.Cobble);
 
   // The wall: a low stone wall, four gates where the streets leave, a sign at each.

@@ -46,6 +46,7 @@ import { PIT } from '../../content/balance/travelers';
 import { DUNGEON_NAMES } from '../../content/chat/names';
 import { acceptsDuel, startDuel } from '../duel';
 import type { Ctx, Helpers } from './engine';
+import { guildAsk, guildChip } from './guild';
 import { writeDuelNote } from './letters';
 
 /**
@@ -58,7 +59,7 @@ import { writeDuelNote } from './letters';
 /** What the player may answer with, per Traveler, until they answer or it goes stale. */
 export interface Offer {
   slot: number;
-  category: Category | 'request' | 'hello' | 'duelAsk';
+  category: Category | 'request' | 'hello' | 'duelAsk' | 'guildAsk';
   chips: string[];
   channel: 'local' | 'whisper';
   minute: number;
@@ -69,7 +70,8 @@ export type Inbox =
   | { type: 'chip'; slot: number; chip: string }
   | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' }
   | { type: 'poke'; slot: number }
-  | { type: 'duel'; slot: number };
+  | { type: 'duel'; slot: number }
+  | { type: 'guildAsk'; slot: number };
 
 /** Abstract minutes (two real seconds each) an offer of chips lasts: a minute of real time. */
 export const OFFER_MIN = 30;
@@ -143,10 +145,16 @@ export function offerFor(
   c: Ctx,
   slot: number,
   template: string,
-  channel: 'world' | 'local' | 'whisper' | 'party',
+  channel: 'world' | 'local' | 'whisper' | 'party' | 'guild',
   slots: Record<string, string>,
 ): { id: string; text: string }[] {
-  if (channel === 'world' || channel === 'party' || slots.player === undefined) return [];
+  if (
+    channel === 'world' ||
+    channel === 'party' ||
+    channel === 'guild' ||
+    slots.player === undefined
+  )
+    return [];
   const category = CATEGORY_OF.get(template);
   if (!category) return [];
   const life = c.state.travelers[slot];
@@ -440,6 +448,10 @@ export function processInbox(c: Ctx, h: Helpers): void {
       challenge(c, h, slot);
       continue;
     }
+    if (it.type === 'guildAsk') {
+      guildAsk(c, h, slot);
+      continue;
+    }
     if (it.type === 'poke') {
       // A joke, not an interaction: no memory, no regard, no contact. One reaction per Traveler a session.
       const ent = crowd.ents.get(crowd.entOf[slot] ?? -1);
@@ -502,7 +514,9 @@ export function processInbox(c: Ctx, h: Helpers): void {
     life.flags |= FLAG.met;
     if (!emote) c.chat.offers.delete(slot);
     if (!emote && (offer as Offer).category === 'question') rememberOnce(c, slot, 'answered', 0);
-    if (it.chip === 'duel.yes' && offer?.category === 'duelAsk') {
+    if ((it.chip === 'guild.yes' || it.chip === 'guild.no') && offer?.category === 'guildAsk') {
+      guildChip(c, slot, it.chip);
+    } else if (it.chip === 'duel.yes' && offer?.category === 'duelAsk') {
       if (startDuel(c.state, slot)) c.chat.duelAsked.add(slot);
     } else if (it.chip === 'friend.yes') {
       life.flags &= ~FLAG.requestIn;

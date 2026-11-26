@@ -717,6 +717,14 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 31, sim: serializeState(s) };
   },
+  /**
+   * 31 to 32 (M5-08): the sim gains `guild`: no guild, no stash, no goals. A save made before has
+   * never been in a guild, so nothing it holds is touched and the ledger has nothing to add.
+   */
+  31: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 32, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

@@ -56,7 +56,9 @@ export type FixtureType =
   /** A mailbox or post stand: using it opens the letters (POW-M5-12). */
   | 'mailbox'
   /** The party finder: using it opens the listings (POW-M5-07). */
-  | 'partyBoard';
+  | 'partyBoard'
+  /** A guild's hall post: its banner, stash and goal board (POW-M5-08). `hall` says whose. */
+  | 'guildHall';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -76,6 +78,8 @@ export interface ArenaWave {
 export interface FixtureDef {
   kind: string;
   type: FixtureType;
+  /** Guild hall: the guild it belongs to (4, 7), or 0 for the inn's back room, where the rest meet. */
+  hall?: number;
   /** Atlas sprite id drawn for it, with `closed` and `open` frames where it has two states. */
   sprite?: string;
   /** Body size in px for things that block. Portals and plates have none. */
@@ -199,6 +203,29 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.post_stand', type: 'mailbox', sprite: 'prop.post_stand', size: 12 },
   // The party finder beside the request board in the square (POW-M5-07).
   { kind: 'fixture.party_board', type: 'partyBoard', sprite: 'prop.party_board', size: 14 },
+  // Guild halls (POW-M5-08): Lantern Players and Hearth and Home in Hearthford, and the inn's back
+  // room for every guild whose home region is not baked yet.
+  {
+    kind: 'fixture.guild_hall_lantern',
+    type: 'guildHall',
+    sprite: 'prop.guild_lantern',
+    size: 12,
+    hall: 4,
+  },
+  {
+    kind: 'fixture.guild_hall_hearth',
+    type: 'guildHall',
+    sprite: 'prop.guild_hearth',
+    size: 12,
+    hall: 7,
+  },
+  {
+    kind: 'fixture.guild_back_room',
+    type: 'guildHall',
+    sprite: 'prop.guild_board',
+    size: 12,
+    hall: 0,
+  },
   { kind: 'fixture.scarecrow', type: 'site', sprite: 'prop.scarecrow', size: 10 },
   { kind: 'fixture.crow_mound', type: 'site', sprite: 'prop.crow_mound', size: 10 },
   // A set of firebricks in a crate: a stand-in for the Rootway R9, the Deeps and the Undermill.

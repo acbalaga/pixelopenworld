@@ -42,7 +42,8 @@ export interface Ledger {
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
-export type CoinSource = 'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed' | 'mailGift';
+export type CoinSource =
+  'loot' | 'chest' | 'request' | 'sale' | 'echo' | 'seed' | 'mailGift' | 'guildRequest';
 export type CoinSink = 'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe';
 export type ItemSource =
   | 'start'
@@ -57,6 +58,7 @@ export type ItemSource =
   | 'buyback'
   | 'singular'
   | 'mailGift'
+  | 'guildRequest'
   | 'seed';
 
 /** An empty ledger. */

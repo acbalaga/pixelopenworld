@@ -55,10 +55,16 @@ function grid(room: DungeonRoom, edges: readonly DungeonEdge[]): Grid {
     else if (def.type === 'resetpost') {
       posts.push(i);
       walk[i] = false;
-    }
-    else if (def.type === 'plate' && (def.holds ?? ['block']).includes('block')) plates.push(i);
+    } else if (def.type === 'plate' && (def.holds ?? ['block']).includes('block')) plates.push(i);
     else if (def.type === 'portal' || def.type === 'arrival') mark(noPush, o.x, o.y, r.w, r.h);
-    else if (SOLID_TYPES.has(def.type) && !def.arenaDoor && !def.tide && !def.water && !def.holdTicks) walk[i] = false;
+    else if (
+      SOLID_TYPES.has(def.type) &&
+      !def.arenaDoor &&
+      !def.tide &&
+      !def.water &&
+      !def.holdTicks
+    )
+      walk[i] = false;
   }
   for (const e of edges) {
     if (e.from === room.id) mark(noPush, e.at.x, e.at.y, r.w, r.h);
@@ -237,7 +243,8 @@ export function validateDungeon(def: DungeonDef): string[] {
         ),
       );
   for (const r of def.rooms)
-    if (!reachable.has(r.id) && !r.outsideOnly) errors.push(at(`room ${r.id} cannot be reached from the entrance`));
+    if (!reachable.has(r.id) && !r.outsideOnly)
+      errors.push(at(`room ${r.id} cannot be reached from the entrance`));
 
   // The way back: from every reachable room, the entrance must be reachable by edges that work
   // in that direction, with every key in hand. A drop works one way only.

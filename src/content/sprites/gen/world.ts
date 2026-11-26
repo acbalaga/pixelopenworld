@@ -329,6 +329,43 @@ function partyBoard(): SpriteDef {
   return toSprite('prop.party_board', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/**
+ * A guild hall post (POW-M5-08): a banner on a pole over a small iron-bound stash chest. The
+ * Lantern Players fly a gold lantern on blue, Hearth and Home a gold flame on red, and the inn's
+ * back room has a plain board crowded with pennants of every guild that meets there.
+ */
+function guildPost(id: string, cloth: Tones4, mark: 'lantern' | 'flame' | 'board'): SpriteDef {
+  const im = new Img(16, 16);
+  // The chest.
+  im.rect(2, 10, 13, 14, WOOD[1]);
+  im.rect(2, 10, 13, 10, WOOD[3]);
+  im.rect(2, 12, 13, 12, METAL[1]);
+  im.rect(7, 11, 8, 13, GOLD[2]);
+  if (mark === 'board') {
+    im.rect(3, 1, 12, 8, WOOD[2]);
+    im.rect(3, 1, 12, 1, WOOD[3]);
+    const pens: Tones4[] = [FIRE, WATER, LEAF, GOLD, VIOLET];
+    pens.forEach((t, i) => im.rect(4 + i * 2, 3, 4 + i * 2, 6 - (i % 2), t[2]));
+    im.rect(4, 8, 4, 9, WOOD[0]);
+    im.rect(11, 8, 11, 9, WOOD[0]);
+  } else {
+    im.rect(3, 0, 3, 9, WOOD[0]);
+    im.rect(4, 1, 11, 8, cloth[1]);
+    im.rect(4, 1, 11, 1, cloth[2]);
+    for (const x of [5, 7, 9, 11]) im.set(x, 8, cloth[0]);
+    if (mark === 'lantern') {
+      im.rect(7, 3, 8, 3, GOLD[1]);
+      im.rect(6, 4, 9, 6, GOLD[2]);
+      im.rect(7, 5, 8, 5, GOLD[3]);
+    } else {
+      im.rect(7, 3, 8, 6, GOLD[2]);
+      im.rect(6, 5, 9, 6, GOLD[1]);
+      im.set(7, 3, GOLD[3]);
+    }
+  }
+  return toSprite(id, 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** The inn yard mailbox (POW-M5-12): a post with a wooden box, a slot, and a red flag. */
 function mailbox(): SpriteDef {
   const im = new Img(16, 16);
@@ -939,6 +976,9 @@ export function worldSprites(): SpriteDef[] {
     mailbox(),
     postStand(),
     partyBoard(),
+    guildPost('prop.guild_lantern', WATER, 'lantern'),
+    guildPost('prop.guild_hearth', FIRE, 'flame'),
+    guildPost('prop.guild_board', WOOD, 'board'),
     waystone(),
     lockedDoor(),
     gate(),
