@@ -653,6 +653,7 @@ export const UI_STRINGS = {
       GATHER_RATE: 'More was gathered than is possible in the time played.',
       PLAYTIME_EXCEEDS_ELAPSED: 'More time was played than has passed since the save began.',
       TRAVELER_BUILD: 'A Traveler has more skill than the time played allows.',
+      MAIL_IMPLAUSIBLE: 'The gifts from mail are more than the days played allow.',
       CHAIN_BROKEN: 'The save and its backup do not follow on from each other.',
     },
   },

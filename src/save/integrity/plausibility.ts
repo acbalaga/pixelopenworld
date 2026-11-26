@@ -1,3 +1,4 @@
+import { MAIL } from '../../content/balance/mail';
 import { RECIPES } from '../../content/items/recipes';
 import { SKILLS } from '../../content/skills';
 import {
@@ -114,6 +115,16 @@ export function plausibility(v: View): Reason[] {
   // haggling change how much one sale pays, never how much the purses hold.
   if ((e.sale ?? 0) > saleCeiling(seconds, spent))
     fail('SALE_RATE', `sales ${e.sale}, shops can pay ${saleCeiling(seconds, spent)}`);
+  // MAIL. Gifts are capped per real day, and each carries at most `giftCoin[1]` coin or
+  // `giftQty[1]` of an item, so the lifetime totals cannot pass what the days played allow.
+  const mailDays = Math.ceil(days) + 1;
+  if ((e.mailGift ?? 0) > mailDays * MAIL.giftCapPerDay * MAIL.giftCoin[1])
+    fail('MAIL_IMPLAUSIBLE', `mail gifts ${e.mailGift} in ${mailDays} days`);
+  if (sum(ledger.itemsMade.mailGift ?? {}) > mailDays * MAIL.giftCapPerDay * MAIL.giftQty[1])
+    fail(
+      'MAIL_IMPLAUSIBLE',
+      `mail gift items ${sum(ledger.itemsMade.mailGift ?? {})} in ${mailDays} days`,
+    );
   if ((e.seed ?? 0) > coinCeiling(seconds, kills, spent))
     fail('COIN_IMPLAUSIBLE', `seeded coin ${e.seed} in ${seconds} s`);
   return out;
