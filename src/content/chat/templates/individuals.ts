@@ -140,7 +140,7 @@ export const INDIVIDUALS: readonly ChatTemplate[] = [
     2,
     'greet',
     'state.idle',
-    ['hi {player}!! want to be friends?', 'hi {player}! come sit with us'],
+    ['hi {player}!! so happy you are here', 'hi {player}! come sit with us'],
     { channel: 'local', weight: 8 },
   ),
   own('lilfern', 3, 'brag', 'state.idle', [
