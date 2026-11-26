@@ -572,7 +572,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const at = params.get('at')?.split(',').map(Number);
   const hasAt = !!at && at.length === 2 && at.every(Number.isFinite);
   // A new character has its own creation seed. Developer paths without one keep seed 1.
-  const state = restored ?? createDemoState(entry?.seed ?? 1, 0);
+  // Dev builds can pick the seed (`?seed=3`) to stage a crowd for a screenshot.
+  const devSeed = import.meta.env.DEV ? Number(params.get('seed')) || 1 : 1;
+  const state = restored ?? createDemoState(entry?.seed ?? devSeed, 0);
   // Dev builds can freeze the time of day (`?time=dawn|day|dusk|night`) and force the weather
   // (`?weather=rain`), for screenshots and the frame-rate checks.
   const wantTime = import.meta.env.DEV ? params.get('time') : null;
@@ -591,7 +593,11 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   state.region = regionId;
   if (wantWeather && (WEATHER as readonly string[]).includes(wantWeather))
     state.weatherOverride = wantWeather as Weather;
-  const worldNow = (): number => frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch);
+  // Dev builds can start the world part way through its day (`?tick=54000` is the start of dusk),
+  // and the crowd and the chat keep running, unlike `?time=`, which freezes the clock.
+  const devTickOffset = import.meta.env.DEV ? Math.max(0, Number(params.get('tick')) || 0) : 0;
+  const worldNow = (): number =>
+    frozenTick ?? worldTickAt(clock.trustedNow(), worldEpoch) + devTickOffset;
   // The device's offset from UTC, looked up once a real minute: it only changes at a DST step.
   let tzAt = -Infinity;
   let tzMin = 0;

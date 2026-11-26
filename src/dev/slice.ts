@@ -52,7 +52,13 @@ export interface PowDevApi {
   /** Posts a line to the World chat as a named speaker, for screenshots of glyph lines. */
   say(from: string, text: string): void;
   /** The crowd (M5-04): who is online, who is an entity, and their handles. */
-  crowd(): { online: number; entities: number; handles: string[]; atCamp: number };
+  crowd(): {
+    online: number;
+    entities: number;
+    handles: string[];
+    atCamp: number;
+    scenes: string[];
+  };
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
   travelerFight(creatureId: string): string | null;
   /** Puts items in the bag, as if gathered. */
@@ -190,6 +196,8 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         online: c ? onlineCount(c) : 0,
         entities: c ? c.ents.size : 0,
         handles: c ? travelerViews(state).map((v) => v.handle) : [],
+        // Scenes in progress (M5-27): wish, dance, dummy.
+        scenes: c ? [...c.ents.values()].flatMap((e) => (e.scene ? [e.scene.kind] : [])) : [],
         // Travelers seated or asleep within 3 tiles of the river camp's bedroll (POW-M5-26).
         atCamp: c
           ? travelerViews(state).filter(

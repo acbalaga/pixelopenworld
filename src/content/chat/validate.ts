@@ -7,12 +7,14 @@ import { GLYPHS } from './glyphs';
 import { DUNGEON_NAMES, PLACE_NAMES, UNBAKED_NAMES } from './names';
 import { SLOTS_BY_TRIGGER } from './slots';
 import { RUMORS } from './rumors';
+import { SCENES } from './scenes';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
   SLOT_NAMES,
   TRIGGERS,
   type ChatExchange,
+  type ChatScene,
   type ChatTemplate,
   type Glyph,
   type Rumor,
@@ -32,6 +34,7 @@ export interface ChatContent {
   voices: readonly VoiceDef[];
   glyphs: readonly Glyph[];
   rumors: readonly Rumor[];
+  scenes?: readonly ChatScene[];
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -53,6 +56,50 @@ function checkText(where: string, text: string, errors: string[], glyphIds: Set<
       errors.push(`${where}: names unbaked "${name}"`);
   for (const m of text.matchAll(/:([a-z]+):/g))
     if (!glyphIds.has(m[1] as string)) errors.push(`${where}: unknown glyph :${m[1]}:`);
+}
+
+const SCENE_ROLES: Record<ChatScene['kind'], RegExp> = {
+  wish: /^a{1,2}$/,
+  wishCame: /^a$/,
+  dance: /^abc$/,
+  ghost: /^(?:ab){1,2}a?$/,
+  dummy: /^(?:aa|aba)$/,
+};
+
+function validateScenes(
+  scenes: readonly ChatScene[],
+  errors: string[],
+  glyphIds: Set<string>,
+  seen: Set<string>,
+): void {
+  const per = new Map<string, number>();
+  for (const sc of scenes) {
+    const w = `scene ${sc.id}`;
+    if (seen.has(sc.id)) errors.push(`${w}: duplicate id`);
+    seen.add(sc.id);
+    const roles = sc.lines.map((l) => l.role).join('');
+    if (!SCENE_ROLES[sc.kind].test(roles)) errors.push(`${w}: ${sc.kind} roles "${roles}"`);
+    if (sc.kind === 'ghost' && (sc.lines.length < 3 || sc.lines.length > 5))
+      errors.push(`${w}: ${sc.lines.length} lines`);
+    if ((sc.kind === 'wishCame') !== (sc.on !== undefined)) errors.push(`${w}: on`);
+    const key = sc.kind === 'wishCame' ? `wishCame.${sc.on}` : sc.kind;
+    per.set(key, (per.get(key) ?? 0) + 1);
+    sc.lines.forEach((l, i) => {
+      checkText(`${w}[${i}]`, l.text, errors, glyphIds);
+      for (const m of l.text.matchAll(/\{([a-z]+)\}/g))
+        if (m[1] !== 'handle') errors.push(`${w}[${i}]: {${m[1]}}`);
+    });
+  }
+  if (scenes.length === 0) return;
+  for (const [k, min] of [
+    ['wish', 6],
+    ['dance', 6],
+    ['ghost', 6],
+    ['dummy', 6],
+    ['wishCame.rank', 3],
+    ['wishCame.drop', 3],
+  ] as const)
+    if ((per.get(k) ?? 0) < min) errors.push(`scenes ${k}: ${per.get(k) ?? 0}, expected ${min}`);
 }
 
 export function validateChat(c: ChatContent): string[] {
@@ -149,6 +196,7 @@ export function validateChat(c: ChatContent): string[] {
   if (c.rumors.length > 0 && (wrong / c.rumors.length > 0.4 || wrong === 0))
     errors.push(`rumors: ${wrong} of ${c.rumors.length} wrong, expected about one in four`);
 
+  validateScenes(c.scenes ?? [], errors, glyphIds, new Set(c.exchanges.map((x) => x.id)));
   for (const id of Object.keys(PLACE_NAMES))
     if (!PLACES[id]) errors.push(`place name ${id}: no such place`);
   for (const id of Object.keys(DUNGEON_NAMES))
@@ -164,4 +212,5 @@ export const validateShippedChat = (): string[] =>
     voices: VOICES,
     glyphs: GLYPHS,
     rumors: RUMORS,
+    scenes: SCENES,
   });

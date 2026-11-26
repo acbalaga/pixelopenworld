@@ -738,6 +738,16 @@ export const CAMP = {
     Veteran: 0.1,
   } as Record<Archetype, number>,
 } as const;
+/**
+ * Low-rank Travelers sometimes spend a social stretch in the guard yard, near the training dummy
+ * (POW-M5-27). Odds per social choice, by archetype. Others never.
+ */
+export const YARD = {
+  place: 'hearthford.guard_yard',
+  chance: { Newbie: 0.3, Casual: 0.2 } as Partial<Record<Archetype, number>>,
+} as const;
+/** The tile south of the square's well, where wishes are made (POW-M5-27). It is open cobble. */
+export const WELL_SPOT = { x: 185, y: 198 } as const;
 /** Travelers shop at Brin's counter (M5-14). */
 export const TRADE_PLACE = 'hearthford.brin_shop';
 

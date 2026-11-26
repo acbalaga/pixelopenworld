@@ -1,4 +1,4 @@
-import { CHAT } from '../../content/balance/chat';
+import { CHAT, SCENES as SCENE_BALANCE } from '../../content/balance/chat';
 import { FIGHT_AREAS } from '../../content/balance/travelers';
 import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
@@ -22,6 +22,8 @@ import { emit, type SimEvent } from '../kernel/events';
 import type { SimState } from '../state';
 import { dayPhase, weatherOn } from '../time';
 import { crowdOf, onlineCount } from '../travelers/crowd';
+import { startScene } from '../travelers/entities';
+import { cameTrue, planScenes } from './scenes';
 import { hash01 } from '../travelers/dice';
 import { identitiesOf } from '../travelers/generate';
 import { PLACE_LIST, SKILL_LIST } from '../travelers/lists';
@@ -65,6 +67,8 @@ export interface ChatState {
   n: number;
   lastWeather: string;
   lastPhase: string;
+  /** Small scenes (M5-27): how many ran this real hour by kind, and who made a wish and when. */
+  scenes: { counts: Map<string, number>; wished: Map<number, number> };
 }
 
 export function newChatState(): ChatState {
@@ -78,6 +82,7 @@ export function newChatState(): ChatState {
     n: 0,
     lastWeather: '',
     lastPhase: '',
+    scenes: { counts: new Map(), wished: new Map() },
   };
 }
 
@@ -627,6 +632,102 @@ function exchanges(c: Ctx): void {
   for (const l of lines) enqueue(c, l);
 }
 
+/** Small scenes (POW-M5-27): plan what can happen now, queue the lines and start the effects. */
+function scenes(c: Ctx, events: readonly SimEvent[]): void {
+  const { state, chat } = c;
+  const crowd = state.crowd!;
+  const clock = state.clock!;
+  const hourKey = Math.floor(localMinute(clock.nowMs, clock.tzOffsetMin) / 60);
+  const key = (k: string): string => `${k}|${hourKey}`;
+  const d = diceFor(state, chat, 7000 + c.minute);
+  const count = (k: string): void => {
+    chat.scenes.counts.set(key(k), (chat.scenes.counts.get(key(k)) ?? 0) + 1);
+  };
+  const gap = (): number =>
+    SCENE_BALANCE.lineGapMin[0] +
+    Math.floor(d() * (SCENE_BALANCE.lineGapMin[1] - SCENE_BALANCE.lineGapMin[0] + 1));
+  // Old counts are of no use.
+  for (const k of chat.scenes.counts.keys())
+    if (!k.endsWith(`|${hourKey}`)) chat.scenes.counts.delete(k);
+
+  const plans = planScenes({
+    state,
+    crowd,
+    minute: c.minute,
+    phase: c.phase,
+    used: (k) => chat.scenes.counts.get(key(k)) ?? 0,
+    canSpeak: (slot) => canSpeak(c, slot),
+    cooled: (k, slot) => (chat.cooldown.get(`scene|${k}|${slot}`) ?? -1) <= c.minute,
+    recent: chat.recent.local,
+    dice: d,
+  });
+  for (const plan of plans) {
+    count(plan.kind);
+    for (const l of plan.lines)
+      chat.cooldown.set(`scene|${plan.kind}|${l.slot}`, c.minute + SCENE_BALANCE.cooldownMin);
+    for (const f of plan.fx) startScene(state, crowd, f.slot, f.kind, f.ticks);
+    const src = source(c, `state:scene:${plan.scene.id}:${c.minute}`, `scene:${plan.kind}`);
+    let due = c.minute + 1;
+    plan.lines.forEach((l, i) => {
+      const who = c.ids[l.slot]!;
+      const other = plan.lines.find((x) => x.slot !== l.slot);
+      const filled = fill(plan.scene.lines[i]!.text, {
+        handle: other ? c.ids[other.slot]!.handle : undefined,
+      });
+      if (filled === null) return;
+      const v = applyVoice(voiceOf(who.voice), filled, 'banter', d);
+      enqueue(c, {
+        due,
+        slot: l.slot,
+        channel: 'local',
+        text: v.text,
+        template: plan.scene.id,
+        source: src,
+        reply: i > 0,
+        slots: {},
+      });
+      due += gap();
+    });
+    if (plan.wisher !== undefined) chat.scenes.wished.set(plan.wisher, c.minute);
+  }
+
+  // A wish comes true when a real event of theirs follows, rarely.
+  for (const e of events) {
+    if (e.type !== 'travelerRankUp' && e.type !== 'travelerLooted') continue;
+    const at = chat.scenes.wished.get(e.slot);
+    if (at === undefined) continue;
+    const age = c.minute - at;
+    if (age > SCENE_BALANCE.cameWithinMin) chat.scenes.wished.delete(e.slot);
+    if (age < SCENE_BALANCE.cameAfterMin || age > SCENE_BALANCE.cameWithinMin) continue;
+    chat.scenes.wished.delete(e.slot);
+    if (
+      (chat.scenes.counts.get(key('wishCame')) ?? 0) >= SCENE_BALANCE.capPerHour ||
+      d() >= SCENE_BALANCE.chance.wishCame ||
+      !canSpeak(c, e.slot)
+    )
+      continue;
+    const scene = cameTrue(
+      e.type === 'travelerRankUp' ? 'rank' : 'drop',
+      d,
+      chat.recent[crowd.promoted[e.slot] ? 'local' : 'world'],
+    );
+    if (!scene) continue;
+    count('wishCame');
+    const who = c.ids[e.slot]!;
+    const v = applyVoice(voiceOf(who.voice), scene.lines[0]!.text, 'banter', d);
+    enqueue(c, {
+      due: c.minute + 1,
+      slot: e.slot,
+      channel: crowd.promoted[e.slot] ? 'local' : 'world',
+      text: v.text,
+      template: scene.id,
+      source: source(c, `state:scene:${scene.id}:${c.minute}`, `scene:wishCame:${e.slot}`),
+      reply: false,
+      slots: {},
+    });
+  }
+}
+
 /** Lines whose time has come, from replies, answers, fixes and exchanges. */
 function flush(c: Ctx): void {
   const q = c.chat.queue;
@@ -639,6 +740,8 @@ function flush(c: Ctx): void {
     }
     q.splice(i, 1);
     if (!c.state.crowd!.online[item.slot]) continue;
+    // A line that is not a reply waits its speaker's gap: if they spoke meanwhile, it is dropped.
+    if (!item.reply && !canSpeak(c, item.slot)) continue;
     if (item.channel === 'local' && !c.state.crowd!.promoted[item.slot]) continue;
     speak(
       c,
@@ -695,6 +798,7 @@ export function chatSystem(state: SimState): void {
   events.forEach((e, i) => fromEvent(ctx, e, i));
   flush(ctx);
   exchanges(ctx);
+  scenes(ctx, events);
   chatter(ctx);
   chat.lastWeather = ctx.weather;
   chat.lastPhase = ctx.phase;

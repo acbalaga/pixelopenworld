@@ -18,6 +18,7 @@ import {
   TRAVEL_TILES_PER_MINUTE,
   TRAVELER_COUNT,
   WEATHER_FACTORS,
+  YARD,
   type Choice,
 } from '../../content/balance/travelers';
 import { CREATURES } from '../../content/creatures';
@@ -340,6 +341,19 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
     return {
       kind: 'social',
       place: placeIdx(camp),
+      left: pickMinutes(state, 'social'),
+      eta: 0,
+      from: 0,
+      total: 0,
+      skill: -1,
+      thing: '',
+    };
+  // New and casual players sometimes pick a fight with the dummy in the guard yard.
+  const yard = YARD.chance[t.archetype] ?? 0;
+  if (yard > 0 && chance(r, yard))
+    return {
+      kind: 'social',
+      place: placeIdx(YARD.place),
       left: pickMinutes(state, 'social'),
       eta: 0,
       from: 0,

@@ -29,3 +29,26 @@ export const CHAT = {
   /** Queued lines kept at most. */
   queueCap: 24,
 } as const;
+
+/**
+ * Small scenes (POW-M5-27): fountain wishes, inn dance-offs, camp ghost stories and arguments with
+ * the training dummy. Each needs promoted Travelers, so the player can see it. `chance` is per
+ * abstract minute while a candidate exists. `capPerHour` is per scene kind per real local hour.
+ */
+export const SCENES = {
+  capPerHour: 3,
+  chance: { wish: 0.06, wishCame: 0.5, dance: 0.3, ghost: 0.08, dummy: 0.08 },
+  /** The same Traveler is not picked for the same scene again within this many minutes. */
+  cooldownMin: 30,
+  /** Ticks a wisher spends at the fountain, a dance-off lasts (range), and a dummy fight lasts. */
+  wishTicks: 360,
+  danceTicks: [600, 1200] as readonly [number, number],
+  dummyTicks: 450,
+  /** A wish can come true after this many minutes, and no later than this many. */
+  cameAfterMin: 20,
+  cameWithinMin: 240,
+  /** Travelers under this top-skill rank argue with the dummy. */
+  dummyRankUnder: 10,
+  /** Minutes between the lines of a scene, a range. */
+  lineGapMin: [1, 2] as readonly [number, number],
+} as const;
