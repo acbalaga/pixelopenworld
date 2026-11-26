@@ -24,6 +24,8 @@ export class TravelerCard {
       onOpenChange: (open: boolean) => void;
       /** Sends a friend action for the Traveler on the card (M5-06). */
       onFriend: (slot: number, op: 'request' | 'accept' | 'decline' | 'remove') => void;
+      /** Pokes a sleeping Traveler awake (M5-31). */
+      onPoke: (slot: number) => void;
     },
   ) {}
 
@@ -56,6 +58,7 @@ export class TravelerCard {
         el('p', 'pow-part-sheet-desc', card.met ? L.met : L.notMet),
         el('p', 'pow-part-sheet-desc', F.card.regard.replace('{tier}', F.tiers[card.tier] ?? '')),
         ...this.historyBlock(card, state),
+        ...this.pokeBlock(card),
         ...this.friendBlock(card),
       ],
       onClose: () => this.close(),
@@ -76,6 +79,18 @@ export class TravelerCard {
       el('h4', 'pow-card-history-title', F.card.history),
       lines.length > 0 ? ul : el('p', 'pow-part-sheet-desc', F.card.noHistory),
     ];
+  }
+
+  /** A sleeping Traveler can be poked awake. It is a joke, so it is only here while they sleep. */
+  private pokeBlock(card: ProfileCard): HTMLElement[] {
+    if (!card.asleep) return [];
+    const b = el('button', 'pow-button pow-card-action', F.card.poke);
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      this.opts.onPoke(card.slot);
+      this.close();
+    });
+    return [el('p', 'pow-part-sheet-desc', F.card.asleep), b];
   }
 
   private friendBlock(card: ProfileCard): HTMLElement[] {

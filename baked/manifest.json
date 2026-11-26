@@ -49154,6 +49154,26 @@
         9
       ]
     },
+    "ui.mark_snore": {
+      "anims": {},
+      "frames": {
+        "base": {
+          "x": 463,
+          "y": 134,
+          "w": 5,
+          "h": 7
+        }
+      },
+      "group": "ui",
+      "origin": [
+        2,
+        7
+      ],
+      "size": [
+        5,
+        7
+      ]
+    },
     "ui.panel": {
       "anims": {},
       "frames": {

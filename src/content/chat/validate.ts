@@ -8,6 +8,7 @@ import { DUNGEON_NAMES, PLACE_NAMES, UNBAKED_NAMES } from './names';
 import { SLOTS_BY_TRIGGER } from './slots';
 import { RUMORS } from './rumors';
 import { SCENES } from './scenes';
+import { WAKE } from './social';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
@@ -35,6 +36,8 @@ export interface ChatContent {
   glyphs: readonly Glyph[];
   rumors: readonly Rumor[];
   scenes?: readonly ChatScene[];
+  /** Wake lines (M5-31): at least twelve in all, none with a slot. */
+  wake?: readonly string[];
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -196,6 +199,13 @@ export function validateChat(c: ChatContent): string[] {
   if (c.rumors.length > 0 && (wrong / c.rumors.length > 0.4 || wrong === 0))
     errors.push(`rumors: ${wrong} of ${c.rumors.length} wrong, expected about one in four`);
 
+  if (c.wake) {
+    if (c.wake.length < 12) errors.push(`wake lines: ${c.wake.length}, expected 12`);
+    c.wake.forEach((t, i) => {
+      checkText(`wake[${i}]`, t, errors, glyphIds);
+      if (/\{/.test(t)) errors.push(`wake[${i}]: slot`);
+    });
+  }
   validateScenes(c.scenes ?? [], errors, glyphIds, new Set(c.exchanges.map((x) => x.id)));
   for (const id of Object.keys(PLACE_NAMES))
     if (!PLACES[id]) errors.push(`place name ${id}: no such place`);
@@ -213,4 +223,5 @@ export const validateShippedChat = (): string[] =>
     glyphs: GLYPHS,
     rumors: RUMORS,
     scenes: SCENES,
+    wake: [...WAKE.grumpy, ...WAKE.friendly].map((r) => r.text),
   });

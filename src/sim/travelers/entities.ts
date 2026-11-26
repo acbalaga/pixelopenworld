@@ -79,6 +79,10 @@ export interface TravelerEnt {
   dancing: boolean;
   /** A scene from the chat engine, which ends with its tick or when the activity changes. */
   scene: SceneState | null;
+  /** Poked awake (M5-31): stays AFK but is not shown asleep for the rest of the activity. */
+  woke: boolean;
+  /** Ticks spent shown AFK in this activity. */
+  afkFor: number;
   lastDoing: Doing | null;
   lastX: number;
   lastY: number;
@@ -216,6 +220,8 @@ export function newEnt(slot: number): TravelerEnt {
     group: null,
     dancing: false,
     scene: null,
+    woke: false,
+    afkFor: 0,
     lastDoing: null,
     lastX: 0,
     lastY: 0,
@@ -619,6 +625,8 @@ function noteDoing(state: SimState, crowd: Crowd, ent: TravelerEnt, d: Doing | n
   ent.lastDoing = d;
   ent.dancing = false;
   ent.scene = null;
+  ent.woke = false;
+  ent.afkFor = 0;
   if (!d || d.kind !== 'social') return;
   const place = PLACES[PLACE_LIST[d.place] ?? ''];
   if (!place || place.indoors || place.spot?.focus) return;
@@ -640,7 +648,7 @@ function emoteTick(state: SimState, crowd: Crowd, ent: TravelerEnt): void {
   }
   if (!idle) return;
   if (ent.mode === 'afk') {
-    ent.emote = { kind: 'sleep', t: 0 };
+    if (!ent.woke) ent.emote = { kind: 'sleep', t: 0 };
     return;
   }
   if (state.tick < ent.nextEmote) return;
@@ -675,6 +683,10 @@ export function startScene(
 
 /** The tile south of the well, as the spot to stand at to make a wish. */
 const WELL_PX = { x: WELL_SPOT.x * TILE + 8, y: WELL_SPOT.y * TILE + 14 };
+
+/** True while a Traveler is shown asleep: AFK for five in-game minutes and not poked awake (M5-31). */
+export const isAsleep = (ent: TravelerEnt): boolean =>
+  ent.mode === 'afk' && !ent.woke && ent.afkFor >= ENTITY.asleepTicks;
 
 /** One tick of every promoted Traveler: walk, stand, work, shop, dance, emote, fight. */
 export function entityTick(state: SimState, crowd: Crowd): void {
@@ -797,6 +809,7 @@ export function entityTick(state: SimState, crowd: Crowd): void {
               : 'stand';
       else ent.mode = 'idle';
     }
+    ent.afkFor = ent.mode === 'afk' ? ent.afkFor + 1 : 0;
     emoteTick(state, crowd, ent);
   }
   // Shimmers age out.
@@ -830,6 +843,8 @@ export interface TravelerView {
   handle: string;
   title: string;
   afk: boolean;
+  /** Asleep with a floating z (M5-31): promoted, AFK past five in-game minutes, not poked awake. */
+  asleep: boolean;
   look: DollSpec;
   /** What the Traveler is doing, for tests and the dev overlay. */
   mode: EntMode;
@@ -886,6 +901,7 @@ export function travelerViews(state: SimState): TravelerView[] {
       handle: t.handle,
       title: titleOf(state, ent.slot),
       afk: ent.mode === 'afk',
+      asleep: isAsleep(ent),
       look: t.look,
       mode: ent.mode,
       glyph: ent.emote
@@ -919,6 +935,8 @@ export interface ProfileCard {
   friend: boolean;
   requestIn: boolean;
   requestOut: boolean;
+  /** Promoted and asleep right now, so the card offers Poke (M5-31). */
+  asleep: boolean;
   /** The newest memory entries of the player, newest first. */
   memory: { kind: number; subject: number; day: number }[];
 }
@@ -948,6 +966,10 @@ export function profileOf(state: SimState, slot: number): ProfileCard {
     friend: (life.flags & FLAG.friend) !== 0,
     requestIn: (life.flags & FLAG.requestIn) !== 0,
     requestOut: (life.flags & FLAG.requestOut) !== 0,
+    asleep: (() => {
+      const e = state.crowd?.ents.get(state.crowd.entOf[slot] ?? -1);
+      return e ? isAsleep(e) : false;
+    })(),
     memory: recentMemory(life).map((m) => ({ ...m })),
   };
 }
