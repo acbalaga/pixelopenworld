@@ -305,4 +305,14 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [176, 215],
     ],
   },
+  // Hearthford's north gate (POW-M5-11): where raid parties muster. The gate is the wall's gap.
+  'hearthford.gate_n': {
+    rect: { x: 190, y: 164, w: 4, h: 1 },
+    slots: [
+      [190, 164],
+      [191, 164],
+      [192, 164],
+      [193, 164],
+    ],
+  },
 };

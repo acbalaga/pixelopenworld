@@ -47,6 +47,8 @@ export interface Ledger {
   itemsBought?: Tally;
   marketSoldQty?: Tally;
   marketSoldValue?: number;
+  /** World events fired, by kind (M5-11). Bounds the raid pay. Absent before world events. */
+  eventsFired?: Tally;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
@@ -59,7 +61,8 @@ export type CoinSource =
   | 'seed'
   | 'mailGift'
   | 'guildRequest'
-  | 'marketSale';
+  | 'marketSale'
+  | 'eventReward';
 export type CoinSink =
   'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe' | 'marketFee' | 'marketBuy';
 export type ItemSource =

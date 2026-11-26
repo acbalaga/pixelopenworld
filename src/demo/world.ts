@@ -25,6 +25,8 @@ import { GuildSheet } from '../ui/dom/guildSheet';
 import { PitSheet } from '../ui/dom/pitSheet';
 import { MarketSheet } from '../ui/dom/marketSheet';
 import { MARKET_STRINGS } from '../content/strings/market';
+import { EVENT_STRINGS } from '../content/strings/events';
+import { PLACE_NAMES } from '../content/chat/names';
 import { PIT_HONOR_NAMES, PIT_STRINGS } from '../content/strings/pit';
 import { GUILD_STRINGS } from '../content/strings/guild';
 import { GUILDS } from '../content/travelers/guilds';
@@ -1622,6 +1624,32 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (e.type === 'guildHallOpened') guildSheet.open(e.hall);
             else if (e.type === 'pitBoardOpened') pitSheet.open();
             else if (e.type === 'marketOpened') marketSheet.open();
+            // World events (M5-11): announced and begun in the System channel.
+            else if (e.type === 'worldEventSoon') {
+              const t = EVENT_STRINGS.soon[e.kind];
+              if (t)
+                router.post({
+                  lane: 'chat',
+                  channel: 'system',
+                  text: t.replace('{m}', String(e.inMin)),
+                });
+            } else if (e.type === 'worldEventStarted') {
+              const t = EVENT_STRINGS.started[e.kind];
+              if (t)
+                router.post({
+                  lane: 'chat',
+                  channel: 'system',
+                  text: t.replace('{place}', PLACE_NAMES[e.site] ?? 'Hearthford'),
+                });
+            } else if (e.type === 'raidEnded')
+              router.post({
+                lane: 'chat',
+                channel: 'system',
+                text: e.won ? EVENT_STRINGS.raidWon : EVENT_STRINGS.raidLost,
+              });
+            else if (e.type === 'eventRewarded')
+              notices.toast(EVENT_STRINGS.reward.replace('{coin}', String(e.coin)));
+            else if (e.type === 'invasionRenown') notices.toast(EVENT_STRINGS.renown);
             else if (e.type === 'marketSold')
               notices.toast(
                 MARKET_STRINGS.sold

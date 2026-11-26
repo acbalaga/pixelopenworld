@@ -741,6 +741,14 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 34, sim: serializeState(s) };
   },
+  /**
+   * 34 to 35 (M5-11): the sim gains `calendar`, the last world event fired per kind. A save made
+   * before has fired none, so the next slot of each fires at its time and nothing is replayed.
+   */
+  34: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 35, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

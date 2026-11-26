@@ -54,6 +54,7 @@ const COIN_SOURCES = [
   'mailGift',
   'guildRequest',
   'marketSale',
+  'eventReward',
 ];
 const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe', 'marketFee', 'marketBuy'];
 const ITEM_SOURCES = [

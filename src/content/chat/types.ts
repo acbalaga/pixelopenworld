@@ -53,6 +53,12 @@ export const TRIGGERS = [
   /** A market price rose or fell far enough to talk about (M5-10, `priceMoved`). */
   'price.up',
   'price.down',
+  /** World events (M5-11): a raid, an invasion or a market day began; a raid was won or lost. */
+  'world.raid',
+  'world.invasion',
+  'world.market',
+  'world.raidWon',
+  'world.raidLost',
 ] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 

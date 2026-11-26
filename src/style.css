@@ -2741,3 +2741,20 @@ canvas {
 .pow-market .pow-part-sheet {
   pointer-events: auto;
 }
+
+/* The calendar of world events (POW-M5-11). */
+.pow-calendar {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.pow-calendar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--pal-18, #445);
+}
+.pow-calendar-name {
+  font-weight: 600;
+}

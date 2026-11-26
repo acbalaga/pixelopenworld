@@ -62,6 +62,8 @@ export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
     hearth('hall_lantern', 'hall_lantern', false),
     hearth('hall_hearth', 'hall_hearth', false),
     hearth('inn_back_room', 'inn_back_room', false),
+    // The north gate (M5-11): raid parties muster here before walking out together.
+    hearth('gate_n', 'gate_n', false),
   ].map((p) => {
     const spot = PLACE_SPOTS[p.id];
     return [p.id, spot ? { ...p, spot } : p];

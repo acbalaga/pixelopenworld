@@ -210,6 +210,8 @@ export function touchNear(c: Ctx): void {
 export const memorable = (e: SimEvent): boolean =>
   e.type.startsWith('party') ||
   e.type.startsWith('pit') ||
+  e.type === 'worldEventStarted' ||
+  e.type === 'raidEnded' ||
   e.type === 'killed' ||
   e.type === 'playerPassed' ||
   e.type === 'duelStarted' ||

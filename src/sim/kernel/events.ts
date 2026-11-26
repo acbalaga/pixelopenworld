@@ -195,6 +195,16 @@ export type SimEvent =
   | { type: 'guildGoalDone'; goal: string; coin: number }
   | { type: 'guildInvited'; slot: number; guild: number }
   | { type: 'travelerSwitchedGuild'; slot: number; guild: number }
+  /** World events (M5-11): soon, started, ended; a raid setting out, its boss, its end; invasion waves and Renown; pay. */
+  | { type: 'worldEventSoon'; kind: string; inMin: number }
+  | { type: 'worldEventStarted'; kind: string; slot: number; site: string }
+  | { type: 'worldEventEnded'; kind: string; slot: number }
+  | { type: 'raidSetOut'; site: string; parties: number }
+  | { type: 'raidBossUp'; id: number; site: string }
+  | { type: 'raidEnded'; site: string; won: boolean }
+  | { type: 'invasionWave'; wave: number }
+  | { type: 'invasionRenown'; amount: number }
+  | { type: 'eventRewarded'; kind: string; coin: number }
   /** The market (M5-10): listed, sold (proceeds by mail), cancelled, bought, a price moved, the terminal used. */
   | { type: 'marketListed'; id: number; item: string; qty: number; price: number; fee: number }
   | {

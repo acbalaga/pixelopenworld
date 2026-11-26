@@ -226,6 +226,7 @@ describe('the save', () => {
     delete (back.mail.duels as { pit?: number }).pit;
     delete (back.mail.duels as { honor?: number }).honor;
     delete (back as { market?: unknown }).market;
+    delete (back as { calendar?: unknown }).calendar;
     expect(hashState(back)).toBe(f.expectedHash);
   });
 

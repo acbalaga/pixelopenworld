@@ -1,3 +1,5 @@
+import { EVENT_STRINGS } from '../../content/strings/events';
+import { calendarOf } from '../../sim/worldEvents';
 import { PIT_STRINGS } from '../../content/strings/pit';
 import type { Trust } from '../../save/integrity/reasons';
 import { togglePin } from '../hud/quickSlot';
@@ -410,7 +412,11 @@ export class MenuSheet {
           this.detail?.kind === 'item' ? this.detail.id : '',
         ]);
       case 'social':
-        return JSON.stringify([factsOf(state, who, this.mapPercent()), closed]);
+        return JSON.stringify([
+          factsOf(state, who, this.mapPercent()),
+          closed,
+          calendarOf(state).map((c) => [c.kind, c.inMin, c.on]),
+        ]);
       default:
         return '';
     }
@@ -523,6 +529,31 @@ export class MenuSheet {
   /** The Social tab: the friend list (M5-06), then the rankings (M5-09). */
   private renderSocial(): void {
     put(this.body, header(S.tabs.social));
+    // The calendar of world events, with countdowns (M5-11).
+    const { state } = this.deps.read();
+    const cal = calendarOf(state);
+    if (cal.length > 0) {
+      const ul = el('ul', 'pow-calendar');
+      for (const c of cal) {
+        const when = c.on
+          ? EVENT_STRINGS.now
+          : c.inMin < 60
+            ? EVENT_STRINGS.inMin.replace('{m}', String(c.inMin))
+            : c.inMin < 1440
+              ? EVENT_STRINGS.inHours
+                  .replace('{h}', String(Math.floor(c.inMin / 60)))
+                  .replace('{m}', String(c.inMin % 60))
+              : EVENT_STRINGS.inDays.replace('{d}', String(Math.round(c.inMin / 1440)));
+        const li = el('li', 'pow-calendar-row');
+        put(
+          li,
+          el('span', 'pow-calendar-name', EVENT_STRINGS.names[c.kind] ?? c.kind),
+          el('span', 'pow-calendar-when', when),
+        );
+        ul.appendChild(li);
+      }
+      this.body.appendChild(this.sec('calendar', EVENT_STRINGS.calendar, undefined, ul));
+    }
     this.friends ??= new FriendsPanel({
       read: () => this.deps.read(),
       send: (c) => this.deps.send(c),

@@ -937,6 +937,49 @@ export function chatSystem(state: SimState): void {
 }
 
 /**
+ * World events (POW-M5-11) in chat: someone online says a raid, an invasion or a market day has
+ * begun, and how a raid ended. Runs every tick from the social step, since events start on the real
+ * minute and not the chat's.
+ */
+function worldLines(c: Ctx, events: readonly SimEvent[]): void {
+  const { state, chat } = c;
+  for (const [i, e] of events.entries()) {
+    let trigger: Trigger | null = null;
+    let site = '';
+    if (e.type === 'worldEventStarted') {
+      trigger =
+        e.kind === 'raid'
+          ? 'world.raid'
+          : e.kind === 'invasion'
+            ? 'world.invasion'
+            : e.kind === 'market'
+              ? 'world.market'
+              : null;
+      site = e.site;
+    } else if (e.type === 'raidEnded') {
+      trigger = e.won ? 'world.raidWon' : 'world.raidLost';
+      site = e.site;
+    }
+    if (!trigger) continue;
+    const pool = c.ids.filter(
+      (x) => state.crowd!.online[x.slot] === 1 && canSpeak(c, x.slot, true),
+    );
+    for (let k = 0; k < 2 && pool.length > 0; k++) {
+      const who = pool.splice(
+        Math.floor(hash01(state.seed, 0x3e1, state.tick, i * 3 + k) * pool.length),
+        1,
+      )[0]!;
+      const place = PLACE_NAMES[site] ?? '';
+      const made = make(c, who, trigger, place ? { place } : {});
+      if (!made) continue;
+      const src = source(c, `ev:${state.tick}:${i}:${k}`, `world:${e.type}`);
+      speak(c, who.slot, made.tpl.channel, made.text, made.tpl.id, src, false, made.slots);
+      void chat;
+    }
+  }
+}
+
+/**
  * Memory of what the player did (POW-M5-06). Runs every tick, after the systems that send the
  * events it reads (a kill, passing a Traveler on a board), because the engine's own step only
  * sees the events of the tick an abstract minute turns.
@@ -951,6 +994,7 @@ export function socialSystem(state: SimState): void {
   rivalOnEntry(ctx, HELPERS, state.events.list);
   partyEvents(ctx, HELPERS, state.events.list);
   pitEvents(ctx, HELPERS, state.events.list);
+  worldLines(ctx, state.events.list);
   // Joining and goals happen on a command's tick, not a minute's: the guild hears them here.
   const guildNews = state.events.list.filter(
     (e) => e.type === 'guildJoined' || e.type === 'guildGoalDone',

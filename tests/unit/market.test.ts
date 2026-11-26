@@ -263,6 +263,7 @@ describe('integrity and the save', () => {
     const s = deserializeState(at34.sim);
     expect(s.market).toEqual(newMarket());
     delete (s as { market?: unknown }).market;
+    delete (s as { calendar?: unknown }).calendar;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 
