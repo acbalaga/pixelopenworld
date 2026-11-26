@@ -305,7 +305,7 @@ export type SimEvent =
   /** A Traveler said something. `source` is the id of the `chatSource` or event it came from. */
   | {
       type: 'travelerSpoke';
-      channel: 'world' | 'local';
+      channel: 'world' | 'local' | 'whisper';
       slot: number;
       text: string;
       glyphs: string[];
@@ -314,6 +314,16 @@ export type SimEvent =
       reply: boolean;
       /** The slot values the line was filled with, for the dev chat view and the tests. */
       slots: Record<string, string>;
+      /** Reply chips the player may answer with (M5-06): 2 to 4, or none for a line nobody answers. */
+      chips: { id: string; text: string }[];
+    }
+  /** The player said something with a chip (M5-06). `slot` is who they said it to. */
+  | { type: 'playerSpoke'; channel: 'local' | 'whisper'; slot: number; text: string }
+  /** A friendship changed (M5-06): a request was sent or declined, a friend added or removed. */
+  | {
+      type: 'friendChanged';
+      slot: number;
+      change: 'requested' | 'added' | 'declined' | 'removed';
     };
 
 /** One thing the Travelers did while the player was away. */

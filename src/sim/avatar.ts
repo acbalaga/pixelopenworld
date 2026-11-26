@@ -1,3 +1,4 @@
+import { queueChatCommand } from './chat/engine';
 import { MOVEMENT as M } from '../content/balance/movement';
 import { addNote, removeNote } from './systems/map';
 import { travelTo } from './systems/waystones';
@@ -98,6 +99,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
     interactNpc(state, who);
     interactTraveler(state, who);
   } else if (c.type === 'hint') hintSeen(state, who, c.id);
+  else if (c.type === 'chip' || c.type === 'friend') queueChatCommand(state, c);
   else if (c.type === 'talk') talk(state, who, c);
   else if (c.type === 'buy') buy(state, who, c);
   else if (c.type === 'sell') sell(state, who, c);

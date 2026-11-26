@@ -135,3 +135,35 @@ export interface GuildDef {
   joinsBy: string;
   voices: readonly VoiceId[];
 }
+
+/**
+ * What a Traveler can remember about the player (design/12 section 5). A memory entry stores the
+ * index into this list. Add new kinds at the end: lives are saved as indexes (POW-M5-06).
+ */
+export const MEMORY_KINDS = [
+  'foughtNear',
+  'partied',
+  'helpedDown',
+  'traded',
+  'gifted',
+  'duelWon',
+  'duelLost',
+  'stoodUp',
+  'passedOnBoard',
+  'answered',
+  'ignoredRequest',
+] as const;
+export type MemoryKind = (typeof MEMORY_KINDS)[number];
+
+/** Bits of a Traveler's `flags` (POW-M5-06). `met` was already read at bit 5 by the profile card. */
+export const FLAG = {
+  friend: 1 << 0,
+  rival: 1 << 1,
+  /** They have asked the player to be friends and wait for an answer. */
+  requestIn: 1 << 2,
+  inParty: 1 << 3,
+  muted: 1 << 4,
+  met: 1 << 5,
+  /** The player has asked them and has not had an answer. */
+  requestOut: 1 << 6,
+} as const;
