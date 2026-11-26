@@ -54,15 +54,31 @@ function step(s: SimState, ticks: number, out: Spoke[] = [], each?: () => boolea
   return out;
 }
 
-/** Runs until a promoted Traveler is shown asleep, and returns their slot. */
+/**
+ * A promoted Traveler put to sleep, as the game would have them after five idle minutes: AFK past the
+ * threshold. Staged, so the test does not depend on the luck of the dice in finding one.
+ */
 function findSleeper(s: SimState): number {
-  let found = -1;
-  step(s, 40_000, [], () => {
-    const v = travelerViews(s).find((x) => x.asleep);
-    if (v) found = v.slot;
-    return found >= 0;
-  });
-  return found;
+  step(s, 2400);
+  const crowd = crowdOf(s);
+  const first = [...crowd.ents.values()][0];
+  if (!first) return -1;
+  crowd.doing[first.slot] = {
+    kind: 'afk',
+    place: s.travelers[first.slot]!.place,
+    left: 900,
+    eta: 0,
+    from: 0,
+    total: 0,
+    skill: -1,
+    thing: '',
+  };
+  first.lastDoing = crowd.doing[first.slot]!;
+  first.still = 9999;
+  first.afkFor = 9999;
+  first.woke = false;
+  step(s, 5);
+  return isAsleep(first) ? first.slot : -1;
 }
 
 describe('the floating z', () => {

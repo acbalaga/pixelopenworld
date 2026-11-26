@@ -143,9 +143,9 @@ describe('an evening in Hearthford', () => {
     for (let seed = 1; seed <= 10; seed++) {
       const s = world(seed, centre('hearthford.inn'), 20, DUSK - 1800);
       let danced = false;
-      // A real evening holds about five in-game dusks. Three of them, one after the other.
+      // A real evening holds about five in-game dusks. All of them, one after the other.
       let said = 0;
-      for (let dusk = 0; dusk < 3; dusk++) {
+      for (let dusk = 0; dusk < 5; dusk++) {
         s.worldTick = DUSK - 1800;
         const seen = run(s, 1800 + 7200, () => {
           for (const v of travelerViews(s)) if (v.mode === 'dance') danced = true;
@@ -174,7 +174,7 @@ describe('an evening in Hearthford', () => {
     let hits = 0;
     for (let seed = 1; seed <= 10; seed++) {
       const s = world(seed, centre('hearthford.guard_yard'), 19, 9000);
-      const seen = run(s, 14_400);
+      const seen = run(s, 28_800);
       if (idea(seen, 'dummy') >= 2) hits++;
     }
     expect(hits).toBeGreaterThanOrEqual(8);

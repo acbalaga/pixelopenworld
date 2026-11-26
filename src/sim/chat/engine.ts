@@ -711,9 +711,9 @@ function scenes(c: Ctx, events: readonly SimEvent[]): void {
   const gap = (): number =>
     SCENE_BALANCE.lineGapMin[0] +
     Math.floor(d() * (SCENE_BALANCE.lineGapMin[1] - SCENE_BALANCE.lineGapMin[0] + 1));
-  // Old counts are of no use.
+  // Counts of hours gone by are of no use.
   for (const k of chat.scenes.counts.keys())
-    if (!k.endsWith(`|${hourKey}`)) chat.scenes.counts.delete(k);
+    if (Number(k.split('|')[1]) < hourKey) chat.scenes.counts.delete(k);
 
   const plans = planScenes({
     state,

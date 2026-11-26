@@ -28,6 +28,7 @@ describe('schema 28 to 29 migration (camps)', () => {
       delete (sk as { camp?: unknown }).camp;
     }
     delete (s as { travelers?: unknown }).travelers;
+    delete (s as { mail?: unknown }).mail;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

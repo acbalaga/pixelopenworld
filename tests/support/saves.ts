@@ -160,6 +160,7 @@ export function asSchema5(s: SimState): SimState {
   delete (s as { deltas?: unknown }).deltas;
   // Schema 30: the Traveler lives.
   delete (s as { travelers?: unknown }).travelers;
+  delete (s as { mail?: unknown }).mail;
   // Schema 24: the map (fog, notes, rumors).
   delete (s as { map?: unknown }).map;
   delete (s.entities.comps as { boss?: unknown }).boss;

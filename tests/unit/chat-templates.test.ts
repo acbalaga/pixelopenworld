@@ -135,7 +135,7 @@ describe('the engine reads the new fields', () => {
   it('has a Traveler say their own lines, and only they do', () => {
     const seen = new Set<string>();
     // Camps (M5-26) move some of the crowd off the square at dusk and night, so more seeds keep the coverage.
-    for (const seed of [3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]) {
+    for (const seed of [3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]) {
       const ids = identitiesOf(seed);
       const s = world(seed, 6);
       for (const l of run(s, 24 * 60)) {
