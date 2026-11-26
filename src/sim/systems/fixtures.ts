@@ -296,6 +296,19 @@ function useChest(state: SimState, who: EntityId, id: EntityId): void {
   emit(state.events, { type: 'chestOpened', id, who });
 }
 
+/** Crates slide aside, for good: they stop blocking and the flag they carry is set (M5-29). */
+function useSlide(state: SimState, who: EntityId, id: EntityId): void {
+  const f = getComp(state.entities, id, 'fixture');
+  const def = f ? FIXTURES[f.kind] : undefined;
+  if (!f || !def || f.open) return;
+  f.open = true;
+  const body = getComp(state.entities, id, 'body');
+  if (body) body.solid = false;
+  const j = getComp(state.entities, who, 'journal');
+  if (j && def.setsFlag && !j.flags.includes(def.setsFlag)) j.flags.push(def.setsFlag);
+  emit(state.events, { type: 'slideOpened', id, who });
+}
+
 /** The bedroll opens the Rest panel: sleep, and wear or take off Paths. */
 function useBed(state: SimState, who: EntityId, id: EntityId): void {
   emit(state.events, { type: 'bedOpened', id, who });
@@ -443,6 +456,8 @@ export function interactFixture(state: SimState, who: EntityId): void {
       return useDoor(state, who, target);
     case 'chest':
       return useChest(state, who, target);
+    case 'slide':
+      return useSlide(state, who, target);
     case 'block':
       return pushBlock(state, who, target);
     case 'resetpost':

@@ -12,7 +12,8 @@ export function fixtureFrame(type: FixtureDef['type'], open: boolean): string {
   if (type === 'element' || type === 'breakable') return open ? 'open' : 'closed';
   // The storage chest shares the chest sprite and stays shut: it is a counter, not a find.
   if (type === 'storage') return 'closed';
-  if (type === 'door' || type === 'gate' || type === 'chest') return open ? 'open' : 'closed';
+  if (type === 'door' || type === 'gate' || type === 'chest' || type === 'slide')
+    return open ? 'open' : 'closed';
   if (type === 'torch') return open ? 'lit' : 'base';
   return 'base';
 }

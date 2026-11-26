@@ -254,4 +254,21 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [217, 142],
     ],
   },
+  // The Pit (POW-M5-29), east of the quarry crane. The first two slots are the fighters' marks at
+  // the middle of the ring, the rest are where spectators stand along the rim.
+  'stonecrop.pit': {
+    rect: { x: 191, y: 32, w: 9, h: 6 },
+    slots: [
+      [194, 35],
+      [196, 35],
+      [193, 33],
+      [195, 33],
+      [197, 33],
+      [193, 37],
+      [195, 37],
+      [197, 37],
+      [192, 35],
+      [198, 35],
+    ],
+  },
 };

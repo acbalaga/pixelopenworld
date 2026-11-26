@@ -194,6 +194,11 @@ export function validateChat(c: ChatContent): string[] {
     seen.add(r.id);
     checkText(w, r.text, errors, glyphIds);
     if (/\{/.test(r.text)) errors.push(`${w}: slots in a rumor`);
+    if (r.gate) {
+      if (!/^flag\.[a-z0-9_]+$/.test(r.gate.sets)) errors.push(`${w}: gate sets ${r.gate.sets}`);
+      for (const f of r.gate.needs)
+        if (!/^flag\.[a-z0-9_]+$/.test(f)) errors.push(`${w}: gate needs ${f}`);
+    }
   }
   const wrong = c.rumors.filter((r) => !r.true).length;
   if (c.rumors.length > 0 && (wrong / c.rumors.length > 0.4 || wrong === 0))

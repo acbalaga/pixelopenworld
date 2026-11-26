@@ -9,6 +9,7 @@ import {
   GATHER_PLACES,
   OUTCOME,
   PHASE_FACTORS,
+  PIT,
   PROGRESS,
   SOCIAL_PLACES,
   STATION_PLACES,
@@ -34,6 +35,7 @@ import type { SimState } from '../state';
 import { dayPhase, weatherOn } from '../time';
 import { identitiesOf } from './generate';
 import { PLACE_LIST, placeIdx, skillIdx } from './lists';
+import { pitOpen } from './pit';
 import { catchUp, expectedPoints, playHoursOf, type AwayEvent } from './progress';
 import { dayIndexOf, localMinute, MIN_PER_DAY, sessionsFor, type Session } from './schedule';
 import type { TravelerIdentity, TravelerLife } from './types';
@@ -354,6 +356,22 @@ export function chooseNext(state: SimState, crowd: Crowd, t: TravelerIdentity): 
     return {
       kind: 'social',
       place: placeIdx(YARD.place),
+      left: pickMinutes(state, 'social'),
+      eta: 0,
+      from: 0,
+      total: 0,
+      skill: -1,
+      thing: '',
+    };
+  // Once the player has found the Pit, a Traveler who likes a duel may spend a stretch there.
+  if (
+    pitOpen(state) &&
+    (t.temper === 'bold' || PIT.guilds.includes(life.guild) || PIT.handles.includes(t.handle)) &&
+    chance(r, PIT.chance)
+  )
+    return {
+      kind: 'social',
+      place: placeIdx(PIT.place),
       left: pickMinutes(state, 'social'),
       eta: 0,
       from: 0,

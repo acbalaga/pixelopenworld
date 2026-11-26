@@ -748,6 +748,27 @@ export const YARD = {
 } as const;
 /** The tile south of the square's well, where wishes are made (POW-M5-27). It is open cobble. */
 export const WELL_SPOT = { x: 185, y: 198 } as const;
+/**
+ * The Pit (POW-M5-29). Once the player has slid the crates aside (journal flag `flag.pit_open`), a
+ * Traveler who likes a duel may spend a social stretch there: any bold Traveler, the members of The
+ * Ninth Bell (guild 9) and the named duelists. `visitRadius` is how many tiles round the quarry
+ * count as having been to the quarry for the rumors that point there.
+ */
+export const PIT = {
+  place: 'stonecrop.pit',
+  chance: 0.3,
+  guilds: [9] as readonly number[],
+  handles: ['NoScopeNed', 'Skarrow'] as readonly string[],
+  visitPlace: 'stonecrop.quarry',
+  visitRadius: 6,
+  flags: {
+    open: 'flag.pit_open',
+    quarry: 'flag.quarry_seen',
+    rumor1: 'flag.pit_rumor_1',
+    rumor2: 'flag.pit_rumor_2',
+    rumor3: 'flag.pit_rumor_3',
+  },
+} as const;
 /** Travelers shop at Brin's counter (M5-14). */
 export const TRADE_PLACE = 'hearthford.brin_shop';
 

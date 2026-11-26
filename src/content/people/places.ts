@@ -56,6 +56,8 @@ export const PLACES: Readonly<Record<string, PlaceDef>> = Object.fromEntries(
     // Appended last: place indices are saved, so new places never go in the middle.
     at('wayside.river_camp', 'wayside', false),
     at('wayside.meadow_camp', 'wayside', false),
+    // The Pit (M5-29). Not in the chat place names: nobody names it until the player has found it.
+    at('stonecrop.pit', 'stonecrop', false),
   ].map((p) => {
     const spot = PLACE_SPOTS[p.id];
     return [p.id, spot ? { ...p, spot } : p];

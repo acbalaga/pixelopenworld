@@ -1,5 +1,6 @@
 import type { Rumor } from './types';
 import { MORE_RUMORS } from './rumorsMore';
+import { PIT_RUMORS } from './rumorsPit';
 
 /**
  * Hints and rumors Travelers repeat when asked (design/12 4.6). About one in four is wrong or half
@@ -106,4 +107,4 @@ const CORE: readonly Rumor[] = [
 ];
 
 /** The core rumors and the full set (POW-M5-15). */
-export const RUMORS: readonly Rumor[] = [...CORE, ...MORE_RUMORS];
+export const RUMORS: readonly Rumor[] = [...CORE, ...MORE_RUMORS, ...PIT_RUMORS];

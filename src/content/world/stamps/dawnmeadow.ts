@@ -255,11 +255,36 @@ function whisperwoodEdge(): StampV2 {
   return b.toStamp('whisperwood_edge');
 }
 
+/**
+ * The Pit (POW-M5-29): an old working in the quarry lip, east of the crane, a sunken ring of dirt
+ * open to the sky with braziers at its corners. A low stone rim closes it on the west and south
+ * (the quarry's own rock closes the north and east). The only way in is a gap in the west rim, where
+ * a stack of crates stands until the player slides it aside. The stamp is 10 by 7 tiles.
+ */
+function quarryPit(): StampV2 {
+  const b = new StampBuilder(10, 7);
+  b.rect(0, 0, 10, 7, Terrain.Dirt);
+  for (let y = 0; y < 6; y++) if (y !== 3) b.object(0, y, 'tile.wall_stone_v');
+  b.object(0, 6, 'tile.wall_stone_post');
+  for (let x = 1; x < 10; x++) b.object(x, 6, 'tile.wall_stone_h');
+  b.place('fixture.pit_crates', 0, 3);
+  for (const [x, y] of [
+    [2, 1],
+    [8, 1],
+    [2, 4],
+    [8, 4],
+  ] as const)
+    b.object(x, y, 'tile.torch');
+  b.claim(0, 0, 10, 7, 'the pit');
+  return b.toStamp('quarry_pit');
+}
+
 export const DAWNMEADOW_STAMPS: StampV2[] = [
   whisperwoodEdge(),
   millbrook(),
   reedmouth(),
   stonecrop(),
+  quarryPit(),
   fernsideArch(),
   cairnRing(),
   chapel(),

@@ -179,6 +179,8 @@ export type SimEvent =
   | { type: 'bossObjective'; id: number; boss: string; step: string }
   | { type: 'bossResolved'; id: number; boss: string; how: 'fight' | 'objective' }
   | { type: 'chestOpened'; id: number; who: number }
+  /** A stack of crates slid aside for good (M5-29). */
+  | { type: 'slideOpened'; id: number; who: number }
   | { type: 'tabletRead'; id: number; who: number }
   | { type: 'storageOpened'; id: number; who: number }
   | { type: 'boardOpened'; id: number; who: number; board: string }

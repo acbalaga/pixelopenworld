@@ -1,4 +1,4 @@
-import { CHAT, SCENES as SCENE_BALANCE } from '../../content/balance/chat';
+import { CHAT, PIT_RUMOR_BIAS, SCENES as SCENE_BALANCE } from '../../content/balance/chat';
 import { FIGHT_AREAS } from '../../content/balance/travelers';
 import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
@@ -23,6 +23,7 @@ import type { SimState } from '../state';
 import { dayPhase, weatherOn } from '../time';
 import { crowdOf, onlineCount } from '../travelers/crowd';
 import { startScene } from '../travelers/entities';
+import { addFlag, gateOpen, hasFlag } from '../travelers/pit';
 import { cameTrue, planScenes } from './scenes';
 import {
   friendAsks,
@@ -330,6 +331,11 @@ function speak(
     if (!reply && !template.startsWith('exchange.')) r.push(template);
     while (r.length > CHAT.windowLines) r.shift();
   }
+  // A trail rumor said aloud is a rumor the player has heard (M5-29).
+  if (slots.rumor !== undefined) {
+    const heard = RUMORS.find((r) => r.gate !== undefined && r.text === slots.rumor);
+    if (heard?.gate) addFlag(state, heard.gate.sets);
+  }
   chat.lastSpoke[slot] = state.tick;
   const tpl = template;
   chat.cooldown.set(`${slot}|${tpl}`, c.minute + (cooldownOf(tpl) || 30));
@@ -572,7 +578,16 @@ function chatter(c: Ctx): void {
     const topic = made.tpl.topic ?? QUESTION_TOPIC[made.tpl.id];
     if (trigger === 'state.question' && topic && d() < CHAT.answerChance) {
       const answerer = witnessOrAny(c, t.slot, d);
-      const rumors = RUMORS.filter((r2) => r2.about === topic);
+      // Rumors of the Pit trail join the pool only once the player's journal has what they need,
+      // and are preferred when one can be told (POW-M5-29).
+      const told = RUMORS.filter(
+        (r2) =>
+          r2.about === topic &&
+          (!r2.gate || (gateOpen(state, r2.gate.needs) && !hasFlag(state, r2.gate.sets))),
+      );
+      const trail = told.filter((r2) => r2.gate !== undefined);
+      const rumors =
+        trail.length > 0 && d() < PIT_RUMOR_BIAS ? trail : told.filter((r2) => !r2.gate);
       if (answerer && rumors.length > 0) {
         const rumor = rumors[Math.floor(d() * rumors.length)] as Rumor;
         const ans = make(c, answerer, 'state.answer', { rumor: rumor.text });
