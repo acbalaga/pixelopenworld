@@ -21,7 +21,6 @@ import {
 import {
   createDemoState,
   deserializeState,
-  hashState,
   serializeState,
   type SimState,
 } from '../../src/sim/state';

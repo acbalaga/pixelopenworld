@@ -24,6 +24,7 @@ import { dayPhase, weatherOn } from '../time';
 import { crowdOf, onlineCount } from '../travelers/crowd';
 import { startScene } from '../travelers/entities';
 import { addFlag, gateOpen, hasFlag } from '../travelers/pit';
+import { mailOnLogin } from './letters';
 import { cameTrue, planScenes } from './scenes';
 import {
   friendAsks,
@@ -887,6 +888,7 @@ export function chatSystem(state: SimState): void {
   exchanges(ctx);
   scenes(ctx, events);
   loginHellos(ctx, HELPERS, events);
+  mailOnLogin(ctx, events, (salt) => diceFor(state, chat, salt + ctx.minute));
   friendAsks(ctx, HELPERS);
   memoryLines(ctx, HELPERS);
   chatter(ctx);
