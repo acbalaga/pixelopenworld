@@ -725,6 +725,7 @@ export const UI_STRINGS = {
     roomReset: 'The blocks slide back to where they began.',
     roomResetNone: 'Nothing is out of place.',
     shortcut: 'Part of the wall has opened.',
+    slid: 'The crates slide aside.',
     learned: 'Learned {name}.',
     awakens: '{skill} awakens',
     stolen: 'A fox snatched your {item}.',

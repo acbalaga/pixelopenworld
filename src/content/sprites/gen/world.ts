@@ -309,6 +309,35 @@ function mirrorProp(): SpriteDef {
   return toSprite('prop.mirror', 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/**
+ * Quarry crates stacked in a gap in the rock (POW-M5-29): closed, a tall stack across the gap, and
+ * open, the same crates shoved to one side with the gap clear.
+ */
+function pitCrates(): SpriteDef {
+  const crate = (im: Img, x: number, y: number): void => {
+    im.rect(x, y, x + 6, y + 6, WOOD[2]);
+    im.rect(x, y, x + 6, y, WOOD[3]);
+    im.rect(x, y + 6, x + 6, y + 6, WOOD[1]);
+    im.rect(x + 3, y, x + 3, y + 6, WOOD[1]);
+  };
+  const closed = new Img(16, 16);
+  for (const [x, y] of [
+    [1, 8],
+    [8, 8],
+    [1, 1],
+    [8, 1],
+    [4, 4],
+  ] as const)
+    crate(closed, x, y);
+  const open = new Img(16, 16);
+  crate(open, 8, 8);
+  crate(open, 8, 1);
+  return toSprite('prop.pit_crates', 'core', ORIGIN_FEET, {
+    closed: outlined(closed),
+    open: outlined(open),
+  });
+}
+
 /** A satchel a patrol dropped: a leather bag with a flap and a buckle. Closed, ajar, and open. */
 function satchel(): SpriteDef {
   const body = (im: Img): void => {
@@ -860,6 +889,7 @@ export function worldSprites(): SpriteDef[] {
     boardProp(),
     mirrorProp(),
     satchel(),
+    pitCrates(),
     waystone(),
     lockedDoor(),
     gate(),

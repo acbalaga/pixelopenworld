@@ -52,3 +52,6 @@ export const SCENES = {
   /** Minutes between the lines of a scene, a range. */
   lineGapMin: [1, 2] as readonly [number, number],
 } as const;
+
+/** Share of place answers that go to a rumor of the Pit trail when one can be told (POW-M5-29). */
+export const PIT_RUMOR_BIAS = 0.5;

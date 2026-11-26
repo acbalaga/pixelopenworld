@@ -50,7 +50,9 @@ export type FixtureType =
   /** A reset post: using it sends every unsolved block of its room back to where it started. */
   | 'resetpost'
   /** A thing that records being used and does nothing else (a scarecrow, a mound of earth). */
-  | 'site';
+  | 'site'
+  /** Crates that slide aside when used, for good, and then no longer block (POW-M5-29). */
+  | 'slide';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -179,6 +181,15 @@ const LIST: readonly FixtureDef[] = [
 
   // Millbrook's scarecrow with a crow on it, and a mound of turned earth (M4-20). Both only record
   // being used. What they mean is in `content/singulars`.
+  // A stack of quarry crates in a gap in the rock behind the crane. Using it slides them aside, for
+  // good, and sets the flag the Travelers' fights read (POW-M5-29).
+  {
+    kind: 'fixture.pit_crates',
+    type: 'slide',
+    sprite: 'prop.pit_crates',
+    size: 14,
+    setsFlag: 'flag.pit_open',
+  },
   { kind: 'fixture.scarecrow', type: 'site', sprite: 'prop.scarecrow', size: 10 },
   { kind: 'fixture.crow_mound', type: 'site', sprite: 'prop.crow_mound', size: 10 },
   // A set of firebricks in a crate: a stand-in for the Rootway R9, the Deeps and the Undermill.

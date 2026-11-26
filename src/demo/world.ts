@@ -1646,6 +1646,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                 ? W_STR.chestFound.replace('{items}', parts.join(', '))
                 : W_STR.chestEmpty,
             );
+          } else if (e.type === 'slideOpened') {
+            openedAt.set(e.id, performance.now());
+            notices.toast(W_STR.slid);
           } else if (e.type === 'shortcutOpened') notices.toast(W_STR.shortcut);
           else if (e.type === 'pathEarned' && e.who === who) {
             const def = PATHS[e.path];

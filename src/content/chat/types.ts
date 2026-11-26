@@ -119,6 +119,8 @@ export interface Rumor {
   about: 'recipe' | 'creature' | 'place' | 'tip';
   text: string;
   true: boolean;
+  /** A trail rumor (POW-M5-29): told only once the player's journal has every flag in `needs`, and sets `sets` when heard. */
+  gate?: { needs: readonly string[]; sets: string };
 }
 
 export interface Glyph {

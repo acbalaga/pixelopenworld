@@ -169,6 +169,8 @@ const placements: Placement[] = [
   stamp('millbrook', 272, 96),
   stamp('reedmouth', 296, 236),
   stamp('stonecrop', 164, 36),
+  // The Pit (POW-M5-29): east of the quarry crane, closed by a stack of crates.
+  stamp('quarry_pit', 190, 32),
   stamp('fernside_arch', 90, 168),
   stamp('cairn_ring', 44, 44),
   // Hollowhorn's spawner, at the middle of its route on Cairnmoor (creatures/roamers.ts).
