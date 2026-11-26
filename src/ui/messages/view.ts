@@ -1,3 +1,5 @@
+import { CHIPS, EMOTE_CHIPS } from '../../content/chat/social';
+import { FRIEND_STRINGS as F } from '../../content/strings/friends';
 import { UI_STRINGS as S } from '../../content/strings/ui';
 import { richNodes } from '../dom/glyph';
 import type { Rect } from '../../platform/input/layout';
@@ -27,6 +29,12 @@ export class MessageView {
   private readonly sheet: HTMLElement;
   private readonly tabs: HTMLElement;
   private readonly list: HTMLElement;
+  private readonly chipBar: HTMLElement;
+  private chipOffer: ChipOffer | null = null;
+  private chipEmotes = false;
+  private sigChips = '';
+  /** Called with the Traveler's slot and the chip id when the player taps a chip. */
+  onChip: (slot: number, chip: string) => void = () => undefined;
   private sheetOpen = false;
   private sigNotices = '';
   private sigBanner = '';
@@ -80,7 +88,10 @@ export class MessageView {
     this.list = el('div', 'pow-chat-list');
     this.list.setAttribute('role', 'log');
     add(this.sheet, head, this.list);
-    add(root, this.stack, this.banner, this.lane, this.unread, this.sheet);
+    this.chipBar = el('div', 'pow-chips');
+    this.chipBar.hidden = true;
+    this.chipBar.setAttribute('role', 'group');
+    add(root, this.stack, this.banner, this.lane, this.unread, this.sheet, this.chipBar);
     window.addEventListener('keydown', (e) => {
       if (this.sheetOpen && e.code === 'Escape') this.closeSheet();
     });
@@ -115,6 +126,13 @@ export class MessageView {
       e.classList.toggle('pow-busy', b);
   }
 
+  /** Offers reply chips for a Traveler's line, or clears them with null (M5-06). */
+  offer(o: ChipOffer | null): void {
+    this.chipOffer = o;
+    this.chipEmotes = false;
+    this.sigChips = '';
+  }
+
   /** Positions the lanes. Cheap: only writes styles. */
   layout(r: LaneRects, sheetTop: number): void {
     place(this.stack, r.notices);
@@ -124,6 +142,11 @@ export class MessageView {
     this.unread.style.left = `${Math.round(r.chat.x)}px`;
     this.unread.style.top = `${Math.round(r.chat.y + r.chat.h - 28)}px`;
     this.sheet.style.top = `${Math.round(sheetTop)}px`;
+    // The chips sit just above the chat lane, or above the sheet while it is open.
+    const base = this.sheetOpen ? sheetTop : r.chat.y;
+    this.chipBar.style.left = `${Math.round(r.chat.x)}px`;
+    this.chipBar.style.bottom = `${Math.round(window.innerHeight - base + 6)}px`;
+    this.chipBar.style.width = `${Math.round(Math.min(window.innerWidth - r.chat.x - 8, 320))}px`;
   }
 
   /** Redraws what changed. Called once a frame. */
@@ -186,7 +209,65 @@ export class MessageView {
         `${S.chat.expand}. ${this.router.unread} ${S.chat.unread}`,
       );
     }
+    this.renderChips();
     if (this.sheetOpen) this.renderSheet();
+  }
+
+  /** The reply chips: 2 to 4 buttons at least 48 px tall, and an Emote button that swaps them. */
+  private renderChips(): void {
+    const o = this.chipOffer;
+    if (o && performance.now() > o.until) this.offer(null);
+    const cur = this.chipOffer;
+    const sig = cur ? `${cur.slot}|${cur.chips.map((c) => c.id).join(',')}|${this.chipEmotes}` : '';
+    if (sig === this.sigChips) return;
+    this.sigChips = sig;
+    this.chipBar.hidden = cur === null;
+    if (!cur) {
+      this.chipBar.replaceChildren();
+      return;
+    }
+    this.chipBar.setAttribute('aria-label', F.chips.label.replace('{name}', cur.from));
+    const button = (id: string, text: string, onTap: () => void): HTMLButtonElement => {
+      const b = el('button', 'pow-chip');
+      b.type = 'button';
+      b.dataset.chip = id;
+      b.textContent = text;
+      b.addEventListener('click', onTap);
+      return b;
+    };
+    const head = el('p', 'pow-chips-head');
+    head.textContent = F.chips.label.replace('{name}', cur.from);
+    const row = el('div', 'pow-chips-row');
+    if (this.chipEmotes) {
+      for (const id of EMOTE_CHIPS)
+        add(
+          row,
+          button(id, CHIPS[id]?.text ?? id, () => this.onChip(cur.slot, id)),
+        );
+      add(
+        row,
+        button('back', F.chips.back, () => this.toggleEmotes(false)),
+      );
+    } else {
+      for (const c of cur.chips)
+        add(
+          row,
+          button(c.id, c.text, () => {
+            this.onChip(cur.slot, c.id);
+            this.offer(null);
+          }),
+        );
+      add(
+        row,
+        button('emotes', F.chips.emotes, () => this.toggleEmotes(true)),
+      );
+    }
+    this.chipBar.replaceChildren(head, row);
+  }
+
+  private toggleEmotes(on: boolean): void {
+    this.chipEmotes = on;
+    this.sigChips = '';
   }
 
   private renderSheet(): void {
@@ -231,6 +312,14 @@ export class MessageView {
       if (atEnd || this.list.scrollTop === 0) this.list.scrollTop = this.list.scrollHeight;
     }
   }
+}
+
+/** Reply chips on offer for one Traveler's line (M5-06). `until` is a `performance.now()` time. */
+export interface ChipOffer {
+  slot: number;
+  from: string;
+  chips: { id: string; text: string }[];
+  until: number;
 }
 
 /** Appends children in order. (`append` is typed against the Worker libs here, so use appendChild.) */

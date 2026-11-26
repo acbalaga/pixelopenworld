@@ -41,6 +41,7 @@ import { chronicleLines } from '../menu/singularModel';
 import { finished, knownRecipes, underWay } from '../menu/journalModel';
 import { mapPercentOf } from '../menu/mapModel';
 import { factsOf } from '../../sim/rankings/system';
+import { FriendsPanel } from './friendsPanel';
 import { RankingsPanel } from './rankingsPanel';
 
 export const TAB_IDS = [
@@ -88,6 +89,8 @@ export interface MenuDeps {
   /** Writes the game before an update restarts it. */
   beforeUpdate?: () => Promise<void>;
   onOpenChange?: (open: boolean) => void;
+  /** Opens a Traveler's profile card (the friend list uses it). */
+  openTraveler?: (slot: number) => void;
   /** The region being played, so System can offer to keep it for offline play. */
   region?: string;
   /** What the Map tab draws from (M4-06). Without it the tab says there is no map. */
@@ -170,6 +173,7 @@ export class MenuSheet {
   /** The Map tab's pane. It outlives the tab's redraws so pan and zoom are kept. */
   private mapPane: MapPane | null = null;
   private rankings: RankingsPanel | null = null;
+  private friends: FriendsPanel | null = null;
 
   constructor(
     host: HTMLElement,
@@ -515,9 +519,16 @@ export class MenuSheet {
    * The journal (POW-M4-22B): what is under way, what is finished, the recipes known, the
    * Bestiary, and the Singular lines. Nothing here names a place.
    */
-  /** The Social tab (M5-09): the rankings. Friends and the rest arrive with POW-M5-06. */
+  /** The Social tab: the friend list (M5-06), then the rankings (M5-09). */
   private renderSocial(): void {
     put(this.body, header(S.tabs.social));
+    this.friends ??= new FriendsPanel({
+      read: () => this.deps.read(),
+      send: (c) => this.deps.send(c),
+      openCard: (slot) => this.deps.openTraveler?.(slot),
+    });
+    this.friends.render();
+    this.body.appendChild(this.friends.root);
     this.rankings ??= new RankingsPanel({
       read: () => this.deps.read(),
       mapPercent: () => this.mapPercent(),
