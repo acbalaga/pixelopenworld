@@ -6,6 +6,8 @@ import {
   DUEL_LINES,
   EMOTE_CHIPS,
   HELLO_CHIPS,
+  INTENT_SETS,
+  MEMORY_CHIPS,
   MEMORY_LINES,
   REPLIES,
   RIVAL_LINES,
@@ -15,7 +17,7 @@ import {
   type Reply,
 } from '../../content/chat/social';
 import { TEMPLATES } from '../../content/chat/templates';
-import type { Category } from '../../content/chat/types';
+import type { Category, ChipIntent } from '../../content/chat/types';
 import { CREATURES } from '../../content/creatures';
 import { SKILLS, TRIALS } from '../../content/skills';
 import { ITEMS } from '../../content/items';
@@ -79,14 +81,25 @@ export type Inbox =
 /** Abstract minutes (two real seconds each) an offer of chips lasts: a minute of real time. */
 export const OFFER_MIN = 30;
 
-const CATEGORY_OF = new Map(TEMPLATES.map((t) => [t.id, t.category]));
+const TEMPLATE_OF = new Map(TEMPLATES.map((t) => [t.id, t]));
 
-/** The chips for a line of a category, trimmed or added to by regard tier. Always 2 to 4. */
-export function chipsFor(category: Category, tier: number): string[] {
-  let set = [...CHIP_SETS[category]];
-  // A stranger gets no joking about, and a friend can say goodbye.
+/**
+ * The chips for a line of a category (or of an intent, when its category is too broad), trimmed
+ * or added to by regard tier. Always 2 to 4.
+ */
+export function chipsFor(kind: Category | ChipIntent, tier: number): string[] {
+  return finishChips(
+    kind in INTENT_SETS ? INTENT_SETS[kind as ChipIntent] : CHIP_SETS[kind as Category],
+    tier,
+  );
+}
+
+function finishChips(base: readonly string[], tier: number): string[] {
+  let set = [...base];
+  // A stranger gets no joking about, and a friend can say goodbye after a hello.
   if (tier === 0) set = set.filter((id) => id !== 'joke');
-  if (tier >= 2 && set.length < 4 && !set.includes('later')) set.push('later');
+  if (tier >= 2 && set.length < 4 && set.includes('hi') && !set.includes('later'))
+    set.push('later');
   for (const pad of ['hi', 'thanks', 'more'])
     if (set.length < 2 && !set.includes(pad)) set.push(pad);
   return set.slice(0, 4);
@@ -158,11 +171,12 @@ export function offerFor(
     slots.player === undefined
   )
     return [];
-  const category = CATEGORY_OF.get(template);
-  if (!category) return [];
+  const tpl = TEMPLATE_OF.get(template);
+  if (!tpl) return [];
+  const category = tpl.category;
   const life = c.state.travelers[slot];
   if (!life) return [];
-  const ids = chipsFor(category, tierNow(life, c.real));
+  const ids = chipsFor(tpl.answers ?? category, tierNow(life, c.real));
   c.chat.offers.set(slot, { slot, category, chips: ids, channel, minute: c.minute });
   return ids.map((id) => ({ id, text: CHIPS[id]!.text }));
 }
@@ -236,7 +250,11 @@ export function recordMemories(c: Ctx, events: readonly SimEvent[]): void {
 }
 
 /** The text of a memory line for a Traveler's newest memory, or null if none can be filled. */
-function memoryText(c: Ctx, slot: number, d: () => number): string | null {
+function memoryText(
+  c: Ctx,
+  slot: number,
+  d: () => number,
+): { text: string; chips: string[] } | null {
   const life = c.state.travelers[slot]!;
   for (let i = life.memory.length - 1; i >= 0; i--) {
     const m = life.memory[i]!;
@@ -246,9 +264,10 @@ function memoryText(c: Ctx, slot: number, d: () => number): string | null {
     const subject = subjectName(m.kind, m.subject);
     const fit = lines.filter((t) => subject !== '' || !t.includes('{memory.subject}'));
     if (fit.length === 0) continue;
-    return (fit[Math.floor(d() * fit.length)] as string)
+    const text = (fit[Math.floor(d() * fit.length)] as string)
       .replace(/\{memory\.subject\}/g, subject)
       .replace(/\{memory\.daysAgo\}/g, daysAgoText(m.day, c.day));
+    return { text, chips: [...(MEMORY_CHIPS[kind!] ?? HELLO_CHIPS)] };
   }
   return null;
 }
@@ -351,10 +370,10 @@ export function loginHellos(c: Ctx, h: Helpers, events: readonly SimEvent[]): vo
         h,
         e.slot,
         'whisper',
-        mem,
+        mem.text,
         'whisper.memory',
         'memory:login',
-        { category: 'hello', chips: HELLO_CHIPS },
+        { category: 'hello', chips: mem.chips },
         c.minute + 2,
       );
     } else
@@ -389,13 +408,13 @@ export function memoryLines(c: Ctx, h: Helpers): void {
   });
   if (pool.length === 0) return;
   const slot = pool[Math.floor(d() * pool.length)] as number;
-  const text = memoryText(c, slot, d);
-  if (text === null) return;
+  const mem = memoryText(c, slot, d);
+  if (mem === null) return;
   c.chat.said.add(slot);
   const friend = isFriend(c.state.travelers[slot]!);
-  saySocial(c, h, slot, friend ? 'whisper' : 'local', text, 'memory.line', 'memory:near', {
+  saySocial(c, h, slot, friend ? 'whisper' : 'local', mem.text, 'memory.line', 'memory:near', {
     category: 'greet',
-    chips: chipsFor('greet', tierNow(c.state.travelers[slot]!, c.real)),
+    chips: finishChips(mem.chips, tierNow(c.state.travelers[slot]!, c.real)),
   });
 }
 

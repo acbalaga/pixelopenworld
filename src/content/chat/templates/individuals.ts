@@ -126,8 +126,8 @@ export const INDIVIDUALS: readonly ChatTemplate[] = [
     3,
     'greet',
     'state.idle',
-    ['Welcome, {player}. Do you have a map?', 'Good day, {player}. Mind your step.'],
-    { channel: 'local' },
+    ['Welcome, {player}. Do you have a map?', 'Good day, {player}. Is your map up to date?'],
+    { channel: 'local', answers: 'yesNo' },
   ),
 
   // 6 lilfern: greets everyone, friendliest.
@@ -333,9 +333,9 @@ export const INDIVIDUALS: readonly ChatTemplate[] = [
     'state.idle',
     [
       'hello {player}! are you entering the festival?',
-      'welcome, {player}. we are always short a hand for the festival',
+      'welcome, {player}. will you help with the festival this year?',
     ],
-    { channel: 'local', weight: 8 },
+    { channel: 'local', weight: 8, answers: 'yesNo' },
   ),
   own('HollyHocks', 2, 'event', 'state.idle', [
     'festival entries are open. bring something nice',

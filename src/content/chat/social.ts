@@ -1,5 +1,5 @@
 import type { Archetype, Temper } from '../travelers/types';
-import type { Category } from './types';
+import type { Category, ChipIntent } from './types';
 
 /**
  * What the player can say back and what Travelers say to the player (POW-M5-06, design/12 4.7 and
@@ -27,6 +27,20 @@ export const CHIPS: Readonly<Record<string, Chip>> = Object.fromEntries(
       ['gl', 'Good luck', 'reply'],
       ['congrats', 'Well done', 'reply'],
       ['later', 'Catch you later', 'reply'],
+      ['luck', 'Got lucky', 'reply'],
+      ['tries', 'Took a few tries', 'reply'],
+      ['practice', 'Practice, mostly', 'reply'],
+      ['show', 'Want me to show you?', 'reply'],
+      ['unsure', 'Not sure what you mean', 'reply'],
+      ['shrug', 'Hard to say', 'reply'],
+      ['fine', 'Pretty good, you?', 'reply'],
+      ['busy', 'Keeping busy', 'reply'],
+      ['yes', 'Yes', 'reply'],
+      ['notyet', 'Not yet', 'reply'],
+      ['maybe', 'Maybe', 'reply'],
+      ['anytime', 'Any time', 'reply'],
+      ['goodtimes', 'Good times', 'reply'],
+      ['sorry', 'Sorry about that', 'reply'],
       ['wave', 'Wave', 'emote'],
       ['cheer', 'Cheer', 'emote'],
       ['bow', 'Bow', 'emote'],
@@ -46,7 +60,7 @@ export const EMOTE_CHIPS: readonly string[] = ['wave', 'cheer', 'bow', 'laugh'];
 
 /** The reply chips for the category of a line, before regard trims or adds to them. */
 export const CHIP_SETS: Readonly<Record<Category, readonly string[]>> = {
-  greet: ['hi', 'how', 'joke'],
+  greet: ['hi', 'how'],
   lfg: ['gl', 'help', 'no'],
   trade: ['more', 'thanks', 'no'],
   brag: ['congrats', 'joke', 'more'],
@@ -56,17 +70,47 @@ export const CHIP_SETS: Readonly<Record<Category, readonly string[]>> = {
   banter: ['joke', 'more', 'hi'],
   weather: ['more', 'hi', 'joke'],
   event: ['more', 'thanks'],
-  deed: ['thanks', 'joke', 'more'],
+  deed: ['thanks', 'luck'],
   farewell: ['gl', 'hi'],
   afk: ['gl', 'hi'],
   complaint: ['help', 'joke', 'no'],
+};
+
+/**
+ * The chips for a line whose category is too broad (see `ChipIntent`). `strange` never offers
+ * "Tell me more": no Traveler knows what an odd thing was (design/08 Delivery rules, rule 5), so
+ * the player can only shrug it off.
+ */
+export const INTENT_SETS: Readonly<Record<ChipIntent, readonly string[]>> = {
+  askHow: ['tries', 'practice', 'show'],
+  strange: ['unsure', 'shrug'],
+  howGoes: ['fine', 'busy'],
+  yesNo: ['yes', 'notyet', 'maybe'],
+};
+
+/**
+ * The chips for a line that brings an earlier memory up, by the kind of memory. A thank-you is
+ * answered with "Any time", a shared fight or trade with "Good times", a no-show with an apology.
+ */
+export const MEMORY_CHIPS: Readonly<Record<string, readonly string[]>> = {
+  foughtNear: ['goodtimes', 'hi', 'how'],
+  partied: ['goodtimes', 'hi', 'how'],
+  helpedDown: ['anytime', 'hi', 'how'],
+  traded: ['goodtimes', 'hi', 'how'],
+  gifted: ['anytime', 'hi', 'how'],
+  duelWon: ['goodtimes', 'hi', 'how'],
+  duelLost: ['goodtimes', 'hi', 'how'],
+  stoodUp: ['sorry', 'hi', 'how'],
+  passedOnBoard: ['thanks', 'hi', 'how'],
+  answered: ['anytime', 'hi', 'how'],
+  ignoredRequest: ['sorry', 'hi', 'how'],
 };
 
 /** The chips on a Traveler's friend request, and on a friend's hello. */
 export const REQUEST_CHIPS: readonly string[] = ['friend.yes', 'friend.no'];
 export const DUEL_CHIPS: readonly string[] = ['duel.yes', 'duel.no'];
 export const GUILD_CHIPS: readonly string[] = ['guild.yes', 'guild.no'];
-export const HELLO_CHIPS: readonly string[] = ['hi', 'how', 'more'];
+export const HELLO_CHIPS: readonly string[] = ['hi', 'how', 'busy'];
 
 /** A reply line, with who it suits. A reply with no `temper` suits all. */
 export interface Reply {
@@ -109,6 +153,75 @@ export const REPLIES: Readonly<Record<string, readonly Reply[]>> = {
     R('oh. ty', 'shy'),
   ],
   later: [R('see you around'), R('later'), R('catch you soon', 'bold'), R('bye', 'shy')],
+  luck: [
+    R('lucky or not, well done'),
+    R('i will take that kind of luck'),
+    R('i need some of that', 'bold'),
+    R('heh. nice', 'shy'),
+  ],
+  tries: [
+    R('that is how it goes'),
+    R('worth it in the end'),
+    R('i will keep trying, then', 'bold'),
+    R('oh. ok. good to know', 'shy'),
+  ],
+  practice: [
+    R('fair, practice it is'),
+    R('ok, i will keep at it'),
+    R('then i will practice all night', 'bold'),
+    R('ok. thanks', 'shy'),
+  ],
+  show: [
+    R('yes, please'),
+    R('maybe later, thanks'),
+    R('yes! when are you free?', 'bold'),
+    R('oh. would you? thanks', 'shy'),
+  ],
+  unsure: [
+    R('huh. maybe it was nothing'),
+    R('ok. forget i asked'),
+    R('i must be imagining things', 'bold'),
+    R('oh. sorry', 'shy'),
+  ],
+  shrug: [R('fair enough'), R('hm. ok'), R('well, whatever it was', 'bold'), R('ok', 'shy')],
+  fine: [
+    R('not bad, thanks'),
+    R('good, busy day'),
+    R('great, thanks for asking', 'bold'),
+    R('fine. thanks', 'shy'),
+  ],
+  busy: [R('same here'), R('good to be busy'), R('ha, me too', 'bold'), R('same. ok', 'shy')],
+  yes: [R('good'), R('great, thank you'), R('perfect', 'bold'), R('oh. good', 'shy')],
+  notyet: [
+    R('no rush'),
+    R('that is fine'),
+    R('you will get there', 'bold'),
+    R('ok. no rush', 'shy'),
+  ],
+  maybe: [
+    R('think it over'),
+    R('fair enough'),
+    R('i will take a maybe', 'bold'),
+    R('ok. maybe is fine', 'shy'),
+  ],
+  anytime: [
+    R('i will remember that'),
+    R('you are kind'),
+    R('that means a lot', 'bold'),
+    R('oh. thanks again', 'shy'),
+  ],
+  goodtimes: [
+    R('good times indeed'),
+    R('we should do it again'),
+    R('best kind of day', 'bold'),
+    R('oh. yes', 'shy'),
+  ],
+  sorry: [
+    R('no worries'),
+    R('it happens'),
+    R('all good, really', 'bold'),
+    R('oh. it is ok', 'shy'),
+  ],
   wave: [R('o/'), R('hey'), R('hi hi', 'bold'), R('hi', 'shy')],
   cheer: [R('yeah!'), R('woo'), R('let us go', 'bold'), R('hehe', 'shy')],
   bow: [R('o7'), R('very polite'), R('a gentleperson, i see', 'bold'), R('o7', 'shy')],

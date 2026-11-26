@@ -59,7 +59,7 @@ export const DEEDS: readonly ChatTemplate[] = [
     'deed',
     'deed.boss',
     ['how long did that take, {player}?', 'was it hard, {player}? i keep failing'],
-    { when: { archetype: ['Newbie', 'Casual', 'Explorer'] }, cooldownMin: 10 },
+    { when: { archetype: ['Newbie', 'Casual', 'Explorer'] }, answers: 'askHow', cooldownMin: 10 },
   ),
   L(
     'deed.boss.n08',
@@ -106,7 +106,11 @@ export const DEEDS: readonly ChatTemplate[] = [
     'deed',
     'deed.trial',
     ['what was your time, {player}?', 'how many tries did the Trial take, {player}?'],
-    { when: { archetype: ['Completionist', 'Grinder', 'Veteran'] }, cooldownMin: 10 },
+    {
+      when: { archetype: ['Completionist', 'Grinder', 'Veteran'] },
+      answers: 'askHow',
+      cooldownMin: 10,
+    },
   ),
   L(
     'deed.trial.n05',
@@ -136,7 +140,7 @@ export const DEEDS: readonly ChatTemplate[] = [
       '{player}, i barely know the basics. teach me?',
       'how do you do that, {player}? i keep failing mine',
     ],
-    { when: { archetype: ['Newbie', 'Casual'] }, cooldownMin: 10 },
+    { when: { archetype: ['Newbie', 'Casual'] }, answers: 'askHow', cooldownMin: 10 },
   ),
 
   // A rank worth a remark.
@@ -155,7 +159,7 @@ export const DEEDS: readonly ChatTemplate[] = [
       'i am still at the bottom of the ladder, {player}. how do you do it?',
       'okay {player}, share your secrets',
     ],
-    { when: { archetype: ['Newbie', 'Casual', 'Socializer'] }, cooldownMin: 10 },
+    { when: { archetype: ['Newbie', 'Casual', 'Socializer'] }, answers: 'askHow', cooldownMin: 10 },
   ),
   L(
     'deed.rank.n04',
@@ -181,21 +185,25 @@ export const DEEDS: readonly ChatTemplate[] = [
       'something just happened to {player}. did anyone else see?',
       'what did {player} just do? that was strange',
     ],
-    { weight: 3, cooldownMin: 10 },
+    { weight: 3, answers: 'strange', cooldownMin: 10 },
   ),
   L(
     'deed.singular.n02',
     'deed',
     'deed.singular',
     ['{player} knows something i do not', '{player} is doing something. i can feel it'],
-    { cooldownMin: 10 },
+    { answers: 'strange', cooldownMin: 10 },
   ),
   L(
     'deed.singular.n03',
     'deed',
     'deed.singular',
     ['i heard a bell. did you hear a bell? {player}?', 'did the sky just do something? {player}?'],
-    { when: { archetype: ['Newbie', 'Casual', 'Socializer'] }, cooldownMin: 10 },
+    {
+      when: { archetype: ['Newbie', 'Casual', 'Socializer'] },
+      answers: 'strange',
+      cooldownMin: 10,
+    },
   ),
   L(
     'deed.singular.n04',

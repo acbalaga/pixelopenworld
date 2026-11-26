@@ -427,7 +427,11 @@ export const TALK: readonly ChatTemplate[] = [
     'greet',
     'state.idle',
     ['{player}! how is the job board treating you?', 'hello {player}, how are you getting on?'],
-    { channel: 'local', when: { archetype: ['Socializer', 'Casual', 'Crafter'] } },
+    {
+      channel: 'local',
+      when: { archetype: ['Socializer', 'Casual', 'Crafter'] },
+      answers: 'howGoes',
+    },
   ),
   T('greet.local.n14', 'greet', 'state.idle', ['Well met, {player}.', 'Fair day, {player}.'], {
     channel: 'local',
