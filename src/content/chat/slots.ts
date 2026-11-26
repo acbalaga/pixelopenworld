@@ -11,6 +11,8 @@ export const SLOTS_BY_TRIGGER: Readonly<Record<Trigger, readonly SlotName[]>> = 
   travelerLooted: [...base, 'item', 'qty', 'creature', 'place'],
   travelerCrafted: [...base, 'item', 'qty', 'skill', 'place'],
   travelerSold: [...base, 'item', 'qty', 'price', 'place'],
+  'price.up': [...base, 'item', 'price'],
+  'price.down': [...base, 'item', 'price'],
   travelerRankUp: [...base, 'skill', 'rank'],
   travelerDied: [...base, 'creature', 'place'],
   travelerArrived: [...base, 'place'],

@@ -366,6 +366,24 @@ function guildPost(id: string, cloth: Tones4, mark: 'lantern' | 'flame' | 'board
   return toSprite(id, 'core', ORIGIN_FEET, { base: outlined(im) });
 }
 
+/**
+ * The market terminal (POW-M5-10): a tall wooden auction board under a little slate roof, rows of
+ * price slips pinned across it and a gold coin sign on top.
+ */
+function marketTerminal(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(1, 2, 14, 3, METAL[1]);
+  im.rect(1, 2, 14, 2, METAL[2]);
+  im.rect(2, 4, 13, 12, WOOD[1]);
+  im.rect(3, 5, 12, 11, WOOD[2]);
+  for (const y of [5, 7, 9])
+    for (const x of [4, 7, 10]) im.rect(x, y, x + 1, y + 1, (x + y) % 3 ? 3 : GOLD[3]);
+  im.rect(7, 0, 8, 1, GOLD[2]);
+  im.rect(3, 13, 4, 15, WOOD[0]);
+  im.rect(11, 13, 12, 15, WOOD[0]);
+  return toSprite('prop.market_terminal', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 /** The Pit's "Next" board (POW-M5-30): a slate on two posts with a chalked ladder of names. */
 function pitBoard(): SpriteDef {
   const im = new Img(16, 16);
@@ -989,6 +1007,7 @@ export function worldSprites(): SpriteDef[] {
     postStand(),
     partyBoard(),
     pitBoard(),
+    marketTerminal(),
     guildPost('prop.guild_lantern', WATER, 'lantern'),
     guildPost('prop.guild_hearth', FIRE, 'flame'),
     guildPost('prop.guild_board', WOOD, 'board'),

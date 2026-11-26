@@ -213,4 +213,55 @@ export const ECONOMY: readonly ChatTemplate[] = [
       weight: 1,
     },
   ),
+  // The market moved (M5-10): a price really rose or fell this hour. `{price}` is the new price.
+  T('price.up.n01', 'complaint', 'price.up', [
+    '{item} is up to {price}c on the market, who is buying it all',
+    'wow, {item} at {price}c now',
+  ]),
+  T(
+    'price.up.n02',
+    'complaint',
+    'price.up',
+    ['{item} went up again. {price}c. ugh', 'who cornered {item}? {price}c each'],
+    {
+      when: { archetype: ['Crafter', 'Trader', 'Newbie'] },
+    },
+  ),
+  T(
+    'price.up.n03',
+    'trade',
+    'price.up',
+    ['good time to sell {item}, market pays {price}c', '{item} at {price}c, selling mine'],
+    {
+      when: { archetype: ['Trader', 'Grinder', 'Veteran'] },
+    },
+  ),
+  T('price.up.n04', 'complaint', 'price.up', ['{item} prices are silly right now, {price}c'], {
+    when: { voice: ['terse', 'dry', 'merchant'] },
+  }),
+  T('price.down.n01', 'trade', 'price.down', [
+    '{item} crashed to {price}c, someone flooded it',
+    '{item} down to {price}c on the terminal',
+  ]),
+  T(
+    'price.down.n02',
+    'trade',
+    'price.down',
+    ['stocking up on {item} at {price}c', 'cheap {item} right now, {price}c'],
+    {
+      when: { archetype: ['Crafter', 'Trader', 'Completionist'] },
+    },
+  ),
+  T(
+    'price.down.n03',
+    'complaint',
+    'price.down',
+    ['who dumped all that {item}? {price}c now', 'my {item} is worth {price}c now. great'],
+    {
+      when: { archetype: ['Grinder', 'Trader', 'Veteran'] },
+    },
+  ),
+  T('price.down.n04', 'trade', 'price.down', ['{item} is a bargain at {price}c'], {
+    when: { voice: ['chatty', 'kind', 'excitable'] },
+  }),
 ];

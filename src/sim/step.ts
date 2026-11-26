@@ -37,6 +37,7 @@ import { duelSystem } from './duel';
 import { partySystem } from './party';
 import { guildSystem } from './guild';
 import { pitBoutSystem } from './pitBouts';
+import { marketSystem } from './market';
 import { pitSystem } from './travelers/pit';
 import { rankingsSystem } from './rankings/system';
 import { snareSystem } from './gadgets';
@@ -91,6 +92,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   partySystem,
   pitBoutSystem,
   guildSystem,
+  marketSystem,
   chatSystem,
   rankingsSystem,
   socialSystem,

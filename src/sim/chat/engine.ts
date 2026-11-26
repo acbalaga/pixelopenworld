@@ -469,6 +469,23 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
     if (w && dd < deed.chance) say(w, deed.trigger, {}, 'deed');
     return;
   }
+  // A market price moved (M5-10): someone online who trades or crafts says so, now and then.
+  if (e.type === 'priceMoved') {
+    const dd = hash01(state.seed, 0x9e1ce, state.tick, index);
+    if (dd >= 0.5) return;
+    const pool = c.ids.filter(
+      (x) =>
+        state.crowd!.online[x.slot] === 1 &&
+        (x.archetype === 'Trader' || x.archetype === 'Crafter' || dd < 0.15) &&
+        canSpeak(c, x.slot),
+    );
+    if (pool.length === 0) return;
+    const who = pool[Math.floor(hash01(state.seed, 0x9e1cf, state.tick, index) * pool.length)]!;
+    const name = itemName(e.item);
+    if (name)
+      say(who, e.to > e.from ? 'price.up' : 'price.down', { item: name, price: String(e.to) });
+    return;
+  }
   if (!('slot' in e) || typeof e.slot !== 'number') return;
   const t = c.ids[e.slot];
   if (!t) return;

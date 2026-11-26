@@ -1,4 +1,5 @@
 import { GIFTS } from './gifts';
+import { MARKET_LETTERS } from './market';
 import { NEWS } from './news';
 import { DUEL_LOST, DUEL_WON, INVITES, RIVALS } from './rest';
 import type { LetterKind, LetterTemplate } from './types';
@@ -13,6 +14,7 @@ export const LETTERS: readonly LetterTemplate[] = [
   ...RIVALS,
   ...DUEL_WON,
   ...DUEL_LOST,
+  ...MARKET_LETTERS,
 ];
 
 export const LETTER_BY_ID: ReadonlyMap<string, LetterTemplate> = new Map(

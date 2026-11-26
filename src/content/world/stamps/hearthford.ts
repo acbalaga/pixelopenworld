@@ -168,6 +168,8 @@ function hearthford(): StampV2 {
   ] as const)
     b.object(x, y, x % 2 ? 'tile.crate' : 'tile.barrel');
   part('stalls', 'market', 31, 41, 5, 1);
+  // The market terminal (POW-M5-10): the auction board at the end of the stalls.
+  b.place('fixture.market_terminal', 36, 44);
   // An old cook pot on the porch of the empty house (home 5, below). Nothing marks it (M4-20).
   b.place('prop.camp_pot', 43, 44);
 

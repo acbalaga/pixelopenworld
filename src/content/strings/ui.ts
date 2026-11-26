@@ -656,6 +656,7 @@ export const UI_STRINGS = {
       MAIL_IMPLAUSIBLE: 'The gifts from mail are more than the days played allow.',
       GUILD_IMPLAUSIBLE: 'The pay from guild goals is more than the weeks played allow.',
       PIT_HONOR: 'The Pit honor does not match the duels won there.',
+      MARKET_INCOME: 'The coin from market sales is more than the listings sold.',
       CHAIN_BROKEN: 'The save and its backup do not follow on from each other.',
     },
   },

@@ -60,6 +60,7 @@ export const REASON_CODES = [
   'MAIL_IMPLAUSIBLE',
   'GUILD_IMPLAUSIBLE',
   'PIT_HONOR',
+  'MARKET_INCOME',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

@@ -13,6 +13,7 @@ import { initialLives } from './travelers/generate';
 import type { DuelState } from './duel';
 import { newMailbox, normalMailbox, type Mailbox } from './mail';
 import { newGuildState, type GuildState } from './guild';
+import { newMarket, type MarketState } from './market';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -668,6 +669,12 @@ export interface SimState {
   mail: Mailbox;
   /** The player's guild, the stashes and this week's goals (M5-08). Saved. */
   guild: GuildState;
+  /** The market's prices, history and the player's listings (M5-10). Saved. */
+  market: MarketState;
+  /** Transient. A market day is on (M5-11 sets it): more demand and more Traveler stock. */
+  marketDay?: boolean;
+  /** Transient. What the player bought from Traveler listings this session (M5-10). */
+  marketTaken?: Map<string, number>;
   /** The party, if any (M5-07). Session only: never saved, so a party in progress at close is gone. */
   party?: import('./party').Party | undefined;
   /** Bouts at the Pit (M5-30). Session only: never saved. */
@@ -748,6 +755,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     travelers: initialLives(seed),
     mail: newMailbox(),
     guild: newGuildState(),
+    market: newMarket(),
     events: createEventQueue(),
     world: null,
   };
@@ -811,6 +819,7 @@ function persistent(state: SimState): Omit<
     travelers: state.travelers ? livesToText(state.travelers) : undefined,
     mail: state.mail,
     guild: state.guild,
+    market: state.market,
   };
 }
 
@@ -831,6 +840,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     travelers?: string;
     mail?: Mailbox;
     guild?: GuildState;
+    market?: MarketState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -853,6 +863,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     mail: normalMailbox(raw.mail),
     // A state from before guilds has none: no guild, no stash.
     guild: raw.guild ?? newGuildState(),
+    // A state from before the market has none: it opens at the target prices on the first hour.
+    market: raw.market ?? newMarket(),
     events: createEventQueue(),
     world,
   };

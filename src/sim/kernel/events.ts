@@ -195,6 +195,21 @@ export type SimEvent =
   | { type: 'guildGoalDone'; goal: string; coin: number }
   | { type: 'guildInvited'; slot: number; guild: number }
   | { type: 'travelerSwitchedGuild'; slot: number; guild: number }
+  /** The market (M5-10): listed, sold (proceeds by mail), cancelled, bought, a price moved, the terminal used. */
+  | { type: 'marketListed'; id: number; item: string; qty: number; price: number; fee: number }
+  | {
+      type: 'marketSold';
+      id: number;
+      item: string;
+      qty: number;
+      coin: number;
+      slot: number;
+      hour: number;
+    }
+  | { type: 'marketCancelled'; id: number; item: string; qty: number }
+  | { type: 'marketBought'; item: string; qty: number; coin: number; slot: number }
+  | { type: 'priceMoved'; item: string; from: number; to: number }
+  | { type: 'marketOpened'; id: number; who: number }
   /** The Pit (M5-30): a bout between Travelers, a cheer, the "Next" board, the player's honor. */
   | { type: 'pitBoutStarted'; a: number; b: number }
   | { type: 'pitBoutEnded'; winner: number; loser: number; called: boolean }

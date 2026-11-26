@@ -50,6 +50,9 @@ export const TRIGGERS = [
   'deed.singular',
   /** The player passed a Traveler on a board. Emitted by the rankings ticket (M5-09). */
   'deed.passed',
+  /** A market price rose or fell far enough to talk about (M5-10, `priceMoved`). */
+  'price.up',
+  'price.down',
 ] as const;
 export type Trigger = (typeof TRIGGERS)[number];
 

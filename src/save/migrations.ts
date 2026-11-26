@@ -733,6 +733,14 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 33, sim: serializeState(s) };
   },
+  /**
+   * 33 to 34 (M5-10): the sim gains `market`: no listings, prices that open at their targets on the
+   * first hour played. A save made before has sold and bought nothing there, so the ledger is as it was.
+   */
+  33: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 34, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

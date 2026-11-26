@@ -12,6 +12,7 @@ export const LETTER_KINDS = [
   'rival',
   'duelWon',
   'duelLost',
+  'market',
 ] as const;
 export type LetterKind = (typeof LETTER_KINDS)[number];
 
@@ -30,4 +31,5 @@ export const LETTER_SLOTS: Readonly<Record<LetterKind, readonly string[]>> = {
   rival: ['player'],
   duelWon: ['player'],
   duelLost: ['player'],
+  market: ['player', 'item', 'qty', 'coin'],
 };

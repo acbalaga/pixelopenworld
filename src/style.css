@@ -2649,3 +2649,95 @@ canvas {
   min-height: 48px;
   flex: none;
 }
+
+/* The market terminal (POW-M5-10). */
+.pow-market-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.pow-market-tab {
+  flex: 1;
+  min-height: 44px;
+}
+.pow-market-tab[aria-pressed='true'] {
+  outline: 2px solid #e9c46a;
+}
+.pow-market-head {
+  margin: 10px 0 6px;
+  font-size: 1rem;
+}
+.pow-market-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.pow-market-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--pal-18, #445);
+}
+.pow-market-pick {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 6px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pow-market-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pow-market-name {
+  font-weight: 600;
+}
+.pow-market-meta {
+  opacity: 0.85;
+}
+.pow-market-btn {
+  min-height: 48px;
+  flex: none;
+}
+.pow-market-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0;
+}
+.pow-market-spark {
+  display: block;
+  width: 100%;
+  max-width: 336px;
+  height: auto;
+  image-rendering: pixelated;
+  margin: 4px 0;
+}
+
+/* The M5 sheets (party finder, guild hall, Pit board, market) sit over the game like the profile card. */
+.pow-party,
+.pow-guild,
+.pow-pit,
+.pow-market {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.pow-party .pow-part-sheet,
+.pow-guild .pow-part-sheet,
+.pow-pit .pow-part-sheet,
+.pow-market .pow-part-sheet {
+  pointer-events: auto;
+}

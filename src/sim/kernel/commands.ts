@@ -77,6 +77,17 @@ export type Command =
       goal?: number;
     }
   | { type: 'guildAsk'; slot: number }
+  /** The market terminal (M5-10): list from a bag slot, take a listing down, buy from a Traveler. */
+  | {
+      type: 'market';
+      op: 'list' | 'cancel' | 'buy';
+      slot?: number;
+      qty?: number;
+      price?: number;
+      id?: number;
+      item?: string;
+      seller?: number;
+    }
   /** Challenge a Traveler to a duel (M5-12). */
   | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
@@ -276,6 +287,44 @@ export function validateCommand(raw: unknown): Validated {
       if (!Number.isInteger(r.goal) || (r.goal as number) < 0 || (r.goal as number) > 7)
         return { ok: false, reason: 'bad goal' };
       return { ok: true, command: { type: 'guild', op, goal: r.goal as number } };
+    }
+    case 'market': {
+      const n = (v: unknown, max: number): boolean =>
+        Number.isInteger(v) && (v as number) >= 0 && (v as number) <= max;
+      if (r.op === 'list') {
+        if (!n(r.slot, 63) || !n(r.qty, 999) || !n(r.price, 1_000_000))
+          return { ok: false, reason: 'bad listing' };
+        return {
+          ok: true,
+          command: {
+            type: 'market',
+            op: 'list',
+            slot: r.slot as number,
+            qty: r.qty as number,
+            price: r.price as number,
+          },
+        };
+      }
+      if (r.op === 'cancel') {
+        if (!n(r.id, 1_000_000)) return { ok: false, reason: 'bad listing' };
+        return { ok: true, command: { type: 'market', op: 'cancel', id: r.id as number } };
+      }
+      if (r.op === 'buy') {
+        if (typeof r.item !== 'string' || !/^item\.[a-z0-9_]{1,40}$/.test(r.item))
+          return { ok: false, reason: 'bad item' };
+        if (!n(r.seller, 4095) || !n(r.qty, 999)) return { ok: false, reason: 'bad buy' };
+        return {
+          ok: true,
+          command: {
+            type: 'market',
+            op: 'buy',
+            item: r.item,
+            seller: r.seller as number,
+            qty: r.qty as number,
+          },
+        };
+      }
+      return { ok: false, reason: 'bad market action' };
     }
     case 'guildAsk':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)

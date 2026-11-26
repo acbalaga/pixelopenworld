@@ -57,6 +57,8 @@ export type FixtureType =
   | 'mailbox'
   /** The party finder: using it opens the listings (POW-M5-07). */
   | 'partyBoard'
+  /** The market terminal on Hearthford's market street (POW-M5-10). */
+  | 'market'
   /** The "Next" board at the Pit: who waits for a duel (POW-M5-30). */
   | 'pitBoard'
   /** A guild's hall post: its banner, stash and goal board (POW-M5-08). `hall` says whose. */
@@ -205,6 +207,8 @@ const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.post_stand', type: 'mailbox', sprite: 'prop.post_stand', size: 12 },
   // The party finder beside the request board in the square (POW-M5-07).
   { kind: 'fixture.party_board', type: 'partyBoard', sprite: 'prop.party_board', size: 14 },
+  // The market terminal on the market street (POW-M5-10).
+  { kind: 'fixture.market_terminal', type: 'market', sprite: 'prop.market_terminal', size: 14 },
   // The "Next" board at the Pit's north rim (POW-M5-30).
   { kind: 'fixture.pit_board', type: 'pitBoard', sprite: 'prop.pit_board', size: 12 },
   // Guild halls (POW-M5-08): Lantern Players and Hearth and Home in Hearthford, and the inn's back

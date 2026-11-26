@@ -23,6 +23,8 @@ import { MailSheet } from '../ui/dom/mailSheet';
 import { PartySheet } from '../ui/dom/partySheet';
 import { GuildSheet } from '../ui/dom/guildSheet';
 import { PitSheet } from '../ui/dom/pitSheet';
+import { MarketSheet } from '../ui/dom/marketSheet';
+import { MARKET_STRINGS } from '../content/strings/market';
 import { PIT_HONOR_NAMES, PIT_STRINGS } from '../content/strings/pit';
 import { GUILD_STRINGS } from '../content/strings/guild';
 import { GUILDS } from '../content/travelers/guilds';
@@ -576,7 +578,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       !mailOpen &&
       !partyOpen &&
       !guildOpen &&
-      !pitOpen,
+      !pitOpen &&
+      !marketOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -1127,6 +1130,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
   });
   const partyFrames = new PartyFrames(root);
+  // The market terminal (M5-10).
+  let marketOpen = false;
+  const marketSheet = new MarketSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      marketOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
   // The Pit's "Next" board (M5-30).
   let pitOpen = false;
   const pitSheet = new PitSheet(root, {
@@ -1608,6 +1621,13 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (e.type === 'partyBoardOpened') partySheet.open();
             else if (e.type === 'guildHallOpened') guildSheet.open(e.hall);
             else if (e.type === 'pitBoardOpened') pitSheet.open();
+            else if (e.type === 'marketOpened') marketSheet.open();
+            else if (e.type === 'marketSold')
+              notices.toast(
+                MARKET_STRINGS.sold
+                  .replace('{qty}', String(e.qty))
+                  .replace('{item}', ITEM_STRINGS[`${e.item}.name`] ?? e.item),
+              );
             else if (e.type === 'pitHonor')
               notices.toast(
                 PIT_STRINGS.honorEarned.replace('{honor}', PIT_HONOR_NAMES[e.tier] ?? ''),

@@ -225,6 +225,7 @@ describe('the save', () => {
     const back = deserializeState(at33.sim);
     delete (back.mail.duels as { pit?: number }).pit;
     delete (back.mail.duels as { honor?: number }).honor;
+    delete (back as { market?: unknown }).market;
     expect(hashState(back)).toBe(f.expectedHash);
   });
 
