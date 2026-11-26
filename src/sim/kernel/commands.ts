@@ -64,6 +64,8 @@ export type Command =
   | { type: 'hint'; id: string }
   /** Answer a Traveler with a reply chip or an emote (M5-06). The sim checks the chip is on offer. */
   | { type: 'chip'; slot: number; chip: string }
+  /** Poke a sleeping Traveler awake (M5-31). */
+  | { type: 'poke'; slot: number }
   /** A friend action on a Traveler, from the profile card or a request (M5-06). */
   | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' }
   | { type: 'buy'; shop: string; item: string; qty: number }
@@ -240,6 +242,10 @@ export function validateCommand(raw: unknown): Validated {
       if (typeof r.chip !== 'string' || !/^[a-z]{1,12}(\.[a-z]{1,12})?$/.test(r.chip))
         return { ok: false, reason: 'bad chip' };
       return { ok: true, command: { type: 'chip', slot: r.slot as number, chip: r.chip } };
+    case 'poke':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      return { ok: true, command: { type: 'poke', slot: r.slot as number } };
     case 'friend':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
         return { ok: false, reason: 'bad traveler' };

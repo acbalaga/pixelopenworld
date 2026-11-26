@@ -1090,6 +1090,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       if (open) input.sampler.releaseAll();
     },
     onFriend: (slot, op) => pendingCommands.push({ type: 'friend', slot, op }),
+    onPoke: (slot) => pendingCommands.push({ type: 'poke', slot }),
   });
   messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
   const talk = new TalkSheet(root, {
@@ -1552,6 +1553,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
                   slot: e.slot,
                   from: ids[e.slot]?.handle ?? 'someone',
                   chips: e.chips,
+                  channel: e.channel === 'whisper' ? 'whisper' : 'local',
                   until: performance.now() + UI_BALANCE.messages.chipShowMs,
                 });
             } else if (e.type === 'playerSpoke')
@@ -1893,7 +1895,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           const wx = Math.round(tv.x);
           const wy = Math.round(tv.y);
           renderer.drawSprite(Layer.Objects, frame, wx, wy + tv.dy, atlas.animFlip(a));
-          if (!names && !tv.glyph) continue;
+          if (!names && !tv.glyph && !tv.asleep) continue;
           const font = chooseTextRenderer({
             text: tv.handle,
             lines: 1,
@@ -1913,6 +1915,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             const nh = fonts.small.bake(tv.handle, INK, DARK);
             renderer.drawSprite(Layer.Hud, nh, sx - (atlas.width(nh) >> 1), y);
             y -= 9;
+          }
+          // Asleep: a small z that floats up and down beside the head (M5-31).
+          if (tv.asleep) {
+            const bob = Math.round(Math.sin(now / 350) * 1.5);
+            renderer.drawSprite(
+              Layer.Hud,
+              atlas.frame('ui.mark_snore', 'base'),
+              sx + 9,
+              head + 2 + bob,
+            );
           }
           // An emote shows as a glyph over the name, with its pose.
           if (tv.glyph) {

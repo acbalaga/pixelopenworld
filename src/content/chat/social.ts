@@ -192,3 +192,26 @@ export const MEMORY_LINES: Readonly<Record<string, readonly string[]>> = {
   ],
   ignoredRequest: ['i asked for a hand {memory.daysAgo}. no hard feelings'],
 };
+
+/**
+ * What a sleeping Traveler says when the player pokes them awake (POW-M5-31). A joke, not an
+ * interaction: no memory and no regard come of it. A Friend wakes friendlier.
+ */
+export const WAKE = {
+  grumpy: [
+    R('i was not asleep'),
+    R('five more minutes'),
+    R('i was resting my eyes'),
+    R('what? who? i am awake'),
+    R('i was thinking very hard', 'bold'),
+    R('i was only blinking slowly', 'steady'),
+    R('oh. sorry. i dozed off', 'shy'),
+    R('this had better be good'),
+  ],
+  friendly: [
+    R('oh hey, you caught me napping'),
+    R('thanks for the wake up, friend'),
+    R('ha, you got me. hi'),
+    R('good timing, i was dreaming about iron', 'bold'),
+  ],
+} as const satisfies Record<string, readonly Reply[]>;

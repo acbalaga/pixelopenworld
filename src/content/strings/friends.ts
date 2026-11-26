@@ -34,6 +34,8 @@ export const FRIEND_STRINGS = {
     theyAsked: 'They asked to be friends.',
     isFriend: 'Friends.',
     needMeet: 'Meet them first.',
+    asleep: 'They are fast asleep.',
+    poke: 'Poke',
   },
   /** Shared history lines by memory kind. `{subject}` and `{when}` fill in. */
   memory: {
@@ -51,6 +53,7 @@ export const FRIEND_STRINGS = {
   } as Record<string, string>,
   chips: {
     label: 'Reply to {name}',
+    reply: 'Reply',
     emotes: 'Emote',
     back: 'Back',
     you: 'You',

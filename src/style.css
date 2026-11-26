@@ -2389,20 +2389,31 @@ canvas {
   color: var(--pal-47);
 }
 
-/* Reply chips (POW-M5-06): clear text buttons, at least 48 px tall, just above the chat lane. */
+/* Reply chips (POW-M5-06): clear text buttons, at least 48 px tall, in the chat sheet under the log. */
 .pow-chips {
-  position: fixed;
   box-sizing: border-box;
-  z-index: 30;
-  padding: 6px;
-  background: rgb(10 10 20 / 88%);
-  border: 1px solid var(--pal-2, #556);
-  border-radius: 8px;
-  pointer-events: auto;
+  flex: none;
+  padding: 6px 8px 8px;
+  border-top: 1px solid var(--pal-2, #556);
   font-size: calc(0.95rem * var(--text-scale, 1));
   color: var(--pal-3, #eee);
 }
 .pow-chips[hidden] {
+  display: none;
+}
+.pow-chat-reply {
+  align-self: flex-end;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 4px 10px;
+  font: inherit;
+  color: var(--pal-3, #eee);
+  background: var(--pal-1, #223);
+  border: 1px solid var(--pal-4, #fc6);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.pow-chat-reply[hidden] {
   display: none;
 }
 .pow-chips-head {

@@ -1,5 +1,5 @@
 import type { SpriteDef } from '../types';
-import { Img, toSprite } from '../gen/img';
+import { Img, outlined, toSprite } from '../gen/img';
 
 /**
  * Giver marks (POW-M4-22D): a 7 x 9 speech bubble over a person who has work for you. `offer` is
@@ -62,7 +62,26 @@ const ZZZ = [
   [4, 5],
 ] as const;
 
+/** A small floating "z" over a Traveler who is asleep (POW-M5-31): 3 x 5 ink, outlined. */
+const SNORE_Z = [
+  [1, 1],
+  [2, 1],
+  [3, 1],
+  [3, 2],
+  [2, 3],
+  [1, 4],
+  [1, 5],
+  [2, 5],
+  [3, 5],
+] as const;
+function snore(): Img {
+  const im = new Img(5, 7);
+  for (const [x, y] of SNORE_Z) im.set(x, y, LIGHT);
+  return outlined(im);
+}
+
 export const MARK_SPRITES: readonly SpriteDef[] = [
+  toSprite('ui.mark_snore', 'ui', [2, 7], { base: snore() }),
   toSprite('ui.mark_offer', 'ui', [3, 9], { base: bubble(LIGHT, GLYPH, QUESTION) }),
   toSprite('ui.mark_rest', 'ui', [3, 9], { base: bubble(LIGHT, GLYPH, ZZZ) }),
   toSprite('ui.mark_ready', 'ui', [3, 9], { base: bubble(GOLD, GLYPH_READY, TICK) }),

@@ -769,6 +769,8 @@ export const ENTITY = {
   flatRangePx: 768,
   /** Ticks standing still before an idle Traveler shows AFK: two in-game minutes. */
   afkTicks: 120,
+  /** Ticks AFK before a Traveler is shown asleep with a floating z: five in-game minutes (M5-31). */
+  asleepTicks: 300,
   /** Ticks a login or logout shimmer lasts. */
   shimmerTicks: 24,
   /** Arrival tolerance at a goal, px. */

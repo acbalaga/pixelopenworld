@@ -90,6 +90,8 @@ export interface ChatState {
   inbox: Inbox[];
   asked: Map<number, number>;
   said: Set<number>;
+  /** Travelers poked awake this session (M5-31). */
+  poked: Set<number>;
 }
 
 export function newChatState(): ChatState {
@@ -108,6 +110,7 @@ export function newChatState(): ChatState {
     inbox: [],
     asked: new Map(),
     said: new Set(),
+    poked: new Set(),
   };
 }
 
@@ -309,7 +312,7 @@ function speak(
 ): void {
   const { state, chat } = c;
   // A Local line from a template can be answered: the chips come from its category and regard.
-  const offered = chips ?? (reply ? [] : offerFor(c, slot, template, channel));
+  const offered = chips ?? (reply ? [] : offerFor(c, slot, template, channel, slots));
   emit(state.events, {
     type: 'travelerSpoke',
     channel,

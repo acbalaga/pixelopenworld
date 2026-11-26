@@ -7,6 +7,7 @@ import {
   MEMORY_LINES,
   REPLIES,
   REQUEST_CHIPS,
+  WAKE,
   WHISPERS,
   type Reply,
 } from '../../content/chat/social';
@@ -19,6 +20,7 @@ import { findAvatar } from '../../shared/summary';
 import { emit, type SimEvent } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import { OTHER_BOARDS } from '../rankings/boards';
+import { isAsleep } from '../travelers/entities';
 import { SKILL_LIST } from '../travelers/lists';
 import {
   canAsk,
@@ -53,7 +55,8 @@ export interface Offer {
 /** A player command waiting for the next chat step. */
 export type Inbox =
   | { type: 'chip'; slot: number; chip: string }
-  | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' };
+  | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' }
+  | { type: 'poke'; slot: number };
 
 /** Abstract minutes (two real seconds each) an offer of chips lasts: a minute of real time. */
 export const OFFER_MIN = 30;
@@ -83,6 +86,10 @@ export const replyFor = (chip: string, t: TravelerIdentity, d: () => number): st
   return list && list.length > 0 ? pickReply(list, t, d) : null;
 };
 
+/** What a Traveler says when poked awake: grumpy, or friendlier to a Friend (POW-M5-31). */
+export const wakeFor = (friend: boolean, t: TravelerIdentity, d: () => number): string =>
+  pickReply(friend ? WAKE.friendly : WAKE.grumpy, t, d);
+
 /** A whispered line of a kind, in the Traveler's temper. */
 export const whisperFor = (
   kind: keyof typeof WHISPERS,
@@ -111,14 +118,20 @@ export function daysAgoText(day: number, today: number): string {
   return n === 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`;
 }
 
-/** Stores the chips a line offers, if it is a line the player can answer. Returns the chips. */
+/**
+ * Stores the chips a line offers, if it is a line the player can answer. Only a line that is
+ * addressed to the player, or about them, can be answered: one that names them (`{player}`, which
+ * covers the reactions to their public deeds). Chatter between other people is not for them to
+ * answer, so nothing offers chips for it. Returns the chips.
+ */
 export function offerFor(
   c: Ctx,
   slot: number,
   template: string,
   channel: 'world' | 'local' | 'whisper',
+  slots: Record<string, string>,
 ): { id: string; text: string }[] {
-  if (channel === 'world') return [];
+  if (channel === 'world' || slots.player === undefined) return [];
   const category = CATEGORY_OF.get(template);
   if (!category) return [];
   const life = c.state.travelers[slot];
@@ -401,6 +414,28 @@ export function processInbox(c: Ctx, h: Helpers): void {
     const life = c.state.travelers[slot]!;
     const t = c.ids[slot]!;
     const d = h.dice(c, 8500 + slot + c.minute);
+    if (it.type === 'poke') {
+      // A joke, not an interaction: no memory, no regard, no contact. One reaction per Traveler a session.
+      const ent = crowd.ents.get(crowd.entOf[slot] ?? -1);
+      if (!ent || !isAsleep(ent) || c.chat.poked.has(slot)) continue;
+      if (!nearSlots(c, MEMORY.contactPx).includes(slot)) continue;
+      c.chat.poked.add(slot);
+      ent.woke = true;
+      ent.emote = null;
+      const line = wakeFor(isFriend(life), t, d);
+      h.enqueue(c, {
+        due: c.minute + 1,
+        slot,
+        channel: 'local',
+        text: h.voice(c, slot, line, d),
+        template: 'wake.poke',
+        source: h.source(c, `state:wake:${slot}:${c.minute}`, 'poke'),
+        reply: true,
+        slots: {},
+        chips: [],
+      });
+      continue;
+    }
     if (it.type === 'friend') {
       if (it.op === 'request') {
         if (isFriend(life) || (life.flags & FLAG.met) === 0) continue;
