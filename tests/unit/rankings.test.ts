@@ -46,6 +46,7 @@ const facts = (over: Partial<PlayerFacts> = {}): PlayerFacts => ({
   bestiary: 0,
   mapPercent: 0,
   fishLanded: 0,
+  duelWins: 0,
   ...over,
 });
 
@@ -107,10 +108,17 @@ describe('boards', () => {
     expect(over.playerRank).toBe(1);
   });
 
-  it('keeps duels and festivals empty until their tickets', () => {
+  it('keeps festivals empty until their ticket, and puts the player on Duels once they have won one', () => {
     const s = stateAt(3, 30);
-    for (const id of ['duels', 'festivals'])
-      expect(computeBoard(id, 3, s.travelers, facts({ coin: 99 })).rows).toEqual([]);
+    expect(computeBoard('festivals', 3, s.travelers, facts({ coin: 99 })).rows).toEqual([]);
+    // Duels (M5-12): bold and steady Travelers have a record, shy ones none, and the player stands
+    // on it only with a win.
+    const none = computeBoard('duels', 3, s.travelers, facts());
+    expect(none.rows.length).toBeGreaterThan(0);
+    expect(none.playerRank).toBeNull();
+    const won = computeBoard('duels', 3, s.travelers, facts({ duelWins: 1 }));
+    expect(won.playerRank).not.toBeNull();
+    expect(won.playerValue).toBe(1);
   });
 
   it('never lets a Traveler reach the cap of a capped board, so a player can top it', () => {

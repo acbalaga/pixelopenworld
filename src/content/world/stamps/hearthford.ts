@@ -68,6 +68,7 @@ function hearthford(): StampV2 {
   part('square', 'square', 16, 23, 24, 13);
   b.place('fixture.waystone', 21, 25);
   b.place('fixture.board', 34, 25);
+  b.place('fixture.post_stand', 36, 25);
   for (const x of [18, 19, 20]) b.object(x, 24, 'tile.board');
   // A well: water in a ring of barrels.
   b.ground(21, 32, Terrain.Water);
@@ -147,6 +148,7 @@ function hearthford(): StampV2 {
   // The cellar hatch (mini-dungeon m1, POW-M4-11): planks in the corner of the yard.
   b.rect(15, 51, 2, 2, Terrain.Planks);
   b.place('fixture.bed', 6, 50);
+  b.place('fixture.mailbox', 4, 50);
   b.place('fixture.storage', 9, 50);
   b.place('prop.camp_pot', 12, 50);
   b.place('fixture.mirror', 15, 50);

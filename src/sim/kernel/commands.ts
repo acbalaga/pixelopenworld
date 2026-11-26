@@ -64,6 +64,10 @@ export type Command =
   | { type: 'hint'; id: string }
   /** Answer a Traveler with a reply chip or an emote (M5-06). The sim checks the chip is on offer. */
   | { type: 'chip'; slot: number; chip: string }
+  /** Read a letter, or claim its attachment, once (M5-12). */
+  | { type: 'mail'; op: 'read' | 'claim'; id: number }
+  /** Challenge a Traveler to a duel (M5-12). */
+  | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
   | { type: 'poke'; slot: number }
   /** A friend action on a Traveler, from the profile card or a request (M5-06). */
@@ -242,6 +246,15 @@ export function validateCommand(raw: unknown): Validated {
       if (typeof r.chip !== 'string' || !/^[a-z]{1,12}(\.[a-z]{1,12})?$/.test(r.chip))
         return { ok: false, reason: 'bad chip' };
       return { ok: true, command: { type: 'chip', slot: r.slot as number, chip: r.chip } };
+    case 'mail':
+      if (r.op !== 'read' && r.op !== 'claim') return { ok: false, reason: 'bad mail action' };
+      if (!Number.isInteger(r.id) || (r.id as number) < 1 || (r.id as number) > 1_000_000)
+        return { ok: false, reason: 'bad letter' };
+      return { ok: true, command: { type: 'mail', op: r.op, id: r.id as number } };
+    case 'duel':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      return { ok: true, command: { type: 'duel', slot: r.slot as number } };
     case 'poke':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
         return { ok: false, reason: 'bad traveler' };

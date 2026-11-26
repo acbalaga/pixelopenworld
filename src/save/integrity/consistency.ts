@@ -42,7 +42,7 @@ import {
 import type { Reason } from './reasons';
 import type { View } from './view';
 
-const COIN_SOURCES = ['loot', 'chest', 'request', 'sale', 'echo', 'seed'];
+const COIN_SOURCES = ['loot', 'chest', 'request', 'sale', 'echo', 'seed', 'mailGift'];
 const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe'];
 const ITEM_SOURCES = [
   'start',
@@ -55,6 +55,7 @@ const ITEM_SOURCES = [
   'dialogue',
   'shop',
   'buyback',
+  'mailGift',
   'seed',
 ];
 

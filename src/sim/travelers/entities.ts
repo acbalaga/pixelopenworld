@@ -15,6 +15,7 @@ import { SHOPS } from '../../content/dialogue';
 import { dayPhase } from '../time';
 import type { DollSpec } from '../../content/dolls/parts';
 import { startComboStep } from '../combat/commands';
+import { duelFoeOf } from '../duel';
 import { newFighter, newPools } from '../combat/fighter';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from '../kernel/entities';
 import { px, SUBPX } from '../kernel/fixed';
@@ -445,6 +446,8 @@ function nearestFoe(state: SimState, x: number, y: number, range: number): Entit
   for (const id of query(state.entities, 'fighter', 'pos')) {
     const f = state.entities.comps.fighter[id]!;
     if (f.team !== 1 || f.state === 'dead') continue;
+    // A Traveler in a duel is on the other team for a while, but is nobody's creature to hunt.
+    if (state.crowd?.ents.has(id)) continue;
     const p = state.entities.comps.pos[id]!;
     const d = Math.hypot(p.x / SUBPX - x, p.y / SUBPX - y);
     if (d < bestD) {
@@ -713,8 +716,10 @@ export function entityTick(state: SimState, crowd: Crowd): void {
       if (ent.scene.kind === 'dummy') ent.emote = { kind: 'bow', t: 0 };
       ent.scene = null;
     }
-    if ((d.kind === 'fight' && d.eta === 0) || ent.scene?.kind === 'dummy') {
-      const foe = nearestFoe(state, x, y, ENTITY.seekPx);
+    const duelFoe = duelFoeOf(state, id);
+    if ((d.kind === 'fight' && d.eta === 0) || ent.scene?.kind === 'dummy' || duelFoe !== null) {
+      // In a duel the foe is the player, and nothing else. Until the fight begins they only face up.
+      const foe = duelFoe !== null ? duelFoe : nearestFoe(state, x, y, ENTITY.seekPx);
       if (foe !== null) {
         const fp = state.entities.comps.pos[foe]!;
         const reach = (WEAPONS[state.entities.comps.combatant[id]!.weapon]?.reach ?? 20) - 4;
@@ -723,6 +728,9 @@ export function entityTick(state: SimState, crowd: Crowd): void {
         if (dist > reach) {
           walkTo(state, id, ent, fp.x / SUBPX, fp.y / SUBPX);
           ent.mode = 'walk';
+        } else if (duelFoe !== null && state.duel && !state.duel.begun) {
+          // The count before a duel: face the player, no blows yet.
+          ent.mode = 'idle';
         } else {
           f.aim = { x: fp.x / SUBPX - x || 0, y: fp.y / SUBPX - y || 1 };
           startComboStep(state, id);

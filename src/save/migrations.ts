@@ -708,6 +708,15 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
       summary: deriveSummary(s, old.playSeconds),
     };
   },
+  /**
+   * 30 to 31 (M5-12): the sim gains `mail`, the mailbox, the duel record and the dungeon entries. A
+   * save made before has an empty one. Nothing in it counts as value the ledger has not seen: a
+   * letter's goods exist only once claimed, and a claim writes the `mailGift` ledger entry.
+   */
+  30: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 31, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

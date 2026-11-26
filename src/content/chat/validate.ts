@@ -7,8 +7,15 @@ import { GLYPHS } from './glyphs';
 import { DUNGEON_NAMES, PLACE_NAMES, UNBAKED_NAMES } from './names';
 import { SLOTS_BY_TRIGGER } from './slots';
 import { RUMORS } from './rumors';
+import {
+  LETTERS,
+  LETTER_KINDS,
+  LETTER_SLOTS,
+  type LetterKind,
+  type LetterTemplate,
+} from './letters';
 import { SCENES } from './scenes';
-import { WAKE } from './social';
+import { DUEL_LINES, RIVAL_LINES, WAKE } from './social';
 import { EXCHANGES, TEMPLATES } from './templates';
 import {
   CATEGORIES,
@@ -38,6 +45,10 @@ export interface ChatContent {
   scenes?: readonly ChatScene[];
   /** Wake lines (M5-31): at least twelve in all, none with a slot. */
   wake?: readonly string[];
+  /** Letter templates (M5-12): about 150, each kind using only its own slots. */
+  letters?: readonly LetterTemplate[];
+  /** Other social lines (M5-12 duel and Rival lines): text checks, and only `{player}` and `{dungeon}`. */
+  other?: readonly string[];
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -103,6 +114,39 @@ function validateScenes(
     ['wishCame.drop', 3],
   ] as const)
     if ((per.get(k) ?? 0) < min) errors.push(`scenes ${k}: ${per.get(k) ?? 0}, expected ${min}`);
+}
+
+const LETTER_REQUIRED: Partial<Record<LetterKind, readonly string[]>> = {
+  giftCoin: ['coin'],
+  giftItem: ['item', 'qty'],
+  invite: ['place'],
+};
+
+function validateLetters(
+  letters: readonly LetterTemplate[],
+  errors: string[],
+  glyphIds: Set<string>,
+): void {
+  if (letters.length === 0) return;
+  if (letters.length < 140) errors.push(`letters: ${letters.length}, expected about 150`);
+  const seen = new Set<string>();
+  for (const l of letters) {
+    const w = `letter ${l.id}`;
+    if (seen.has(l.id)) errors.push(`${w}: duplicate id`);
+    seen.add(l.id);
+    if (!(LETTER_KINDS as readonly string[]).includes(l.kind)) errors.push(`${w}: kind ${l.kind}`);
+    checkText(w, l.text, errors, glyphIds);
+    const allowed = LETTER_SLOTS[l.kind] ?? [];
+    const used = [...l.text.matchAll(/\{([a-z]+)\}/g)].map((m) => m[1] as string);
+    for (const u of used)
+      if (!allowed.includes(u)) errors.push(`${w}: {${u}} not allowed in ${l.kind}`);
+    for (const need of LETTER_REQUIRED[l.kind] ?? [])
+      if (!used.includes(need)) errors.push(`${w}: ${l.kind} must use {${need}}`);
+    if (/\{[^a-z}]|[^{a-z]\}/.test(l.text.replace(/\{[a-z]+\}/g, '')))
+      errors.push(`${w}: stray brace`);
+  }
+  for (const k of LETTER_KINDS)
+    if (!letters.some((l) => l.kind === k)) errors.push(`letters: no ${k}`);
 }
 
 export function validateChat(c: ChatContent): string[] {
@@ -211,6 +255,12 @@ export function validateChat(c: ChatContent): string[] {
       if (/\{/.test(t)) errors.push(`wake[${i}]: slot`);
     });
   }
+  (c.other ?? []).forEach((t, i) => {
+    checkText(`other[${i}]`, t, errors, glyphIds);
+    for (const m of t.matchAll(/\{([a-z]+)\}/g))
+      if (m[1] !== 'player' && m[1] !== 'dungeon') errors.push(`other[${i}]: {${m[1]}}`);
+  });
+  validateLetters(c.letters ?? [], errors, glyphIds);
   validateScenes(c.scenes ?? [], errors, glyphIds, new Set(c.exchanges.map((x) => x.id)));
   for (const id of Object.keys(PLACE_NAMES))
     if (!PLACES[id]) errors.push(`place name ${id}: no such place`);
@@ -229,4 +279,8 @@ export const validateShippedChat = (): string[] =>
     rumors: RUMORS,
     scenes: SCENES,
     wake: [...WAKE.grumpy, ...WAKE.friendly].map((r) => r.text),
+    letters: LETTERS,
+    other: [...Object.values(DUEL_LINES), ...Object.values(RIVAL_LINES)].flatMap((l) =>
+      l.map((r) => r.text),
+    ),
   });

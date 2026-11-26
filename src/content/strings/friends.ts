@@ -35,6 +35,8 @@ export const FRIEND_STRINGS = {
     isFriend: 'Friends.',
     needMeet: 'Meet them first.',
     asleep: 'They are fast asleep.',
+    challenge: 'Challenge to a duel',
+    duelNote: 'First to lose a third of their health loses. Nobody falls.',
     poke: 'Poke',
   },
   /** Shared history lines by memory kind. `{subject}` and `{when}` fill in. */
@@ -51,6 +53,12 @@ export const FRIEND_STRINGS = {
     answered: 'You answered their question, {when}.',
     ignoredRequest: 'You did not answer when they asked for help, {when}.',
   } as Record<string, string>,
+  duel: {
+    begins: 'The duel begins. First to lose a third of their health loses.',
+    won: 'You won the duel.',
+    lost: 'You lost the duel.',
+    draw: 'The duel ended in a draw.',
+  },
   chips: {
     label: 'Reply to {name}',
     reply: 'Reply',

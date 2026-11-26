@@ -1,3 +1,4 @@
+import { DUELS } from '../../content/balance/mail';
 import { FRIENDS, MEMORY, REGARD } from '../../content/balance/social';
 import { FLAG, MEMORY_KINDS, type MemoryKind } from '../../content/travelers/types';
 import type { SimState } from '../state';
@@ -123,4 +124,23 @@ export function touch(life: TravelerLife, nowMin: number): void {
 /** Takes the friend flag off. Regard stays, so they remain an Acquaintance at least. */
 export function removeFriend(life: TravelerLife): void {
   life.flags &= ~(FLAG.friend | FLAG.requestIn | FLAG.requestOut);
+}
+
+/**
+ * A Rival flag from repeated close competition (design/12 section 5): duels count more than
+ * passing on a board. Set when the score from the memory ring reaches the threshold, never taken
+ * off, and it does not block friendship. Returns true if the flag was newly set.
+ */
+export function updateRival(life: TravelerLife): boolean {
+  if ((life.flags & FLAG.rival) !== 0) return false;
+  const duelKinds = [MEMORY_KINDS.indexOf('duelWon'), MEMORY_KINDS.indexOf('duelLost')];
+  const pass = MEMORY_KINDS.indexOf('passedOnBoard');
+  let score = 0;
+  for (const m of life.memory) {
+    if (duelKinds.includes(m.kind)) score += DUELS.rivalDuelPoints;
+    else if (m.kind === pass) score += DUELS.rivalPassPoints;
+  }
+  if (score < DUELS.rivalAt) return false;
+  life.flags |= FLAG.rival;
+  return true;
 }

@@ -14,7 +14,7 @@ import { VOICES } from '../../src/content/chat/voices';
 import { SKILLS } from '../../src/content/skills';
 import { ITEM_STRINGS } from '../../src/content/strings/items';
 import { createAvatar } from '../../src/sim/avatar';
-import { chatSystem, fill } from '../../src/sim/chat/engine';
+import { chatSystem, fill, newChatState } from '../../src/sim/chat/engine';
 import { applyVoice, glyphsIn } from '../../src/sim/chat/voice';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { px } from '../../src/sim/kernel/fixed';
@@ -298,6 +298,12 @@ describe('the chat engine over a simulated day', () => {
   it('makes no chat line without a clock, and never touches the sim streams', () => {
     const a = world(7);
     const b = world(7);
+    // Small scenes (M5-27) move Travelers on purpose, so they are held at their caps for this check.
+    a.chat = newChatState();
+    const hour = Math.floor(a.clock!.nowMs / 3_600_000);
+    for (let h = hour; h <= hour + 3; h++)
+      for (const k of ['wish', 'wishCame', 'dance', 'ghost', 'dummy'])
+        a.chat.scenes.counts.set(`${k}|${h}`, 99);
     run(a, 120);
     // The same crowd with the chat system left out: the sim is byte-identical.
     const base = b.clock!.nowMs;
@@ -310,6 +316,8 @@ describe('the chat engine over a simulated day', () => {
     }
     // Regard and memory (M5-06) are the one thing chat writes into a Traveler's life. Set aside, the
     // sim is byte-identical: chat changes nothing the crowd does.
+    // A trail rumor said aloud is a rumor the player has heard (M5-29): one flag in their journal.
+    for (const s of [a, b]) for (const j of s.entities.comps.journal) if (j) j.flags = [];
     for (const s of [a, b])
       for (const l of s.travelers) {
         l.regardTier = 0;

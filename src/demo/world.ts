@@ -19,6 +19,7 @@ import { PALETTE } from '../content/sprites/palette';
 import { TRAVELER_SHIMMER } from '../content/sprites/travelerShimmer';
 import { identitiesOf } from '../sim/travelers/generate';
 import { demoteAll, profileOf, travelerViews } from '../sim/travelers/entities';
+import { MailSheet } from '../ui/dom/mailSheet';
 import { TravelerCard } from '../ui/dom/travelerCard';
 import { BUTTON_ICONS } from '../content/sprites/ui/icons';
 import { SIGN_STRINGS } from '../content/strings/signs';
@@ -61,6 +62,8 @@ import {
   type MeterRect,
 } from '../render/actionMeter';
 import { UI_BALANCE } from '../content/balance/ui';
+import { FRIEND_STRINGS } from '../content/strings/friends';
+import { MAIL_STRINGS } from '../content/strings/mail';
 import { STATIONS } from '../content/items/stations';
 import type { SaveTime } from '../save/types';
 import { attachAudioLifecycle, createGameAudio } from '../platform/audio';
@@ -557,7 +560,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     guard: () => shieldWorn,
     hudScale: () => settings.get().hudScale,
     buttonScale: () => settings.get().buttonScale,
-    keysEnabled: () => !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen,
+    keysEnabled: () =>
+      !menuOpen && !notices.tabletOpen && !talkOpen && !mirrorOpen && !cardOpen && !mailOpen,
     insets: () => readSafeInsets(probe),
   });
   let menuOpen = false;
@@ -1091,8 +1095,19 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     },
     onFriend: (slot, op) => pendingCommands.push({ type: 'friend', slot, op }),
     onPoke: (slot) => pendingCommands.push({ type: 'poke', slot }),
+    onDuel: (slot) => pendingCommands.push({ type: 'duel', slot }),
   });
   messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
+  // The mailbox in the inn yard and the post stand in the square (M5-12).
+  let mailOpen = false;
+  const mailSheet = new MailSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      mailOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
   const talk = new TalkSheet(root, {
     read: () => ({ state, who }),
     send: (c) => pendingCommands.push(c),
@@ -1541,6 +1556,17 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           const ids = identitiesOf(state.seed);
           for (const e of state.events.list) {
             if (e.type === 'travelerInspect') travelerCard.open(profileOf(state, e.slot), state);
+            else if (e.type === 'mailOpened') mailSheet.open();
+            else if (e.type === 'mailArrived') notices.toast(MAIL_STRINGS.arrived);
+            else if (e.type === 'duelStarted') notices.toast(FRIEND_STRINGS.duel.begins);
+            else if (e.type === 'duelEnded')
+              notices.toast(
+                e.result === 'player'
+                  ? FRIEND_STRINGS.duel.won
+                  : e.result === 'traveler'
+                    ? FRIEND_STRINGS.duel.lost
+                    : FRIEND_STRINGS.duel.draw,
+              );
             else if (e.type === 'travelerSpoke') {
               router.post({
                 lane: 'chat',

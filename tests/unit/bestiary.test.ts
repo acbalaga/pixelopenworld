@@ -123,6 +123,7 @@ describe('schema 26 to 27 migration (the Bestiary)', () => {
       delete (j as { bestiary?: unknown }).bestiary;
     }
     delete (s as { travelers?: unknown }).travelers;
+    delete (s as { mail?: unknown }).mail;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

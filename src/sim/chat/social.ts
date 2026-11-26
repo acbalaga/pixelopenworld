@@ -2,10 +2,13 @@ import { FRIENDS, MEMORY } from '../../content/balance/social';
 import {
   CHIPS,
   CHIP_SETS,
+  DUEL_CHIPS,
+  DUEL_LINES,
   EMOTE_CHIPS,
   HELLO_CHIPS,
   MEMORY_LINES,
   REPLIES,
+  RIVAL_LINES,
   REQUEST_CHIPS,
   WAKE,
   WHISPERS,
@@ -31,10 +34,16 @@ import {
   removeFriend,
   tierNow,
   touch,
+  updateRival,
   wouldAccept,
 } from '../travelers/social';
 import type { TravelerIdentity } from '../travelers/types';
+import { DUELS } from '../../content/balance/mail';
+import { PIT } from '../../content/balance/travelers';
+import { DUNGEON_NAMES } from '../../content/chat/names';
+import { acceptsDuel, startDuel } from '../duel';
 import type { Ctx, Helpers } from './engine';
+import { writeDuelNote } from './letters';
 
 /**
  * The social side of chat (POW-M5-06): reply chips and the Traveler's answer, memory of the player,
@@ -46,7 +55,7 @@ import type { Ctx, Helpers } from './engine';
 /** What the player may answer with, per Traveler, until they answer or it goes stale. */
 export interface Offer {
   slot: number;
-  category: Category | 'request' | 'hello';
+  category: Category | 'request' | 'hello' | 'duelAsk';
   chips: string[];
   channel: 'local' | 'whisper';
   minute: number;
@@ -56,7 +65,8 @@ export interface Offer {
 export type Inbox =
   | { type: 'chip'; slot: number; chip: string }
   | { type: 'friend'; slot: number; op: 'request' | 'accept' | 'decline' | 'remove' }
-  | { type: 'poke'; slot: number };
+  | { type: 'poke'; slot: number }
+  | { type: 'duel'; slot: number };
 
 /** Abstract minutes (two real seconds each) an offer of chips lasts: a minute of real time. */
 export const OFFER_MIN = 30;
@@ -73,6 +83,8 @@ export function chipsFor(category: Category, tier: number): string[] {
     if (set.length < 2 && !set.includes(pad)) set.push(pad);
   return set.slice(0, 4);
 }
+
+const PIT_DUELISTS = PIT;
 
 const pickReply = (list: readonly Reply[], t: TravelerIdentity, d: () => number): string => {
   const fit = list.filter((r) => !r.temper || r.temper === t.temper);
@@ -181,7 +193,13 @@ export function touchNear(c: Ctx): void {
 }
 
 /** True if an event is one a Traveler may remember. */
-export const memorable = (e: SimEvent): boolean => e.type === 'killed' || e.type === 'playerPassed';
+export const memorable = (e: SimEvent): boolean =>
+  e.type === 'killed' ||
+  e.type === 'playerPassed' ||
+  e.type === 'duelStarted' ||
+  e.type === 'duelEnded' ||
+  e.type === 'delved' ||
+  e.type === 'died';
 
 /** Records what the player did near a Traveler, from this tick's events. */
 export function recordMemories(c: Ctx, events: readonly SimEvent[]): void {
@@ -414,6 +432,10 @@ export function processInbox(c: Ctx, h: Helpers): void {
     const life = c.state.travelers[slot]!;
     const t = c.ids[slot]!;
     const d = h.dice(c, 8500 + slot + c.minute);
+    if (it.type === 'duel') {
+      challenge(c, h, slot);
+      continue;
+    }
     if (it.type === 'poke') {
       // A joke, not an interaction: no memory, no regard, no contact. One reaction per Traveler a session.
       const ent = crowd.ents.get(crowd.entOf[slot] ?? -1);
@@ -476,12 +498,14 @@ export function processInbox(c: Ctx, h: Helpers): void {
     life.flags |= FLAG.met;
     if (!emote) c.chat.offers.delete(slot);
     if (!emote && (offer as Offer).category === 'question') rememberOnce(c, slot, 'answered', 0);
-    if (it.chip === 'friend.yes') {
+    if (it.chip === 'duel.yes' && offer?.category === 'duelAsk') {
+      if (startDuel(c.state, slot)) c.chat.duelAsked.add(slot);
+    } else if (it.chip === 'friend.yes') {
       life.flags &= ~FLAG.requestIn;
       c.chat.asked.delete(slot);
       makeFriends(life, c.real);
       emit(c.state.events, { type: 'friendChanged', slot, change: 'added' });
-    } else if (it.chip === 'friend.no') {
+    } else if (it.chip === 'friend.no' || it.chip === 'duel.no') {
       life.flags &= ~FLAG.requestIn;
       c.chat.asked.delete(slot);
       emit(c.state.events, { type: 'friendChanged', slot, change: 'declined' });
@@ -499,5 +523,188 @@ export function processInbox(c: Ctx, h: Helpers): void {
       slots: {},
       chips: [],
     });
+  }
+}
+
+const lineFor = (
+  list: readonly Reply[],
+  t: TravelerIdentity,
+  d: () => number,
+  fills: Record<string, string> = {},
+): string => pickReply(list, t, d).replace(/\{([a-z]+)\}/g, (_, k: string) => fills[k] ?? '');
+
+function say(
+  c: Ctx,
+  h: Helpers,
+  slot: number,
+  text: string,
+  template: string,
+  channel: 'local' | 'world' | 'whisper',
+  d: () => number,
+  due = c.minute + 1,
+): void {
+  h.enqueue(c, {
+    due,
+    slot,
+    channel,
+    text: h.voice(c, slot, text, d),
+    template,
+    source: h.source(c, `state:${template}:${slot}:${c.minute}`, template),
+    reply: true,
+    slots: {},
+    chips: [],
+  });
+}
+
+/** The player challenges a Traveler from their profile card. */
+function challenge(c: Ctx, h: Helpers, slot: number): void {
+  const t = c.ids[slot]!;
+  const d = h.dice(c, 8600 + slot + c.minute);
+  const near = nearSlots(c, DUELS.nearPx).includes(slot);
+  if (c.state.crowd!.online[slot] !== 1 || !near || c.state.duel) return;
+  if (acceptsDuel(c.state, slot, t.temper, c.real) && startDuel(c.state, slot)) {
+    say(c, h, slot, lineFor(DUEL_LINES.accept, t, d), 'duel.accept', 'local', d);
+    emit(c.state.events, { type: 'playerSpoke', channel: 'local', slot, text: 'Duel?' });
+  } else say(c, h, slot, lineFor(DUEL_LINES.refuse, t, d), 'duel.refuse', 'local', d);
+}
+
+/** Is this Traveler the sort who asks for a duel: bold, or in the duelists' guild, or named for it. */
+const duelMinded = (c: Ctx, slot: number): boolean =>
+  c.ids[slot]!.temper === 'bold' ||
+  PIT_DUELISTS.guilds.includes(c.state.travelers[slot]!.guild) ||
+  PIT_DUELISTS.handles.includes(c.ids[slot]!.handle);
+
+/** A duel-minded Traveler near the player, who has met them, sometimes asks for a duel, by whisper. */
+export function duelAsks(c: Ctx, h: Helpers): void {
+  if (c.state.duel) return;
+  const d = h.dice(c, 8700 + c.minute);
+  if (d() >= 0.015 * 6) return;
+  const pool = nearSlots(c, DUELS.nearPx).filter((slot) => {
+    const life = c.state.travelers[slot]!;
+    return (
+      c.state.crowd!.online[slot] === 1 &&
+      duelMinded(c, slot) &&
+      !c.chat.duelAsked.has(slot) &&
+      tierNow(life, c.real) >= 1 &&
+      h.canSpeak(c, slot)
+    );
+  });
+  if (pool.length === 0) return;
+  const slot = pool[Math.floor(d() * pool.length)] as number;
+  c.chat.duelAsked.add(slot);
+  saySocial(
+    c,
+    h,
+    slot,
+    'whisper',
+    lineFor(DUEL_LINES.ask, c.ids[slot]!, d),
+    'whisper.duel',
+    'duel:ask',
+    { category: 'duelAsk', chips: DUEL_CHIPS },
+  );
+}
+
+/**
+ * What a duel leaves behind: the count-down line, then the result as memory (once, for the
+ * Traveler), the Duels record, a Rival flag if the competition has been close and repeated, a
+ * sporting line from the Traveler and sometimes a letter.
+ */
+export function duelEvents(c: Ctx, h: Helpers, events: readonly SimEvent[]): void {
+  for (const e of events) {
+    if (e.type === 'duelStarted') {
+      const d = h.dice(c, 8800 + e.slot + c.minute);
+      say(c, h, e.slot, lineFor(DUEL_LINES.go, c.ids[e.slot]!, d), 'duel.go', 'local', d);
+    } else if (e.type === 'duelEnded') {
+      const life = c.state.travelers[e.slot]!;
+      const t = c.ids[e.slot]!;
+      const d = h.dice(c, 8900 + e.slot + c.minute);
+      if (e.result !== 'draw') {
+        remember(life, e.result === 'player' ? 'duelWon' : 'duelLost', 0, c.day, c.real);
+        updateRival(life);
+        writeDuelNote(c, e.slot, e.result === 'player', d);
+      }
+      const list =
+        e.result === 'draw'
+          ? DUEL_LINES.draw
+          : e.result === 'player'
+            ? DUEL_LINES.loser
+            : DUEL_LINES.winner;
+      say(c, h, e.slot, lineFor(list, t, d), `duel.${e.result}`, 'local', d);
+    }
+  }
+}
+
+/**
+ * Dungeon entries and Rivals (POW-M5-12). Each entry is kept by real day. When the player goes into
+ * the dungeon they have entered most in the last week, a Rival may show up: they say so and taunt,
+ * sportingly. The chance climbs with each visit they miss, so one comes within a few. A Rival who has
+ * shown up may say a line to a downed player. (Travelers do not fight in dungeons yet, so a Rival's
+ * help is a line and nothing more until parties exist.)
+ */
+export function rivalOnEntry(c: Ctx, h: Helpers, events: readonly SimEvent[]): void {
+  const { state, chat } = c;
+  const entries = state.mail.entries;
+  const me = findAvatar(state);
+  for (const e of events) {
+    if (e.type === 'delved' && e.who === me) {
+      const last = [...entries].reverse().find((x) => x.dungeon === e.dungeon);
+      // One entry per visit, not one per room: a new visit is at least a real minute after the last.
+      if (last && last.day === c.day && c.minute - (chat.lastEntry.get(e.dungeon) ?? -1e9) < 30) {
+        chat.lastEntry.set(e.dungeon, c.minute);
+        continue;
+      }
+      chat.lastEntry.set(e.dungeon, c.minute);
+      entries.push({ dungeon: e.dungeon, day: c.day });
+      while (entries.length > 60) entries.shift();
+      const recent = entries.filter((x) => c.day - x.day < DUELS.rivalWindowDays);
+      const count = new Map<string, number>();
+      for (const x of recent) count.set(x.dungeon, (count.get(x.dungeon) ?? 0) + 1);
+      let top = '';
+      let best = 0;
+      for (const [k, n] of count)
+        if (n > best) {
+          top = k;
+          best = n;
+        }
+      if (top !== e.dungeon) continue;
+      const rivals = state.travelers
+        .map((l, slot) =>
+          (l.flags & FLAG.rival) !== 0 && state.crowd!.online[slot] === 1 ? slot : -1,
+        )
+        .filter((slot) => slot >= 0);
+      if (rivals.length === 0) continue;
+      const d = h.dice(c, 9100 + c.minute);
+      const chance = Math.min(1, 0.4 + 0.2 * chat.rivalMisses);
+      if (d() >= chance) {
+        chat.rivalMisses++;
+        continue;
+      }
+      chat.rivalMisses = 0;
+      const slot = rivals[Math.floor(d() * rivals.length)] as number;
+      chat.rivalHere.set(slot, { dungeon: e.dungeon, minute: c.minute });
+      const name = DUNGEON_NAMES[e.dungeon] ?? '';
+      const text = lineFor(RIVAL_LINES.appear, c.ids[slot]!, d, {
+        dungeon: name,
+        player: c.player,
+      });
+      say(c, h, slot, text, 'rival.appear', 'world', d);
+      emit(state.events, { type: 'rivalAppeared', slot, dungeon: e.dungeon });
+    } else if (e.type === 'died' && e.id === me && e.team === 0) {
+      for (const [slot, at] of chat.rivalHere) {
+        if (c.minute - at.minute > 180) continue;
+        const d = h.dice(c, 9200 + slot + c.minute);
+        if (d() >= DUELS.rivalHelpChance) continue;
+        say(
+          c,
+          h,
+          slot,
+          lineFor(RIVAL_LINES.help, c.ids[slot]!, d, { player: c.player }),
+          'rival.help',
+          'world',
+          d,
+        );
+        break;
+      }
+    }
   }
 }

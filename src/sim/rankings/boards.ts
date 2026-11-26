@@ -1,3 +1,4 @@
+import { DUELS } from '../../content/balance/mail';
 import { RANKINGS } from '../../content/balance/rankings';
 import { CREATURES } from '../../content/creatures';
 import { SKILLS } from '../../content/skills';
@@ -43,6 +44,8 @@ export interface PlayerFacts {
   mapPercent: number;
   /** Fish landed, in total. */
   fishLanded: number;
+  /** Duels the player has won (M5-12). */
+  duelWins: number;
 }
 
 export interface BoardRow {
@@ -93,6 +96,8 @@ export function travelerValue(board: BoardId, t: TravelerIdentity, life: Travele
       );
     case 'fishing':
       return Math.round(pointsIn(life, 'skill.fishing') * R.fishPerPoint);
+    case 'duels':
+      return Math.round(totalPoints(life) * DUELS.boardPerPoint[t.temper]);
     case 'renown':
       return renownOf(totalPoints(life), travelerValue('bestiary', t, life), life.coin);
     default:
@@ -117,6 +122,8 @@ export function playerValue(board: BoardId, f: PlayerFacts): number {
       return f.mapPercent;
     case 'fishing':
       return f.fishLanded;
+    case 'duels':
+      return f.duelWins;
     case 'renown':
       return renownOf(
         Object.values(f.points).reduce((a, b) => a + b, 0),

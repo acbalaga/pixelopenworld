@@ -24,8 +24,11 @@ import { dayPhase, weatherOn } from '../time';
 import { crowdOf, onlineCount } from '../travelers/crowd';
 import { startScene } from '../travelers/entities';
 import { addFlag, gateOpen, hasFlag } from '../travelers/pit';
+import { mailOnLogin } from './letters';
 import { cameTrue, planScenes } from './scenes';
 import {
+  duelAsks,
+  duelEvents,
   friendAsks,
   loginHellos,
   memoryLines,
@@ -33,6 +36,7 @@ import {
   processInbox,
   memorable,
   recordMemories,
+  rivalOnEntry,
   touchNear,
   type Inbox,
   type Offer,
@@ -91,6 +95,11 @@ export interface ChatState {
   inbox: Inbox[];
   asked: Map<number, number>;
   said: Set<number>;
+  /** Duel and Rival bookkeeping (M5-12): who has asked for a duel, dungeon entry times, Rival visits. */
+  duelAsked: Set<number>;
+  lastEntry: Map<string, number>;
+  rivalMisses: number;
+  rivalHere: Map<number, { dungeon: string; minute: number }>;
   /** Travelers poked awake this session (M5-31). */
   poked: Set<number>;
 }
@@ -111,6 +120,10 @@ export function newChatState(): ChatState {
     inbox: [],
     asked: new Map(),
     said: new Set(),
+    duelAsked: new Set(),
+    lastEntry: new Map(),
+    rivalMisses: 0,
+    rivalHere: new Map(),
     poked: new Set(),
   };
 }
@@ -698,9 +711,9 @@ function scenes(c: Ctx, events: readonly SimEvent[]): void {
   const gap = (): number =>
     SCENE_BALANCE.lineGapMin[0] +
     Math.floor(d() * (SCENE_BALANCE.lineGapMin[1] - SCENE_BALANCE.lineGapMin[0] + 1));
-  // Old counts are of no use.
+  // Counts of hours gone by are of no use.
   for (const k of chat.scenes.counts.keys())
-    if (!k.endsWith(`|${hourKey}`)) chat.scenes.counts.delete(k);
+    if (Number(k.split('|')[1]) < hourKey) chat.scenes.counts.delete(k);
 
   const plans = planScenes({
     state,
@@ -887,7 +900,9 @@ export function chatSystem(state: SimState): void {
   exchanges(ctx);
   scenes(ctx, events);
   loginHellos(ctx, HELPERS, events);
+  mailOnLogin(ctx, events, (salt) => diceFor(state, chat, salt + ctx.minute));
   friendAsks(ctx, HELPERS);
+  duelAsks(ctx, HELPERS);
   memoryLines(ctx, HELPERS);
   chatter(ctx);
   chat.lastWeather = ctx.weather;
@@ -904,5 +919,8 @@ export function socialSystem(state: SimState): void {
   const crowd = state.crowd;
   if (!crowd || !state.clock || !crowd.caughtUp || !state.events.list.some(memorable)) return;
   const chat = (state.chat ??= newChatState());
-  recordMemories(contextOf(state, chat, crowd.lastMinute), state.events.list);
+  const ctx = contextOf(state, chat, crowd.lastMinute);
+  recordMemories(ctx, state.events.list);
+  duelEvents(ctx, HELPERS, state.events.list);
+  rivalOnEntry(ctx, HELPERS, state.events.list);
 }

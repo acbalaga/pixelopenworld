@@ -1,3 +1,4 @@
+import { duelFloor } from '../duel';
 import { activeMods, applyMods, hasStatus, modAdd, modPct, statusMods } from '../mods';
 import { COMBAT as C } from '../../content/balance/combat';
 import { STATUS_BALANCE as SB } from '../../content/balance/status';
@@ -298,7 +299,8 @@ export function dealDamage(state: SimState, dst: EntityId, h: HitInfo): void {
     if (at)
       amount = Math.max(1, Math.floor((amount * elementPct(state, h.elem, at.x, at.y)) / 100));
   }
-  pools.hp = Math.max(0, pools.hp - amount);
+  // In a duel neither side can fall (M5-12): health stops at 1 for the two of them.
+  pools.hp = Math.max(duelFloor(state, dst), pools.hp - amount);
   if (h.src !== dst) provoke(state, dst, h.src);
   pools.lastCombat = state.tick;
   const srcPools = getComp(e, h.src, 'pools');

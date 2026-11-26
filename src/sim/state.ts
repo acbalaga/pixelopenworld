@@ -10,6 +10,8 @@ import type { Deltas } from './world/deltas';
 import type { StreamState } from './world/stream';
 import type { Fog } from './world/fog';
 import { initialLives } from './travelers/generate';
+import type { DuelState } from './duel';
+import { newMailbox, type Mailbox } from './mail';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -661,6 +663,10 @@ export interface SimState {
   map: MapState;
   /** The 240 Travelers' lives (M5-02). Saved as a compact binary section. Identity is derived from `seed`. */
   travelers: TravelerLife[];
+  /** Letters, the duel record and dungeon entries (M5-12). Saved. */
+  mail: Mailbox;
+  /** The duel in progress, if any (M5-12). Session only: never saved. */
+  duel?: DuelState | undefined;
   /** Transient. Excluded from serialization and hashing. */
   events: EventQueue;
   /** Transient. The tile collision source for the current area. Null in demos with no map. */
@@ -733,6 +739,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     deltas: {},
     map: newMapState(),
     travelers: initialLives(seed),
+    mail: newMailbox(),
     events: createEventQueue(),
     world: null,
   };
@@ -794,6 +801,7 @@ function persistent(state: SimState): Omit<
     map: state.map,
     // Absent only in tests that take the field off to compare a hash with an older fixture's.
     travelers: state.travelers ? livesToText(state.travelers) : undefined,
+    mail: state.mail,
   };
 }
 
@@ -812,6 +820,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     deltas?: Deltas;
     map?: MapState;
     travelers?: string;
+    mail?: Mailbox;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -830,6 +839,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     map: raw.map ?? newMapState(),
     // A state from before Travelers has none: they start as a fresh generation from the seed.
     travelers: raw.travelers === undefined ? initialLives(raw.seed) : livesFromText(raw.travelers),
+    // A state from before the mailbox has an empty one.
+    mail: raw.mail ?? newMailbox(),
     events: createEventQueue(),
     world,
   };
