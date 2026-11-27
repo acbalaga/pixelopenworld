@@ -36,14 +36,14 @@ All spells cost Focus. Status effects named here (Burning, Wet, Warded, Hexed, D
 
 ## Gathering (6)
 
-| Skill     | XP event          | Wired in                                    | Band 0                                       | Band 15                                                         | 30+ theme              |
-| --------- | ----------------- | ------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------- | ---------------------- |
-| Mining    | `gather:mining`   | M3-06                                       | Passive: can work tier 1 veins at full speed | Passive **Sure Strike**: sweet window 2 ticks wider on veins    | Gem finds, deep veins  |
-| Logging   | `gather:logging`  | M3-06                                       | Passive: can work tier 1 trees at full speed | Passive **Clean Cut**: +1 yield on a sweet hit                  | Rare woods, stumps     |
-| Foraging  | `gather:foraging` | M1                                          | Passive: herbs and berries                   | Passive **Keen Eye**: rare variants twice as likely             | Truffles, night blooms |
-| Fishing   | `gather:fishing`  | M3-06 (placeholder catch), M6-05 (minigame) | Passive: tier 1 waters                       | Passive **Patient Line**: placeholder catch takes 20% less time | Legendary fish         |
-| Farming   | `harvest` (later) | **pending, M6-02**                          | Defined, no effect yet                       | Defined, no effect yet                                          | Rotation, giant crops  |
-| Husbandry | `tend` (later)    | **pending, M6-03**                          | Defined, no effect yet                       | Defined, no effect yet                                          | Breeding, bonds        |
+| Skill     | XP event          | Wired in                                    | Band 0                                       | Band 15                                                                                            | 30+ theme              |
+| --------- | ----------------- | ------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------- |
+| Mining    | `gather:mining`   | M3-06                                       | Passive: can work tier 1 veins at full speed | Passive **Sure Strike**: sweet window 2 ticks wider on veins                                       | Gem finds, deep veins  |
+| Logging   | `gather:logging`  | M3-06                                       | Passive: can work tier 1 trees at full speed | Passive **Clean Cut**: +1 yield on a sweet hit                                                     | Rare woods, stumps     |
+| Foraging  | `gather:foraging` | M1                                          | Passive: herbs and berries                   | Passive **Keen Eye**: rare variants twice as likely                                                | Truffles, night blooms |
+| Fishing   | `gather:fishing`  | M3-06 (placeholder catch), M6-05 (minigame) | Passive: tier 1 waters                       | Passive **Patient Line**: the tension band is 15% wider (M6-05; was: placeholder catch 20% faster) | Legendary fish         |
+| Farming   | `harvest`         | **pending, M6-02**                          | Passive: can farm tier 1 crops               | Passive **Green Thumb**: watering lasts 25% longer                                                 | Rotation, giant crops  |
+| Husbandry | `tend`            | **pending, M6-03**                          | Passive: can keep 2 kinds of animal          | Passive **Gentle Hand**: animal mood falls half as fast                                            | Breeding, bonds        |
 
 ## Crafting (7)
 
@@ -66,7 +66,7 @@ The manual step for each craft is in the ticket that builds it (POW-M3-07 and PO
 | Bartering   | `haggle` _new_ (an exchange won), `sale` _new_                                                                   | M3-10              | Passive: haggling is offered                                                    | Passive **Read the Room**: one extra counter-offer per exchange                                       | Market fees, caravans      |
 | Performance | `perform` _new_ (a song finished)                                                                                | M3-13              | Active **Hum of Courage**: 3 s channel, Stamina regen up for self (party later) | Active **Lullaby**: needs an instrument in the off hand, Dazed on nearby creatures of tier 2 or lower | Crowds, tips (M6-10)       |
 | Leadership  | `lead` (later)                                                                                                   | **pending, M5-07** | Defined, no effect yet                                                          | Defined, no effect yet                                                                                | Party buffs, office        |
-| Taming      | `tame` (later)                                                                                                   | **pending, M6-06** | Defined, no effect yet                                                          | Defined, no effect yet                                                                                | Commands, second companion |
+| Taming      | `tame` (a creature tamed or soothed)                                                                             | **pending, M6-06** | Passive: can tame tier 1 creatures                                              | Passive **Soft Voice**: a failed taming does not scare the creature off                               | Commands, second companion |
 | Stealth     | `sneak` _new_ (a creature within its notice radius failed to notice a hidden avatar, once per creature per hide) | M3-13              | Active **Hide**: out of combat only, notice radius halved, move at 60%          | Active **Ambush**: the first hit from Hide is a crit                                                  | Pickpocket, shadows        |
 
 ## Exploration (5)
