@@ -8,8 +8,41 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same PR or branch cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  verify:
+  # Decides whether the game checks need to run. A change that only touches prose (Markdown,
+  # docs/, issue templates) skips them; anything else runs everything.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      game: ${{ steps.diff.outputs.game }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE" 2>/dev/null; then
+            echo "game=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          files=$(git diff --name-only "$BASE" HEAD)
+          echo "$files"
+          if echo "$files" | grep -v -E '^(docs/|\.github/ISSUE_TEMPLATE/|\.github/pull_request_template\.md$)|\.md$' | grep -q .; then
+            echo "game=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "game=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  static:
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,9 +57,49 @@ jobs:
       - run: npm run validate
       - run: npm run bake:check
       - run: npm run bake:world:check
+      - run: npm audit --audit-level=high
+
+  unit:
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
       - run: npm run test
-      # Fight simulator and sim bot, short versions. Fails past tools/balance-thresholds.json.
+
+  # Fight simulator and sim bot, short versions. Fails past tools/balance-thresholds.json.
+  balance:
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
       - run: npm run balance:ci
+
+  build:
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
       - run: npm run build
       - run: node tools/check-bundle.mjs
       - run: npm run check:dev
@@ -35,6 +108,24 @@ jobs:
       - run: npm run check:prod
       - run: npm run check:deps
       - run: npm run tamper -- --sample
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  e2e:
+    needs: changes
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
         env:
@@ -47,8 +138,19 @@ jobs:
             e2e-screenshots/
             playwright-report/
           if-no-files-found: warn
-      - run: npm audit --audit-level=high
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
+
+  # The one check the main branch ruleset requires. Passes when every job above passed, or was
+  # skipped because the change is prose only. Fails on any failure, timeout or cancellation.
+  verify:
+    needs: [changes, static, unit, balance, build, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            case "$r" in success|skipped) ;; *) echo "A required job ended: $r"; exit 1 ;; esac
+          done
