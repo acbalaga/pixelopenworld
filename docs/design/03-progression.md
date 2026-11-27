@@ -31,7 +31,7 @@ Thirty-six skills in six families. Each runs 0 to 100. The full table (XP source
 
 A new character has no skills to look at and no techniques to choose from (D17). What they become starts with what they first do.
 
-**Dormant and awake.** Every skill starts **dormant**: it does not show in the Skills tab, its techniques do not show in the Techniques list, and nothing hints at it. The first XP event for a skill **awakens** it. Awakening shows a small banner ("Foraging awakens") and the skill appears at 0 points with its XP already counting. A skill never goes back to sleep.
+**Dormant and awake.** Every skill starts **dormant**: it does not show in the Skills tab, its techniques do not show in the Techniques list, and nothing hints at it. The first XP event for a skill **awakens** it, unless the skill is listed under Awakening totals below. Awakening shows a small banner ("Foraging awakens") and the skill appears at 0 points with its XP already counting. A skill never goes back to sleep.
 
 Holding a weapon does not awaken its skill. Landing the first hit with it does. Reading a manual awakens its skill. Being taught by a person awakens it too, so a teacher can open a skill the player has never used.
 
@@ -51,6 +51,12 @@ Rules:
 - Insight thresholds count meaningful uses, the same events that pay XP. A training dummy counts until rank 5.
 - A manual is an item. Reading it consumes it and writes the learned flag. Copies exist, so selling or losing one is not a loss.
 - Nothing at creation awakens a skill. The wooden dagger awakens Blades with the first hit.
+
+**Awakening totals.** A few skills wake on a running total instead of the first event, because their first event happens to everyone in the first minute and would say nothing about the player. While such a skill sleeps, its events are counted but pay nothing. The event that reaches the total awakens the skill and pays for every event so far, so the XP earned is the same as if it had been awake from the start. The totals live in balance data. Adding a skill to this list is a design change (a planning PR), not a tuning change.
+
+| Skill       | Total                                         | Balance                    | Decided           |
+| ----------- | --------------------------------------------- | -------------------------- | ----------------- |
+| Cartography | 150 map blocks uncovered, across every region | `MAP_BALANCE.awakenBlocks` | Owner, 2026-11-27 |
 
 The full source of every band 0 and band 15 technique is in [11-skill-table](11-skill-table.md), "Sources".
 

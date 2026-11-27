@@ -197,7 +197,7 @@ Questions and answers about recipes, boss mechanics and secrets come from a rumo
 
 ### 4.7 The player's voice
 
-The player answers with reply chips (M5-06): 2 to 4 short options built from the line being answered and the player's regard with the speaker, plus the emote set. The player's lines show in the log in plain sentence case, with no voice transforms.
+The player answers with reply chips (M5-06): 2 to 4 short options built from the line being answered and the player's regard with the speaker, plus the emote set. The player's lines show in the log in plain sentence case, with no voice transforms. Chips answer in the channel the line came in (09-ui-ux, Replies by tab).
 
 ### 4.8 Believability rules for templates
 

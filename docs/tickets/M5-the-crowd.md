@@ -593,3 +593,27 @@ Acceptance:
 - Test: the "z" shows only on promoted `afk` Travelers past the threshold, and never on a Traveler in any other activity.
 - Test: poking twice in one session gives one reaction. Regard and memory are unchanged after a poke.
 - Phone screenshot of a sleeping Traveler and the wake line.
+
+### POW-M5-32 Fixtures win the context button over Travelers
+
+Size: S Depends: POW-M5-04 Status: READY
+Refs: design/09-ui-ux (HUD), design/12-travelers (3.3), PR #180 (Follow-ups)
+
+Goal: a Traveler standing in front of a Waystone, node, door or person never takes the press meant for it (owner, 2026-11-27).
+Context: `contextTarget` in `src/sim/systems/interact.ts` picks the nearest `interactable` in the facing cone. A promoted Traveler is an `interactable` (`TRAVELER_KIND` prefix, `src/sim/travelers/entities.ts`), so one standing closer than the fixture wins. PR #180 turned the crowd off in `tests/e2e/waystone.spec.ts` to work around it.
+Scope:
+
+- `contextTarget` ranks in two tiers: any `interactable` that is not a Traveler first, then Travelers. Within a tier the nearest wins, ties to the lowest id, as today. A Traveler is chosen only when nothing else is in the cone.
+- Reach and cone width are unchanged (`interactReach`, `interactHalfWidth`).
+- The HUD context button still shows exactly when `contextTarget` returns something, with the label of what it returns.
+- `tests/e2e/waystone.spec.ts` drops `crowd=0` and its comment.
+
+Out of scope: Travelers stepping off fixture tiles, tap-to-select on world entities, any change to how Travelers are opened from chat.
+Save: none. Integrity: none.
+Acceptance:
+
+- Unit test: a Traveler 6 px ahead and a fixture 14 px ahead in the cone returns the fixture. With the fixture removed it returns the Traveler.
+- Unit test: two fixtures in the cone, nearest wins (no change to today's rule).
+- Unit test: a Traveler in front of a named NPC returns the NPC.
+- `waystone` e2e passes with the crowd on, three runs in a row.
+- `npm run verify` passes.
