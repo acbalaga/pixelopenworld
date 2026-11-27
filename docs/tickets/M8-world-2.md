@@ -16,6 +16,16 @@ Every region is produced by a "world" ticket and a "content" ticket.
 
 ---
 
+### POW-M8-00 Region content loads with its region
+
+Size: M Depends: none Status: DRAFT
+Refs: tech/01-architecture, tech/03-asset-pipeline, tech/04-quality
+
+Goal: boot JS stays under budget as regions 2 to 8 arrive.
+Context: after M5 the boot bundle was 390 KB gzip against a 300 KB budget. The owner raised the budget to 450 KB on 2026-11-27 (tools/budgets.json) on the condition that region growth does not land in it. Today every region's creatures, requests, dialogue, people and chat templates are imported into the one boot bundle. Only about 20 KB gzip of UI sheets could be split without touching the sim, which needs its content synchronously from tick one.
+Scope: per-region content (creatures, requests, dialogue, people, POIs, region chat templates) moves to a region pack fetched with the region and precached by the PWA, the same way chunks are. The sim keeps synchronous access: the region's pack is loaded before the region's first tick, and offline settlement reads it from the cache. Shared content (items, skills, balance, the base chat templates) stays in boot. A build check fails if a region's content is imported from boot code.
+Acceptance: boot JS under 450 KB gzip with Dawnmeadow moved to a pack. Adding a region does not grow boot JS by more than 5 KB gzip (measured with a stub region). Offline play and offline settlement pass in a region whose pack came from the cache. `npm run verify` passes.
+
 ### POW-M8-01 Refinement: M8 specs to READY
 
 Size: L Depends: M7 complete Status: DRAFT (design authority)
