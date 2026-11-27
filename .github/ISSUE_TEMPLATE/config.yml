@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open discussion
+    url: https://github.com/acbalaga/pixelopenworld/discussions
+    about: Questions, general thoughts and longer design talk.
+  - name: Report a security problem privately
+    url: https://github.com/acbalaga/pixelopenworld/security/advisories/new
+    about: Save loss, crafted files, or anything that could harm a player. Not for public issues.
