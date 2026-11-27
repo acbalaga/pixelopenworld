@@ -12,10 +12,12 @@ test('touching a Waystone attunes it and the Map lists it', async ({ page }) => 
   await page.goto('/?region=dawnmeadow&skip=1&foes=0&nosave=1&weather=clear&time=day&at=185,190');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
   await page.waitForTimeout(1200);
-  // Hold each key past a sim tick: a tap shorter than one can be missed on a slow frame.
-  await page.keyboard.press('KeyW', { delay: 100 });
+  // Hold W across a sim tick to turn north. The sampler reads held direction keys once per tick, so
+  // a tap shorter than one is never seen. E is a queued edge and needs no hold.
+  await page.keyboard.down('KeyW');
   await page.waitForTimeout(150);
-  await page.keyboard.press('KeyE', { delay: 100 });
+  await page.keyboard.up('KeyW');
+  await page.keyboard.press('KeyE');
   await page.waitForTimeout(600);
 
   await page.locator('.pow-minimap').click();
