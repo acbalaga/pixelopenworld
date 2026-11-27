@@ -13,6 +13,7 @@ import { emit, type SimEvent } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
 import type { SimState } from '../state';
 import { addXp, challengePct, pointsOf } from '../skills';
+import { revealPay } from './map';
 import { dayIndex, dayPhase } from '../time';
 
 const TILE = 16;
@@ -333,7 +334,8 @@ export function skillsSystem(state: SimState): void {
       } else if (e.type === 'dungeonCleared' && e.who === who) {
         practice(state, who, { on: 'delveClear', tag: undefined, tier: 0, subject: e.dungeon });
       } else if (e.type === 'revealed' && e.who === who) {
-        for (let n = 0; n < e.blocks; n++)
+        const pay = revealPay(state, who, e.blocks);
+        for (let n = 0; n < pay; n++)
           practice(state, who, { on: 'reveal', tag: undefined, tier: 0, subject: null });
       } else if (e.type === 'sleptOutdoors' && e.who === who) {
         sleepPay(state, who);

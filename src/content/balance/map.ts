@@ -20,6 +20,13 @@ export const MAP_BALANCE = {
   ],
   /** Cartography XP for each block revealed for the first time. */
   xpPerBlock: 1,
+  /**
+   * Blocks uncovered, across every region, before Cartography awakens (owner decision 2026-11-27).
+   * The first look around a wake point uncovers about 29, so the skill no longer wakes before the
+   * player has moved. 150 is a first deliberate wander, about 70 tiles out. The reveal that
+   * reaches it pays for every block so far, so Cartography XP still equals blocks revealed.
+   */
+  awakenBlocks: 150,
   /** Player notes: most kept, and the longest text. */
   notes: { max: 40, maxLength: 40 },
   /**

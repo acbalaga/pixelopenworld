@@ -10,6 +10,9 @@ import { addXp, pointsOf, xpToNext } from '../../src/sim/skills';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { skillsSystem } from '../../src/sim/systems/skills';
+import { regionFog } from '../../src/sim/systems/map';
+import { revealBlock } from '../../src/sim/world/fog';
+import { MAP_BALANCE } from '../../src/content/balance/map';
 
 const OPEN = {
   solidAt: (tx: number, ty: number): number => (tx < 0 || ty < 0 || tx > 60 || ty > 60 ? 1 : 0),
@@ -237,6 +240,9 @@ describe('every skill that is not pending earns XP', () => {
     'skill.delving': (s, me) =>
       feed(s, { type: 'delved', who: me, dungeon: 'dungeon.sample', room: 'dungeon.sample.b' }),
     'skill.cartography': (s, me) => {
+      // Cartography sleeps until MAP_BALANCE.awakenBlocks are uncovered: uncover them first.
+      const fog = regionFog(s);
+      for (let i = 0; i < MAP_BALANCE.awakenBlocks; i++) revealBlock(fog, i, 0);
       feed(s, { type: 'revealed', who: me, blocks: 5 });
     },
     'skill.deciphering': (s, me) => {
