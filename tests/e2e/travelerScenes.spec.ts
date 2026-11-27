@@ -7,7 +7,7 @@ test.use({ baseURL: 'http://127.0.0.1:5173', viewport: { width: 360, height: 640
 test.setTimeout(300_000);
 
 interface Pow {
-  crowd(): { entities: number; atCamp: number; scenes: string[] };
+  crowd(): { online: number; entities: number; atCamp: number; scenes: string[] };
   sendTo(place: string, n: number, maxRank?: number): string[];
 }
 
@@ -16,12 +16,28 @@ interface Pow {
  * not on someone wandering in by chance (that depended on the seed's random sequence, which every
  * M5 change moved).
  */
-const stage = (page: Page, place: string, n: number, maxRank?: number): Promise<string[]> =>
-  page.evaluate(
-    ([pl, k, r]) =>
-      (window as unknown as { __pow: Pow }).__pow.sendTo(pl as string, k as number, r as number),
-    [place, n, maxRank] as const,
-  );
+async function stage(page: Page, place: string, n: number, maxRank?: number): Promise<string[]> {
+  // The dev hooks load just after the game is ready, and the crowd comes online on its first
+  // steps: wait for both, then send.
+  let sent: string[] = [];
+  await expect
+    .poll(
+      async () => {
+        sent = await page.evaluate(
+          ([pl, k, r]) => {
+            const pow = (window as unknown as { __pow?: Pow }).__pow;
+            if (!pow || pow.crowd().online === 0) return [];
+            return pow.sendTo(pl as string, k as number, r as number | undefined);
+          },
+          [place, n, maxRank] as const,
+        );
+        return sent.length;
+      },
+      { timeout: 60_000, intervals: [500] },
+    )
+    .toBeGreaterThan(0);
+  return sent;
+}
 
 async function evening(page: Page, url: string): Promise<void> {
   const when = new Date();
