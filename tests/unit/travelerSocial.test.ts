@@ -14,7 +14,14 @@ import { TEMPLATES } from '../../src/content/chat/templates';
 import { CATEGORIES, CHIP_INTENTS } from '../../src/content/chat/types';
 import { FLAG, MEMORY_KINDS } from '../../src/content/travelers/types';
 import { createAvatar } from '../../src/sim/avatar';
-import { chipsFor, replyFor, whisperFor } from '../../src/sim/chat/social';
+import {
+  chipsFor,
+  offerKey,
+  offerWith,
+  putOffer,
+  replyFor,
+  whisperFor,
+} from '../../src/sim/chat/social';
 import { chatSystem, queueChatCommand, socialSystem } from '../../src/sim/chat/engine';
 import { validateCommand } from '../../src/sim/kernel/commands';
 import type { SimEvent } from '../../src/sim/kernel/events';
@@ -339,6 +346,15 @@ describe('a fight near a Traveler, a request, a friend, a login', () => {
     expect(ask!.chips.map((c) => c.id)).toEqual(['friend.yes', 'friend.no']);
     const slot = ask!.slot;
     expect(s.travelers[slot]!.flags & FLAG.requestIn).toBeTruthy();
+    // Before the player answers, the same Traveler greets them in Local. That offer must not
+    // replace the whispered request (it did, and the accept was dropped: e2e travelerSocial).
+    putOffer(s.chat!, {
+      slot,
+      category: 'greet',
+      chips: ['goodtimes', 'hi', 'how'],
+      channel: 'local',
+      minute: s.chat!.lastMinute,
+    });
     // The player accepts.
     queueChatCommand(s, { type: 'chip', slot, chip: 'friend.yes' });
     const after: Spoke[] = [];
@@ -392,4 +408,40 @@ describe('the friend list and the profile card', () => {
     expect(lines.every((l) => l.length > 0 && !/[–—{}]/.test(l))).toBe(true);
     expect(lines.some((l) => /fought a .* near them/.test(l))).toBe(true);
   }, 60_000);
+});
+
+describe('chip offers are kept per Traveler and channel', () => {
+  const offer = (channel: 'local' | 'whisper', chips: string[], minute: number) => ({
+    slot: 7,
+    category: 'greet' as const,
+    chips,
+    channel,
+    minute,
+  });
+
+  it('a Local offer does not replace a Whisper offer from the same Traveler', () => {
+    const chat = { offers: new Map() };
+    putOffer(chat, offer('whisper', ['friend.yes', 'friend.no'], 10));
+    putOffer(chat, offer('local', ['goodtimes', 'hi', 'how'], 11));
+    expect(chat.offers.size).toBe(2);
+    expect(offerWith(chat, 7, 'friend.yes')?.channel).toBe('whisper');
+    expect(offerWith(chat, 7, 'hi')?.channel).toBe('local');
+    expect(offerWith(chat, 7, 'duel.yes')).toBeUndefined();
+  });
+
+  it('a newer offer in the same channel replaces the older one', () => {
+    const chat = { offers: new Map() };
+    putOffer(chat, offer('local', ['hi'], 10));
+    putOffer(chat, offer('local', ['thanks'], 12));
+    expect(chat.offers.size).toBe(1);
+    expect(offerWith(chat, 7, 'hi')).toBeUndefined();
+    expect(chat.offers.get(offerKey(7, 'local'))?.chips).toEqual(['thanks']);
+  });
+
+  it('a chip on offer in both channels answers the newer line', () => {
+    const chat = { offers: new Map() };
+    putOffer(chat, offer('whisper', ['hi'], 10));
+    putOffer(chat, offer('local', ['hi'], 12));
+    expect(offerWith(chat, 7, 'hi')?.channel).toBe('local');
+  });
 });

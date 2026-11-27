@@ -25,14 +25,20 @@ test('a territorial creature warns before it commits to a chase', async ({ page 
   const problems = await watchProblems(page);
   await page.goto('/?region=slice&nosave=1&at=58,52');
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
-  const reds: number[] = [];
-  for (let k = 0; k < 14; k++) {
+  // Sample by wall time, not by shot count: a fast runner takes 14 shots before the warning
+  // (at least TEMPERAMENT.warnMinTicksTier1, one second) has run out.
+  const start = Date.now();
+  const reds: { ms: number; n: number }[] = [];
+  for (let k = 0; Date.now() - start < 6000; k++) {
     const png = PNG.sync.read(await shot(page, `m4-16-territorial-${String(k).padStart(2, '0')}`));
-    reds.push(red(png));
+    reds.push({ ms: Date.now() - start, n: red(png) });
+    if (reds.length > 4 && reds.slice(-3).every((r) => r.n > 100)) break;
+    await page.waitForTimeout(200);
   }
   // Quiet at first (the warning), then the "!" when it commits.
-  const first = reds.findIndex((n) => n > 100);
-  expect(first).toBeGreaterThan(2);
+  const first = reds.find((r) => r.n > 100);
+  expect(first, JSON.stringify(reds)).toBeDefined();
+  expect(first!.ms, JSON.stringify(reds)).toBeGreaterThan(600);
   expect(problems.console).toEqual([]);
   expect(problems.pageErrors).toEqual([]);
 });

@@ -190,7 +190,8 @@ test('Travelers talk: the ticker and the chat sheet fill with real lines, glyphs
     mkdirSync(dir, { recursive: true });
     await page.keyboard.press('Backquote');
     await page.screenshot({ path: join(dir, 'ticker-100.png') });
-    await page.locator('.pow-chat-lane').click();
+    // A tap on the lines (they pass touches through to the stick, so force the spot).
+    await page.locator('.pow-chat-lines').click({ force: true });
     await page.waitForTimeout(500);
     await page.screenshot({ path: join(dir, 'sheet-100.png') });
     await page.evaluate(() =>

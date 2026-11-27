@@ -1,6 +1,7 @@
 /**
  * The map (POW-M4-06). Each tick the avatar uncovers the fog around it, by a radius that grows
- * with Cartography, and Cartography earns XP for every block uncovered for the first time. The
+ * with Cartography, and Cartography earns XP for every block uncovered for the first time (once
+ * `MAP_BALANCE.awakenBlocks` have been uncovered, see `revealPay`). The
  * Menu's map and the minimap only read what this keeps.
  *
  * Fog is kept per region. A chunk the region does not have is never marked, so the avatar at the
@@ -12,9 +13,9 @@ import { cleanNoteText } from '../kernel/commands';
 import { getComp, query, type EntityId } from '../kernel/entities';
 import { emit } from '../kernel/events';
 import { SUBPX } from '../kernel/fixed';
-import { pointsOf } from '../skills';
+import { isAwake, pointsOf } from '../skills';
 import type { SimState } from '../state';
-import { blockOf, revealDisc, revealRadius, type Fog } from '../world/fog';
+import { blockOf, countRevealed, revealDisc, revealRadius, type Fog } from '../world/fog';
 
 const TILE = 16;
 /** Key of the fog kept when no region is named (the slice, tests). */
@@ -49,6 +50,25 @@ export function mapSystem(state: SimState): void {
     if (stream?.pending) last.delete(state);
     if (fresh > 0) emit(state.events, { type: 'revealed', who, blocks: fresh });
   }
+}
+
+/** Every block uncovered, in every region. */
+export function totalRevealed(state: SimState): number {
+  let n = 0;
+  for (const fog of Object.values(state.map.fog)) n += countRevealed(fog);
+  return n;
+}
+
+/**
+ * How many blocks a reveal of `fresh` new blocks pays Cartography for. While Cartography sleeps,
+ * nothing, until `MAP_BALANCE.awakenBlocks` have been uncovered in all. The reveal that reaches it
+ * pays for every block so far, so the skill wakes with XP equal to the ground it has covered.
+ */
+export function revealPay(state: SimState, who: EntityId, fresh: number): number {
+  const s = getComp(state.entities, who, 'skills');
+  if (!s || isAwake(s, 'skill.cartography')) return fresh;
+  const total = totalRevealed(state);
+  return total >= MAP_BALANCE.awakenBlocks ? total : 0;
 }
 
 /** Adds a note at world tile (x, y). Returns its id, or null if the text is empty or the page is full. */

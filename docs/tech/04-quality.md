@@ -11,7 +11,7 @@ Reference device: a mid-range Android phone from about 2021 (4 GB RAM class) in 
 | Render cost    | Under 8 ms per frame                                                                                                   |
 | Garbage        | No allocations in per-frame hot paths. No GC pause over 10 ms during play.                                             |
 | Memory         | Under 150 MB total in a long session. No growth over a 60 minute soak.                                                 |
-| Boot JS        | Under 300 KB gzip for shell plus core game                                                                             |
+| Boot JS        | Under 450 KB gzip for shell plus core game (raised from 300 KB by the owner on 2026-11-27; see POW-M8-00)              |
 | First playable | Under 2 MB transferred. Under 4 seconds on a mid-range phone on a 4G-class connection, repeat visit under 1.5 seconds. |
 | Region pack    | Under 1.5 MB compressed each                                                                                           |
 | Save size      | Under 500 KB compressed at 200 hours                                                                                   |

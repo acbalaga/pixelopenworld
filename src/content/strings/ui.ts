@@ -469,6 +469,7 @@ export const UI_STRINGS = {
       system: 'System',
     },
     dismiss: 'Tap to dismiss',
+    replyWaiting: 'Someone is waiting for your reply',
   },
   hints: {
     move: 'Drag on the lower left of the screen to walk. Hold it out to run.',

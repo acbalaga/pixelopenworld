@@ -61,13 +61,39 @@ import { writeDuelNote } from './letters';
  * engine and the sim state: nothing here reads a clock or a random source.
  */
 
-/** What the player may answer with, per Traveler, until they answer or it goes stale. */
+/** What the player may answer with, per Traveler and channel, until they answer or it goes stale. */
 export interface Offer {
   slot: number;
   category: Category | 'request' | 'hello' | 'duelAsk' | 'guildAsk';
   chips: string[];
   channel: 'local' | 'whisper';
   minute: number;
+}
+
+/**
+ * Key of a Traveler's open offer in one channel. One per channel, not one per Traveler: a
+ * greeting said in Local must not replace a friend request whispered a moment before, or the
+ * player's answer to the request is dropped.
+ */
+export const offerKey = (slot: number, channel: Offer['channel']): number =>
+  slot * 2 + (channel === 'whisper' ? 1 : 0);
+
+/** Stores an offer, replacing only the same Traveler's offer in the same channel. */
+export function putOffer(chat: { offers: Map<number, Offer> }, o: Offer): void {
+  chat.offers.set(offerKey(o.slot, o.channel), o);
+}
+
+/** The Traveler's open offer that holds `chip`, the newest if both channels do. */
+export function offerWith(
+  chat: { offers: Map<number, Offer> },
+  slot: number,
+  chip: string,
+): Offer | undefined {
+  const a = chat.offers.get(offerKey(slot, 'local'));
+  const b = chat.offers.get(offerKey(slot, 'whisper'));
+  const has = (o: Offer | undefined): o is Offer => !!o && o.chips.includes(chip);
+  if (has(a) && has(b)) return a.minute > b.minute ? a : b;
+  return has(a) ? a : has(b) ? b : undefined;
 }
 
 /** A player command waiting for the next chat step. */
@@ -177,7 +203,7 @@ export function offerFor(
   const life = c.state.travelers[slot];
   if (!life) return [];
   const ids = chipsFor(tpl.answers ?? category, tierNow(life, c.real));
-  c.chat.offers.set(slot, { slot, category, chips: ids, channel, minute: c.minute });
+  putOffer(c.chat, { slot, category, chips: ids, channel, minute: c.minute });
   return ids.map((id) => ({ id, text: CHIPS[id]!.text }));
 }
 
@@ -287,7 +313,7 @@ function saySocial(
   const voiced = h.voice(c, slot, text, d);
   const chips = offer ? offer.chips.map((id) => ({ id, text: CHIPS[id]!.text })) : [];
   if (offer)
-    c.chat.offers.set(slot, {
+    putOffer(c.chat, {
       slot,
       category: offer.category,
       chips: [...offer.chips],
@@ -523,11 +549,10 @@ export function processInbox(c: Ctx, h: Helpers): void {
     const chip = CHIPS[it.chip];
     if (!chip) continue;
     const emote = EMOTE_CHIPS.includes(it.chip);
-    const offer = c.chat.offers.get(slot);
+    const offer = offerWith(c.chat, slot, it.chip);
     if (emote) {
       if (crowd.online[slot] !== 1 || !nearSlots(c, MEMORY.contactPx).includes(slot)) continue;
-    } else if (!offer || !offer.chips.includes(it.chip) || c.minute - offer.minute > OFFER_MIN)
-      continue;
+    } else if (!offer || c.minute - offer.minute > OFFER_MIN) continue;
     const channel = emote ? 'local' : (offer as Offer).channel;
     emit(c.state.events, {
       type: 'playerSpoke',
@@ -537,7 +562,7 @@ export function processInbox(c: Ctx, h: Helpers): void {
     });
     touch(life, c.real);
     life.flags |= FLAG.met;
-    if (!emote) c.chat.offers.delete(slot);
+    if (!emote && offer) c.chat.offers.delete(offerKey(slot, offer.channel));
     if (!emote && (offer as Offer).category === 'question') rememberOnce(c, slot, 'answered', 0);
     if ((it.chip === 'guild.yes' || it.chip === 'guild.no') && offer?.category === 'guildAsk') {
       guildChip(c, slot, it.chip);

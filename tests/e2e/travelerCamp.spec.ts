@@ -8,6 +8,7 @@ test.setTimeout(240_000);
 
 interface Pow {
   crowd(): { online: number; entities: number; handles: string[]; atCamp: number };
+  sendTo(place: string, n: number): string[];
 }
 
 test('a camp at dusk has Travelers sitting round the river rest point', async ({ page }) => {
@@ -19,6 +20,21 @@ test('a camp at dusk has Travelers sitting round the river rest point', async ({
   await page.goto('/?region=dawnmeadow&at=236,191&time=dusk&weather=clear&foes=0&nosave=1&kit=dev');
   await page.clock.resume();
   await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
+  // Send a few to the camp, so the spec does not wait on someone choosing it by chance (that
+  // depended on the seed's random sequence, which every M5 change moved). They still walk out and
+  // settle by the crowd's own rules.
+  // The dev hooks load just after the game is ready, and the crowd comes online on its first steps.
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const pow = (window as unknown as { __pow?: Pow }).__pow;
+          if (!pow || pow.crowd().online === 0) return 0;
+          return pow.sendTo('wayside.river_camp', 4).length;
+        }),
+      { timeout: 60_000, intervals: [500] },
+    )
+    .toBeGreaterThan(0);
   // Wait for people to walk out from town to the camp and settle.
   await expect
     .poll(

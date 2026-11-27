@@ -60,6 +60,9 @@ for (const scheme of ['flow', 'classic'] as const)
               const [bn, br] = named[j]!;
               // A banner and the notices share their slot: notices wait while a banner shows.
               if (an === 'banner' && bn === 'notices') continue;
+              // The chat lane sits inside the thumb zone on purpose (owner, 2026-11-27): it lets
+              // drags through to the stick. The tests below keep it clear of every button.
+              if (an === 'chat' && bn === 'thumb zone') continue;
               if (overlaps(ar, br)) bad.push(`${an} x ${bn}`);
             }
           expect(bad).toEqual([]);
@@ -81,4 +84,27 @@ describe('lanes keep clear of the HUD buttons', () => {
           expect(overlaps(r, b), `${w}x${h}`).toBe(false);
     }
   });
+});
+
+describe('the chat lane in the bottom corner (owner, 2026-11-27)', () => {
+  for (const scheme of ['flow', 'classic'] as const)
+    for (const hand of [false, true])
+      it(`${scheme}, ${hand ? 'left' : 'right'}-handed: on the stick's side, clear of buttons and the edge strip`, () => {
+        for (const [w, h, dpr] of SIZES) {
+          const v = computeViewport(w, h, dpr);
+          const c = computeLayout(w, h, hand, { scheme, guard: true });
+          const { chat } = lanesFor(v, c, { top: 0, right: 0, bottom: 0, left: 0 });
+          const where = `${w}x${h}`;
+          expect(chat.w, where).toBeGreaterThan(100);
+          for (const b of Object.values(c.buttons))
+            if (b) expect(overlaps(chat, b), `${where} button`).toBe(false);
+          // Above the swipe-up strip at the bottom edge, and in the lower part of the screen.
+          const zone = c.stickZone;
+          expect(chat.y + chat.h, where).toBeLessThanOrEqual(zone.y + zone.h);
+          expect(chat.y, where).toBeGreaterThan(h / 2);
+          // On the stick's side: left unless left-handed.
+          const mid = chat.x + chat.w / 2;
+          expect(hand ? mid > w / 2 : mid < w / 2, `${where} side`).toBe(true);
+        }
+      });
 });

@@ -6,7 +6,7 @@ import { trialKey } from '../../src/content/skills';
 import { RUMORS } from '../../src/content/world/rumors';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
 import { validateCommand } from '../../src/sim/kernel/commands';
-import { addXp, pointsOf, xpToNext } from '../../src/sim/skills';
+import { addXp, isAwake, pointsOf, xpToNext } from '../../src/sim/skills';
 import {
   createDemoState,
   serializeState,
@@ -14,7 +14,15 @@ import {
   type SimState,
 } from '../../src/sim/state';
 import { applyEffect } from '../../src/sim/systems/npcs';
-import { addNote, hearRumor, mapSystem, regionFog, removeNote } from '../../src/sim/systems/map';
+import {
+  addNote,
+  hearRumor,
+  mapSystem,
+  regionFog,
+  removeNote,
+  revealPay,
+  totalRevealed,
+} from '../../src/sim/systems/map';
 import { skillsSystem } from '../../src/sim/systems/skills';
 import { stepWorld } from '../../src/sim/step';
 import { Dir, SUBPX } from '../../src/sim/kernel/fixed';
@@ -34,6 +42,23 @@ import {
 } from '../../src/sim/world/fog';
 
 const OPEN = { solidAt: (): number => 0 };
+
+/** Total Cartography XP earned, points included. */
+function cartographyXp(s: SimState, me: number): number {
+  const sk = s.entities.comps.skills[me]!;
+  return (
+    (sk.xp['skill.cartography'] ?? 0) +
+    Array.from({ length: pointsOf(s, me, 'skill.cartography') }, (_v, p) => xpToNext(p)).reduce(
+      (a, b) => a + b,
+      0,
+    )
+  );
+}
+
+/** Wakes Cartography the way a manual or a lesson would, without any XP. */
+function awakeCartography(s: SimState, me: number): void {
+  s.entities.comps.skills[me]!.awake.push('skill.cartography');
+}
 
 function world(tx = 40, ty = 40): { s: SimState; me: number } {
   const s = createDemoState(7, 0);
@@ -112,6 +137,8 @@ describe('fog storage budget', () => {
 describe('the map system', () => {
   it('uncovers the ground around the avatar and pays Cartography once per block', () => {
     const { s, me } = world();
+    // Past the awakening threshold, so every block pays (the threshold has its own tests below).
+    awakeCartography(s, me);
     mapSystem(s);
     const fog = regionFog(s);
     expect(isRevealed(fog, 10, 10)).toBe(true);
@@ -131,6 +158,52 @@ describe('the map system', () => {
     s.events.list.length = 0;
     mapSystem(s);
     expect(s.events.list).toEqual([]);
+  });
+
+  it('a first look around the wake point does not wake Cartography', () => {
+    const { s, me } = world();
+    mapSystem(s);
+    const fog = regionFog(s);
+    expect(countRevealed(fog)).toBeGreaterThan(0);
+    expect(countRevealed(fog)).toBeLessThan(MAP_BALANCE.awakenBlocks);
+    skillsSystem(s);
+    const sk = s.entities.comps.skills[me]!;
+    expect(isAwake(sk, 'skill.cartography')).toBe(false);
+    expect(s.events.list.some((e) => e.type === 'skillAwakened')).toBe(false);
+  });
+
+  it('wakes Cartography at the threshold, paid for every block uncovered so far', () => {
+    const { s, me } = world();
+    const fog = regionFog(s);
+    for (let i = 0; i < MAP_BALANCE.awakenBlocks - 1; i++) revealBlock(fog, i, 200);
+    // One short: a reveal pays nothing.
+    s.events.list.length = 0;
+    s.events.list.push({ type: 'revealed', who: me, blocks: 1 });
+    skillsSystem(s);
+    expect(isAwake(s.entities.comps.skills[me]!, 'skill.cartography')).toBe(false);
+    // The block that reaches it pays the whole backlog.
+    revealBlock(fog, 0, 201);
+    s.events.list.length = 0;
+    s.events.list.push({ type: 'revealed', who: me, blocks: 1 });
+    skillsSystem(s);
+    const sk = s.entities.comps.skills[me]!;
+    expect(isAwake(sk, 'skill.cartography')).toBe(true);
+    expect(cartographyXp(s, me)).toBe(MAP_BALANCE.awakenBlocks * MAP_BALANCE.xpPerBlock);
+    expect(totalRevealed(s)).toBe(MAP_BALANCE.awakenBlocks);
+  });
+
+  it('counts blocks in every region toward the threshold', () => {
+    const { s, me } = world();
+    const half = Math.ceil(MAP_BALANCE.awakenBlocks / 2);
+    for (let i = 0; i < half; i++) revealBlock(regionFog(s, 'dawnmeadow'), i, 0);
+    for (let i = 0; i < half; i++) revealBlock(regionFog(s, 'slice'), i, 0);
+    expect(revealPay(s, me, 3)).toBe(totalRevealed(s));
+  });
+
+  it('once awake, pays only the new blocks', () => {
+    const { s, me } = world();
+    awakeCartography(s, me);
+    expect(revealPay(s, me, 3)).toBe(3);
   });
 
   it('reveals further as Cartography grows', () => {

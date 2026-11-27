@@ -51,7 +51,9 @@ export function overlaps(a: Rect, b: Rect): boolean {
  * Lane positions from the same layout the HUD uses (`computeLayout`). The banner and the notices
  * sit under the HUD block and clear of the menu, bag and swap buttons, centered in portrait and
  * at the left in landscape (the action meter is over the avatar at the middle). The chat lane is
- * at the left, directly above the thumb zone. The floaters are beside the avatar. Pure.
+ * in the bottom corner on the stick's side, above the swipe-up edge strip and clear of every
+ * button (owner, 2026-11-27): drags on it pass through to the stick. The floaters are beside the
+ * avatar. Pure.
  */
 export function laneRects(i: LaneInput): LaneRects {
   const landscape = i.width > i.height;
@@ -78,12 +80,24 @@ export function laneRects(i: LaneInput): LaneRects {
   };
   const zoneTop = i.controls.stickZone.y;
   const chatH = B.chatRowH * B.chatLines;
-  const chat: Rect = {
-    x: left,
-    y: zoneTop - B.laneGap - chatH,
-    w: landscape ? B.chatLandscapeW : Math.min(B.laneMaxW, Math.round((right - left) * 0.62)),
-    h: chatH,
-  };
+  const zone = i.controls.stickZone;
+  const chatY = zone.y + zone.h - B.laneGap - chatH;
+  const chatW = landscape
+    ? B.chatLandscapeW
+    : Math.min(B.laneMaxW, Math.round((right - left) * 0.62));
+  // The stick's side is the side away from the action buttons (left unless left-handed).
+  const pad = Object.values(i.controls.buttons).filter(
+    (r): r is Rect => !!r && r.y + r.h > zoneTop,
+  );
+  const padMid = pad.length ? pad.reduce((a, r) => a + r.x + r.w / 2, 0) / pad.length : i.width;
+  const onLeft = padMid >= i.width / 2;
+  // As wide as it may be without reaching a button beside it.
+  const band = (r: Rect): boolean => r.y < chatY + chatH && chatY < r.y + r.h;
+  const room = onLeft
+    ? Math.min(right, ...pad.filter(band).map((r) => r.x - B.laneGap)) - left
+    : right - Math.max(left, ...pad.filter(band).map((r) => r.x + r.w + B.laneGap));
+  const cw = Math.max(0, Math.min(chatW, room));
+  const chat: Rect = { x: onLeft ? left : right - cw, y: chatY, w: cw, h: chatH };
   // Beside the avatar, rows ending at its feet or just above the thumb zone, whichever is higher.
   const floatH = B.floaterRowH * B.floaterStack;
   const floatBottom = Math.min(i.avatar.feetY, zoneTop - B.laneGap);
