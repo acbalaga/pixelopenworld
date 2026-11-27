@@ -8,6 +8,7 @@ import { FLAG } from '../../content/travelers/types';
 import { findAvatar } from '../../shared/summary';
 import { guildDef, joinGuild, meetsRule } from '../guild';
 import { emit, type SimEvent } from '../kernel/events';
+import { putOffer } from './social';
 import type { Ctx, Helpers } from './engine';
 
 /**
@@ -36,7 +37,7 @@ function whisper(
 ): void {
   const offered = chips.map((id) => ({ id, text: CHIPS[id]!.text }));
   if (chips.length > 0)
-    c.chat.offers.set(slot, {
+    putOffer(c.chat, {
       slot,
       category: 'guildAsk',
       chips: [...chips],

@@ -67,6 +67,15 @@ export const UI_BALANCE = {
     chatRowH: 18,
     laneMaxW: 320,
     chatLandscapeW: 220,
+    /**
+     * The chat lane sits in the bottom corner on the stick's side (owner, 2026-11-27) and lets
+     * drags through to the stick. A touch that lifts within this time and this distance is a tap
+     * and opens the chat sheet.
+     */
+    laneTapMs: 300,
+    laneTapPx: 10,
+    /** The build label in the bottom corner opposite the chat: dim, so it is there but quiet. */
+    buildLabelAlpha: 0.45,
     /** Floater column: beside the avatar, from the head point down to the feet. */
     floaterW: 120,
     floaterRowH: 20,

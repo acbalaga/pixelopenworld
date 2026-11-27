@@ -1134,7 +1134,25 @@ canvas {
   gap: 4px;
   font-size: calc(0.8rem * var(--text-scale, 1));
 }
-.pow-chat-lane,
+/* The chat lane sits over the walk stick's zone: its lines let touches through to the stick
+   (a quick tap still opens the sheet, see MessageView), only its buttons take them. */
+.pow-chat-lane {
+  pointer-events: none;
+}
+/* Its Reply and hide buttons sit in a row just above the lines, at the lane's outer edge, so the
+   lines keep the lane's whole width in the corner. */
+.pow-chat-lane > .pow-chat-reply,
+.pow-chat-lane > .pow-chat-collapse {
+  position: absolute;
+  bottom: calc(100% + 4px);
+}
+.pow-chat-lane > .pow-chat-collapse {
+  left: 0;
+}
+.pow-chat-lane > .pow-chat-reply {
+  left: 34px;
+}
+.pow-chat-lane button,
 .pow-chat-unread,
 .pow-chat-sheet {
   pointer-events: auto;
@@ -1150,7 +1168,7 @@ canvas {
   flex-direction: column;
   justify-content: flex-end;
   gap: 2px;
-  cursor: pointer;
+  pointer-events: none;
 }
 .pow-chat-line {
   margin: 0;
@@ -1227,6 +1245,20 @@ canvas {
 .pow-chat-tab-on {
   background: var(--pal-18);
   font-weight: 700;
+}
+/* A tab holding a line that waits for the player's reply: a gold edge and dot. */
+.pow-chat-tab-reply {
+  border-color: var(--pal-4, #fc6);
+}
+.pow-chat-tab-reply::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--pal-4, #fc6);
 }
 .pow-chat-close {
   min-width: 40px;

@@ -1,11 +1,14 @@
 import { CHIPS, EMOTE_CHIPS } from '../../content/chat/social';
 import { FRIEND_STRINGS as F } from '../../content/strings/friends';
 import { UI_STRINGS as S } from '../../content/strings/ui';
+import { UI_BALANCE } from '../../content/balance/ui';
 import { richNodes } from '../dom/glyph';
 import type { Rect } from '../../platform/input/layout';
 import type { SettingsStore } from '../../platform/settings';
 import type { LaneRects } from './layout';
 import { CHANNELS, type Channel, type MessageRouter } from './router';
+
+const B = UI_BALANCE.messages;
 
 const place = (el: HTMLElement, r: Rect): void => {
   el.style.left = `${Math.round(r.x)}px`;
@@ -31,7 +34,11 @@ export class MessageView {
   private readonly tabs: HTMLElement;
   private readonly list: HTMLElement;
   private readonly chipBar: HTMLElement;
-  private chipOffer: ChipOffer | null = null;
+  /**
+   * Open reply chips by chat tab. Each tab answers only its own lines, so a reply to a whisper is
+   * made under Whisper and lands there, and a Local greeting does not hide a whispered request.
+   */
+  private readonly chipOffers = new Map<ChipOffer['channel'], ChipOffer>();
   private chipEmotes = false;
   private sigChips = '';
   /** Called with the Traveler's slot and the chip id when the player taps a chip. */
@@ -58,7 +65,37 @@ export class MessageView {
     this.laneLines.setAttribute('role', 'button');
     this.laneLines.tabIndex = 0;
     this.laneLines.setAttribute('aria-label', S.chat.laneLabel);
-    this.laneLines.addEventListener('click', () => this.openSheet());
+    // The lines let every touch through to the walk stick under them (CSS pointer-events: none).
+    // A touch that starts on them and lifts quickly without moving is a tap: it opens the sheet.
+    const taps = new Map<number, { x: number; y: number; t: number }>();
+    const onLines = (x: number, y: number): boolean => {
+      if (this.lane.hidden || this.sheetOpen) return false;
+      const r = this.laneLines.getBoundingClientRect();
+      return x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+    };
+    window.addEventListener(
+      'pointerdown',
+      (e) => {
+        // Only a touch that reached the game itself: not one on a panel, sheet or button that
+        // happens to cover the same spot (the Menu's tab bar does).
+        if (!(e.target instanceof HTMLCanvasElement)) return;
+        if (onLines(e.clientX, e.clientY))
+          taps.set(e.pointerId, { x: e.clientX, y: e.clientY, t: e.timeStamp });
+      },
+      { capture: true },
+    );
+    window.addEventListener('pointercancel', (e) => taps.delete(e.pointerId), { capture: true });
+    window.addEventListener(
+      'pointerup',
+      (e) => {
+        const s = taps.get(e.pointerId);
+        taps.delete(e.pointerId);
+        if (!s) return;
+        const moved = Math.hypot(e.clientX - s.x, e.clientY - s.y);
+        if (e.timeStamp - s.t <= B.laneTapMs && moved <= B.laneTapPx) this.openSheet();
+      },
+      { capture: true },
+    );
     this.laneLines.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -78,8 +115,9 @@ export class MessageView {
     this.replyBtn.hidden = true;
     this.replyBtn.textContent = F.chips.reply;
     this.replyBtn.addEventListener('click', () => {
-      const o = this.chipOffer;
+      const o = this.newestOffer();
       if (o) this.settings.set({ chatTab: o.channel });
+      this.sigTabs = '';
       this.openSheet();
     });
     add(this.lane, this.laneLines, this.replyBtn, this.collapse);
@@ -138,12 +176,37 @@ export class MessageView {
       e.classList.toggle('pow-busy', b);
   }
 
-  /** Offers reply chips for a Traveler's line, or clears them with null (M5-06). */
-  offer(o: ChipOffer | null): void {
-    this.replyBtn.hidden = o === null;
-    this.chipOffer = o;
+  /** Offers reply chips for a Traveler's line, in its own tab (M5-06). */
+  offer(o: ChipOffer): void {
+    this.chipOffers.set(o.channel, o);
+    this.offersChanged();
+  }
+
+  /** Clears the chips waiting in one tab. */
+  private clearOffer(channel: ChipOffer['channel']): void {
+    this.chipOffers.delete(channel);
+    this.offersChanged();
+  }
+
+  private offersChanged(): void {
+    this.replyBtn.hidden = this.chipOffers.size === 0;
     this.chipEmotes = false;
     this.sigChips = '';
+    this.sigTabs = '';
+  }
+
+  /** The most recent offer still open, for the lane's Reply button. */
+  private newestOffer(): ChipOffer | null {
+    let best: ChipOffer | null = null;
+    for (const o of this.chipOffers.values()) if (!best || o.until > best.until) best = o;
+    return best;
+  }
+
+  /** The tab the sheet shows: the saved choice if it has lines, else the first that does. */
+  private activeTab(): Channel {
+    const channels = this.router.channels();
+    const want = (this.settings.get().chatTab as Channel) || 'world';
+    return channels.includes(want) ? want : (channels[0] ?? 'system');
   }
 
   /** Positions the lanes. Cheap: only writes styles. */
@@ -221,12 +284,18 @@ export class MessageView {
     if (this.sheetOpen) this.renderSheet();
   }
 
-  /** The reply chips: 2 to 4 buttons at least 48 px tall, and an Emote button that swaps them. */
+  /**
+   * The reply chips of the tab on show: 2 to 4 buttons at least 48 px tall, and an Emote button
+   * that swaps them. A tab with nothing to answer shows none.
+   */
   private renderChips(): void {
-    const o = this.chipOffer;
-    if (o && performance.now() > o.until) this.offer(null);
-    const cur = this.chipOffer;
-    const sig = cur ? `${cur.slot}|${cur.chips.map((c) => c.id).join(',')}|${this.chipEmotes}` : '';
+    const now = performance.now();
+    for (const [ch, o] of this.chipOffers) if (now > o.until) this.clearOffer(ch);
+    const tab = this.activeTab();
+    const cur = tab === 'local' || tab === 'whisper' ? (this.chipOffers.get(tab) ?? null) : null;
+    const sig = cur
+      ? `${tab}|${cur.slot}|${cur.chips.map((c) => c.id).join(',')}|${this.chipEmotes}`
+      : '';
     if (sig === this.sigChips) return;
     this.sigChips = sig;
     this.chipBar.hidden = cur === null;
@@ -262,7 +331,7 @@ export class MessageView {
           row,
           button(c.id, c.text, () => {
             this.onChip(cur.slot, c.id);
-            this.offer(null);
+            this.clearOffer(cur.channel);
           }),
         );
       add(
@@ -280,9 +349,9 @@ export class MessageView {
 
   private renderSheet(): void {
     const channels = this.router.channels();
-    const want = (this.settings.get().chatTab as Channel) || 'world';
-    const tab = channels.includes(want) ? want : (channels[0] ?? 'system');
-    const st = `${tab}|${channels.join(',')}`;
+    const tab = this.activeTab();
+    const waiting = [...this.chipOffers.keys()];
+    const st = `${tab}|${channels.join(',')}|${waiting.join(',')}`;
     if (st !== this.sigTabs) {
       this.sigTabs = st;
       this.tabs.replaceChildren(
@@ -292,6 +361,11 @@ export class MessageView {
           t.setAttribute('role', 'tab');
           t.setAttribute('aria-selected', String(c === tab));
           t.textContent = S.chat.tabs[c];
+          // A tab with a line waiting for the player's answer is marked, so they know where to look.
+          if ((c === 'local' || c === 'whisper') && this.chipOffers.has(c)) {
+            t.classList.add('pow-chat-tab-reply');
+            t.setAttribute('aria-label', `${S.chat.tabs[c]}. ${S.chat.replyWaiting}`);
+          }
           t.addEventListener('click', () => {
             this.settings.set({ chatTab: c });
             this.sigTabs = '';

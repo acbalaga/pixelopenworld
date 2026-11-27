@@ -2409,10 +2409,21 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           lastMeter.draw(faded(renderer, fade));
         } else lastMeter = null;
       }
-      // Build id and time, bottom left, so a refreshed page can be told from a stale one.
-      fonts.small.draw(renderer, BUILD_LABEL, v.safe.x + 3, v.safe.y + v.safe.h - 9, GREY, {
-        outline: DARK,
-      });
+      // Build id and time, so a refreshed page can be told from a stale one. Dim, in the bottom
+      // corner opposite the chat lane: right, or left when left-handed (owner, 2026-11-27).
+      const labelRight = settings.get().handedness !== 'left';
+      fonts.small.draw(
+        renderer,
+        BUILD_LABEL,
+        labelRight ? v.safe.x + v.safe.w - 3 : v.safe.x + 3,
+        v.safe.y + v.safe.h - 9,
+        GREY,
+        {
+          outline: DARK,
+          align: labelRight ? 'right' : 'left',
+          alpha: UI_BALANCE.messages.buildLabelAlpha,
+        },
+      );
       if (!fly) {
         const k = v.dpr / v.scale;
         const css = canvas.getBoundingClientRect();
