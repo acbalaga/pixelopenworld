@@ -132,8 +132,10 @@ test('the accessibility tree names ordered controls on each tab', async ({ page 
     'tab "Chronicle"',
     'tab "System"',
   ]);
-  // Tabs for systems that do not exist yet are hidden, not greyed out.
-  expect(first).not.toMatch(/tab "(Social|Routines)"/);
+  // The Social tab arrived with M5 (POW-M5-09). Tabs for systems that do not exist yet are hidden,
+  // not greyed out.
+  expect(first).toMatch(/tab "Social"/);
+  expect(first).not.toMatch(/tab "Routines"/);
   expect(first).toMatch(/tab "Character".*selected/);
 
   inOrder(first, [

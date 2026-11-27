@@ -75,7 +75,10 @@ test.describe('portrait', () => {
       .click();
     await page.getByRole('button', { name: 'Enter the world' }).click();
     await expect(page.locator('#game')).toHaveAttribute('data-ready', 'true');
-    await expect(page.locator('.pow-notice')).toContainText('bench', { timeout: 8000 });
+    // Other notices (a skill awakening) can share the lane, so look for the origin's line by text.
+    await expect(page.locator('.pow-notice').filter({ hasText: 'bench' })).toBeVisible({
+      timeout: 8000,
+    });
     await shot(page, 'm4-19-first-line');
   });
 

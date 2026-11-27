@@ -102,5 +102,5 @@ test('cook: teaches the recipe', async ({ page }) => {
   await talk.getByRole('button', { name: 'Teach me something.' }).click();
   await expect(talk.locator('.pow-talk-log')).toContainText('Sunwort and dewmint');
   await talk.getByRole('button', { name: 'Continue' }).click();
-  await expect(talk.locator('.pow-talk-log')).toContainText('sunwort picked at dawn or dusk');
+  await expect(talk.locator('.pow-talk-log')).toContainText('pick sunwort at dawn or dusk');
 });
