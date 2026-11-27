@@ -133,6 +133,8 @@ Rules:
 
 Party members (Travelers, tamed creatures, hired hands) fight by simple role AI: Vanguard, Striker, Support. They follow the player's target lock. They cannot die permanently. Downed companions revive after the fight.
 
+**Party difficulty (D29).** A creature that fights a party gets more Health for each companion in it, weighted by that companion's competence, so a party of skilled members faces a much tougher creature and a party of Newbies only a little tougher one. Damage, XP and drops stay the same as solo. The scale is fixed when the creature first engages and never drops mid-fight.
+
 ## Death
 
 In-fiction the player "desyncs" and respawns.

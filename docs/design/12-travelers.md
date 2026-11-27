@@ -87,7 +87,7 @@ A schedule shape is a list of sessions per day of the week: start minute, length
 | nightowl   | 23:00 to 03:00                      | 00:00 to 05:00                 | 7%    |
 | always     | three long sessions, short gaps     | the same                       | 3%    |
 
-Some sessions are skipped: each weekday session has a 12% skip chance (25% for `parent`), which is how "they did not show up today" happens. The shares are tuned so the online count follows the target curve in 07 (about 20 at the 05:00 trough, about 45 at the 21:00 weekday peak, a flatter and higher weekend). Shapes and shares live in `src/content/balance/travelers.ts`.
+Some sessions are skipped: each weekday session has a 12% skip chance (25% for `parent`), which is how "they did not show up today" happens. The shares are tuned so the online count follows the target curve in 07: on weekdays about 28 online on average from 03:00 to 07:00 (the single lowest hour reaches about 20) and about 41 from 20:00 to 23:00, peaking near 45; weekends are flatter (about 26 and 38). Measured with `npm run crowd-report` (seed 1), 2026-11-27, and accepted by the owner. Shapes and shares live in `src/content/balance/travelers.ts`.
 
 The schedule system also supports a session with zero jitter and a fixed first line per week. M5 builds the support. Which Travelers use it is set in M10.
 
@@ -158,7 +158,7 @@ Templates are data in `src/content/chat/templates/*.ts`, one file per category. 
 }
 ```
 
-- **Slots** are typed: `{item}`, `{qty}`, `{price}`, `{place}`, `{creature}`, `{skill}`, `{rank}`, `{handle}` (another Traveler), `{player}`, `{dungeon}`, `{weather}`, `{time}`. Each slot fills only from the event's own payload or the speaker's own state. A slot that cannot fill drops the template.
+- **Slots** are typed: `{item}`, `{qty}`, `{price}`, `{place}`, `{creature}`, `{skill}`, `{rank}`, `{handle}` (another Traveler), `{player}`, `{dungeon}`, `{weather}`, `{time}`, and `{rumor}` (answers only, filled from the rumor table in 4.6). Each slot fills only from the event's own payload or the speaker's own state. A slot that cannot fill drops the template.
 - **Conditions** (`when`) read speaker fields, the event, world time, weather and regard. They never read anything the speaker could not know (a Traveler in the inn cannot know what the player looted in the Rootway unless the player said so in chat or it was a public deed).
 - **Places** fill only from baked places (D25). The bake fails if any template text or alternative names a place, item, creature or skill that is not in content.
 - **Alternatives** in `text` give variety without new conditions.
@@ -186,6 +186,7 @@ Sixteen voices in `src/content/chat/voices.ts`: `terse`, `chatty`, `formal`, `jo
 - Rate limit per channel per in-game minute, scaled by the online count. Quiet hours are quiet: at 04:00 real time World chat runs at about a fifth of its 21:00 rate.
 - Variety control: no template id repeats in a channel within its window (default 40 lines). No speaker says two lines within 20 seconds unless it is a reply.
 - Every emitted line carries its source: the event id or state that produced it. A debug view (dev builds only) shows the source per line.
+- **Text is not simulation.** Which line is said, by whom and in what wording is decided by chat's own hash dice, never by the `travelers` RNG stream. Changing a template or a chat weight cannot change what any Traveler does (tests assert it).
 
 ### 4.5 Exchanges and banter
 
@@ -248,20 +249,20 @@ Skill names in the focus column follow 11-skill-table. Where the table names a s
 
 ## 7. The twelve guilds
 
-| Id  | Guild                     | Culture                                          | Chat tone                     | Home         | Hall                       | Joins by                          |
-| --- | ------------------------- | ------------------------------------------------ | ----------------------------- | ------------ | -------------------------- | --------------------------------- |
-| 1   | Iron Oath                 | Hardcore raiders. Schedules, roles, kill counts. | terse, strategic, "o7"        | Ironvale     | with Ironvale (M8)         | Any Arms skill 30 and Renown      |
-| 2   | The Brass Union           | Crafting union. Quality standards, apprentices.  | nerdy, proud, shop talk       | Ironvale     | with Ironvale (M8)         | Any craft rank 25                 |
-| 3   | Society of the Folded Map | Cartographers. Map percent, corrections.         | formal, precise               | Glass Desert | with the Glass Desert (M9) | Cartography 20 or a member friend |
-| 4   | Lantern Players           | Roleplay troupe. Stays in character.             | roleplay voice, theatrical    | Dawnmeadow   | Hearthford (M5)            | A member friend or Performance 10 |
-| 5   | Quiet Hooks               | Fishing club. Records, patience.                 | slow, kind, fish jokes        | Saltreach    | with Saltreach (M8)        | Fishing 20                        |
-| 6   | Brine Ledger Company      | Merchant house. Prices, margins, rivals.         | merchant, brisk               | Saltreach    | with Saltreach (M8)        | Bartering 20 and coin held        |
-| 7   | Hearth and Home           | Newbie-friendly social guild. Helps everyone.    | chatty, kind, many greetings  | Dawnmeadow   | Hearthford (M5)            | Anyone, after one shared activity |
-| 8   | Greenhand Circle          | Farmers and cooks. Seasons, recipes, festivals.  | kind, homely                  | Dawnmeadow   | with M6 farming (M6)       | Cooking or Farming 15             |
-| 9   | The Ninth Bell            | Duelists. Sporting rivalry, ladders.             | jokey trash talk, never cruel | Frostspine   | with Frostspine (M9)       | Win three duels                   |
-| 10  | Wardens of the Fog        | Tamers and foragers.                             | glyphy, warm, creature talk   | Whisperwood  | with Whisperwood (M8)      | Taming 15 or a tamed creature     |
-| 11  | Stiltwalkers              | Alchemists and sneaks.                           | dry, few words, odd humor     | Sunken Mire  | with the Sunken Mire (M9)  | Alchemy or Stealth 25             |
-| 12  | Summit Club               | Speedrunners and climbers. Times, routes.        | excitable, numbers            | Frostspine   | with Frostspine (M9)       | An Athletics Trial under par      |
+| Id  | Guild                     | Culture                                          | Chat tone                     | Home         | Hall                       | Joins by                                                      |
+| --- | ------------------------- | ------------------------------------------------ | ----------------------------- | ------------ | -------------------------- | ------------------------------------------------------------- |
+| 1   | Iron Oath                 | Hardcore raiders. Schedules, roles, kill counts. | terse, strategic, "o7"        | Ironvale     | with Ironvale (M8)         | Any Arms skill 30 and Renown                                  |
+| 2   | The Brass Union           | Crafting union. Quality standards, apprentices.  | nerdy, proud, shop talk       | Ironvale     | with Ironvale (M8)         | Any craft rank 25                                             |
+| 3   | Society of the Folded Map | Cartographers. Map percent, corrections.         | formal, precise               | Glass Desert | with the Glass Desert (M9) | Cartography 20 or a member friend                             |
+| 4   | Lantern Players           | Roleplay troupe. Stays in character.             | roleplay voice, theatrical    | Dawnmeadow   | Hearthford (M5)            | A member friend or Performance 10                             |
+| 5   | Quiet Hooks               | Fishing club. Records, patience.                 | slow, kind, fish jokes        | Saltreach    | with Saltreach (M8)        | Fishing 20                                                    |
+| 6   | Brine Ledger Company      | Merchant house. Prices, margins, rivals.         | merchant, brisk               | Saltreach    | with Saltreach (M8)        | Bartering 20 and coin held                                    |
+| 7   | Hearth and Home           | Newbie-friendly social guild. Helps everyone.    | chatty, kind, many greetings  | Dawnmeadow   | Hearthford (M5)            | Anyone, after one shared activity                             |
+| 8   | Greenhand Circle          | Farmers and cooks. Seasons, recipes, festivals.  | kind, homely                  | Dawnmeadow   | with M6 farming (M6)       | Cooking or Farming 15                                         |
+| 9   | The Ninth Bell            | Duelists. Sporting rivalry, ladders.             | jokey trash talk, never cruel | Frostspine   | with Frostspine (M9)       | Win three duels                                               |
+| 10  | Wardens of the Fog        | Tamers and foragers.                             | glyphy, warm, creature talk   | Whisperwood  | with Whisperwood (M8)      | Taming 15 or a tamed creature (closed until Taming ships, M6) |
+| 11  | Stiltwalkers              | Alchemists and sneaks.                           | dry, few words, odd humor     | Sunken Mire  | with the Sunken Mire (M9)  | Alchemy or Stealth 25                                         |
+| 12  | Summit Club               | Speedrunners and climbers. Times, routes.        | excitable, numbers            | Frostspine   | with Frostspine (M9)       | Has passed an Athletics Trial                                 |
 
 In M5 every guild exists, recruits and chats. Only Lantern Players and Hearth and Home have halls, both in Hearthford. Members of guilds with unbaked homes meet in the Hearthford inn's back room until their hall exists. The player can join any guild whose condition they meet. Membership is one guild at a time.
 

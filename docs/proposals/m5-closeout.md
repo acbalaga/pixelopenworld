@@ -1,5 +1,7 @@
 # M5 closeout: input for one planning session
 
+**Resolved 2026-11-27** in the M5 closeout planning PR. Owner answers: the #175 phone play is the milestone review and it passed with two findings (POW-M6-21, POW-M6-22). An early-morning crowd of about 28 is accepted. 5.1, 5.6 and 5.7 as recommended. 5.2: Wardens stays closed until M6-06. 5.11: add a fountain (M6-10). `slice` becomes a test-only pack (M8-00). Section 7 became POW-M6-20. Section 6 is folded into M6 or dropped (see `docs/tickets/M6-second-life.md`). The rows answered "keep" stand as recommended.
+
 **Audience:** the planning agent (design authority). **Written by:** an executor session, 2026-11-27, after PR #182 merged. **Purpose:** everything the planning agent needs to close M5 and open M6 in a single docs-only PR, with no archaeology. Nothing in `docs/design/` or `docs/tech/` was changed to produce this.
 
 Sources: the merged PRs (#126 to #128, #130, #157 to #175, #182), `git log` on main at `7b8be39`, the ticket files, and a fresh run of `npm run crowd-report`.
