@@ -18,20 +18,20 @@ Portrait first. The game renders to a low-resolution logical canvas and scales b
 |      [action meter]      |   above the avatar while it works (gather, craft, fish)
 |        WORLD VIEW        |   top ~62% of height
 |                          |
-| chat (2 lines)     [log] |   chat lane, left, above the thumb zone
 +--------------------------+
 |   [t1][t2]               |
 |        [t3][t4]  [ctx]   |   thumb zone, bottom ~38%
 |   ( floating stick )     |   world continues underneath, dimmed controls
 |  [menu]          [bag]   |
-+--------------------------+
+| chat (2 lines)     build |   chat lane in the stick's corner, touches pass through
++--------------------------+   build label dim, opposite corner
 ```
 
 The world renders full-screen behind the thumb zone. The camera is offset so the avatar sits in the center of the upper region and is never under the thumb.
 
 ### Landscape and desktop
 
-World full screen, Classic controls on the sides, chat bottom-left, minimap top-right. Desktop adds keyboard, mouse, and gamepad. Menus open as a centered panel.
+World full screen, Classic controls on the sides, chat in the bottom corner on the stick's side, minimap top-right. Desktop adds keyboard, mouse, and gamepad. Menus open as a centered panel.
 
 ## The text rule
 
@@ -71,7 +71,8 @@ Minimal by default. Elements fade when unchanged for a few seconds, return on ch
 - Three pool bars, top left. Status icons under them.
 - Clock and weather glyph, top center. Tap for calendar.
 - Minimap toggle, top right. Tap for full map.
-- Chat lane above the thumb zone (see Message lanes).
+- Chat lane in the bottom corner on the stick's side (see Message lanes).
+- Build label in the opposite bottom corner, dim (alpha 0.45), never interactive.
 - Four technique buttons, context button, menu, bag, and the quick slot: one button for a consumable, pinned from the Bag (up to three, a long press steps between them).
 - Target frame (name, health, stagger) when locked.
 - Party frames, left edge, when in a party.
@@ -91,18 +92,20 @@ Every timed step the player performs (gather sweep, craft step, fishing bite, an
 
 ## Message lanes
 
-Every transient message has one lane (D21). Lanes never overlap each other, the action meter, or the thumb zone. A **System log** keeps every message for review.
+Every transient message has one lane (D21). Lanes never overlap each other, the action meter, or any button. A lane may sit inside the thumb zone only if it passes touches through to the walk stick and opens on a quick tap (lifted within 300 ms and 10 px, `UI_BALANCE.messages.laneTapMs` and `laneTapPx`). Only touches that reach the game surface count, so a panel or tab bar above it can never open a lane. Today only the chat lane uses this (owner, 2026-11-27). A **System log** keeps every message for review.
 
-| Lane        | Where                                           | What                                                                                   | Rules                                                                                                                                     |
-| ----------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Floaters    | Over the avatar, pixel text                     | Pickups ("+2 Moss"), XP pips, damage numbers                                           | Up to 24 characters. Repeats within 1.5 s merge ("+5 Moss"). Max 3 stacked.                                                               |
-| Skill ticks | Under the pool bars                             | Skill XP gains                                                                         | As today (M3). Fades when unchanged.                                                                                                      |
-| Notices     | Under the clock, clear text                     | Short system news: request updated, item cannot be carried, a Waystone attuned, a hint | Max 2 visible, newest on top. 2.6 s each, longer for longer text (40 ms per character, capped at 6 s). Merges duplicates. Tap to dismiss. |
-| Banners     | Under the clock, wide, one at a time            | Rank-ups, awakening, a Path earned, a Singular step, a world first                     | Queue, never stack. 3 s. Notices wait while a banner shows.                                                                               |
-| Chat        | Left, directly above the thumb zone, clear text | Traveler and system chat (M5 adds volume)                                              | 2 lines, newest at the bottom. Tap to open the chat sheet. A collapse button hides it to a one-glyph unread count.                        |
-| Hints       | Notices lane, with a hint glyph                 | First-time contextual hints                                                            | Same lane as notices, never a separate box over the clock.                                                                                |
+| Lane        | Where                                                                                                  | What                                                                                   | Rules                                                                                                                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Floaters    | Over the avatar, pixel text                                                                            | Pickups ("+2 Moss"), XP pips, damage numbers                                           | Up to 24 characters. Repeats within 1.5 s merge ("+5 Moss"). Max 3 stacked.                                                                                                                                                                 |
+| Skill ticks | Under the pool bars                                                                                    | Skill XP gains                                                                         | As today (M3). Fades when unchanged.                                                                                                                                                                                                        |
+| Notices     | Under the clock, clear text                                                                            | Short system news: request updated, item cannot be carried, a Waystone attuned, a hint | Max 2 visible, newest on top. 2.6 s each, longer for longer text (40 ms per character, capped at 6 s). Merges duplicates. Tap to dismiss.                                                                                                   |
+| Banners     | Under the clock, wide, one at a time                                                                   | Rank-ups, awakening, a Path earned, a Singular step, a world first                     | Queue, never stack. 3 s. Notices wait while a banner shows.                                                                                                                                                                                 |
+| Chat        | Bottom corner on the stick's side (left, right when left-handed), above the swipe-up strip, clear text | Traveler and system chat (M5 adds volume)                                              | 2 lines, newest at the bottom. Drags pass through to the stick. A quick tap opens the chat sheet. Reply and collapse sit above the lines; collapse hides it to a one-glyph unread count. Reply opens the newest line waiting for an answer. |
+| Hints       | Notices lane, with a hint glyph                                                                        | First-time contextual hints                                                            | Same lane as notices, never a separate box over the clock.                                                                                                                                                                                  |
 
 The chat sheet opens from the bottom, half height, with channel tabs (World, Local, Party, Guild, Whisper, System). The System tab is the System log: every notice, banner and pickup since login, newest at the bottom.
+
+**Replies by tab.** The reply chips show only the offer for the tab on show, and the answer is posted in that tab: a whisper is answered under Whisper. Offers are kept per Traveler and per channel, so a Local greeting never replaces a whispered friend request. A tab holding a line that waits for a reply has a gold edge and dot, and a screen-reader label that says so (not color alone).
 
 While the Menu, a shop, dialogue or a craft panel is open, floaters and notices pause and queue. Banners queue too. Nothing is lost.
 
@@ -182,7 +185,7 @@ A small glyph in the System tab and on the login screen shows trust state: Intac
 
 ## Accessibility
 
-- Text scale, HUD scale, button size and opacity, left-handed mirror.
+- Text scale, HUD scale, button size and opacity, left-handed mirror. The mirror moves the stick and the chat lane to the right and the build label to the left.
 - Colorblind-safe: no information by color alone. Status, rarity, and element all have shapes or glyphs. Three palette presets tested for protan, deutan, tritan.
 - Reduced motion (no shake, no flashes, gentler transitions). Honors the OS setting on first run.
 - Flash limit: no full-screen flashes above 3 per second, ever.

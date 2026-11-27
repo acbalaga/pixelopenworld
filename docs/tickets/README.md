@@ -12,7 +12,7 @@ One file per milestone. Each ticket is one PR.
 | [M5-the-crowd.md](M5-the-crowd.md)         | Simulated MMO                           | READY (pending owner approval after G4) |
 | [M6-second-life.md](M6-second-life.md)     | Life systems                            | DRAFT                                   |
 | [M7-automation.md](M7-automation.md)       | Automation                              | DRAFT                                   |
-| [M8-world-2.md](M8-world-2.md)             | Regions 2 to 4                          | DRAFT                                   |
+| [M8-world-2.md](M8-world-2.md)             | Regions 2 to 4                          | DRAFT (POW-M8-00 READY)                 |
 | [M9-world-3.md](M9-world-3.md)             | Regions 5 to 8, Undercroft              | DRAFT                                   |
 | [M10-hidden-layer.md](M10-hidden-layer.md) | Lore and completion                     | DRAFT                                   |
 | [M11-unwritten.md](M11-unwritten.md)       | Frontier                                | DRAFT                                   |

@@ -14,6 +14,7 @@ Reference device: a mid-range Android phone from about 2021 (4 GB RAM class) in 
 | Boot JS        | Under 450 KB gzip for shell plus core game (raised from 300 KB by the owner on 2026-11-27; see POW-M8-00)              |
 | First playable | Under 2 MB transferred. Under 4 seconds on a mid-range phone on a 4G-class connection, repeat visit under 1.5 seconds. |
 | Region pack    | Under 1.5 MB compressed each                                                                                           |
+| Region content | Under 120 KB gzip of JS per region, loaded with the region, never in boot JS (POW-M8-00)                               |
 | Save size      | Under 500 KB compressed at 200 hours                                                                                   |
 | Save time      | Under 50 ms on the main thread (serialize in slices or in a Web Worker)                                                |
 | Input latency  | Touch to visible response under 100 ms                                                                                 |

@@ -18,13 +18,55 @@ Every region is produced by a "world" ticket and a "content" ticket.
 
 ### POW-M8-00 Region content loads with its region
 
-Size: M Depends: none Status: DRAFT
-Refs: tech/01-architecture, tech/03-asset-pipeline, tech/04-quality
+Size: L (two parts) Depends: none Status: READY (refined 2026-11-27, owner decision in the PR #180 follow-up)
+Refs: tech/01-architecture (Sim purity, World streaming, PWA), tech/03-asset-pipeline, tech/04-quality (Boot JS), CLAUDE.md (Sim purity, Content is data)
+Must merge before: POW-M8-03, POW-M8-06, POW-M8-08 (the first region content tickets). POW-M8-01 does not need to wait for it.
 
 Goal: boot JS stays under budget as regions 2 to 8 arrive.
-Context: after M5 the boot bundle was 390 KB gzip against a 300 KB budget. The owner raised the budget to 450 KB on 2026-11-27 (tools/budgets.json) on the condition that region growth does not land in it. Today every region's creatures, requests, dialogue, people and chat templates are imported into the one boot bundle. Only about 20 KB gzip of UI sheets could be split without touching the sim, which needs its content synchronously from tick one.
-Scope: per-region content (creatures, requests, dialogue, people, POIs, region chat templates) moves to a region pack fetched with the region and precached by the PWA, the same way chunks are. The sim keeps synchronous access: the region's pack is loaded before the region's first tick, and offline settlement reads it from the cache. Shared content (items, skills, balance, the base chat templates) stays in boot. A build check fails if a region's content is imported from boot code.
-Acceptance: boot JS under 450 KB gzip with Dawnmeadow moved to a pack. Adding a region does not grow boot JS by more than 5 KB gzip (measured with a stub region). Offline play and offline settlement pass in a region whose pack came from the cache. `npm run verify` passes.
+Context: after M5 the boot bundle was 391 KB gzip against a 300 KB budget. The owner raised the budget to 450 KB on 2026-11-27 (`tools/budgets.json`) on the condition that region growth does not land in it. Today every region's creatures, requests, dialogue, people, POIs and chat templates are imported statically into the one boot bundle (about 31 imports from `src/sim` alone, for example `CREATURES` in `src/sim/combat/enemy.ts` and `src/sim/travelers/crowd.ts`). The sim needs content synchronously from its first tick. The service worker already precaches every code chunk on install (`vite.config.ts`, `src/platform/pwa/sw.js`), so a dynamic-import chunk is offline-safe with no new caching code. `src/save/seal/registry.ts` is the in-repo precedent for a dynamic import.
+
+**How to run this ticket.** Two PRs, A then B. Title: `POW-M8-00<letter> <part title>`. Neither part changes saved state or content ids, so neither bumps the save schema.
+
+#### Part A. Content lookups go through a registry
+
+Scope:
+
+- New `src/content/registry.ts`: per-kind tables (creatures, spawners, requests, threads, people, places, POIs, dialogue, region chat templates and rumors), `registerPack(pack: RegionPack)`, `hasPack(region)`, and typed lookups (`creatureDef(id)`, `requestDef(id)`, and so on). A lookup of an id whose pack is not registered throws with the id and region. It never returns a default. `RegionPack` is a typed record: `{ region, creatures, spawners, requests, threads, people, places, pois, dialogue, chat }`.
+- Registering the same region twice is a no-op. Registering two packs that define the same id fails (test).
+- Every read of region content in `src/sim/`, `src/ui/` and `src/render/` goes through the registry. The static barrels (`content/creatures/index.ts` and the rest) stop exporting merged region tables, and keep only shared content and types.
+- **Region index** (stays in boot): per region, the ids, display names and tiers of its creatures, bosses, places and POIs, and nothing else. The abstract crowd (Travelers in a region the player is not in) and World-channel chat about other regions read only the index, never a pack. A test fails if `src/sim/travelers/` or `src/sim/chat/` calls a pack lookup for a region other than the player's current one.
+- In Part A every pack is still imported statically and registered at boot (`src/content/packs.ts`), so nothing about loading changes yet. Test setup registers packs the same way.
+
+Acceptance:
+
+- All existing unit, sim and e2e tests pass unchanged, apart from setup that registers packs.
+- Unit test: a lookup before its pack is registered throws, naming the id and region.
+- Unit test: duplicate ids across two packs fail registration.
+- Determinism: `npm run sim-bot` and `balance:ci` give the same results as `main` (paste both).
+- `npm run verify` passes.
+
+#### Part B. Packs load with their region
+
+Scope:
+
+- Region content moves under `src/content/regions/<region>/` (Dawnmeadow's dungeons Rootway, Undermill, Deeps and Thornwall go into Dawnmeadow's pack). Each region exports one `RegionPack` from `src/content/regions/<region>/pack.ts`.
+- `src/platform/world/packs.ts` loads a pack with a dynamic `import()` and calls `registerPack`. It is the only module that imports a pack. Vite emits each pack as its own hashed chunk. No pack is in `index.html` as a script or `modulepreload`.
+- **Loading gate.** A chunk does not count as loaded until its region's pack is registered. The loader starts the pack fetch when the 5 x 5 loaded window first touches a region, so walking across a border waits on the pack the same way it waits on a chunk. Waystone travel and boot load the target region's pack before the first tick there.
+- **Offline settlement.** Settlement for a region reads its pack from the precache. If a pack cannot be loaded (it should not happen once the service worker is installed), settlement for that region is deferred to the next session where it loads, and a line goes to the System log. It is never guessed and never dropped.
+- Shared content stays in boot: items, skills, balance, paths, sprites and dolls, base chat templates, voices, names, glyphs, the region index.
+- New build check `tools/check-packs.ts`, run by `npm run verify`: from the Vite manifest, fails if any module under `src/content/regions/` is part of a boot chunk, or if any module outside `src/platform/world/packs.ts` imports a pack.
+- `tools/check-bundle.mjs` also prints each pack's gzip size. A pack over 120 KB gzip fails (new `regionPackJsGzipBytes` in `tools/budgets.json`).
+
+Out of scope: moving shared items or skills into packs, changing the chunk format, the region download UI.
+Acceptance:
+
+- Boot JS with Dawnmeadow in a pack: before and after sizes in the PR, and after is under 450 KB gzip.
+- A stub region pack (`tests/fixtures/regions/stub`, 20 creatures, 25 requests, 15 people) grows boot JS by no more than 5 KB gzip. That is its index entry only (measured in the PR).
+- `check-packs` fails on a deliberate static import of a pack from `src/sim/` (test or a recorded run).
+- e2e, offline: install, go offline, reload, play in Dawnmeadow with its pack from the precache. Leave the tab hidden 10 minutes and come back: settlement runs and its results match the online run for the same seed.
+- e2e: walking across a region border with throttled network waits at the edge and never shows a missing creature or a thrown lookup. No console errors.
+- First playable stays under 2 MB transferred and 4 s on the reference profile (tech/04).
+- `npm run verify` passes.
 
 ### POW-M8-01 Refinement: M8 specs to READY
 

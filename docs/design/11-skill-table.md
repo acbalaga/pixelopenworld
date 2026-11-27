@@ -71,13 +71,15 @@ The manual step for each craft is in the ticket that builds it (POW-M3-07 and PO
 
 ## Exploration (5)
 
-| Skill       | XP event                                                                                    | Wired in           | Band 0                 | Band 15                                                  | 30+ theme                    |
-| ----------- | ------------------------------------------------------------------------------------------- | ------------------ | ---------------------- | -------------------------------------------------------- | ---------------------------- |
-| Cartography | `reveal` (later)                                                                            | **pending, M4-06** | Defined, no effect yet | Defined, no effect yet                                   | Annotations, rumor precision |
-| Survival    | `outdoorsNight` _new_ (each in-game hour of night spent in an outdoor room), `eatRaw` _new_ | M3-02              | Passive: none          | Passive **Hardy**: Health regen out of combat 25% faster | Weather resistance           |
-| Athletics   | `sprint`                                                                                    | M1                 | Passive: sprint        | Passive **Second Wind**: sprint costs 15% less Stamina   | Climbing, swimming           |
-| Deciphering | `tabletRead` _new as XP_, first time per tablet only                                        | M3-02              | Passive: none          | Passive: none (deciphering content arrives in M10)       | Cipher (M10)                 |
-| Delving     | `delve` (later)                                                                             | **pending, M4-08** | Defined, no effect yet | Defined, no effect yet                                   | Dungeon senses               |
+| Skill       | XP event                                                                                    | Wired in           | Band 0                           | Band 15                                                  | 30+ theme                    |
+| ----------- | ------------------------------------------------------------------------------------------- | ------------------ | -------------------------------- | -------------------------------------------------------- | ---------------------------- |
+| Cartography | `reveal` (a map block uncovered for the first time), from 150 blocks (see note)             | M4-06, M4-23A      | Passive: reveal radius by points | Passive: wider reveal radius                             | Annotations, rumor precision |
+| Survival    | `outdoorsNight` _new_ (each in-game hour of night spent in an outdoor room), `eatRaw` _new_ | M3-02              | Passive: none                    | Passive **Hardy**: Health regen out of combat 25% faster | Weather resistance           |
+| Athletics   | `sprint`                                                                                    | M1                 | Passive: sprint                  | Passive **Second Wind**: sprint costs 15% less Stamina   | Climbing, swimming           |
+| Deciphering | `tabletRead` _new as XP_, first time per tablet only                                        | M3-02              | Passive: none                    | Passive: none (deciphering content arrives in M10)       | Cipher (M10)                 |
+| Delving     | `delve` (later)                                                                             | **pending, M4-08** | Defined, no effect yet           | Defined, no effect yet                                   | Dungeon senses               |
+
+Cartography note: the skill sleeps until 150 blocks are uncovered across every region (design/03, Awakening totals). The block that reaches 150 pays for all 150, so XP still equals blocks revealed. The rank 15 Trial (Old Fen, 120 blocks walked after it is taken) does not conflict: rank 15 comes long after the first 150 blocks.
 
 ## Counts
 
