@@ -1,0 +1,37 @@
+name: Playtest note
+description: You played a session. Tell us how it went.
+labels: [playtest, from-community]
+body:
+  - type: input
+    id: device
+    attributes:
+      label: Device, browser and orientation
+      placeholder: iPhone 15, Safari, portrait
+    validations:
+      required: true
+  - type: input
+    id: length
+    attributes:
+      label: How long you played
+      placeholder: About 40 minutes, fresh character
+  - type: textarea
+    id: did
+    attributes:
+      label: What you did
+      description: What you tried to do, in roughly the order you did it.
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: Where it went wrong
+      description: Where you got stuck, bored, confused or annoyed, and about how far in.
+  - type: textarea
+    id: good
+    attributes:
+      label: What worked
+      description: Moments you liked. This matters as much as the friction.
+  - type: textarea
+    id: wanted
+    attributes:
+      label: What you wanted to do and couldn't

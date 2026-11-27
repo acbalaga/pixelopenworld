@@ -1,0 +1,44 @@
+name: Bug report
+description: Something broke or behaved wrong.
+labels: [bug, from-community]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start a new character
+        2. Walk to ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: Pixel 8, Chrome 131, portrait
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Build
+      description: The version or build shown in the Menu, or the date you played.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, recordings or error text
+      description: Paste the exact text of any error or save warning.
+  - type: checkboxes
+    id: spoiler
+    attributes:
+      label: Spoilers
+      options:
+        - label: This report mentions lore or hidden content (add [spoiler] to the title)

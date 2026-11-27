@@ -1,0 +1,36 @@
+name: Design idea or critique
+description: Push back on the plan, or propose something.
+labels: [design, from-community]
+body:
+  - type: markdown
+    attributes:
+      value: The plan lives in docs/. Section 2 of docs/MASTER_PLAN.md lists the pillars every decision is settled against.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      placeholder: Combat, skills, Travelers, UI, a region, saves ...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you think is wrong or missing, and what failure it leads to for the player.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would do instead
+  - type: input
+    id: refs
+    attributes:
+      label: Docs or decisions this touches
+      placeholder: docs/design/04-combat.md, decision D13
+  - type: checkboxes
+    id: spoiler
+    attributes:
+      label: Spoilers
+      options:
+        - label: This mentions lore or hidden content (add [spoiler] to the title)
