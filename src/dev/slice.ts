@@ -18,7 +18,7 @@ import { elementHitsWorld } from '../sim/elements';
 import { applyStatus } from '../sim/statuses';
 import { PLACE_SPOTS } from '../content/people/placeSpots';
 import { CREATURES } from '../content/creatures';
-import { onlineCount } from '../sim/travelers/crowd';
+import { onlineCount, routeMinutes } from '../sim/travelers/crowd';
 import { dayIndexOf, localMinute } from '../sim/travelers/schedule';
 import { deliver } from '../sim/mail';
 import { makeFriends, remember } from '../sim/travelers/social';
@@ -29,7 +29,7 @@ import { travelerListings } from '../sim/party';
 import { startBout } from '../sim/pitBouts';
 import { addFlag } from '../sim/travelers/pit';
 import { PIT } from '../content/balance/travelers';
-import { PLACE_LIST } from '../sim/travelers/lists';
+import { PLACE_LIST, placeIdx } from '../sim/travelers/lists';
 
 /** What the hooks need from the running scene. */
 const CAMP_FIRE = PLACE_SPOTS['wayside.river_camp']!.focus!;
@@ -82,6 +82,13 @@ export interface PowDevApi {
   deliverLetters(): string | null;
   /** Gives the nearest promoted Traveler a memory of the player and enough regard to ask to be friends. Returns the handle (M5-06). */
   primeRequest(): string | null;
+  /**
+   * Sends up to `n` online Travelers, the closest by route first, to spend a social stretch at a
+   * place (a camp, the inn, the guard yard). They walk there and the sim takes it from there: the
+   * camp, scene planner and dice are untouched. `maxRank` keeps only Travelers whose top skill is
+   * under that rank. For e2e specs that need people somewhere, not luck. Returns their handles.
+   */
+  sendTo(place: string, n: number, maxRank?: number): string[];
   /** Puts the nearest promoted Traveler to sleep, AFK past the threshold, and makes them a friend so the card is reachable. Returns the handle (M5-31). */
   putToSleep(): string | null;
   /** Sends the nearest promoted Traveler to fight a creature set down beside it. Returns its handle. */
@@ -250,6 +257,37 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       deliver(state, { ...base, tpl: 'letter.news.n01' });
       deliver(state, { ...base, tpl: 'letter.gift.coin.n01', coin: 25 });
       return view.handle;
+    },
+    sendTo(place, n, maxRank) {
+      const c = state.crowd;
+      const to = placeIdx(place);
+      if (!c || to < 0) return [];
+      const ids = identitiesOf(state.seed);
+      const top = (slot: number): number => {
+        let t = 0;
+        for (const [, p] of state.travelers[slot]!.build) t = Math.max(t, p);
+        return t;
+      };
+      const picks = ids
+        .filter((t) => c.online[t.slot] === 1)
+        .filter((t) => maxRank === undefined || top(t.slot) < maxRank)
+        .map((t) => ({ t, eta: routeMinutes(state.travelers[t.slot]!.place, to) }))
+        .sort((a, b) => a.eta - b.eta)
+        .slice(0, n);
+      for (const { t, eta } of picks) {
+        const from = state.travelers[t.slot]!.place;
+        c.doing[t.slot] = {
+          kind: 'social',
+          place: to,
+          left: 240,
+          eta,
+          from,
+          total: eta,
+          skill: -1,
+          thing: '',
+        };
+      }
+      return picks.map((p) => p.t.handle);
     },
     primeRequest() {
       const c = state.crowd;

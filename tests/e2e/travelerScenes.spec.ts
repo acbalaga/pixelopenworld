@@ -8,7 +8,20 @@ test.setTimeout(300_000);
 
 interface Pow {
   crowd(): { entities: number; atCamp: number; scenes: string[] };
+  sendTo(place: string, n: number, maxRank?: number): string[];
 }
+
+/**
+ * Sends Travelers to where a scene can happen, so the spec waits on the scene planner and its dice,
+ * not on someone wandering in by chance (that depended on the seed's random sequence, which every
+ * M5 change moved).
+ */
+const stage = (page: Page, place: string, n: number, maxRank?: number): Promise<string[]> =>
+  page.evaluate(
+    ([pl, k, r]) =>
+      (window as unknown as { __pow: Pow }).__pow.sendTo(pl as string, k as number, r as number),
+    [place, n, maxRank] as const,
+  );
 
 async function evening(page: Page, url: string): Promise<void> {
   const when = new Date();
@@ -23,18 +36,38 @@ async function evening(page: Page, url: string): Promise<void> {
 const scenes = (page: Page): Promise<string[]> =>
   page.evaluate(() => (window as unknown as { __pow?: Pow }).__pow?.crowd().scenes ?? []);
 
-for (const [name, kind, url] of [
-  ['wish', 'wish', '/?region=dawnmeadow&at=187,199&weather=clear&foes=0&nosave=1&kit=dev'],
+// Where each scene happens, and who to send: the dummy is for Travelers under rank 10
+// (SCENES.dummyRankUnder), and a dance-off needs two mates, so the inn gets a crowd.
+for (const [name, kind, url, place, n, maxRank] of [
+  [
+    'wish',
+    'wish',
+    '/?region=dawnmeadow&at=187,199&weather=clear&foes=0&nosave=1&kit=dev',
+    'hearthford.square',
+    4,
+    undefined,
+  ],
   [
     'dance',
     'dance',
     '/?region=dawnmeadow&at=174,213&seed=3&tick=54000&weather=clear&foes=0&nosave=1&kit=dev',
+    'hearthford.inn',
+    12,
+    undefined,
   ],
-  ['dummy', 'dummy', '/?region=dawnmeadow&at=173,201&weather=clear&foes=0&nosave=1&kit=dev'],
+  [
+    'dummy',
+    'dummy',
+    '/?region=dawnmeadow&at=173,201&weather=clear&foes=0&nosave=1&kit=dev',
+    'hearthford.guard_yard',
+    3,
+    10,
+  ],
 ] as const) {
   test(`a ${name} scene shows on screen`, async ({ page }) => {
     const problems = await watchProblems(page);
     await evening(page, url);
+    expect(await stage(page, place, n, maxRank)).not.toEqual([]);
     await expect
       .poll(async () => (await scenes(page)).includes(kind), { timeout: 240_000, intervals: [500] })
       .toBe(true);
@@ -54,6 +87,7 @@ test('a ghost story at the river camp shows two Travelers and the story in Local
     page,
     '/?region=dawnmeadow&at=236,198&tick=61300&weather=clear&foes=0&nosave=1&kit=dev',
   );
+  expect(await stage(page, 'wayside.river_camp', 4)).not.toEqual([]);
   await expect
     .poll(
       async () =>
