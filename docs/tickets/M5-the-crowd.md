@@ -2,7 +2,9 @@
 
 **Result:** Dawnmeadow is full of Travelers who log in and out at believable hours, talk about things that really happened, remember the player, party up, join guilds, compete on boards, duel, write letters, and trade on a living market.
 
-**Gate G5a (mid M5, D27):** once POW-M5-04, POW-M5-14 and POW-M5-05 merge, the owner plays Hearthford at two real times of day. Does it feel populated, and does chat read as people? Wave C does not start until it passes. Checklist: `docs/ops/gate-g5a.md` (written by POW-M5-13).
+**Gate G5a (mid M5, D27):** once POW-M5-04, POW-M5-14 and POW-M5-05 merge, the owner plays Hearthford at two real times of day. Does it feel populated, and does chat read as people? Wave C does not start until it passes. Checklist: `docs/ops/gate-g5a.md` (written by POW-M5-13). **Passed with findings, 2026-11-25** (POW-M5-23 to POW-M5-31).
+
+**Milestone review (D28): passed with findings, 2026-11-27.** The owner played the PR #175 preview on a phone. Party finder, guild halls, market and calendar are good. Two findings, carried into M6 Wave A: the Pit is too small for its duels (POW-M6-21), and parties make creatures too easy (POW-M6-22). M5 is DONE.
 
 Read first: `docs/design/07-simulated-mmo.md` and `docs/design/12-travelers.md`. Decisions D24 to D27 in the master plan.
 
@@ -18,11 +20,11 @@ Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this 
 | B            | 02, then 03, then 04, 05, 09, then 14, 15    | 04, 05 and 09 run in parallel after 03. 14 needs 04. 15 needs 05.                         |
 | G5a          | 13, then the owner check                     | 13 needs 04, 14, 05 and 15.                                                               |
 | C            | 06, then 07, 08, 12. Also 10, 11.            | Starts after G5a passes. 07, 08 and 12 run in parallel after 06. 10 and 11 need only G5a. |
-| G5a findings | 23, 24, 25 (done). 26, 27. Then 29, 30, 31.  | 26 now, 27 after 26. 29 and 31 after 06. 30 after 29 and 12. 28 withdrawn into 11.        |
+| G5a findings | 23 to 27, 29 to 32 (all done)                | Done. 28 withdrawn into 11.                                                               |
 
-**Save schema bumps serialize.** Tickets 02, 06, 08, 10 and 12 each bump the schema. Whichever merges later rebases, takes the next number, and re-exports its fixture from main as it stands then. Each migration stays a separate step.
+**Save schema record.** M5 took the schema from 29 to 35, one migration per step: 30 POW-M5-02 (Traveler lives), 31 POW-M5-12 (duels, rivals, mail), 32 POW-M5-08 (guilds), 33 POW-M5-30 (Pit wins and honor), 34 POW-M5-10 (market), 35 POW-M5-11 (world events and calendar). POW-M5-06 and POW-M5-29 needed no bump.
 
-**Sim purity holds.** Real local time reaches the sim as two inputs, trusted time (tech/02) and the device time zone offset in minutes. Neither is read inside `src/sim/`. All Traveler randomness comes from the `travelers` RNG stream.
+**Sim purity holds.** Real local time reaches the sim as two inputs, trusted time (tech/02) and the device time zone offset in minutes. Neither is read inside `src/sim/`. All Traveler randomness that changes what the crowd does comes from the `travelers` RNG stream. Chat wording uses its own hash dice and never draws from that stream, so text cannot change the simulation (design/12 4.4).
 
 **D25 everywhere.** Until a region is baked, its Travelers play in Dawnmeadow. No template, letter, rumor, profile or board names an unbaked place. The content validator enforces it.
 
@@ -30,7 +32,7 @@ Ticket ids 02 to 12 keep their numbers from the draft. 13 to 15 are new in this 
 
 ### POW-M5-01 Refinement: M5 specs to READY
 
-Size: M Depends: M4 complete Status: READY (design authority, delivered by the planning PR that wrote this file)
+Size: M Depends: M4 complete Status: DONE (PR #130)
 
 Goal: READY specs for M5.
 Scope: this file. `docs/design/12-travelers.md` (Traveler schema, abstract sim, chat grammar, the 24 hand-tuned Travelers, the 12 guilds). Master plan D24 to D27 and Gate G5a. The guild hall line in design/02.
@@ -42,7 +44,7 @@ Acceptance: owner approves the PR, after the Gate G4 verdict (D24).
 
 ### POW-M5-02 Traveler model and generator
 
-Size: L Depends: POW-M5-01 Status: READY
+Size: L Depends: POW-M5-01 Status: DONE (PR #157)
 Refs: design/12-travelers (1, 2, 6, 7), design/07-simulated-mmo (Travelers), tech/02 (Save anatomy), tech/03 (paper doll)
 
 Goal: 240 persistent, distinct Travelers per save, cheap to store.
@@ -75,7 +77,7 @@ Acceptance:
 
 ### POW-M5-03 Schedules, presence, abstract simulation
 
-Size: L Depends: POW-M5-02, M2-04 Status: READY
+Size: L Depends: POW-M5-02, M2-04 Status: DONE (PR #159)
 Refs: design/12-travelers (3), design/07-simulated-mmo (Presence, Technical shape), tech/01 (Levels of detail), tech/02 (Trusted time), design/08-lore-SPOILERS
 
 Goal: Travelers are online at believable real-world hours, do believable things while unseen, and progress while the player is away.
@@ -106,7 +108,7 @@ Acceptance:
 
 ### POW-M5-04 Travelers in the world
 
-Size: L Depends: POW-M5-03 Status: READY
+Size: L Depends: POW-M5-03 Status: DONE (PR #160)
 Refs: design/12-travelers (3.3), design/07-simulated-mmo (Presence), tech/01 (Levels of detail, Entities), tech/04 (budgets), design/08-lore-SPOILERS
 
 Goal: Travelers near the player are real entities, and moving between the abstract and entity views never loses or invents anything.
@@ -134,7 +136,7 @@ Acceptance:
 
 ### POW-M5-14 Traveler behaviors
 
-Size: M Depends: POW-M5-04 Status: READY
+Size: M Depends: POW-M5-04 Status: DONE (PR #161)
 Refs: design/12-travelers (3.2), design/07-simulated-mmo (Presence)
 
 Goal: promoted Travelers look busy in the ways players are busy.
@@ -158,7 +160,7 @@ Acceptance:
 
 ### POW-M5-05 Chat engine
 
-Size: L Depends: POW-M5-03 Status: READY
+Size: L Depends: POW-M5-03 Status: DONE (PR #162)
 Refs: design/12-travelers (4), design/07-simulated-mmo (Chat, Believability rules), design/09-ui-ux (Message lanes, The text rule), design/08-lore-SPOILERS
 
 Goal: an engine that turns real sim events into chat in a Traveler's voice, at a believable rate.
@@ -187,7 +189,7 @@ Acceptance:
 
 ### POW-M5-15 Chat templates
 
-Size: L Depends: POW-M5-05 Status: READY
+Size: L Depends: POW-M5-05 Status: DONE (PR #163)
 Refs: design/12-travelers (4, 6), design/07-simulated-mmo (Chat, Believability rules), design/08-lore-SPOILERS
 
 Goal: enough lines that an hour in Hearthford never feels like a loop.
@@ -212,7 +214,7 @@ Acceptance:
 
 ### POW-M5-09 Rankings
 
-Size: M Depends: POW-M5-03 Status: READY
+Size: M Depends: POW-M5-03 Status: DONE (PR #165)
 Refs: design/07-simulated-mmo (Rankings), design/12-travelers (3.4)
 
 Goal: boards that place the player among the 240 and can be climbed.
@@ -237,7 +239,7 @@ Acceptance:
 
 ### POW-M5-13 Gate G5a checklist
 
-Size: S Depends: POW-M5-04, POW-M5-14, POW-M5-05, POW-M5-15 Status: READY
+Size: S Depends: POW-M5-04, POW-M5-14, POW-M5-05, POW-M5-15 Status: DONE (PR #164)
 Refs: docs/ops/gate-g4.md (the pattern), design/07-simulated-mmo, design/12-travelers
 
 Goal: the owner can run the crowd check in about an hour and report findings the planning agent can act on.
@@ -254,7 +256,7 @@ Acceptance: the checklist exists. The dev time flag is absent from production bu
 
 ### POW-M5-06 Reply chips, friends, memory
 
-Size: L Depends: POW-M5-04, POW-M5-05, Gate G5a Status: READY
+Size: L Depends: POW-M5-04, POW-M5-05, Gate G5a Status: DONE (PR #171)
 Refs: design/12-travelers (4.7, 5), design/07-simulated-mmo (Chat, Friends)
 
 Goal: the player can answer, and Travelers remember.
@@ -282,7 +284,7 @@ Acceptance:
 
 ### POW-M5-07 Parties and companion AI
 
-Size: L Depends: POW-M5-06 Status: READY
+Size: L Depends: POW-M5-06 Status: DONE (PR #175)
 Refs: design/07-simulated-mmo (Parties), design/04-combat (Companions in combat), design/12-travelers (3.2)
 
 Goal: run content with up to three Travelers.
@@ -309,7 +311,7 @@ Acceptance:
 
 ### POW-M5-08 Guilds
 
-Size: M Depends: POW-M5-06 Status: READY
+Size: M Depends: POW-M5-06 Status: DONE (PR #175)
 Refs: design/12-travelers (7), design/07-simulated-mmo (Guilds)
 
 Goal: 12 guilds with cultures, two halls, and a reason to join.
@@ -335,7 +337,7 @@ Acceptance:
 
 ### POW-M5-12 Duels, rivals, mail
 
-Size: M Depends: POW-M5-06 Status: READY
+Size: M Depends: POW-M5-06 Status: DONE (PR #174)
 Refs: design/07-simulated-mmo (Rivals and duels, Mail), design/12-travelers (5)
 
 Goal: sporting competition and letters.
@@ -360,7 +362,7 @@ Acceptance:
 
 ### POW-M5-10 Market simulation
 
-Size: L Depends: POW-M5-03, M3-10, Gate G5a Status: READY
+Size: L Depends: POW-M5-03, M3-10, Gate G5a Status: DONE (PR #175)
 Refs: design/05-life-systems (Economy), design/07-simulated-mmo (Market), tech/02 (Integrity validator)
 
 Goal: a living auction house in Hearthford.
@@ -387,7 +389,7 @@ Acceptance:
 
 ### POW-M5-11 World events and calendar
 
-Size: L Depends: POW-M5-04, M4-09, Gate G5a Status: READY
+Size: L Depends: POW-M5-04, M4-09, Gate G5a Status: DONE (PR #175)
 Refs: design/07-simulated-mmo (World events), design/02-world (Time)
 
 Goal: scheduled things worth showing up for.
@@ -474,7 +476,7 @@ Size: S Depends: none Status: DONE (PR #167)
 
 ### POW-M5-26 Travelers rest at rest points
 
-Size: M Depends: POW-M5-25, POW-M5-04 Status: READY
+Size: M Depends: POW-M5-25, POW-M5-04 Status: DONE (PR #169)
 Refs: design/12-travelers (3.2), docs/proposals/m5-g5a-feedback-plan.md (Brief 1), regions/01-dawnmeadow (rest points)
 
 Goal: at dusk a rest point near town looks like a camp, with Travelers sitting by it.
@@ -498,7 +500,7 @@ Acceptance:
 
 ### POW-M5-27 Traveler humor, first pass
 
-Size: M Depends: POW-M5-26 (for camp stories only), POW-M5-04, POW-M5-15 Status: READY
+Size: M Depends: POW-M5-26 (for camp stories only), POW-M5-04, POW-M5-15 Status: DONE (PR #170)
 Refs: design/12-travelers (4.5, 4.8), docs/proposals/m5-g5a-feedback-plan.md (Brief 5)
 
 Goal: four small funny things the player can see in the first minutes of a session.
@@ -526,7 +528,7 @@ The G5a "raids in groups" feedback is met by POW-M5-11's field raid, which now f
 
 ### POW-M5-29 The Pit: finding it
 
-Size: M Depends: POW-M5-06 Status: READY
+Size: M Depends: POW-M5-06 Status: DONE (PR #173)
 Refs: design/12-travelers (4.6), design/08-lore-SPOILERS (Delivery rules, Clue families), docs/proposals/m5-g5a-feedback-plan.md (Brief 3)
 
 Goal: three rumors lead the player to a hidden fighting pit, opened by one world action.
@@ -540,8 +542,9 @@ Scope:
 - Travelers who like duels (temper `bold`, The Ninth Bell, NoScopeNed, Skarrow) may pick the Pit for `social` once the player has opened it.
 
 Out of scope: duels in the Pit (POW-M5-30). Prizes.
-Save: world flag "pit open" and the rumor progress flags. Schema bump and migration with a fixture test.
+Save: world flag "pit open" and the rumor progress flags. As built (PR #173): no schema bump was needed, since the flags live in `journal.flags` and the crate state in chunk deltas.
 Integrity: none.
+As built (accepted by the owner, 2026-11-27): the crates stand 6 tiles east of the crane, not behind it (the quarry wall there is solid). A rumor already told to the player is not told again. "Heard" means said in chat while the player is online, whether or not they were looking.
 Acceptance:
 
 - Scenario: each rumor is said at least once in a simulated 7 real days, in order, and only after its gate.
@@ -551,7 +554,7 @@ Acceptance:
 
 ### POW-M5-30 The Pit: duels
 
-Size: M Depends: POW-M5-29, POW-M5-12 Status: READY
+Size: M Depends: POW-M5-29, POW-M5-12 Status: DONE (PR #175)
 Refs: design/07-simulated-mmo (Rivals and duels), design/12-travelers (5), tech/02-save-security (Ledger)
 
 Goal: Travelers duel each other in the Pit, and the player can step in.
@@ -560,7 +563,7 @@ Scope:
 - Traveler vs Traveler bouts: two promoted duel-minded Travelers in the Pit fight with M5-12's rule (first to 30% health lost), visible, with spectators who cheer by name. The winner is the abstract roll, the bout is staged to match.
 - Player vs Traveler: a "Next" board at the ring lists who is waiting. Challenging uses M5-12's acceptance by temper and regard, and the result goes on the Duels board and into memory once.
 - Lines: callouts from spectators, a sporting winner and loser line for each of the hand-tuned duelists.
-- Prize (owner decision, 2026-11-25): a cosmetic Pit honor. 5 Player vs Traveler wins in the Pit earn "Pit regular", 20 earn "Pit champion" (thresholds in `src/content/balance/`). The honor shows on the player's profile card and beside their entry on the Duels board, and Pit spectators cheer the player by it. It is not a Path: it grants no passive, does not count toward the 60 Paths, and does not replace the worn Path title over the player's head. No coin, no items.
+- Prize (owner decision, 2026-11-25): a cosmetic Pit honor. 5 Player vs Traveler wins in the Pit earn "Pit regular", 20 earn "Pit champion" (thresholds in `src/content/balance/`). The honor shows in the Character tab (the player has no profile card) and beside their entry on the Duels board, and Pit spectators cheer the player by it. It is not a Path: it grants no passive, does not count toward the 60 Paths, and does not replace the worn Path title over the player's head. No coin, no items.
 
 Out of scope: a ranked ladder and a Traveler champion (later, if the owner asks). Wagers. Coin or item prizes.
 Save: the player's Pit win count and honor tier. Fold into M5-12's bump if it has not merged, else bump separately, with a migration and a fixture test.
@@ -575,7 +578,7 @@ Acceptance:
 
 ### POW-M5-31 Snoring AFK
 
-Size: S Depends: POW-M5-06 Status: READY
+Size: S Depends: POW-M5-06 Status: DONE (PR #172)
 Refs: design/12-travelers (3.2, 4.7), docs/proposals/m5-g5a-feedback-plan.md (Brief 5)
 
 Goal: sleeping Travelers look asleep, and poking one is funny.
@@ -596,7 +599,7 @@ Acceptance:
 
 ### POW-M5-32 Fixtures win the context button over Travelers
 
-Size: S Depends: POW-M5-04 Status: READY
+Size: S Depends: POW-M5-04 Status: DONE (PR #182)
 Refs: design/09-ui-ux (HUD), design/12-travelers (3.3), PR #180 (Follow-ups)
 
 Goal: a Traveler standing in front of a Waystone, node, door or person never takes the press meant for it (owner, 2026-11-27).

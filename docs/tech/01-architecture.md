@@ -73,7 +73,7 @@ Import rules, enforced by lint:
 
 Given the same initial state, the same seed, and the same command stream, the sim produces the same state. Required for tests, for settlement correctness, and for the integrity validator to bound results.
 
-- All randomness from a seeded PRNG owned by sim state (a small, fast generator such as sfc32 or xoshiro128). Separate streams per concern (combat, loot, world, travelers) so adding a roll in one does not shift another.
+- All randomness from a seeded PRNG owned by sim state (a small, fast generator such as sfc32 or xoshiro128). Separate streams per concern (combat, loot, world, travelers) so adding a roll in one does not shift another. Chat wording is the one exception: it picks lines with hash dice keyed on the event, outside the streams, because text must never change the simulation.
 - No `Math.random`, `Date`, `performance.now` inside `sim/`. Time enters as tick count and as a trusted wall-clock value passed in by the platform layer.
 - No iteration over objects whose key order could vary. Entities are iterated by ascending id.
 - Positions and velocities use integers in sub-pixel units (1/256 px). No reliance on float behavior across devices for anything that feeds gameplay outcomes.

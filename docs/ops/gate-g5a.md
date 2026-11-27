@@ -85,3 +85,10 @@ Record, for the planning agent: the two counts, the three things that felt most 
 - **pass** (wave C starts);
 - **adjust** (wave C starts, with the tickets you list);
 - **rework** (change design/12 before wave C).
+
+## 5. Result
+
+- **Date:** 2026-11-25, evening and early morning, on a phone.
+- **Verdict:** adjust. The crowd feels populated and fun. Wave C started.
+- **Findings:** POW-M5-23 to POW-M5-31 (`docs/proposals/m5-g5a-feedback-plan.md`). All merged by 2026-11-27, except POW-M5-28, which was withdrawn into POW-M5-11.
+- **Frame budget (5.8 of the M5 closeout):** no slowdown was reported in either phone session. Whether name labels switch to clear text when they are too small for pixel text is left to the M12 device pass.

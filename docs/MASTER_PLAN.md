@@ -49,6 +49,8 @@ Decisions made with the owner on 2026-11-16. Changing one needs a planning PR.
 | D25 | Traveler homes    | All 240 Travelers are generated in M5 with their final home region stored. Until a home region is baked, its Travelers play in Dawnmeadow and move when M8 and M9 bake their regions. Chat never names an unbaked place.                                            |
 | D26 | Chat glyphs       | No OS emoji. Emoji-style voices use plain text emoticons plus about 12 in-house pixel glyphs drawn from repo data.                                                                                                                                                  |
 | D27 | Gate G5a          | An owner crowd check runs after POW-M5-04 and POW-M5-05 merge. Parties, guilds, duels, mail and the market do not start until it passes.                                                                                                                            |
+| D28 | M5 review         | Decided 2026-11-27. The M5 milestone review is the owner's phone play of the PR #175 preview, with no separate G5b checklist. Its findings open M6 as Wave A (POW-M6-20 and up), the way D24 put the G4 findings into M5.                                           |
+| D29 | Party difficulty  | Decided 2026-11-27 after the M5 review. Creatures that fight a party get more Health for each companion in it, weighted by that member's competence. Damage, XP and drops do not change. Numbers in `balance/party.ts` (POW-M6-22).                                 |
 
 Decisions made by the design authority (owner may overrule):
 
@@ -106,7 +108,7 @@ Thirteen milestones. Each ends with a playable build on the Cloudflare preview U
 | M2  | Trust            | Encrypted saves, integrity checks, sealed export and import, installable offline PWA.   | 6       |
 | M3  | Core RPG         | All 36 skills, gear, crafting, shops, requests, Paths.                                  | 14      |
 | M4  | World I          | Playtest fixes, chunk streaming, the full first region, map, dungeons, bosses, weather. | 21      |
-| M5  | The Crowd        | Travelers, chat, parties, guilds, rankings, market, world events.                       | 12      |
+| M5  | The Crowd        | Travelers, chat, parties, guilds, rankings, market, world events.                       | 28      |
 | M6  | A Second Life    | Farming, housing, cooking, fishing, taming, relationships, festivals, shops.            | 11      |
 | M7  | Automation       | Routines, Tactics, Patrol, offline gains.                                               | 9       |
 | M8  | World II         | Regions 2 to 4.                                                                         | 10      |

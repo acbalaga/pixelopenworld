@@ -50,13 +50,13 @@ You log into a world that feels like a living online game, full of other "player
 
 ## Status
 
-| Milestone | What it delivers                                                                      | State       |
-| --------- | ------------------------------------------------------------------------------------- | ----------- |
-| M0 to M2  | Engine, first playable slice, save security                                           | Done        |
-| M3        | Core RPG: skills, gathering, crafting, combat                                         | Done        |
-| M4        | World tech and the first region, Dawnmeadow                                           | Done        |
-| M5        | The simulated MMO crowd                                                               | In progress |
-| M6 to M12 | Life systems, automation, seven more regions, the hidden layer, the frontier, release | Planned     |
+| Milestone | What it delivers                                                                      | State   |
+| --------- | ------------------------------------------------------------------------------------- | ------- |
+| M0 to M2  | Engine, first playable slice, save security                                           | Done    |
+| M3        | Core RPG: skills, gathering, crafting, combat                                         | Done    |
+| M4        | World tech and the first region, Dawnmeadow                                           | Done    |
+| M5        | The simulated MMO crowd                                                               | Done    |
+| M6 to M12 | Life systems, automation, seven more regions, the hidden layer, the frontier, release | Planned |
 
 The full roadmap is in [docs/tickets/](docs/tickets/README.md).
 

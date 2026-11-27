@@ -18,7 +18,7 @@ Every region is produced by a "world" ticket and a "content" ticket.
 
 ### POW-M8-00 Region content loads with its region
 
-Size: L (two parts) Depends: none Status: READY (refined 2026-11-27, owner decision in the PR #180 follow-up)
+Size: L (two parts) Depends: none (M5 done) Status: READY (refined 2026-11-27, owner decision in the PR #180 follow-up; `slice` decision at the M5 closeout)
 Refs: tech/01-architecture (Sim purity, World streaming, PWA), tech/03-asset-pipeline, tech/04-quality (Boot JS), CLAUDE.md (Sim purity, Content is data)
 Must merge before: POW-M8-03, POW-M8-06, POW-M8-08 (the first region content tickets). POW-M8-01 does not need to wait for it.
 
@@ -36,6 +36,7 @@ Scope:
 - Every read of region content in `src/sim/`, `src/ui/` and `src/render/` goes through the registry. The static barrels (`content/creatures/index.ts` and the rest) stop exporting merged region tables, and keep only shared content and types.
 - **Region index** (stays in boot): per region, the ids, display names and tiers of its creatures, bosses, places and POIs, and nothing else. The abstract crowd (Travelers in a region the player is not in) and World-channel chat about other regions read only the index, never a pack. A test fails if `src/sim/travelers/` or `src/sim/chat/` calls a pack lookup for a region other than the player's current one.
 - In Part A every pack is still imported statically and registered at boot (`src/content/packs.ts`), so nothing about loading changes yet. Test setup registers packs the same way.
+- **The `slice` region** (decided at the M5 closeout, 2026-11-27) becomes a pack like any other (`slice-map.ts`, its `rooms.ts` entries and its content), registered only in dev and test builds. Production never registers it, so `?region=slice` does nothing there. Remove every `state.region ?? 'slice'` default in `src/sim/`: a state with no region is an error in tests, not a quiet fallback. The e2e specs and the sim-bot keep using it.
 
 Acceptance:
 
@@ -53,7 +54,7 @@ Scope:
 - `src/platform/world/packs.ts` loads a pack with a dynamic `import()` and calls `registerPack`. It is the only module that imports a pack. Vite emits each pack as its own hashed chunk. No pack is in `index.html` as a script or `modulepreload`.
 - **Loading gate.** A chunk does not count as loaded until its region's pack is registered. The loader starts the pack fetch when the 5 x 5 loaded window first touches a region, so walking across a border waits on the pack the same way it waits on a chunk. Waystone travel and boot load the target region's pack before the first tick there.
 - **Offline settlement.** Settlement for a region reads its pack from the precache. If a pack cannot be loaded (it should not happen once the service worker is installed), settlement for that region is deferred to the next session where it loads, and a line goes to the System log. It is never guessed and never dropped.
-- Shared content stays in boot: items, skills, balance, paths, sprites and dolls, base chat templates, voices, names, glyphs, the region index.
+- Shared content stays in boot: items, skills, balance, paths, sprites and dolls, base chat templates, voices, names, glyphs, the region index. The `slice` pack is never in a production chunk (`check-packs` also fails if it is).
 - New build check `tools/check-packs.ts`, run by `npm run verify`: from the Vite manifest, fails if any module under `src/content/regions/` is part of a boot chunk, or if any module outside `src/platform/world/packs.ts` imports a pack.
 - `tools/check-bundle.mjs` also prints each pack's gzip size. A pack over 120 KB gzip fails (new `regionPackJsGzipBytes` in `tools/budgets.json`).
 
