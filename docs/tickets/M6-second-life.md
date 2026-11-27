@@ -14,6 +14,13 @@ Decided at the M5 closeout (`docs/proposals/m5-closeout.md`, 2026-11-27). The re
 - **M6-10:** a fountain prop in the Hearthford square, and wishes move from the well to it (the owner still wants it, 2026-11-27). The festival dance uses the `festivalDanceBoost` hook from POW-M5-27. Dedicated sit, wave and bow doll frames (POW-M5-14 used stand-ins).
 - **M6-11:** market-street stalls become interactive with player shops (POW-M5-10 listings live only on the terminal sheet). Market sales get a listing expiry.
 
+Owner decisions for the refinement (2026-11-27):
+
+- **Farmland before the homestead:** a leased field at the Hearthford town edge, a few plots for a small weekly coin fee, open from early play. House plots and the homestead add more plots later.
+- **Partners are in M6, as a small set:** 4 Dawnmeadow NPCs and Close Friend Travelers. A shared-home routine and wholesome heart events. More NPCs become eligible as regions bake.
+- **First festival:** the autumn harvest fair in Hearthford. Cooking and largest-crop contests, a fishing derby, a music stage, and a duel bracket in the Pit hall (POW-M6-21).
+- **Gate G6a (mid M6):** after Farming, Cooking, Fishing and Housing merge, the owner plays over a few real days. Does offline growth and the home loop make the game worth coming back to? Festivals, shops and partners do not start until it passes. POW-M6-01 adds the gate to the master plan and writes its checklist ticket.
+
 Explicit drops (no ticket; reopen only if play shows a problem):
 
 - Questions are about 2% of chat. Kept as tuned.
