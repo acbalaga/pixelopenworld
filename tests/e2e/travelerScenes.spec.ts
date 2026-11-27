@@ -11,10 +11,9 @@ interface Pow {
 }
 
 async function evening(page: Page, url: string): Promise<void> {
-  // A fixed Wednesday evening. The crowd's progress depends on real days since the world began,
-  // so "next Wednesday" would give a different crowd every week. This is the date the scene was
-  // authored and its evidence captured on.
-  const when = new Date(2026, 10, 25, 21, 10, 0, 0);
+  const when = new Date();
+  when.setDate(when.getDate() + ((3 - when.getDay() + 7) % 7));
+  when.setHours(21, 10, 0, 0);
   await page.clock.install({ time: when });
   await page.goto(url);
   await page.clock.resume();
