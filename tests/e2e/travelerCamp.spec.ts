@@ -12,9 +12,10 @@ interface Pow {
 
 test('a camp at dusk has Travelers sitting round the river rest point', async ({ page }) => {
   const problems = await watchProblems(page);
-  const evening = new Date();
-  evening.setDate(evening.getDate() + ((3 - evening.getDay() + 7) % 7));
-  evening.setHours(21, 10, 0, 0);
+  // A fixed Wednesday evening. The crowd's progress depends on real days since the world began,
+  // so "next Wednesday" would give a different crowd every week. This is the date the scene was
+  // authored and its evidence captured on.
+  const evening = new Date(2026, 10, 25, 21, 10, 0, 0);
   await page.clock.install({ time: evening });
   await page.goto('/?region=dawnmeadow&at=236,191&time=dusk&weather=clear&foes=0&nosave=1&kit=dev');
   await page.clock.resume();
