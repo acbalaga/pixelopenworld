@@ -4,10 +4,11 @@ import { MOVEMENT as M } from '../../src/content/balance/movement';
 import { applyAvatarCommand, createAvatar, feetAt } from '../../src/sim/avatar';
 import { createDemoState, hashState, type SimState } from '../../src/sim/state';
 import { Dir, px, type Direction } from '../../src/sim/kernel/fixed';
-import { setComp, spawn } from '../../src/sim/kernel/entities';
+import { destroy, setComp, spawn } from '../../src/sim/kernel/entities';
 import { validateCommand } from '../../src/sim/kernel/commands';
 import { stepWorld } from '../../src/sim/step';
 import { contextTarget } from '../../src/sim/systems/interact';
+import { TRAVELER_KIND } from '../../src/sim/travelers/kind';
 import { TILE_FX, type CollisionGrid } from '../../src/sim/systems/collision';
 
 /** A grid from rows of text: '#' is solid, '.' is open. Outside the rows is solid. */
@@ -289,5 +290,47 @@ describe('context target', () => {
     setComp(s.entities, far, 'pos', { x: f.x + px(16), y: f.y });
     setComp(s.entities, far, 'interactable', { kind: 'sign' });
     expect(contextTarget(s, id)).toBe(sign);
+  });
+
+  describe('Travelers (POW-M5-32)', () => {
+    function addAhead(s: SimState, id: number, dx: number, kind: string): number {
+      const f = pos(s, id);
+      const e = spawn(s.entities);
+      setComp(s.entities, e, 'pos', { x: f.x + px(dx), y: f.y });
+      setComp(s.entities, e, 'interactable', { kind });
+      return e;
+    }
+
+    it('a fixture behind a nearer Traveler wins, and the Traveler wins when alone', () => {
+      const { s, id } = world(OPEN);
+      press(s, id, Dir.E);
+      press(s, id, null, false, 5);
+      const traveler = addAhead(s, id, 6, `${TRAVELER_KIND}3`);
+      const fixture = addAhead(s, id, 14, 'waystone');
+      expect(contextTarget(s, id)).toBe(fixture);
+      destroy(s.entities, fixture);
+      expect(contextTarget(s, id)).toBe(traveler);
+    });
+
+    it('two fixtures: the nearest wins', () => {
+      const { s, id } = world(OPEN);
+      press(s, id, Dir.E);
+      press(s, id, null, false, 5);
+      addAhead(s, id, 6, `${TRAVELER_KIND}3`);
+      const far = addAhead(s, id, 16, 'sign');
+      const near = addAhead(s, id, 10, 'sign');
+      expect(contextTarget(s, id)).toBe(near);
+      destroy(s.entities, near);
+      expect(contextTarget(s, id)).toBe(far);
+    });
+
+    it('a Traveler in front of a named NPC returns the NPC', () => {
+      const { s, id } = world(OPEN);
+      press(s, id, Dir.E);
+      press(s, id, null, false, 5);
+      addAhead(s, id, 5, `${TRAVELER_KIND}0`);
+      const npc = addAhead(s, id, 15, 'npc:orla');
+      expect(contextTarget(s, id)).toBe(npc);
+    });
   });
 });
