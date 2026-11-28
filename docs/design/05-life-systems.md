@@ -29,7 +29,7 @@ A calm tension minigame (keep the marker in the band, one thumb). 96 species acr
 
 ## Farming and husbandry
 
-- Plots at home or on leased land. Till, plant, water, wait, harvest.
+- Plots on leased land (the reeve's field outside Hearthford, from early play), in a house's kitchen garden, and on the homestead. Till, plant, water, wait, harvest. The crop, animal, fish, tameable and furniture lists are in 13-life-content.
 - Crops grow in real time including offline (the clock keeps running). Growth takes 1 to 6 in-game days by crop. Season and weather matter. Rain waters for you.
 - Soil quality, crop rotation, and fertilizer give depth for those who want it. Ignoring them still grows food.
 - Animals (Husbandry) need feed and attention, produce daily goods, and bond with the player. Neglect lowers output. Animals never die of neglect.
@@ -81,7 +81,7 @@ The request board in each hub is the job system.
 
 ## Festivals
 
-One per season, one day long, in a rotating hub. Contests (cooking, fishing, music, duels, a race), limited goods, Traveler crowds. Missing one is fine. It returns next year (22 real hours of play).
+One per season, one in-game day long, in a rotating hub. The first, the autumn harvest fair in Hearthford, is designed in 13-life-content section 8. Contests (cooking, fishing, music, duels, a race), limited goods, Traveler crowds. Missing one is fine. It returns next year, 22.4 real hours later on the world clock, which runs while the game is closed.
 
 ## Performance
 
