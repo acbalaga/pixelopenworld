@@ -47,8 +47,14 @@ test('a request is answered inside the chat sheet, and nothing covers the game u
   await shot(page, 'm5-06-lane-reply');
   // The chips are in the chat sheet: 2 to 4, each at least 48 px tall.
   await reply.click();
+  // The request is a whisper. Reply opens the newest line waiting for an answer, and a Local line
+  // can be newer (the primed Traveler remembers the player and may say so). Go to the Whisper tab
+  // and wait there for the request, as a player would.
+  const whisperTab = page.locator('.pow-chat-tab', { hasText: 'Whisper' });
+  await expect(whisperTab).toBeVisible({ timeout: 120_000 });
+  await whisperTab.click();
   const bar = page.locator('.pow-chips');
-  await expect(bar).toBeVisible();
+  await expect(bar.locator('[data-chip="friend.yes"]')).toBeVisible({ timeout: 120_000 });
   const chips = bar.locator('.pow-chip[data-chip]:not([data-chip="emotes"])');
   const n = await chips.count();
   expect(n).toBeGreaterThanOrEqual(2);
