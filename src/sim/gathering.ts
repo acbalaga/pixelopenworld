@@ -148,8 +148,7 @@ export function tickGather(state: SimState, who: EntityId): void {
     g.t++;
     if (f.phase === 'wait' && g.t >= g.wait) bite(state, who, g, s.def, yieldsFor(s.def, state));
     // A bite not answered in time lets go.
-    else if (f.phase === 'bite' && g.t >= g.wait + FISH.biteTicks)
-      lose(state, who, g.node, 'slow');
+    else if (f.phase === 'bite' && g.t >= g.wait + FISH.biteTicks) lose(state, who, g.node, 'slow');
     return;
   }
   g.t++;

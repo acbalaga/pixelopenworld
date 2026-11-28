@@ -61,8 +61,7 @@ export function playCast(
   while (s.entities.comps.gather[me] && n < limit) {
     const f = s.entities.comps.gather[me]?.fish;
     if (f?.phase === 'bite') tick({ type: 'interact' });
-    else if (f?.phase === 'reel')
-      tick({ type: 'reel', on: f.m + f.v * F.bot.lead < F.center });
+    else if (f?.phase === 'reel') tick({ type: 'reel', on: f.m + f.v * F.bot.lead < F.center });
     else tick();
     n++;
   }

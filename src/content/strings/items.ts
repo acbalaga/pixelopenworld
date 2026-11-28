@@ -230,7 +230,8 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.fish_tench.name': 'Tench',
   'item.fish_tench.desc': 'Green-gold and shy. It comes up when the rain stirs the pond.',
   'item.fish_golden_carp.name': 'Golden Carp',
-  'item.fish_golden_carp.desc': 'A summer fish with a coat like a coin. Few have seen one up close.',
+  'item.fish_golden_carp.desc':
+    'A summer fish with a coat like a coin. Few have seen one up close.',
   'item.fish_pike.name': 'Pike',
   'item.fish_pike.desc': 'All teeth and patience. It hunts when the light goes.',
   'item.fish_bog_loach.name': 'Bog Loach',

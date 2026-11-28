@@ -163,7 +163,10 @@ describe('the band', () => {
       const f = r.s.entities.comps.gather[r.me]!.fish!;
       const d = FISH_BY_ITEM[f.item]!.difficulty;
       r.tick({ type: 'interact' });
-      return r.s.entities.comps.gather[r.me]!.fish!.band - bandWidth(d, 1, skills.points['skill.fishing']! >= 15);
+      return (
+        r.s.entities.comps.gather[r.me]!.fish!.band -
+        bandWidth(d, 1, skills.points['skill.fishing']! >= 15)
+      );
     };
     expect(hookBand()).toBe(0);
     skills.points['skill.fishing'] = 15;
@@ -225,7 +228,10 @@ describe('the table', () => {
     s.region = 'dawnmeadow';
     // Two years of days, each sampled at the middle of every phase.
     const seen = new Set<string>();
-    const dayTicks = TIME.ticksPerMinute * 24 * 60 > 0 ? TIME.phases.reduce((a, p) => a + p.minutes, 0) * TIME.ticksPerMinute : 0;
+    const dayTicks =
+      TIME.ticksPerMinute * 24 * 60 > 0
+        ? TIME.phases.reduce((a, p) => a + p.minutes, 0) * TIME.ticksPerMinute
+        : 0;
     for (let day = 0; day < DAYS_PER_SEASON * 4 * 3; day++) {
       for (let p = 0; p < 8; p++) {
         const t = day * dayTicks + Math.floor((p / 8) * dayTicks);
@@ -234,9 +240,7 @@ describe('the table', () => {
       }
     }
     for (const f of FISH.filter((x) => !x.legend)) {
-      const spot = f.water.some((w) =>
-        [...dawnWaters].some((k) => NODES[k]?.water === w),
-      );
+      const spot = f.water.some((w) => [...dawnWaters].some((k) => NODES[k]?.water === w));
       expect(spot, `${f.item} has a spot`).toBe(true);
       const ok = [...seen].some((k) => {
         const [ph, se, we] = k.split('|');
@@ -254,7 +258,10 @@ describe('the table', () => {
     const s = createDemoState(1, 0);
     for (const w of WATERS) {
       const node = Object.values(NODES).find((n) => n.water === w)!;
-      expect(node.yields.some((y) => !y.phases && !y.seasons && !y.weather), w).toBe(true);
+      expect(
+        node.yields.some((y) => !y.phases && !y.seasons && !y.weather),
+        w,
+      ).toBe(true);
     }
     expect(s).toBeDefined();
   });
@@ -335,9 +342,9 @@ describe('bait', () => {
     expect(g.wait).toBe(Math.max(1, Math.floor((base * F.bait.waitPct) / 100)));
     expect(g.fish!.bait).toBe(true);
     expect(ofType(baited.events, 'fishBaited')).toHaveLength(1);
-    const minnows = baited.s.entities.comps.inventory[baited.me]!.slots
-      .filter((x) => x?.item === 'item.fish_minnow')
-      .reduce((n, x) => n + x!.qty, 0);
+    const minnows = baited.s.entities.comps.inventory[baited.me]!.slots.filter(
+      (x) => x?.item === 'item.fish_minnow',
+    ).reduce((n, x) => n + x!.qty, 0);
     expect(minnows).toBe(1);
     // Cast within the table's range.
     expect(base).toBeGreaterThanOrEqual(B.gather.fishWaitMin);
@@ -402,9 +409,10 @@ describe('Old Gnarl', () => {
     expect(r.s.fishing.records['item.old_gnarl']!.n).toBe(1);
     expect(r.s.fishing.records['item.old_gnarl']!.where).toBe('millbrook_pond');
     const held = (s: SimState, me: number): number =>
-      s.entities.comps.inventory[me]!.slots
-        .filter((x) => x?.item === 'item.old_gnarl')
-        .reduce((n, x) => n + x!.qty, 0);
+      s.entities.comps.inventory[me]!.slots.filter((x) => x?.item === 'item.old_gnarl').reduce(
+        (n, x) => n + x!.qty,
+        0,
+      );
     expect(held(r.s, r.me)).toBe(1);
     // Reload, then fish her pond for a long while.
     const back = deserializeState(serializeState(r.s));

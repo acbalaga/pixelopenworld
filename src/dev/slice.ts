@@ -68,7 +68,14 @@ export interface PowDevApi {
    */
   stageField(): void;
   /** Dev only (M6-05): the fight on the line right now, or null when nothing is cast. For a bot that plays a catch. */
-  fishing(): { phase: string; m: number; v: number; band: number; fill: number; item: string } | null;
+  fishing(): {
+    phase: string;
+    m: number;
+    v: number;
+    band: number;
+    fill: number;
+    item: string;
+  } | null;
   /** Dev only: puts the player in a guild, as if they had joined (M5-08). */
   joinGuild(id: number): void;
   /** The party (M5-07): member handles, and the listings on the finder. */

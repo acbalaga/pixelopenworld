@@ -582,7 +582,10 @@ export class MenuSheet {
     put(this.body, header(S.tabs.chronicle));
     const nUnder = now.requests.length + now.trials.length;
     const nDone = done.requests.length + done.trials.length;
-    if (nUnder + nDone + recipes.length + lines.length + bestiary.rows.length + fishes.rows.length === 0) {
+    if (
+      nUnder + nDone + recipes.length + lines.length + bestiary.rows.length + fishes.rows.length ===
+      0
+    ) {
       put(this.body, emptyState(S.chronicleEmpty));
       return;
     }

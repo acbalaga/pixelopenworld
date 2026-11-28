@@ -1627,7 +1627,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (kb.x !== 0 || kb.y !== 0)
               pendingCommands.push({ type: 'craftPoint', x: kbCursor.x, y: kbCursor.y });
           } else if (st0.step === 'hold') {
-            const want = stepPtr.down || input.sampler.keyboard.held().includes('context');
+            const want = stepPtr.down || input.sampler.keyboard.contextHeld();
             if (want !== holdSent) {
               holdSent = want;
               pendingCommands.push({ type: 'craftHold', on: want });
@@ -1646,7 +1646,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
           rec.full = false;
           rec.dodge = null;
           rec.targetTap = null;
-          const want = stepPtr.down || input.sampler.keyboard.held().includes('context');
+          const want = stepPtr.down || input.sampler.keyboard.contextHeld();
           if (want !== reelSent) {
             reelSent = want;
             pendingCommands.push({ type: 'reel', on: want });
@@ -1864,7 +1864,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               amount: e.qty,
             });
           else if (e.type === 'gatherResolved' && e.id === who) lastGatherQty = e.qty;
-          else if (e.type === 'gatherBite' && e.id === who) notices.toast(FISH_STRINGS.bite, 'fish.bite');
+          else if (e.type === 'gatherBite' && e.id === who)
+            notices.toast(FISH_STRINGS.bite, 'fish.bite');
           else if (e.type === 'fishHooked' && e.id === who)
             notices.toast(FISH_STRINGS.hooked, 'fish.hooked');
           else if (e.type === 'fishBaited' && e.id === who)
@@ -1876,7 +1877,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             );
           else if (e.type === 'fishLanded' && e.id === who && e.record)
             notices.toast(
-              FISH_STRINGS.newBest.replace('{item}', itemName(e.item)).replace('{cm}', String(e.size)),
+              FISH_STRINGS.newBest
+                .replace('{item}', itemName(e.item))
+                .replace('{cm}', String(e.size)),
               `fish.best.${e.item}`,
             );
           else if (e.type === 'gathered' && e.id === who)
