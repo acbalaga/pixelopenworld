@@ -1,3 +1,5 @@
+import { FARM_ITEM_STRINGS } from './farming';
+
 /** Item names and descriptions, keyed by the item's `nameKey` and `descKey`. No em dashes. */
 export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'item.dagger_wood.name': 'Wooden Dagger',
@@ -364,4 +366,5 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'affix.focus_1.name': 'of Clarity',
   'affix.crit_1.name': 'of Edges',
   'affix.gather_1.name': 'of Plenty',
+  ...FARM_ITEM_STRINGS,
 };

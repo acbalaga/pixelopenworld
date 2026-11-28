@@ -1,4 +1,5 @@
 import { RAID, SCHEDULES } from '../../content/balance/events';
+import { FARMING } from '../../content/balance/farming';
 import { MAIL } from '../../content/balance/mail';
 import { GUILD_PAY_CEILING } from '../../content/balance/guilds';
 import { RECIPES } from '../../content/items/recipes';
@@ -8,6 +9,7 @@ import {
   COOK_EVENTS_PER_SECOND,
   COUNT_SLACK,
   GATHER_ITEMS_PER_SECOND,
+  HARVEST_BOUND,
   KILLS_PER_SECOND_MAX,
   PLAY_SLACK_SECONDS,
   coinCeiling,
@@ -141,5 +143,15 @@ export function plausibility(v: View): Reason[] {
     fail('GUILD_IMPLAUSIBLE', `guild pay ${e.guildRequest} in ${weeks} weeks`);
   if ((e.seed ?? 0) > coinCeiling(seconds, kills, spent))
     fail('COIN_IMPLAUSIBLE', `seeded coin ${e.seed} in ${seconds} s`);
+  // HARVESTS (M6-02). A plot gives one harvest per crop cycle, and no cycle is shorter than the
+  // fastest crop at full rate with fertilizer, so harvests cannot pass the plots times the cycles in
+  // the world time the save has lived. No harvest gives more than a giant.
+  const harvests = ledger.harvests ?? 0;
+  const worldDays = Math.max(elapsed, seconds) / HARVEST_BOUND.realSecondsPerDay;
+  const most = FARMING.plots * (Math.ceil(worldDays / HARVEST_BOUND.fastestDays) + 1);
+  if (harvests > most) fail('HARVEST_IMPLAUSIBLE', `${harvests} harvests in ${worldDays} days`);
+  const units = sum(ledger.itemsMade.harvest ?? {});
+  if (units > harvests * HARVEST_BOUND.perHarvest)
+    fail('HARVEST_IMPLAUSIBLE', `${units} crops from ${harvests} harvests`);
   return out;
 }

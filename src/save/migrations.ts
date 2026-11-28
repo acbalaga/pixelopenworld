@@ -749,6 +749,14 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 35, sim: serializeState(s) };
   },
+  /**
+   * 35 to 36 (M6-02): the sim gains `farm`, the reeve's field. A save made before has leased no
+   * plot, tilled none and planted nothing, knows no seeds, and starts with a full can.
+   */
+  35: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 36, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

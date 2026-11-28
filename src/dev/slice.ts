@@ -6,6 +6,9 @@
 
 import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
+import { CROP_LIST } from '../content/farming/crops';
+import { DAY_TICKS, needOf } from '../sim/farming';
+import { seasonOf } from '../sim/time';
 import { spawnCreature } from '../sim/combat/enemy';
 import type { Command } from '../sim/kernel/commands';
 import { addItem, countItem, learnRecipe } from '../sim/items';
@@ -59,6 +62,11 @@ export interface PowDevApi {
   snapshot(): PowSnapshot;
   /** Dev only: opens the Pit, sends ten online Travelers there, and starts a bout once two are near (M5-30). */
   stagePit(): number;
+  /**
+   * Dev only (M6-02): leases and tills the reeve's field and plants it at mixed stages, one plot
+   * ripe, one wet, so a screenshot shows every stage. Gives a hoe, a can and seeds.
+   */
+  stageField(): void;
   /** Dev only: puts the player in a guild, as if they had joined (M5-08). */
   joinGuild(id: number): void;
   /** The party (M5-07): member handles, and the listings on the finder. */
@@ -394,6 +402,32 @@ export function installSliceHooks(ctx: SliceHookContext): void {
       };
       spawnCreature(state, creatureId, Math.round(view.x) + 28, Math.round(view.y));
       return view.handle;
+    },
+    stageField() {
+      const inv = getComp(state.entities, who, 'inventory');
+      if (!inv) return;
+      for (const item of ['item.hoe', 'item.watering_can', 'item.seed_turnip', 'item.seed_potato'])
+        addItem(inv, item, item.startsWith('item.seed') ? 5 : 1);
+      const season = seasonOf(state.worldTick);
+      const crops = CROP_LIST.filter((c) => c.seasons.includes(season) && !c.shade && c.tier <= 2);
+      // Stages 0 to 3, then ripe again, then an empty tilled plot.
+      const share = [0, 0.35, 0.7, 1, 1, -1];
+      state.farm.plots.forEach((p, i) => {
+        const c = crops[i % crops.length];
+        p.paidUntil = state.worldTick + 7 * DAY_TICKS;
+        p.tilled = true;
+        p.emptySince = state.worldTick;
+        const k = share[i] ?? -1;
+        if (!c || k < 0) return;
+        p.crop = c.id;
+        p.planted = state.worldTick;
+        p.at = state.worldTick;
+        p.growth = Math.floor(needOf(c) * k);
+        if (i % 2 === 1) {
+          p.watered = state.worldTick;
+          p.wetFor = DAY_TICKS;
+        }
+      });
     },
     stagePit() {
       const c = state.crowd;

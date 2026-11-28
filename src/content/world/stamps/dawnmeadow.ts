@@ -281,7 +281,38 @@ function quarryPit(): StampV2 {
   return b.toStamp('quarry_pit');
 }
 
+/** Where each plot of the reeve's field sits in its stamp: two across, three down, a path between. */
+export const FIELD_PLOTS: readonly (readonly [number, number])[] = [
+  [2, 2],
+  [5, 2],
+  [2, 6],
+  [5, 6],
+  [2, 10],
+  [5, 10],
+];
+
+/**
+ * The reeve's field (POW-M6-02): six 2 x 3 tile plots of bare earth inside a fence, the gap on the
+ * road side, and an oak at the south east corner whose shade falls on the last plot.
+ */
+function reeveField(): StampV2 {
+  const b = new StampBuilder(11, 14);
+  b.fence(0, 0, 8, 0, [3, 4, 5]);
+  b.fence(0, 13, 8, 13);
+  b.fence(0, 0, 0, 13);
+  b.fence(8, 0, 8, 13);
+  FIELD_PLOTS.forEach(([x, y], i) => {
+    b.rect(x, y, 2, 3, Terrain.Dirt);
+    b.place(`fixture.field_plot_${i}`, x, y);
+  });
+  b.object(9, 12, 'tile.tree_oak_0_trunk');
+  b.overhead(9, 12, 'tile.tree_oak_0_canopy');
+  b.overhead(9, 11, 'tile.tree_oak_1_canopy');
+  return b.toStamp('reeve_field');
+}
+
 export const DAWNMEADOW_STAMPS: StampV2[] = [
+  reeveField(),
   whisperwoodEdge(),
   millbrook(),
   reedmouth(),

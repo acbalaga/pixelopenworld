@@ -634,6 +634,7 @@ export const UI_STRINGS = {
       COIN_RECONCILE: 'The coin held does not equal the coin earned minus the coin spent.',
       XP_EXCEEDS_EARNED: 'A skill holds more experience than was ever earned.',
       ITEMS_EXCEED_MADE: 'The bag holds more of an item than was ever made.',
+      HARVEST_IMPLAUSIBLE: 'More was harvested than the field could have grown.',
       ITEM_SOURCE_LOCKED: 'An item is recorded as coming from somewhere it cannot come from.',
       LOOT_WITHOUT_KILL: 'An item that creatures drop is recorded without the kills to drop it.',
       REQUEST_PAYOUT_MISMATCH: 'A request paid something other than its reward.',

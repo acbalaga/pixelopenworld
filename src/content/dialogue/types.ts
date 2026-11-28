@@ -14,6 +14,8 @@ export type Cond =
   | { pathWorn: string; not?: boolean }
   | { pathEarned: string; not?: boolean }
   | { renown: { region: string; atLeast: number } }
+  /** The purse holds at least this much coin (M6-02, a lease). */
+  | { coin: number }
   | { phase: DayPhase[] }
   | { season: Season[] }
   | { weather: Weather[] };
@@ -33,7 +35,9 @@ export type Effect =
   /** Tells the avatar of a place: a rumor id from `content/world/rumors` (M4-06). */
   | { rumor: string }
   /** Takes items from the bag, if it holds that many. */
-  | { takeItem: string; qty: number };
+  | { takeItem: string; qty: number }
+  /** Leases the first `plots` plots of the reeve's field for `weeks` more weeks, paid now (M6-02). */
+  | { lease: { plots: number; weeks: number } };
 
 export interface Choice {
   /** String key of the button label. */

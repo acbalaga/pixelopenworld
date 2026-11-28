@@ -11,6 +11,7 @@ import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
 import { FIXTURES } from '../../content/world/fixtures';
+import { CROP_LIST } from '../../content/farming/crops';
 import { SINGULARS } from '../../content/singulars';
 import type { ItemSource } from '../../sim/ledger';
 
@@ -26,6 +27,8 @@ function build(): Map<string, Set<ItemSource>> {
   };
   for (const c of Object.values(CREATURES)) for (const d of c.drops) add(d.item, 'loot');
   for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
+  // Crops come from the field (M6-02).
+  for (const c of CROP_LIST) add(c.result, 'harvest');
   // Crafting pays under `craft`. Old saves recorded cooking under `cook`, so cooking keeps it.
   for (const r of Object.values(RECIPES)) {
     if (!r.result) continue;

@@ -16,6 +16,8 @@ import { WEAPONS } from '../content/combat/attacks';
 import type { SimState } from './state';
 import { newSkills } from './skills';
 import { interactFixture } from './systems/fixtures';
+import { contextTarget } from './systems/interact';
+import { farmCommand, interactField } from './farming';
 import { hintSeen } from './systems/hints';
 import { interactNpc, talk } from './systems/npcs';
 import { interactTraveler } from './travelers/interact';
@@ -99,10 +101,14 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
   }
   applyItemCommand(state, who, c);
   if (c.type === 'interact') {
-    interactFixture(state, who);
-    interactNpc(state, who);
-    interactTraveler(state, who);
-  } else if (c.type === 'hint') hintSeen(state, who, c.id);
+    // A plot or the water is used only when nothing else is in front (M6-02).
+    if (contextTarget(state, who) !== null || !interactField(state, who)) {
+      interactFixture(state, who);
+      interactNpc(state, who);
+      interactTraveler(state, who);
+    }
+  } else if (c.type === 'farm') farmCommand(state, who, c);
+  else if (c.type === 'hint') hintSeen(state, who, c.id);
   else if (c.type === 'mail') {
     if (c.op === 'claim') claimLetter(state, who, c.id);
     else readLetter(state, c.id);

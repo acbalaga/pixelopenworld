@@ -49,6 +49,8 @@ export interface Ledger {
   marketSoldValue?: number;
   /** World events fired, by kind (M5-11). Bounds the raid pay. Absent before world events. */
   eventsFired?: Tally;
+  /** Harvests taken from plots (M6-02). Bounds the crops made by `harvest`. Absent before farming. */
+  harvests?: number;
 }
 
 /** Sources of coin and items. Named so the validator can refer to them. */
@@ -64,7 +66,7 @@ export type CoinSource =
   | 'marketSale'
   | 'eventReward';
 export type CoinSink =
-  'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe' | 'marketFee' | 'marketBuy';
+  'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe' | 'marketFee' | 'marketBuy' | 'lease';
 export type ItemSource =
   | 'start'
   | 'loot'
@@ -80,6 +82,7 @@ export type ItemSource =
   | 'mailGift'
   | 'guildRequest'
   | 'market'
+  | 'harvest'
   | 'seed';
 
 /** An empty ledger. */

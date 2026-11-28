@@ -88,6 +88,13 @@ export type Command =
       item?: string;
       seller?: number;
     }
+  /** A plot of the reeve's field (M6-02): till, plant from a bag slot, water, fertilize, harvest. */
+  | {
+      type: 'farm';
+      op: 'till' | 'plant' | 'water' | 'fertilize' | 'harvest';
+      plot: number;
+      slot?: number;
+    }
   /** Challenge a Traveler to a duel (M5-12). */
   | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
@@ -325,6 +332,21 @@ export function validateCommand(raw: unknown): Validated {
         };
       }
       return { ok: false, reason: 'bad market action' };
+    }
+    case 'farm': {
+      const ops = ['till', 'plant', 'water', 'fertilize', 'harvest'] as const;
+      const op = ops.find((o) => o === r.op);
+      if (!op) return { ok: false, reason: 'bad farm action' };
+      if (!Number.isInteger(r.plot) || (r.plot as number) < 0 || (r.plot as number) > 63)
+        return { ok: false, reason: 'bad plot' };
+      if (op !== 'plant')
+        return { ok: true, command: { type: 'farm', op, plot: r.plot as number } };
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 63)
+        return { ok: false, reason: 'bad slot' };
+      return {
+        ok: true,
+        command: { type: 'farm', op, plot: r.plot as number, slot: r.slot as number },
+      };
     }
     case 'guildAsk':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)

@@ -1,3 +1,4 @@
+import { CROPS, CROP_LIST } from '../../src/content/farming/crops';
 import { describe, expect, it } from 'vitest';
 import { DIALOGUES, NPCS } from '../../src/content/dialogue';
 import { AUTHORED_TRIALS } from '../../src/content/skills/dawnmeadowTrials';
@@ -42,9 +43,10 @@ const passed = (s: SimState, me: number, skill: string): boolean =>
   trialPassed(s.entities.comps.skills[me]!, skill, 15);
 
 describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
-  it('are twenty six, for twenty six different skills that exist, each a rank 15 Trial of its own', () => {
-    expect(AUTHORED_TRIALS).toHaveLength(26);
-    expect(new Set(AUTHORED_TRIALS.map((t) => t.skill)).size).toBe(26);
+  it('are twenty seven, for twenty seven different skills that exist, each a rank 15 Trial of its own', () => {
+    // Twenty six from M4-12, and Farming with Tamsin from M6-02.
+    expect(AUTHORED_TRIALS).toHaveLength(27);
+    expect(new Set(AUTHORED_TRIALS.map((t) => t.skill)).size).toBe(27);
     for (const t of AUTHORED_TRIALS) {
       expect(SKILLS[t.skill], t.skill).toBeDefined();
       const def = TRIALS[`trial.${name(t.skill)}.15`]!;
@@ -197,6 +199,26 @@ describe('Dawnmeadow rank 15 Trials (M4-12)', () => {
         spawnFixture(s, o.from, 20, 21);
         feed(s);
         feed(s, { type: 'roomChanged', who: me, from: 'x', to: o.room });
+      } else if (o.kind === 'harvest') {
+        // Ten different crops, the last one Fine. The same crop twice counts once.
+        const crops = CROP_LIST.slice(0, o.distinct);
+        const harvested = (crop: string, quality: number): SimEvent => ({
+          type: 'harvested',
+          who: me,
+          plot: 0,
+          crop,
+          item: CROPS[crop]!.result,
+          qty: 3,
+          quality,
+          tier: 1,
+        });
+        feed(s, harvested(crops[0]!.id, 0));
+        feed(s, harvested(crops[0]!.id, 0));
+        for (const c of crops.slice(1, -1)) feed(s, harvested(c.id, 0));
+        expect(passed(s, me, t.skill), 'nine crops').toBe(false);
+        feed(s, harvested(crops[crops.length - 1]!.id, 0));
+        expect(passed(s, me, t.skill), 'ten crops, none Fine').toBe(false);
+        feed(s, harvested(crops[2]!.id, o.minQuality));
       } else throw new Error(`unhandled objective ${o.kind}`);
       expect(passed(s, me, t.skill), 'passed').toBe(true);
     });

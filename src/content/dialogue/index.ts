@@ -1,6 +1,8 @@
 import { COLD_OVEN_FLAGS } from '../singulars';
 import { EVERY } from '../requests/dawnmeadow';
 import { AUTHORED_TRIALS } from '../skills/dawnmeadowTrials';
+import { FARMING } from '../balance/farming';
+import { CROP_LIST } from '../farming/crops';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
 export type * from './types';
@@ -281,6 +283,32 @@ export const NPCS: Readonly<Record<string, NpcDef>> = {
   },
 };
 
+/** The seeds a shop sells, from the crop table: ten of each on the shelf after each dawn. */
+function seedStock(shop: string): ShopDef['stock'] {
+  return CROP_LIST.filter((c) => 'shop' in c.seedFrom && c.seedFrom.shop === shop).map((c) => ({
+    item: c.seed,
+    max: 10,
+  }));
+}
+
+/** A person who sells seeds and little else. */
+function seedShop(
+  id: string,
+  npc: string,
+  buys: ShopDef['buys'],
+  extra: ShopDef['stock'] = [],
+): ShopDef {
+  return {
+    id,
+    npc,
+    region: 'dawnmeadow',
+    buys,
+    firmness: 25,
+    purse: { start: 40, max: 80 },
+    stock: [...seedStock(id), ...extra],
+  };
+}
+
 export const SHOPS: Readonly<Record<string, ShopDef>> = {
   'shop.brin': {
     id: 'shop.brin',
@@ -303,6 +331,10 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       { item: 'item.scroll_sword_iron', max: 1 },
       // Iron ore (POW-M4-23D): buying is possible and costs more than mining one, see the price rule test.
       { item: 'item.iron_ore', max: 8 },
+      // Farming (POW-M6-02): the field tools and Brin's seeds.
+      { item: 'item.hoe', max: 2 },
+      { item: 'item.watering_can', max: 2 },
+      ...seedStock('shop.brin'),
     ],
   },
   // Tier 1 trade for the new item set. Purses are small and capped, so no one buys without end.
@@ -342,6 +374,7 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       { item: 'item.amulet_bone', max: 3 },
       { item: 'item.thread_spool', max: 10 },
       { item: 'item.flute_reed', max: 3 },
+      ...seedStock('shop.mara'),
     ],
   },
   'shop.ilse': {
@@ -360,8 +393,19 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       { item: 'item.spark_dust', max: 10 },
       { item: 'item.trail_biscuit', max: 10 },
       { item: 'item.apple_tart', max: 10 },
+      ...seedStock('shop.ilse'),
     ],
   },
+  // Seed sellers (POW-M6-02, design/13 section 2). Small purses: they sell more than they buy.
+  'shop.aldo': seedShop('shop.aldo', 'npc.miller', ['food', 'materials']),
+  'shop.tamsin': seedShop(
+    'shop.tamsin',
+    'npc.farmer',
+    ['food', 'materials'],
+    [{ item: 'item.compost', max: 10 }],
+  ),
+  'shop.hesper': seedShop('shop.hesper', 'npc.cook', ['food']),
+  'shop.fen': seedShop('shop.fen', 'npc.hermit', ['materials']),
 };
 
 /**
@@ -443,6 +487,45 @@ const lesson = (
     { learnTechnique: technique },
   ],
 });
+
+/**
+ * Edda's lease of the reeve's field (POW-M6-02): how many plots, then how many weeks ahead. Each
+ * choice of weeks shows only when the purse holds the price, and pays it.
+ */
+function leaseNodes(): Record<string, DialogueNode> {
+  const F = FARMING;
+  const plots = (n: number): Choice => ({ text: `dlg.reeve.c_plots_${n}`, next: `weeks_${n}` });
+  const nodes: Record<string, DialogueNode> = {
+    field: {
+      id: 'field',
+      text: 'dlg.reeve.field',
+      choices: [plots(1), plots(2), plots(3), { text: 'dlg.c_more', next: 'field2' }, LATER],
+    },
+    field2: {
+      id: 'field2',
+      text: 'dlg.reeve.field',
+      choices: [plots(4), plots(5), plots(6), LATER],
+    },
+    leased: { id: 'leased', text: 'dlg.reeve.leased', next: null },
+  };
+  for (let n = 1; n <= F.plots; n++)
+    nodes[`weeks_${n}`] = {
+      id: `weeks_${n}`,
+      text: 'dlg.reeve.weeks',
+      choices: [
+        ...Array.from({ length: F.lease.maxWeeks }, (_, k) => k + 1).map((w): Choice => ({
+          text: `dlg.reeve.c_lease_${n}_${w}`,
+          next: 'leased',
+          if: [{ coin: n * w * F.lease.weekly }],
+          do: [{ lease: { plots: n, weeks: w } }],
+        })),
+        LATER,
+      ],
+    };
+  return nodes;
+}
+
+const LATER: Choice = { text: 'dlg.c_later', next: null };
 
 const asked = { request: 'request.clear_pests' } as const;
 const pods = { request: 'request.ember_pods' } as const;
@@ -627,6 +710,7 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
         text: 'dlg.hesper.lesson',
         choices: [
           lesson('dlg.hesper.c_hum', 'technique.performance_hum', { item: 'item.sunwort', qty: 2 }),
+          { text: 'dlg.hesper.c_shop', next: null, do: [{ openShop: 'shop.hesper' }] },
           { text: 'dlg.c_bye', next: null },
         ],
       },
@@ -887,7 +971,10 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
       greet: {
         id: 'greet',
         text: 'dlg.miller.greet',
-        choices: [{ text: 'dlg.c_bye', next: null }],
+        choices: [
+          { text: 'dlg.miller.c_shop', next: null, do: [{ openShop: 'shop.aldo' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
       },
     },
   },
@@ -898,7 +985,10 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
       greet: {
         id: 'greet',
         text: 'dlg.farmer.greet',
-        choices: [{ text: 'dlg.c_bye', next: null }],
+        choices: [
+          { text: 'dlg.farmer.c_shop', next: null, do: [{ openShop: 'shop.tamsin' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
       },
     },
   },
@@ -931,7 +1021,10 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
       greet: {
         id: 'greet',
         text: 'dlg.hermit.greet',
-        choices: [{ text: 'dlg.c_bye', next: null }],
+        choices: [
+          { text: 'dlg.hermit.c_shop', next: null, do: [{ openShop: 'shop.fen' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
       },
     },
   },
@@ -942,8 +1035,12 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
       greet: {
         id: 'greet',
         text: 'dlg.reeve.greet',
-        choices: [{ text: 'dlg.c_bye', next: null }],
+        choices: [
+          { text: 'dlg.reeve.c_field', next: 'field' },
+          { text: 'dlg.c_bye', next: null },
+        ],
       },
+      ...leaseNodes(),
     },
   },
 };

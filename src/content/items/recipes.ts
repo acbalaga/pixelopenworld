@@ -124,6 +124,8 @@ const LIST: readonly RecipeDef[] = [
   ),
   make('woodworking', BENCH, 1, 'item.dagger_wood', [['item.oak_plank', 2]], 'start'),
   make('woodworking', BENCH, 1, 'item.shield_wood', [['item.oak_plank', 3]], 'start'),
+  // Farming tools and compost (POW-M6-02).
+  make('woodworking', BENCH, 1, 'item.hoe', [['item.ash_log'], ['item.copper_ingot']]),
   make('woodworking', BENCH, 1, 'item.maul_oak', [['item.oak_plank', 3], ['item.copper_ingot']]),
   make('woodworking', BENCH, 1, 'item.spear_ash', [['item.ash_log', 2], ['item.copper_ingot']]),
   make('woodworking', BENCH, 1, 'item.shield_buckler', [
@@ -248,6 +250,7 @@ const LIST: readonly RecipeDef[] = [
     ['item.glowcap'],
     ['item.dew_vial'],
   ]),
+  make('alchemy', ALCH, 1, 'item.compost', [['item.wood_scraps'], ['item.moss_tuft', 2]]),
   make('alchemy', ALCH, 1, 'item.antidote', [['item.sunwort'], ['item.salt'], ['item.dew_vial']]),
   make('alchemy', ALCH, 1, 'item.warming_draught', [
     ['item.spark_dust'],
@@ -283,6 +286,7 @@ const LIST: readonly RecipeDef[] = [
     'start',
   ),
   make('tinkering', TINK, 1, 'item.water_flask', [['item.clay'], ['item.dew_vial']], 'start'),
+  make('tinkering', TINK, 1, 'item.watering_can', [['item.copper_ingot', 2], ['item.clay']]),
   make('tinkering', TINK, 1, 'item.smoke_pellet', [['item.coal'], ['item.clay'], ['item.salt']]),
   make(
     'tinkering',

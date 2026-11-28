@@ -226,6 +226,31 @@ export type SimEvent =
   | { type: 'pitCheer'; slot: number; for: number }
   | { type: 'pitBoardOpened'; id: number; who: number }
   | { type: 'pitHonor'; tier: number }
+  /** Farming (M6-02): a plot was worked, harvested, refused; the lease; the can; a giant. */
+  | {
+      type: 'farmed';
+      who: number;
+      plot: number;
+      op: 'till' | 'plant' | 'water' | 'fertilize';
+      crop?: string;
+    }
+  | {
+      type: 'harvested';
+      who: number;
+      plot: number;
+      crop: string;
+      item: string;
+      qty: number;
+      quality: number;
+      tier: number;
+      giant?: true;
+    }
+  | { type: 'farmRefused'; who: number; plot: number; why: string }
+  | { type: 'plotOpened'; who: number; plot: number }
+  | { type: 'seedLearned'; who: number; crop: string }
+  | { type: 'leased'; who: number; plots: number; weeks: number; coin: number }
+  | { type: 'canFilled'; who: number }
+  | { type: 'giantGrew'; who: number; crop: string; square: number }
   /** The party finder in the square was used (M5-07). */
   | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */

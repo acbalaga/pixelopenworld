@@ -166,6 +166,8 @@ const at = (kind: string, x: number, y: number): Placement => ({ kind, x, y });
 
 const placements: Placement[] = [
   stamp('hearthford', TOWN_ORIGIN.x, TOWN_ORIGIN.y),
+  // The reeve's field, just outside the east gate, south of the road (POW-M6-02).
+  stamp('reeve_field', 222, 195),
   stamp('millbrook', 272, 96),
   stamp('reedmouth', 296, 236),
   stamp('stonecrop', 164, 36),

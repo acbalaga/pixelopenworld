@@ -11,6 +11,7 @@ import { emit } from '../kernel/events';
 import { px } from '../kernel/fixed';
 import { offerTrial } from '../skills';
 import { addRenown } from '../renown';
+import { lease } from '../farming';
 import { onTalk, startRequest, turnIn } from './requests';
 import { deliverTrials } from './trials';
 import type { SimState } from '../state';
@@ -66,6 +67,7 @@ export function applyEffect(state: SimState, who: EntityId, e: Effect): void {
     emit(state.events, { type: 'shopOpened', who, shop: e.openShop });
   else if ('renown' in e) addRenown(state, who, RB.homeRegion, e.renown);
   else if ('rumor' in e) hearRumor(state, who, e.rumor);
+  else if ('lease' in e) lease(state, who, e.lease.plots, e.lease.weeks);
   else if ('takeItem' in e) {
     const inv = getComp(state.entities, who, 'inventory');
     if (inv && countItem(inv, e.takeItem) >= e.qty) removeItem(inv, e.takeItem, e.qty);

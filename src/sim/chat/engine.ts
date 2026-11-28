@@ -20,7 +20,8 @@ import { SKILLS } from '../../content/skills';
 import { findAvatar } from '../../shared/summary';
 import { emit, type SimEvent } from '../kernel/events';
 import type { SimState } from '../state';
-import { dayPhase, weatherOn } from '../time';
+import { dayPhase, seasonOf, weatherOn } from '../time';
+import { CROP_LIST } from '../../content/farming/crops';
 import { crowdOf, onlineCount } from '../travelers/crowd';
 import { startScene } from '../travelers/entities';
 import { addFlag, gateOpen, hasFlag } from '../travelers/pit';
@@ -562,6 +563,14 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
   }
 }
 
+/** A crop that can be planted now, by its item name, for a `state.season` line. */
+function cropInSeason(c: Ctx, d: () => number): string | undefined {
+  const season = seasonOf(c.state.worldTick);
+  const pool = CROP_LIST.filter((x) => x.seasons.includes(season) && !x.shade);
+  const crop = pool[Math.floor(d() * pool.length)];
+  return crop ? itemName(crop.result) : undefined;
+}
+
 /** Unprompted talk: the weather, the hour, someone away, someone looking for a group, a question. */
 function chatter(c: Ctx): void {
   const { state, chat } = c;
@@ -597,6 +606,12 @@ function chatter(c: Ctx): void {
       ['state.question', t.archetype === 'Newbie' ? 3 : 0.8, 'asking'],
     ];
     if (afk) options.push(['state.afk', 6, 'doing:afk']);
+    // Crops in season (M6-02): only a Traveler who gathers or crafts talks about them.
+    const grows = t.focus.some((f) => {
+      const fam = SKILLS[f]?.family;
+      return fam === 'gathering' || fam === 'crafting';
+    });
+    if (grows) options.push(['state.season', 1.2, `season:${seasonOf(state.worldTick)}`]);
     let x = d() * options.reduce((a, o) => a + o[1], 0);
     let chosen = options[0]!;
     for (const o of options) {
@@ -607,7 +622,12 @@ function chatter(c: Ctx): void {
       }
     }
     const [trigger, , fact] = chosen;
-    const made = make(c, t, trigger, {});
+    const made = make(
+      c,
+      t,
+      trigger,
+      trigger === 'state.season' ? { item: cropInSeason(c, d) } : {},
+    );
     if (!made || chat.tokens[made.tpl.channel] < 1) continue;
     chat.tokens[made.tpl.channel] -= 1;
     const src = source(c, `state:${trigger}:${t.slot}:${c.minute}`, fact);

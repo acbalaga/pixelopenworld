@@ -177,6 +177,19 @@ export function advanceTracked(
         finish(t, 1);
       }
       return;
+    case 'harvested':
+      if (e.who !== who) return;
+      for (const t of list) {
+        const { o, p } = t;
+        if (o.kind !== 'harvest') continue;
+        const crops = (p.crops ??= []);
+        if (!crops.includes(e.crop)) crops.push(e.crop);
+        // `t0` holds whether a harvest has reached the quality asked for.
+        if (e.quality >= o.minQuality) p.t0 = 1;
+        p.n = crops.length;
+        if (p.n >= o.distinct && p.t0 === 1) t.done();
+      }
+      return;
     case 'parried':
       if (e.who === who) perform(state, who, list, 'parry');
       return;

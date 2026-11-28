@@ -56,7 +56,16 @@ const COIN_SOURCES = [
   'marketSale',
   'eventReward',
 ];
-const COIN_SINKS = ['purchase', 'echo', 'repair', 'buyback', 'recipe', 'marketFee', 'marketBuy'];
+const COIN_SINKS = [
+  'purchase',
+  'echo',
+  'repair',
+  'buyback',
+  'recipe',
+  'marketFee',
+  'marketBuy',
+  'lease',
+];
 const ITEM_SOURCES = [
   'start',
   'loot',
@@ -71,6 +80,7 @@ const ITEM_SOURCES = [
   'mailGift',
   'guildRequest',
   'market',
+  'harvest',
   'seed',
 ];
 

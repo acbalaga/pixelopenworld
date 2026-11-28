@@ -316,7 +316,8 @@ describe('experimenting', () => {
   // M3-12 added the gear and cloth recipes nothing made before: 7 smithing, 2 woodworking.
   it('there are 53 recipes: 23 smithing, 15 woodworking, 15 cooking', () => {
     const by = (c: string): number => Object.values(RECIPES).filter((x) => x.craft === c).length;
-    expect([by('smithing'), by('woodworking'), by('cooking')]).toEqual([23, 16, 15]);
+    // M6-02 added the hoe to Woodworking.
+    expect([by('smithing'), by('woodworking'), by('cooking')]).toEqual([23, 17, 15]);
     for (const x of Object.values(RECIPES))
       expect(expand(x.ingredients).length, x.id).toBeLessThanOrEqual(C.maxIngredients);
   });

@@ -12,6 +12,8 @@ export type XpEvent =
   | 'heal'
   | 'statusApplied'
   | 'gather'
+  /** A crop harvested from a plot (M6-02). The first-time subject is the crop. */
+  | 'harvest'
   | 'craft'
   | 'repair'
   | 'haggle'
@@ -106,6 +108,8 @@ export type TrialObjective =
   | { kind: 'sell'; count: number }
   /** Stand at a named place holding the item, in these phases of the day: the item is handed over. */
   | { kind: 'carry'; item: string; place: string; phases?: DayPhase[] }
+  /** Harvest `distinct` different crops, at least one of them at `minQuality` or better (M6-02). */
+  | { kind: 'harvest'; distinct: number; minQuality: Quality }
   /** Read `count` different tablets from this list (copying what they say). */
   | { kind: 'read'; fixtures: string[]; count: number };
 
