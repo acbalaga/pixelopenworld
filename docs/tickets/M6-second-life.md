@@ -195,7 +195,8 @@ Refs: design/05-life-systems (Housing), design/13-life-content (1, 6), design/07
 Goal: a house of your own, furnished and visited.
 Scope:
 
-- **Two house plots** in Hearthford (east side, inside the walls), baked as houses with an 8 x 6 interior (POW-M6-07 tech) and a yard with a 2 x 2 kitchen garden (2 farm plots that use M6-02's rules). Buying one needs Renown 20 and 1,500 coin (`balance/housing.ts`). One house per player. A bought house is kept forever.
+- **Two house plots** in Hearthford (east side, inside the walls), baked as houses with an 8 x 6 interior (POW-M6-07 tech) and a yard with a 2 x 2 kitchen garden (2 farm plots that use M6-02's rules). Buying one needs Renown 20 and a price set so a player arriving at Renown 20 can almost afford it (`balance/housing.ts`, see **Pricing** below). One house per player. A bought house is kept forever.
+- **Pricing:** measured, not guessed. Extend the endurance-bot skill model (`tools/endurance-bot/rates.ts`) with coin and Renown per activity, using the sim-bot's measured coin rates, the authored request and thread rewards, Trials (1 Renown each), trade Renown (1 per 200 coin sold) and the farm income from POW-M6-02. Model three play mixes over Dawnmeadow: quest-first (requests, threads, Trials), mixed (a quarter each of fighting, gathering, crafting with farming, and requests) and trader (gather, farm, sell). Record for each the hour Renown reaches 20 and the coin held then, after typical spending (repairs, seeds, leases, consumables). Set the price, rounded to 50, so the **mixed** player holds 85 to 95% of it at Renown 20: close, with one more good session to go. The quest-first player should hold at least half. Working default until measured: 2,500.
 - **The rest of the furniture** from 13 section 6 (48 more pieces, 60 in all), with recipes at the carpentry, tailor, smithy and tinker bench, and some bought from Pell and Mara. Functional pieces work: stations are real stations, storage holds items, the trophy stand and fish tank show trophies, the fireplace adds `cozyRested` to Rested from your own bed, a planted pot grows a herb slowly.
 - **Rested from your own bed** lasts `ownBedRestedPct` longer than an inn bed, more with better beds.
 - **Visitors:** Travelers at Friend or better visit about once an in-game week while the player is at home. A visit lasts a few minutes. They say 1 to 3 lines that name pieces the player placed (templates with a `{furniture}` slot from the room's own pieces).
@@ -206,6 +207,7 @@ Save: house owned, its layout, the kitchen garden plots. Schema bump with a migr
 Integrity: buying a house is a coin sink, recorded in the ledger. None new.
 Acceptance:
 
+- Pricing table (three mixes: hour at Renown 20, coin held, share of the price) in the PR and in `reports/`. A test pins the price to the model's output so a later economy change that moves the model fails CI until the price is reviewed.
 - Test: placement rules hold for all 60 pieces in all rotations.
 - Test: a visitor line names a piece that is placed, never one that is not.
 - Test: layout persists across a reload and an export and import, and migrates from the previous schema.
@@ -216,7 +218,7 @@ Acceptance:
 Size: L Depends: POW-M6-04, Gate G6a Status: READY
 Refs: design/05-life-systems (Relationships), design/13-life-content (7), design/01-dawnmeadow (9 People), design/08-lore-SPOILERS (Delivery rules; read it for the Pilgrim, Wren and Old Fen), design/09-ui-ux (text rules)
 
-Goal: people become friends, and four can become partners.
+Goal: people become friends, and a few can become partners.
 Scope:
 
 - **Five hearts** for all 16 people, per 13 section 7, in `src/sim/friendship.ts` with numbers in `balance/people.ts`. A Hearts page in the Journal lists everyone met, their hearts, and the next unlock (named, not hidden).
@@ -225,7 +227,7 @@ Scope:
 - **Heart events:** 32 scenes (2 and 4 hearts for each person) as dialogue data, triggered as 13 section 7 says. Text only, clear text, 4 to 8 lines each.
 - **Unlocks** at hearts 1, 3 and 5 per person, one line each, as data. Help unlocks (heart 5) are small and bounded (a free repair a day, a minded stall day a week).
 - **Deed lines:** at least 2 per person, from the journal's deed record.
-- **Partners:** Pell, Nessa, Juniper, Mara, and Close Friend Travelers (07), per 13 section 7. The partner scene is a third heart event at 5 hearts. A partner moves into the house plot (needs POW-M6-13; without a house, they say they would like a home together and wait). The daily routine: a morning gift, waters the kitchen garden, chats, keeps their own work schedule. Ending is a kind talk option and loses nothing.
+- **Partners:** Pell, Juniper, and Close Friend Travelers (07), per 13 section 7. Eligibility is a data flag (`partner: true`) on the person, checked against the rule in 13 section 7 by a content test. The partner scene is a third heart event at 5 hearts. A partner moves into the house plot (needs POW-M6-13; without a house, they say they would like a home together and wait). The daily routine: a morning gift, waters the kitchen garden, chats, keeps their own work schedule. Ending is a kind talk option and loses nothing.
 - **Farming and the fair count:** showing up at the fair (POW-M6-10 sends the event) adds points.
 
 Out of scope: birthdays, more partner candidates (later regions), anything that breaks the wholesome rule.
@@ -235,6 +237,8 @@ Acceptance:
 
 - Tests: thresholds, once-a-day gift and talk limits, every unlock fires once.
 - Test: the partner routine runs on its schedule across an offline gap and never runs without a house.
+- Content test: no person flagged `partner` is named by any authored request, thread step, delivery, dungeon or boss, and every such person is unflagged. The test fails if a later request names a partner.
+- Test: with a partner moved in, every request, Trial and thread that names any person can still be started and finished (a sweep over all of them).
 - Validator: every scene, gift line and deed line passes `tools/bake-assets/validateDialogue.ts` (ids, conditions, no em dashes). Hidden-layer wording is checked by reading against 08's delivery rules, listed per scene in the PR.
 - Phone screenshots of a heart event and the Hearts page.
 
