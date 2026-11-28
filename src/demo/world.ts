@@ -24,7 +24,8 @@ import { PartySheet } from '../ui/dom/partySheet';
 import { GuildSheet } from '../ui/dom/guildSheet';
 import { PitSheet } from '../ui/dom/pitSheet';
 import { PlotSheet } from '../ui/dom/plotSheet';
-import { FARM_STRINGS } from '../content/strings/farming';
+import { COOK_STRINGS, FARM_STRINGS } from '../content/strings/farming';
+import { isDish } from '../sim/cooking';
 import { MarketSheet } from '../ui/dom/marketSheet';
 import { MARKET_STRINGS } from '../content/strings/market';
 import { EVENT_STRINGS } from '../content/strings/events';
@@ -1175,6 +1176,9 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     onPoke: (slot) => pendingCommands.push({ type: 'poke', slot }),
     onDuel: (slot) => pendingCommands.push({ type: 'duel', slot }),
     onGuildAsk: (slot) => pendingCommands.push({ type: 'guildAsk', slot }),
+    onShareFood: (slot) => pendingCommands.push({ type: 'shareFood', slot }),
+    hasDish: () =>
+      state.entities.comps.inventory[who]?.slots.some((s) => !!s && isDish(s.item)) ?? false,
     myGuild: () => state.guild.id,
   });
   messageView.onChip = (slot, chip) => pendingCommands.push({ type: 'chip', slot, chip });
@@ -1697,6 +1701,15 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               const t = FARM_STRINGS.refused[e.why];
               if (t) notices.toast(t);
             } else if (e.type === 'canFilled') notices.toast(FARM_STRINGS.filled);
+            // Cooking (M6-04).
+            else if (e.type === 'campMeal' && e.who === who) notices.toast(COOK_STRINGS.campMeal);
+            else if (e.type === 'milled') notices.toast(COOK_STRINGS.milled);
+            else if (e.type === 'foodShared')
+              notices.toast(
+                COOK_STRINGS.shared
+                  .replace('{item}', ITEM_STRINGS[`${e.item}.name`] ?? e.item)
+                  .replace('{handle}', identitiesOf(state.seed)[e.slot]?.handle ?? ''),
+              );
             else if (e.type === 'seedLearned')
               notices.toast(
                 FARM_STRINGS.learned.replace('{crop}', CROP_NAMES[e.crop]?.crop ?? e.crop),

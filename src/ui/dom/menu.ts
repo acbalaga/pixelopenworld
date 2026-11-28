@@ -608,18 +608,39 @@ export class MenuSheet {
     if (recipes.length > 0) {
       const n = recipes.reduce((a, g) => a + g.rows.length, 0);
       const kids: HTMLElement[] = [];
+      const recipeRow = (r: (typeof recipes)[number]['rows'][number]): HTMLElement =>
+        row({
+          key: `recipe-${r.id}`,
+          name: r.name,
+          state: r.ingredients,
+          icon: r.icon ? this.icon(r.icon) : null,
+          onOpen: () => undefined,
+        });
       for (const g of recipes) {
         kids.push(el('h5', 'pow-recipe-craft', g.label));
-        for (const r of g.rows)
-          kids.push(
-            row({
-              key: `recipe-${r.id}`,
-              name: r.name,
-              state: r.ingredients,
-              icon: r.icon ? this.icon(r.icon) : null,
-              onOpen: () => undefined,
-            }),
-          );
+        if (!g.tiers) {
+          for (const r of g.rows) kids.push(recipeRow(r));
+          continue;
+        }
+        // Cooking (M6-04): by tier, each with a row of silhouettes for the dishes still to find.
+        for (const t of g.tiers) {
+          kids.push(el('h6', 'pow-recipe-tier', t.label));
+          for (const r of t.rows) kids.push(recipeRow(r));
+          if (t.unknown > 0) {
+            const p = el('p', 'pow-recipe-unknown');
+            p.setAttribute('aria-label', S.journal.cookUnknown.replace('{n}', String(t.unknown)));
+            put(
+              p,
+              el('span', 'pow-recipe-silhouettes', '\u25A0'.repeat(t.unknown)),
+              el(
+                'span',
+                'pow-recipe-unknown-n',
+                S.journal.cookUnknown.replace('{n}', String(t.unknown)),
+              ),
+            );
+            kids.push(p);
+          }
+        }
       }
       this.body.appendChild(this.secWith('journal-recipes', S.journal.recipes, n, false, ...kids));
     }

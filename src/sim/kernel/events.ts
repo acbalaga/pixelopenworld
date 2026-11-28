@@ -251,6 +251,10 @@ export type SimEvent =
   | { type: 'leased'; who: number; plots: number; weeks: number; coin: number }
   | { type: 'canFilled'; who: number }
   | { type: 'giantGrew'; who: number; crop: string; square: number }
+  /** Cooking (M6-04): flour milled, a camp meal shared out, a dish given to a Traveler. */
+  | { type: 'milled'; who: number }
+  | { type: 'campMeal'; who: number; item: string; slots: number[] }
+  | { type: 'foodShared'; who: number; slot: number; item: string }
   /** The party finder in the square was used (M5-07). */
   | { type: 'partyBoardOpened'; id: number; who: number }
   /** A letter arrived, or a letter's gift was claimed (M5-12). */

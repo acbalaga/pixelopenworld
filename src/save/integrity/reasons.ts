@@ -63,6 +63,7 @@ export const REASON_CODES = [
   'MARKET_INCOME',
   'EVENT_IMPLAUSIBLE',
   'HARVEST_IMPLAUSIBLE',
+  'MILL_MISMATCH',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

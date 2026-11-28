@@ -26,6 +26,7 @@ export const SLOTS_BY_TRIGGER: Readonly<Record<Trigger, readonly SlotName[]>> = 
   'state.weather': [...base, 'weather', 'place', 'time'],
   'state.phase': [...base, 'time', 'place'],
   'state.season': [...base, 'item', 'time', 'place'],
+  'party.meal': [...base, 'item'],
   'state.idle': [
     ...base,
     'place',

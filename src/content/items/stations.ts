@@ -19,6 +19,8 @@ export interface StationDef {
 
 export const STATIONS: Readonly<Record<string, StationDef>> = {
   camp_pot: { kind: 'camp_pot', craft: 'cooking', step: 'rhythm', workAnim: 'work_stir' },
+  // The inn kitchen's oven (M6-04): bread, pies and roasts. Hold to the right heat.
+  'fixture.oven': { kind: 'fixture.oven', craft: 'cooking', step: 'hold', workAnim: 'work_hands' },
   'fixture.anvil': {
     kind: 'fixture.anvil',
     craft: 'smithing',

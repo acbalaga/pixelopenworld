@@ -13,9 +13,20 @@ describe('content reachability', () => {
   const items = { 'item.a': { tier: 1 }, 'item.b': { tier: 2 }, 'item.c': { tier: 3 } };
   const none = new Set<string>();
 
-  it('passes the real content, with an allowlist that is empty', () => {
+  it('passes the real content, with only the animal goods of M6-03 and their dishes allowlisted', () => {
     expect(validateReachability()).toEqual([]);
-    expect(Object.keys(ALLOWED)).toEqual([]);
+    expect(Object.keys(ALLOWED).sort()).toEqual(
+      [
+        'item.duck_egg',
+        'item.egg',
+        'item.goat_milk',
+        'item.goat_porridge',
+        'item.milk',
+        'item.milk_bread',
+        'item.omelette',
+        'item.pancakes',
+      ].sort(),
+    );
   });
 
   it('flags a tier 1 or 2 item with no source, and ignores tier 3', () => {
@@ -71,8 +82,9 @@ describe('content reachability', () => {
     for (const id of Object.keys(ALLOWED)) {
       expect(ITEMS[id], id).toBeDefined();
       expect(ITEMS[id]!.tier, id).toBeLessThanOrEqual(2);
+      // Nothing supplies it outright; a recipe may make it from ingredients nothing supplies.
       expect(
-        sourcesOf(id).filter((s) => s !== 'buyback' && s !== 'seed'),
+        sourcesOf(id).filter((s) => !['buyback', 'seed', 'craft', 'cook'].includes(s)),
         id,
       ).toEqual([]);
     }

@@ -48,6 +48,8 @@ export const TRIGGERS = [
   'state.phase',
   /** A crop in season (M6-02): `{item}` is one that can be planted now. */
   'state.season',
+  /** The player cooked for the party at the camp pot (M6-04): `{item}` is the dish. */
+  'party.meal',
   'state.idle',
   'state.afk',
   'state.lfg',

@@ -1,3 +1,4 @@
+import { DISH_STRINGS } from '../items/dishes';
 import { FARM_ITEM_STRINGS } from './farming';
 
 /** Item names and descriptions, keyed by the item's `nameKey` and `descKey`. No em dashes. */
@@ -367,4 +368,5 @@ export const ITEM_STRINGS: Readonly<Record<string, string>> = {
   'affix.crit_1.name': 'of Edges',
   'affix.gather_1.name': 'of Plenty',
   ...FARM_ITEM_STRINGS,
+  ...DISH_STRINGS,
 };

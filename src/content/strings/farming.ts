@@ -1,4 +1,6 @@
 import { FARMING } from '../balance/farming';
+import { COOKING } from '../balance/cooking';
+import { DISHES } from '../items/dishes';
 import { CROP_LIST, CROP_NAMES } from '../farming/crops';
 
 /**
@@ -79,6 +81,15 @@ function leaseStrings(): Record<string, string> {
 
 export const FARM_DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   ...leaseStrings(),
+  // Cooking (M6-04): the teachers' pages and Aldo's mill.
+  ...Object.fromEntries(
+    DISHES.filter((d) => d.learn === 'teach').map((d) => [`dlg.cook.t_${d.key}`, `${d.name}.`]),
+  ),
+  'dlg.cook.c_teach': 'Could you teach me a dish?',
+  'dlg.cook.teach': 'Which one? Watch the first time, and the rest is yours.',
+  'dlg.cook.taught': 'Like that. Now you know it.',
+  'dlg.miller.c_mill': `Mill some wheat for me (${COOKING.mill.wheat} wheat, ${COOKING.mill.fee} coin).`,
+  'dlg.miller.milled': 'There. Mind the sack, it splits.',
   'dlg.reeve.c_field': 'About the field past the east gate.',
   'dlg.reeve.field': `Six plots past the east gate, the first by the road. ${FARMING.lease.weekly} coin a plot for a week, paid ahead. Let it lapse and nothing is touched, it just stops growing until you pay. How many?`,
   'dlg.reeve.weeks': 'How far ahead do you want to pay?',
@@ -126,4 +137,12 @@ export const FARM_STRINGS = {
   filled: 'The can is full.',
   learned: 'The pod grew into {crop}. You know its seed now.',
   giantGrew: 'Something in the field has grown very large.',
+} as const;
+
+/** Cooking words (M6-04): the card's chip and the toasts. */
+export const COOK_STRINGS = {
+  shareFood: 'Share food',
+  shared: 'You share {item} with {handle}.',
+  campMeal: 'Your party eats with you.',
+  milled: 'Aldo hands you a sack of flour.',
 } as const;

@@ -80,6 +80,9 @@ export const REGIONS: readonly RegionDef[] = [
         'fixture.satchel',
         // Stand-ins for the firebrick set (M4-20) until the dungeons place it.
         'fixture.chest_firebrick',
+        // Found cookbooks (POW-M6-04).
+        'fixture.chest_cookbook_old',
+        'fixture.chest_cookbook_coast',
         // The secrets in the open (M4-11).
         ...SECRET_FIXTURES.filter((f) => f.type === 'chest').map((f) => f.kind),
         ...REQUEST_FIXTURES.filter((f) => f.type === 'chest').map((f) => f.kind),

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FARMING_ITEMS } from '../../src/content/items/farming';
+import { DISH_ITEMS } from '../../src/content/items/dishes';
 import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
 import { AFFIXES } from '../../src/content/items/affixes';
 import { ITEMS } from '../../src/content/items';
@@ -293,8 +294,8 @@ describe('storage chest', () => {
 
 describe('item set', () => {
   it('has about 120 items split into the target kinds', () => {
-    // The farming items (M6-02) are counted on their own below.
-    const farm = new Set(FARMING_ITEMS.map((i) => i.id));
+    // The farming items (M6-02) and the cooking items (M6-04) are counted on their own below.
+    const farm = new Set([...FARMING_ITEMS, ...DISH_ITEMS].map((i) => i.id));
     const all = Object.values(ITEMS).filter((i) => !farm.has(i.id));
     expect(all.length).toBeGreaterThanOrEqual(110);
     expect(all.length).toBeLessThanOrEqual(180);
@@ -305,6 +306,10 @@ describe('item set', () => {
     expect(n((i) => i.equip?.slot === 'accessory')).toBe(8);
     expect(n((i) => i.equip?.slot === 'off' && !!i.equip.doll?.offHand)).toBe(4);
     expect(ITEMS['item.flute_reed']?.equip?.slot).toBe('off');
+  });
+  it('adds the cooking items: 85 dishes, flour, five animal goods and four cookbooks (M6-04)', () => {
+    expect(DISH_ITEMS).toHaveLength(95);
+    for (const i of DISH_ITEMS) expect(ITEMS[i.id]).toBe(i);
   });
   it('adds the farming items: 26 new crops, 30 seeds, compost, the hoe and the can (M6-02)', () => {
     expect(FARMING_ITEMS).toHaveLength(59);

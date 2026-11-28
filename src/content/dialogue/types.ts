@@ -16,6 +16,8 @@ export type Cond =
   | { renown: { region: string; atLeast: number } }
   /** The purse holds at least this much coin (M6-02, a lease). */
   | { coin: number }
+  /** The avatar knows this recipe, or (with `not`) does not (M6-04, a person teaching). */
+  | { recipe: string; not?: boolean }
   | { phase: DayPhase[] }
   | { season: Season[] }
   | { weather: Weather[] };
@@ -37,7 +39,9 @@ export type Effect =
   /** Takes items from the bag, if it holds that many. */
   | { takeItem: string; qty: number }
   /** Leases the first `plots` plots of the reeve's field for `weeks` more weeks, paid now (M6-02). */
-  | { lease: { plots: number; weeks: number } };
+  | { lease: { plots: number; weeks: number } }
+  /** Aldo mills wheat to flour for a fee (M6-04). */
+  | { mill: true };
 
 export interface Choice {
   /** String key of the button label. */

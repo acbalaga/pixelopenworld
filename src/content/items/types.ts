@@ -91,8 +91,8 @@ export interface ItemDef {
   gadget?: 'spark' | 'flask' | 'smoke' | 'bell' | 'repair' | 'snare' | 'grit' | 'lantern';
   /** Using it (eating or drinking) clears these statuses and may apply one. */
   status?: { clear?: readonly string[]; apply?: { status: string; ticks: number } };
-  /** Reading it (the Use button) teaches this recipe and uses it up. */
-  teaches?: string;
+  /** Reading it (the Use button) teaches this recipe, or each of these (a cookbook), and uses it up. */
+  teaches?: string | readonly string[];
   /** Reading it (the Use button) teaches this technique, awakens its skill, and uses it up (M4-15). */
   manual?: { technique: string; skill: string };
   /**
@@ -104,8 +104,16 @@ export interface ItemDef {
   junk?: true;
   /** A shiny thing: a crow takes it from the ground by a scarecrow (M4-20). */
   shiny?: true;
+  /** A dish that can be sold from a market stall (POW-M6-11 reads it). */
+  stall?: true;
   /** Which Bag filter lists it. */
   bag: BagFilter;
+}
+
+/** The recipes an item teaches when read: none, one (a scroll), or several (a cookbook). */
+export function taughtBy(def: { teaches?: string | readonly string[] } | undefined): string[] {
+  const t = def?.teaches;
+  return t === undefined ? [] : typeof t === 'string' ? [t] : [...t];
 }
 
 /** How a recipe comes to be known. `start` is known from the first day. */

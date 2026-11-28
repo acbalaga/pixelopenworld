@@ -29,6 +29,8 @@ function build(): Map<string, Set<ItemSource>> {
   for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
   // Crops come from the field (M6-02).
   for (const c of CROP_LIST) add(c.result, 'harvest');
+  // Aldo mills wheat to flour (M6-04).
+  add('item.flour', 'mill');
   // Crafting pays under `craft`. Old saves recorded cooking under `cook`, so cooking keeps it.
   for (const r of Object.values(RECIPES)) {
     if (!r.result) continue;

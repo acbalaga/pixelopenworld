@@ -3,6 +3,7 @@ import { SKILLS_BALANCE } from '../content/balance/skills';
 import { ITEMS } from '../content/items';
 import { AFFIXES, affixKey } from '../content/items/affixes';
 import { STATIONS, type StationDef } from '../content/items/stations';
+import { campMeal } from './cooking';
 import { RECIPES, expand, recipeFor } from '../content/items/recipes';
 import type { Quality, RecipeDef } from '../content/items/types';
 import { getComp, query, type EntityId } from './kernel/entities';
@@ -404,6 +405,9 @@ export function finishCraft(state: SimState, who: EntityId): void {
     const l = state.ledger.marked;
     l[recipe.result] = (l[recipe.result] ?? 0) + recipe.qty;
   }
+  // A dish cooked at the camp pot while in a party feeds the party (M6-04).
+  if (station.kind === 'camp_pot' && recipe.craft === 'cooking')
+    campMeal(state, who, recipe.result);
   emit(state.events, {
     type: 'crafted',
     id: who,

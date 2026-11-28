@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SHOP_BALANCE as B } from '../../src/content/balance/shop';
 import { SHOPS } from '../../src/content/dialogue';
 import { ITEMS } from '../../src/content/items';
+import { taughtBy } from '../../src/content/items/types';
 import { RECIPES } from '../../src/content/items/recipes';
 import type { Quality } from '../../src/content/items/types';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
@@ -501,7 +502,7 @@ describe('content', () => {
       }
     }
     for (const item of Object.values(ITEMS))
-      if (item.teaches) expect(RECIPES[item.teaches], item.id).toBeDefined();
+      for (const r of taughtBy(item)) expect(RECIPES[r], item.id).toBeDefined();
   });
 });
 

@@ -65,6 +65,7 @@ const COIN_SINKS = [
   'marketFee',
   'marketBuy',
   'lease',
+  'mill',
 ];
 const ITEM_SOURCES = [
   'start',
@@ -81,6 +82,7 @@ const ITEM_SOURCES = [
   'guildRequest',
   'market',
   'harvest',
+  'mill',
   'seed',
 ];
 

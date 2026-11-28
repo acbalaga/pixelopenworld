@@ -153,6 +153,8 @@ function hearthford(): StampV2 {
   b.place('fixture.mailbox', 4, 50);
   b.place('fixture.storage', 9, 50);
   b.place('prop.camp_pot', 12, 50);
+  // The inn kitchen's oven (POW-M6-04): bread, pies and roasts.
+  b.place('fixture.oven', 13, 48);
   b.place('fixture.mirror', 15, 50);
   b.place('npc.cook', 10, 52);
 
