@@ -329,6 +329,30 @@ describe('giant crops (M6-02)', () => {
     }
   }, 60_000);
 
+  it('with six ripe giants, a failed top square leaves the bottom square its own roll', () => {
+    let both = 0;
+    for (let k = 0; k < 300; k++) {
+      const { s, me } = farm({ seed: 12_000 + k, at: seasonStart('autumn') });
+      for (let i = 0; i < 6; i++) {
+        sow(s, me, i, 'crop.pumpkin');
+        const p = s.farm.plots[i]!;
+        p.soil = 3;
+        p.growth = needOf(CROPS['crop.pumpkin']!);
+      }
+      checkGiants(s, me);
+      const ps = s.farm.plots;
+      expect([0, 1, 2, 3].every((i) => ps[i]!.rolled)).toBe(true);
+      // A merged top square takes the middle plots, so the bottom one cannot merge too.
+      if (ps[0]!.giant === 0) expect(ps[4]!.rolled).toBeUndefined();
+      else {
+        expect(ps[4]!.rolled && ps[5]!.rolled).toBe(true);
+        if (ps[4]!.giant === 1) both++;
+      }
+    }
+    // The bottom square merges after a failed top roll about (1 - p) * p of the time.
+    expect(both).toBeGreaterThan(20);
+  }, 60_000);
+
   it('a giant gives twelve at Masterwork and clears its square', () => {
     for (let k = 0; k < 200; k++) {
       const { s, me } = square(7000 + k);

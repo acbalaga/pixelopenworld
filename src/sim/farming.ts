@@ -170,6 +170,11 @@ export const SQUARES: readonly (readonly number[])[] = [
   [2, 3, 4, 5],
 ];
 
+/** The plots of each square that no other square shares. */
+const OWN: readonly (readonly number[])[] = SQUARES.map((sq, k) =>
+  sq.filter((i) => !SQUARES.some((o, j) => j !== k && o.includes(i))),
+);
+
 const has = (state: SimState, who: EntityId, item: string): boolean => {
   const inv = getComp(state.entities, who, 'inventory');
   return !!inv && countItem(inv, item) > 0;
@@ -498,7 +503,10 @@ export function checkGiants(state: SimState, who: EntityId): void {
   const plots = state.farm.plots;
   SQUARES.forEach((sq, k) => {
     const ps = sq.map((i) => plots[i]);
-    if (ps.some((p) => !p || !p.crop || p.rolled || p.giant !== undefined)) return;
+    if (ps.some((p) => !p || !p.crop || p.giant !== undefined)) return;
+    // The squares share their middle plots, so a square has rolled when its own plots have: a
+    // failed roll of one square leaves the other its own chance.
+    if (OWN[k]!.some((i) => plots[i]?.rolled)) return;
     const crop = ps[0]?.crop;
     const c = crop ? CROPS[crop] : undefined;
     if (!c?.giant || ps.some((p) => p!.crop !== crop || p!.soil < F.soilMax)) return;
