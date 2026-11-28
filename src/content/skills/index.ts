@@ -1,3 +1,4 @@
+import { FARMING } from '../balance/farming';
 import { authoredTrialDefs } from './dawnmeadowTrials';
 import { MAP_BALANCE } from '../balance/map';
 import { SKILLS_BALANCE } from '../balance/skills';
@@ -118,7 +119,12 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
         family: 'gathering',
         sources: [{ on: 'gather', tag: 'fishing', base: 150, firstTime: 150 }],
       },
-      { id: 'skill.farming', name: 'Farming', family: 'gathering', sources: [] },
+      {
+        id: 'skill.farming',
+        name: 'Farming',
+        family: 'gathering',
+        sources: [{ on: 'harvest', base: FARMING.xp.base, firstTime: FARMING.xp.firstTime }],
+      },
       { id: 'skill.husbandry', name: 'Husbandry', family: 'gathering', sources: [] },
       // Crafting.
       {
@@ -261,7 +267,6 @@ export const SKILLS: Record<string, SkillDef> = Object.fromEntries(
  */
 export const PENDING_SKILLS: string[] = [
   // Late skills, M4 to M6.
-  'skill.farming',
   'skill.husbandry',
   'skill.leadership',
   'skill.taming',

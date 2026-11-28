@@ -1,3 +1,4 @@
+import { FARM_DIALOGUE_STRINGS } from './farming';
 import { REQUEST_STRINGS } from './requests';
 import { TRIAL_STRINGS } from './skills';
 
@@ -5,6 +6,7 @@ import { TRIAL_STRINGS } from './skills';
 export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   ...TRIAL_STRINGS,
   ...REQUEST_STRINGS,
+  ...FARM_DIALOGUE_STRINGS,
   'dlg.c_bye': 'Goodbye.',
   'dlg.carpenter.greet':
     'Planks, beams, a good axe handle. If it is wood and it is wrong, bring it here.',

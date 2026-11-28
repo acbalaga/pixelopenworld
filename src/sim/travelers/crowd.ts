@@ -25,6 +25,7 @@ import {
 import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
+import { FARMING_ITEMS } from '../../content/items/farming';
 import { PLACES } from '../../content/people/places';
 import { ACTIVITIES } from '../../content/travelers/types';
 import { chance, int, next, pick, weighted } from '../kernel/rng';
@@ -187,7 +188,12 @@ export function routeMinutes(from: number, to: number): number {
 const nodeIds = Object.keys(NODES);
 const nodeSkill = (id: string): number => skillIdx(`skill.${NODES[id]!.tag}`);
 const gatherSkills = new Set(nodeIds.map(nodeSkill).filter((i) => i >= 0));
-const craftRecipes = Object.values(RECIPES).filter((r) => !r.enchant && r.result !== '');
+// Travelers do not farm (POW-M6-02: no new Traveler activity), so the field's tools and compost
+// are not among what they craft.
+const FARM_MADE = new Set(FARMING_ITEMS.map((i) => i.id));
+const craftRecipes = Object.values(RECIPES).filter(
+  (r) => !r.enchant && r.result !== '' && !FARM_MADE.has(r.result),
+);
 const ARMS = new Set(
   ['blades', 'heavy_arms', 'polearms', 'archery', 'unarmed', 'shieldcraft', 'evasion'].map((s) =>
     skillIdx(`skill.${s}`),

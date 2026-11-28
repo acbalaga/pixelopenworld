@@ -47,7 +47,8 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type === 'torch' ||
     def.type === 'arena' ||
     def.type === 'vigil' ||
-    def.type === 'vent'
+    def.type === 'vent' ||
+    def.type === 'plot'
   )
     return id;
   // A rest point has no body, so nothing is blocked by it, but it can be used from the front (M5-25).

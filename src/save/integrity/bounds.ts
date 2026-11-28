@@ -1,3 +1,6 @@
+import { FARMING } from '../../content/balance/farming';
+import { CROP_LIST } from '../../content/farming/crops';
+
 /**
  * Every bound the validator uses, as a named constant with its derivation. Bounds come from
  * `content/` and `content/balance/` wherever they can, so a balance change moves the bound with
@@ -139,6 +142,8 @@ const RATES: Record<XpSource['on'], number> = {
   damage: DAMAGE_EVENTS_PER_SECOND,
   dodge: DODGE_EVENTS_PER_SECOND,
   gather: GATHER_EVENTS_PER_SECOND,
+  /** A harvest is one command a plot. */
+  harvest: FARMING.harvestsPerSecond,
   craft: COOK_EVENTS_PER_SECOND,
   sprint: SPRINT_EVENTS_PER_SECOND,
   outdoorsNight: NIGHT_HOURS_PER_SECOND,
@@ -256,3 +261,18 @@ export function coinCeiling(seconds: number, kills: number, spentOnPurchases: nu
     saleCeiling(seconds, spentOnPurchases)
   );
 }
+
+/**
+ * The harvest bound (M6-02): real seconds in an in-game day, the shortest crop cycle in in-game
+ * days (the fastest crop or regrowth, sped by fertilizer), and the most one harvest gives.
+ */
+export const HARVEST_BOUND = {
+  realSecondsPerDay: (TIME.phases.reduce((n, p) => n + p.minutes, 0) * TIME.ticksPerMinute) / TPS,
+  fastestDays:
+    Math.min(...CROP_LIST.map((c) => Math.min(c.days, c.regrowDays ?? c.days))) /
+    ((100 + FARMING.fertBoost) / 100),
+  perHarvest: Math.max(
+    FARMING.giant.qty,
+    Math.ceil((FARMING.yieldBase * (100 + Math.max(...FARMING.soilYieldPct))) / 100),
+  ),
+};

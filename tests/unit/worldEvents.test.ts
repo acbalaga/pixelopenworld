@@ -334,6 +334,7 @@ describe('the save', () => {
     const s = deserializeState(at35.sim);
     expect(s.calendar).toEqual(newCalendar());
     delete (s as { calendar?: unknown }).calendar;
+    delete (s as { farm?: unknown }).farm;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

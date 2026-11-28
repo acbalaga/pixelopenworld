@@ -131,6 +131,16 @@ export const AUTHORED_TRIALS: readonly AuthoredTrial[] = [
     estMinutes: 8,
   },
   {
+    skill: 'skill.farming',
+    giver: 'npc.farmer',
+    objective: { kind: 'harvest', distinct: 10, minQuality: 1 },
+    intro:
+      'Anyone can grow one thing. Bring in ten different crops from the field, and let one of them be Fine or better.',
+    hint: 'Tamsin wants ten different crops harvested, one of them Fine or better.',
+    button: 'The farming test.',
+    estMinutes: 90,
+  },
+  {
     skill: 'skill.fishing',
     giver: 'npc.fisher',
     objective: { kind: 'gather', item: 'item.fish_river', count: 3 },

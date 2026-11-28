@@ -62,7 +62,9 @@ export type FixtureType =
   /** The "Next" board at the Pit: who waits for a duel (POW-M5-30). */
   | 'pitBoard'
   /** A guild's hall post: its banner, stash and goal board (POW-M5-08). `hall` says whose. */
-  | 'guildHall';
+  | 'guildHall'
+  /** A plot of the reeve's field (POW-M6-02): 2 x 3 tiles from its top left. `plot` says which. */
+  | 'plot';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -84,6 +86,8 @@ export interface FixtureDef {
   type: FixtureType;
   /** Guild hall: the guild it belongs to (4, 7), or 0 for the inn's back room, where the rest meet. */
   hall?: number;
+  /** Plot: its index in the field (`state.farm.plots`). */
+  plot?: number;
   /** Atlas sprite id drawn for it, with `closed` and `open` frames where it has two states. */
   sprite?: string;
   /** Body size in px for things that block. Portals and plates have none. */
@@ -190,6 +194,14 @@ export interface FixtureDef {
 
 const LIST: readonly FixtureDef[] = [
   { kind: 'fixture.waystone', type: 'waystone', sprite: 'prop.waystone', size: 12 },
+
+  // The reeve's field outside Hearthford's east gate (POW-M6-02): six plots, two across and three
+  // down. Each is placed at its top left tile. No body: the plot is walked on and worked from.
+  ...[0, 1, 2, 3, 4, 5].map((plot): FixtureDef => ({
+    kind: `fixture.field_plot_${plot}`,
+    type: 'plot',
+    plot,
+  })),
 
   // Millbrook's scarecrow with a crow on it, and a mound of turned earth (M4-20). Both only record
   // being used. What they mean is in `content/singulars`.

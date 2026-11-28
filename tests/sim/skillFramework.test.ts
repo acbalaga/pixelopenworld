@@ -78,10 +78,12 @@ describe('the 36 skills', () => {
     ]);
   });
 
-  it('list 4 pending skills: the late ones whose system has not merged', () => {
-    expect(PENDING_SKILLS).toHaveLength(4);
+  it('list 3 pending skills: the late ones whose system has not merged', () => {
+    expect(PENDING_SKILLS).toHaveLength(3);
     for (const id of PENDING_SKILLS) expect(SKILLS[id], id).toBeDefined();
-    for (const late of ['farming', 'husbandry', 'leadership', 'taming'])
+    // Farming is wired by M6-02.
+    expect(PENDING_SKILLS).not.toContain('skill.farming');
+    for (const late of ['husbandry', 'leadership', 'taming'])
       expect(PENDING_SKILLS).toContain(`skill.${late}`);
   });
 });
@@ -162,6 +164,17 @@ describe('every skill that is not pending earns XP', () => {
         source: 'manual',
       }),
     'skill.survival': (s, me) => feed(s, { type: 'eaten', id: me, item: 'item.berry_red' }),
+    'skill.farming': (s, me) =>
+      feed(s, {
+        type: 'harvested',
+        who: me,
+        plot: 0,
+        crop: 'crop.turnip',
+        item: 'item.turnip',
+        qty: 3,
+        quality: 0,
+        tier: 1,
+      }),
     'skill.athletics': (s, me) => {
       const p = s.entities.comps.pos[me]!;
       const a = s.entities.comps.avatar[me]!;
@@ -267,8 +280,8 @@ describe('every skill that is not pending earns XP', () => {
 
   const active = Object.keys(SKILLS).filter((id) => !PENDING_SKILLS.includes(id));
 
-  it('has 32 skills with a system after M4-06', () => {
-    expect(active).toHaveLength(32);
+  it('has 33 skills with a system after M6-02', () => {
+    expect(active).toHaveLength(33);
   });
 
   it.each(active)('%s is paid by its scripted action', (id) => {

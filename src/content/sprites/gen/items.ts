@@ -1,3 +1,4 @@
+import { farmIcons } from './farmIcons';
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
 import { DISTINCT_ICONS } from './itemsDistinct';
@@ -1003,4 +1004,5 @@ const REDRAWN = new Set(DISTINCT_ICONS.map((s) => s.id));
 export const ITEM_ICONS: readonly SpriteDef[] = [
   ...BASE_ICONS.filter((s) => !REDRAWN.has(s.id)),
   ...DISTINCT_ICONS,
+  ...farmIcons(),
 ];

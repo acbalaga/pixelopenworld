@@ -16,7 +16,7 @@ export type ItemCategory =
 export type Quality = 0 | 1 | 2 | 3;
 
 /** The tool kinds gathering and crafting ask for (M3-06, M3-07, M3-14). */
-export type ToolKind = 'pick' | 'axe' | 'sickle' | 'rod' | 'hammer' | 'needle';
+export type ToolKind = 'pick' | 'axe' | 'sickle' | 'rod' | 'hammer' | 'needle' | 'hoe' | 'can';
 
 /** The Bag tab filters. Every item belongs to exactly one. */
 export type BagFilter = 'gear' | 'tools' | 'food' | 'materials' | 'other';

@@ -140,6 +140,7 @@ export const SKILLS_READS = [
   'blocked',
   'parried',
   'gathered',
+  'harvested',
   'crafted',
   'repaired',
   'eaten',
@@ -314,6 +315,8 @@ export function skillsSystem(state: SimState): void {
         });
       } else if (e.type === 'gathered' && e.id === who) {
         practice(state, who, { on: 'gather', tag: e.tag, tier: e.tier, subject: e.item });
+      } else if (e.type === 'harvested' && e.who === who) {
+        practice(state, who, { on: 'harvest', tag: undefined, tier: e.tier, subject: e.crop });
       } else if (e.type === 'crafted' && e.id === who) {
         // Every craft sends the craft event with its own tag (cooking, smithing, ...).
         practice(state, who, { on: 'craft', tag: e.tag, tier: e.tier, subject: e.recipe });

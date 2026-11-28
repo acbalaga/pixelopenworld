@@ -46,6 +46,8 @@ export const TRIGGERS = [
   'travelerLoggedOut',
   'state.weather',
   'state.phase',
+  /** A crop in season (M6-02): `{item}` is one that can be planted now. */
+  'state.season',
   'state.idle',
   'state.afk',
   'state.lfg',

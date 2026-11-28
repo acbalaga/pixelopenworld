@@ -127,6 +127,7 @@ describe('schema 26 to 27 migration (the Bestiary)', () => {
     delete (s as { guild?: unknown }).guild;
     delete (s as { market?: unknown }).market;
     delete (s as { calendar?: unknown }).calendar;
+    delete (s as { farm?: unknown }).farm;
     delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
     delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);

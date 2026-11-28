@@ -62,6 +62,7 @@ export function holds(state: SimState, who: EntityId, conds: readonly Cond[] | u
         (getComp(state.entities, who, 'paths')?.earned.includes(c.pathEarned) === true) !==
         (c.not === true)
       );
+    if ('coin' in c) return (getComp(state.entities, who, 'avatar')?.coin ?? 0) >= c.coin;
     if ('renown' in c) return renownIn(state, who, c.renown.region) >= c.renown.atLeast;
     if ('phase' in c) return c.phase.includes(dayPhase(state.worldTick));
     if ('season' in c) return c.season.includes(seasonOf(state.worldTick));

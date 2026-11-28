@@ -4,6 +4,7 @@ import { CORE_TILES } from './core/tiles';
 import { tileDirt, tileGrass0, tileGrass1, tileGrass2, tileWater } from './core/terrain';
 import { autotileSprite } from './gen/autotile';
 import { creatureSprites } from './gen/creatures';
+import { cropSprites } from './gen/crops';
 import { dollLayers } from './gen/dolls';
 import { ITEM_ICONS } from './gen/items';
 import { natureSprites } from './gen/nature';
@@ -29,6 +30,7 @@ export const SPRITES: readonly SpriteDef[] = [
   ...nodeSprites(),
   ...worldSprites(),
   ...dawnmeadowSprites(),
+  ...cropSprites(),
   ...dollLayers(),
   ...creatureSprites(),
   uiPanel,

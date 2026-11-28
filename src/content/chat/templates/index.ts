@@ -9,6 +9,7 @@ import { QA } from './qa';
 import { TALK } from './talk';
 import { TRADE } from './trade';
 import { WEATHER } from './weather';
+import { SEASON } from './season';
 import { REACTIONS } from './reactions';
 import { SOCIAL } from './social';
 import { CAMP } from './camp';
@@ -26,6 +27,7 @@ export const TEMPLATES: readonly ChatTemplate[] = [
   ...LFG,
   ...QA,
   ...WEATHER,
+  ...SEASON,
   ...TALK,
   ...DEEDS,
   ...INDIVIDUALS,

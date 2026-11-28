@@ -15,6 +15,7 @@ import { newMailbox, normalMailbox, type Mailbox } from './mail';
 import { newGuildState, type GuildState } from './guild';
 import { newMarket, type MarketState } from './market';
 import { newCalendar, type CalendarState, type WorldEventsState } from './worldEvents';
+import { newFarm, normalFarm, type FarmState } from './farmState';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -326,6 +327,8 @@ export interface TrialProgress {
   n: number;
   t0: number;
   bad?: number[];
+  /** A `harvest` objective: the different crops harvested so far (M6-02). */
+  crops?: string[];
 }
 
 export interface Stagger {
@@ -676,6 +679,8 @@ export interface SimState {
   market: MarketState;
   /** The last world event fired per kind, and the last raid paid (M5-11). Saved. */
   calendar: CalendarState;
+  /** The reeve's field, the seeds the player knows, the water in the can (M6-02). Saved. */
+  farm: FarmState;
   /** Transient. World events running now (M5-11): rebuilt from the calendar after a load. */
   worldEvents?: WorldEventsState | undefined;
   /** Transient. A market day is on (M5-11 sets it): more demand and more Traveler stock. */
@@ -764,6 +769,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     guild: newGuildState(),
     market: newMarket(),
     calendar: newCalendar(),
+    farm: newFarm(),
     events: createEventQueue(),
     world: null,
   };
@@ -829,6 +835,7 @@ function persistent(state: SimState): Omit<
     guild: state.guild,
     market: state.market,
     calendar: state.calendar,
+    farm: state.farm,
   };
 }
 
@@ -851,6 +858,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     guild?: GuildState;
     market?: MarketState;
     calendar?: CalendarState;
+    farm?: FarmState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -877,6 +885,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     market: raw.market ?? newMarket(),
     // A state from before world events has fired none: the next slot fires at its time.
     calendar: raw.calendar ?? newCalendar(),
+    // A state from before farming has an unleased, untilled field and a full can.
+    farm: normalFarm(raw.farm),
     events: createEventQueue(),
     world,
   };

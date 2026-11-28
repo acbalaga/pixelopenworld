@@ -264,6 +264,7 @@ describe('integrity and the save', () => {
     expect(s.market).toEqual(newMarket());
     delete (s as { market?: unknown }).market;
     delete (s as { calendar?: unknown }).calendar;
+    delete (s as { farm?: unknown }).farm;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

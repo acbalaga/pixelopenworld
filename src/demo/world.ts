@@ -23,6 +23,8 @@ import { MailSheet } from '../ui/dom/mailSheet';
 import { PartySheet } from '../ui/dom/partySheet';
 import { GuildSheet } from '../ui/dom/guildSheet';
 import { PitSheet } from '../ui/dom/pitSheet';
+import { PlotSheet } from '../ui/dom/plotSheet';
+import { FARM_STRINGS } from '../content/strings/farming';
 import { MarketSheet } from '../ui/dom/marketSheet';
 import { MARKET_STRINGS } from '../content/strings/market';
 import { EVENT_STRINGS } from '../content/strings/events';
@@ -88,6 +90,8 @@ import { loadAtlas, type Manifest } from '../render/atlas';
 import { Camera } from '../render/camera';
 import { Notices } from '../ui/dom/notices';
 import { FIXTURES } from '../content/world/fixtures';
+import { CROPS, CROP_NAMES } from '../content/farming/crops';
+import { SQUARES, isWet, stageOf } from '../sim/farming';
 import { litFor } from '../sim/systems/dungeon';
 import { roomAt as regionRoomAt, OUTDOORS } from '../content/world/rooms';
 import { UI_STRINGS } from '../content/strings/ui';
@@ -581,6 +585,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
       !partyOpen &&
       !guildOpen &&
       !pitOpen &&
+      !plotOpen &&
       !marketOpen,
     insets: () => readSafeInsets(probe),
   });
@@ -854,12 +859,65 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const openedAt = new Map<number, number>();
   const OPENING_STEP_MS = 90;
   const OPENING_FRAMES = { door: 4, gate: 3, chest: 1 } as const;
+  /**
+   * A plot of the reeve's field (M6-02), from its top left px: tilled earth (darker when watered),
+   * one plant on each of its six tiles at the crop's stage, or the giant over its square of four,
+   * and a twinkle over a ripe crop when the avatar is near.
+   */
+  const drawPlot = (i: number, left: number, top: number, now: number): void => {
+    const plot = state.farm.plots[i];
+    if (!plot) return;
+    if (plot.tilled)
+      renderer.drawSprite(
+        Layer.Detail,
+        spriteFrame('plot.soil', isWet(state, plot) ? 'wet' : 'dry'),
+        left,
+        top,
+      );
+    if (!plot.crop) return;
+    const crop = CROPS[plot.crop];
+    if (plot.giant !== undefined) {
+      // The giant is drawn once, by the first plot of its square, over the middle of the four.
+      const square = SQUARES[plot.giant];
+      if (square?.[0] === i && crop?.giant)
+        renderer.drawSprite(
+          Layer.Objects,
+          spriteFrame(`crop.giant_${crop.id.replace(/^crop\./, '')}`, 'base'),
+          left + 40,
+          top + 62,
+        );
+      return;
+    }
+    const stage = stageOf(state, plot);
+    if (stage < 0) return;
+    const h = spriteFrame(plot.crop, `stage_${stage}`);
+    for (let j = 0; j < 3; j++)
+      for (let k = 0; k < 2; k++)
+        renderer.drawSprite(Layer.Objects, h, left + k * 16 + 8, top + j * 16 + 15);
+    if (stage === 3 && apos) {
+      const dx = apos.x / 256 - (left + 16);
+      const dy = apos.y / 256 - (top + 24);
+      if (dx * dx + dy * dy < SPARKLE_PX * SPARKLE_PX) {
+        const t = Math.floor(now / 180) % 6;
+        const sx = left + 4 + ((t * 11) % 24);
+        const sy = top + 4 + ((t * 17) % 36);
+        renderer.drawRect(Layer.Objects, sx, sy - 1, 1, 3, '#fff6c8', 0.9);
+        renderer.drawRect(Layer.Objects, sx - 1, sy, 3, 1, '#fff6c8', 0.9);
+      }
+    }
+  };
+  /** How close the avatar must be for a ripe crop to twinkle, px. */
+  const SPARKLE_PX = 56;
   const drawFixtures = (now: number): void => {
     const e = state.entities;
     for (const id of e.comps.fixture.keys()) {
       const f = e.comps.fixture[id];
       const p = e.comps.pos[id];
       const def = f ? FIXTURES[f.kind] : undefined;
+      if (f && p && def?.type === 'plot' && def.plot !== undefined) {
+        drawPlot(def.plot, Math.round(p.x / 256) - 8, Math.round(p.y / 256) - 16, now);
+        continue;
+      }
       if (!f || !p || !def?.sprite) continue;
       // The slab over a hidden way is drawn only while the way is shut.
       if (def.unlockedBy && f.open) continue;
@@ -1149,6 +1207,16 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
     send: (c) => pendingCommands.push(c),
     onOpenChange: (open) => {
       pitOpen = open;
+      if (open) input.sampler.releaseAll();
+    },
+  });
+  // A plot of the reeve's field (M6-02).
+  let plotOpen = false;
+  const plotSheet = new PlotSheet(root, {
+    read: () => ({ state, who }),
+    send: (c) => pendingCommands.push(c),
+    onOpenChange: (open) => {
+      plotOpen = open;
       if (open) input.sampler.releaseAll();
     },
   });
@@ -1623,6 +1691,17 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (e.type === 'partyBoardOpened') partySheet.open();
             else if (e.type === 'guildHallOpened') guildSheet.open(e.hall);
             else if (e.type === 'pitBoardOpened') pitSheet.open();
+            // Farming (M6-02): the plot sheet, and a word when something cannot be done.
+            else if (e.type === 'plotOpened') plotSheet.open(e.plot);
+            else if (e.type === 'farmRefused') {
+              const t = FARM_STRINGS.refused[e.why];
+              if (t) notices.toast(t);
+            } else if (e.type === 'canFilled') notices.toast(FARM_STRINGS.filled);
+            else if (e.type === 'seedLearned')
+              notices.toast(
+                FARM_STRINGS.learned.replace('{crop}', CROP_NAMES[e.crop]?.crop ?? e.crop),
+              );
+            else if (e.type === 'giantGrew') notices.toast(FARM_STRINGS.giantGrew);
             else if (e.type === 'marketOpened') marketSheet.open();
             // World events (M5-11): announced and begun in the System channel.
             else if (e.type === 'worldEventSoon') {
