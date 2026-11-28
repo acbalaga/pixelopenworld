@@ -28,6 +28,11 @@ export const CHAT = {
   answerChance: 0.8,
   /** Queued lines kept at most. */
   queueCap: 24,
+  /**
+   * A drop is bragged about only at or under this drop chance, in percent (POW-M6-23). The same as
+   * the party's visible-roll line (`PARTY.rollShowPct`), so what is rolled in view is what is boasted.
+   */
+  bragDropPct: 30,
 } as const;
 
 /**

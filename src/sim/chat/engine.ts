@@ -281,13 +281,14 @@ function make(
   t: TravelerIdentity,
   trigger: Trigger,
   facts: Slots,
-  opts: { category?: string; ids?: readonly string[] } = {},
+  opts: { category?: string; skip?: string; ids?: readonly string[] } = {},
 ): Made | null {
   const d = diceFor(c.state, c.chat, t.slot * 7 + c.minute);
   let pool = (BY_TRIGGER.get(trigger) ?? []).filter(
     (tpl) =>
       eligible(c, t, tpl) &&
       (!opts.category || tpl.category === opts.category) &&
+      (!opts.skip || tpl.category !== opts.skip) &&
       (!opts.ids || opts.ids.includes(tpl.id)),
   );
   for (let tries = 0; tries < 5 && pool.length > 0; tries++) {
@@ -436,8 +437,12 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
     facts: Slots,
     category?: string,
     reply = false,
+    skip?: string,
   ): void => {
-    const made = make(c, t, trigger, facts, category ? { category } : {});
+    const made = make(c, t, trigger, facts, {
+      ...(category ? { category } : {}),
+      ...(skip ? { skip } : {}),
+    });
     if (!made || !room(made.tpl.channel)) return;
     chat.tokens[made.tpl.channel] -= 1;
     speak(c, t.slot, made.tpl.channel, made.text, made.tpl.id, id, reply, made.slots);
@@ -502,12 +507,20 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
         say(t, 'travelerArrived', { place: placeName(e.place) ?? '' });
       break;
     case 'travelerLooted':
+      // A common drop can be offered for sale, but nobody brags about it (POW-M6-23).
       if (canSpeak(c, e.slot) && dice < 0.7)
-        say(t, 'travelerLooted', {
-          ...(itemName(e.item) ? { item: itemName(e.item) as string } : {}),
-          qty: String(e.qty),
-          ...(CREATURES[e.creature] ? { creature: CREATURES[e.creature]!.name } : {}),
-        });
+        say(
+          t,
+          'travelerLooted',
+          {
+            ...(itemName(e.item) ? { item: itemName(e.item) as string } : {}),
+            qty: String(e.qty),
+            ...(CREATURES[e.creature] ? { creature: CREATURES[e.creature]!.name } : {}),
+          },
+          undefined,
+          false,
+          e.chance > CHAT.bragDropPct ? 'brag' : undefined,
+        );
       break;
     case 'travelerCrafted':
       if (canSpeak(c, e.slot) && dice < 0.25)

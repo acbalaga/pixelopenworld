@@ -167,15 +167,44 @@ describe('a field raid', () => {
     const crowd = crowdOf(s);
     const gate = PLACE_LIST.indexOf('hearthford.gate_n');
     const raiders = ev.parties!.flat();
-    const off = raiders.filter((r) => crowd.doing[r]?.place !== gate);
+    // Everyone mustering is at the gate, apart from anyone offline or busy (crafting, in a party),
+    // who stays named in their party but does not walk out (POW-M6-23).
+    const busy = (r: number): boolean =>
+      crowd.online[r] !== 1 || crowd.doing[r]?.kind === 'craft' || crowd.doing[r]?.kind === 'party';
+    const off = raiders.filter((r) => crowd.doing[r]?.place !== gate && !busy(r));
     expect(off).toEqual([]);
+    expect(raiders.filter((r) => !busy(r)).length).toBeGreaterThan(0);
     if (s.travelers.some((l, i) => l.guild === RAID.firstGuild && crowd.online[i] === 1))
       expect(s.travelers[ev.parties![0]![0]!]!.guild).toBe(RAID.firstGuild);
     advance(s, RAID.musterMin + 1, 1, undefined, true);
     const site = PLACE_LIST.indexOf(ev.site!);
-    expect(
-      raiders.filter((r) => crowd.online[r] === 1).every((r) => crowd.doing[r]?.place === site),
-    ).toBe(true);
+    expect(raiders.filter((r) => !busy(r)).every((r) => crowd.doing[r]?.place === site)).toBe(true);
+  });
+
+  it('has the same parties after a reload mid-raid, at the muster and out at the fight', () => {
+    for (const [seed, after] of [
+      [11, 1],
+      [17, RAID.musterMin + 2],
+    ] as const) {
+      const s = raidNow(seed);
+      advance(s, after, 1, undefined, true);
+      const before = s.worldEvents!.active.find((a) => a.kind === 'raid')!;
+      expect(before.parties!.length, `seed ${seed}`).toBeGreaterThan(0);
+      const back = deserializeState(serializeState(s));
+      back.clock = s.clock!;
+      back.worldEvents = undefined;
+      // Both run one more minute: the saved game reloaded, and the one that kept going.
+      advance(back, 1, 1, undefined, true);
+      advance(s, 1, 1, undefined, true);
+      const again = back.worldEvents!.active.find((a) => a.kind === 'raid')!;
+      expect(again.parties, `seed ${seed} after ${after} min`).toEqual(before.parties);
+      expect(Boolean(again.walked), `seed ${seed}`).toBe(Boolean(before.walked));
+      // They are where the raid has them: still at the gate, or gone to the fight.
+      const crowd = crowdOf(back);
+      const want = PLACE_LIST.indexOf(again.walked ? again.site! : 'hearthford.gate_n');
+      const sent = again.parties!.flat().filter((r) => crowd.doing[r]?.place === want);
+      expect(sent.length, `seed ${seed} raiders placed`).toBeGreaterThan(0);
+    }
   });
 
   it('pays the player by their share once, within the bound, and not again after a reload', () => {

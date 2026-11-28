@@ -54,14 +54,16 @@ function run(s: SimState, ticks: number, each?: () => void): void {
 
 describe('the camp place', () => {
   it('are outdoor wayside places added after the others, so saved place indices hold', () => {
-    expect(CAMP.places).toHaveLength(2);
+    expect(CAMP.places).toHaveLength(3);
     for (const id of CAMP.places) {
       expect(PLACES[id]).toMatchObject({ area: 'wayside', indoors: false });
       expect(PLACE_LIST.indexOf(id)).toBeGreaterThan(PLACE_LIST.indexOf('wayside.chapel'));
     }
-    // The camps come right after the older places, then the Pit (M5-29), then the guild halls
-    // (M5-08): indices are saved, so they never move.
-    expect(PLACE_LIST.slice(22, 24)).toEqual([...CAMP.places]);
+    // The first two camps come right after the older places, then the Pit (M5-29), then the guild
+    // halls (M5-08) and the north gate: indices are saved, so they never move. The woods-edge camp
+    // (M6-23) came later, so it is last.
+    expect(PLACE_LIST.slice(22, 24)).toEqual(CAMP.places.slice(0, 2));
+    expect(PLACE_LIST[PLACE_LIST.length - 1]).toBe('wayside.woods_camp');
   });
 
   it('each ring a rest point fixture, and no slot sits on it or on a solid tile, and each is reachable from the road', () => {
@@ -118,6 +120,14 @@ describe('the camp place', () => {
       // The walk from the square is inside the 80 tile ring (owner, 2026-11-25).
       expect(seen.get(`${fx},${fy}`), id).toBeLessThanOrEqual(80);
     }
+    // Every rest point inside the ring is a camp, so the resting rule reaches it (POW-M6-23).
+    const foci = new Set(CAMP.places.map((id) => PLACE_SPOTS[id]!.focus!.join(',')));
+    const ring = DAWNMEADOW.placements.filter(
+      (p) =>
+        p.kind === 'fixture.rest_point' && !p.stamp && (seen.get(`${p.x},${p.y}`) ?? 1e9) <= 80,
+    );
+    expect(ring.length).toBe(CAMP.places.length);
+    for (const p of ring) expect(foci.has(`${p.x},${p.y}`), `rest point ${p.x},${p.y}`).toBe(true);
   });
 });
 

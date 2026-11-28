@@ -88,8 +88,6 @@ export const DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.hesper.c_teach': 'Teach me something.',
   'dlg.hesper.teach':
     'Sunwort and dewmint, nothing more. Put them in the pot together and see what comes out.',
-  'dlg.hesper.trial':
-    'And if you want to call yourself a forager, bring me sunwort picked at dawn or dusk. It keeps its scent then.',
   'dlg.hesper.again': 'You again. The pot is yours whenever you need it.',
   'dlg.hesper.c_test': 'Remind me about the test.',
   'dlg.hesper.c_supper': 'Does the watch need feeding?',

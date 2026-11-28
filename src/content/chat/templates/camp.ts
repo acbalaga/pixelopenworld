@@ -6,7 +6,7 @@ import { L } from './helper';
  * player, and gated by `place` so they fire only at a camp. Plain talk: tea, stew, tired feet.
  */
 const AT_CAMP = {
-  place: ['wayside.river_camp', 'wayside.meadow_camp'],
+  place: ['wayside.river_camp', 'wayside.meadow_camp', 'wayside.woods_camp'],
   doing: ['social', 'afk'],
 } as const;
 

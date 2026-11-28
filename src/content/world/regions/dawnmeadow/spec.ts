@@ -251,7 +251,8 @@ const placements: Placement[] = [
   // Camps (POW-M4-23C): a bedroll each, outside every settlement. The Fernside climb has two more.
   at('fixture.rest_point', 140, 235), // meadow, south
   at('fixture.rest_point', 215, 140), // meadow, north
-  at('fixture.rest_point', 128, 176), // woods edge
+  // Woods edge: one tile in from 128,176, so it sits inside the 80-tile camp ring (POW-M6-23).
+  at('fixture.rest_point', 129, 177), // woods edge
   at('fixture.rest_point', 236, 195), // river
   at('fixture.rest_point', 180, 100), // quarry road
   at('fixture.rest_point', 150, 305), // coast

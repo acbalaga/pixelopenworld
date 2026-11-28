@@ -12,7 +12,7 @@ import type { SimState } from './state';
 import { hash01 } from './travelers/dice';
 import { identitiesOf } from './travelers/generate';
 import { PLACE_LIST } from './travelers/lists';
-import { localMinute } from './travelers/schedule';
+import { isOnlineAt, localMinute } from './travelers/schedule';
 import { routeMinutes } from './travelers/crowd';
 
 /**
@@ -139,22 +139,15 @@ function sitePx(site: string): { x: number; y: number } | null {
   return r ? { x: (r.x + r.w / 2) * 16, y: (r.y + r.h / 2) * 16 + 8 } : null;
 }
 
-/** Raid parties of 3 to 5 from friend ties and guildmates, Iron Oath first, among those online. */
-function formParties(state: SimState, slot: number): number[][] {
-  const crowd = state.crowd;
-  if (!crowd) return [];
+/**
+ * Raid parties of 3 to 5 from friend ties and guildmates, Iron Oath first, among those online when
+ * the raid starts. Only saved or seeded inputs go in (schedules, guilds, ties, the slot), so a reload
+ * in the middle of a raid forms the same parties again (POW-M6-23). Who is busy is checked when
+ * raiders are sent, not here.
+ */
+function formParties(state: SimState, slot: number, start: number): number[][] {
   const ids = identitiesOf(state.seed);
-  const free = ids
-    .filter((t) => {
-      const d = crowd.doing[t.slot];
-      return (
-        crowd.online[t.slot] === 1 &&
-        !state.party?.members.some((m) => m.slot === t.slot) &&
-        d?.kind !== 'craft' &&
-        d?.kind !== 'party'
-      );
-    })
-    .map((t) => t.slot);
+  const free = ids.filter((t) => isOnlineAt(state.seed, t, start)).map((t) => t.slot);
   const guildOf = (s: number): number => state.travelers[s]!.guild;
   free.sort(
     (a, b) =>
@@ -197,6 +190,10 @@ function sendRaiders(
   for (const party of ev.parties ?? [])
     for (const s of party) {
       if (crowd.online[s] !== 1) continue;
+      // Busy at their bench, in a party, or with the player: they stay where they are.
+      const d = crowd.doing[s];
+      if (d?.kind === 'craft' || d?.kind === 'party') continue;
+      if (state.party?.members.some((m) => m.slot === s)) continue;
       const life = state.travelers[s]!;
       // Everyone leaves now, so a party is seen walking out together.
       const eta = routeMinutes(life.place, idx);
@@ -329,7 +326,7 @@ function fire(
   if (kind === 'raid') {
     ev.site =
       sitesWithSpots[Math.floor(hash01(state.seed, 0, 1400, at.slot) * sitesWithSpots.length)]!;
-    ev.parties = formParties(state, at.slot);
+    ev.parties = formParties(state, at.slot, at.start);
     sendRaiders(state, ev, 'hearthford.gate_n', 'social');
   }
   w.active.push(ev);
@@ -345,9 +342,16 @@ function resume(
   const w = evOf(state);
   if (w.active.some((a) => a.kind === kind && a.slot === at.slot)) return;
   const ev: ActiveEvent = { kind, slot: at.slot, start: at.start, end: at.end, walked: true };
-  if (kind === 'raid')
+  if (kind === 'raid') {
     ev.site =
       sitesWithSpots[Math.floor(hash01(state.seed, 0, 1400, at.slot) * sitesWithSpots.length)]!;
+    // The same parties as before the load, back at the muster or out at the fight (POW-M6-23).
+    ev.parties = formParties(state, at.slot, at.start);
+    const minute = state.clock ? localMinute(state.clock.nowMs, state.clock.tzOffsetMin) : at.start;
+    ev.walked = minute >= at.start + RAID.musterMin;
+    if (ev.walked) sendRaiders(state, ev, ev.site, 'fight');
+    else sendRaiders(state, ev, 'hearthford.gate_n', 'social');
+  }
   w.active.push(ev);
 }
 
