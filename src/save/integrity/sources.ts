@@ -12,6 +12,7 @@ import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
 import { FIXTURES } from '../../content/world/fixtures';
 import { CROP_LIST } from '../../content/farming/crops';
+import { FISH } from '../../content/fishing/fish';
 import { SINGULARS } from '../../content/singulars';
 import type { ItemSource } from '../../sim/ledger';
 
@@ -27,6 +28,8 @@ function build(): Map<string, Set<ItemSource>> {
   };
   for (const c of Object.values(CREATURES)) for (const d of c.drops) add(d.item, 'loot');
   for (const n of Object.values(NODES)) for (const y of n.yields) add(y.item, 'gather');
+  // Every fish, the legend included, is landed through gathering (M6-05).
+  for (const f of FISH) add(f.item, 'gather');
   // Crops come from the field (M6-02).
   for (const c of CROP_LIST) add(c.result, 'harvest');
   // Aldo mills wheat to flour (M6-04).

@@ -41,6 +41,11 @@ export class KeyboardState {
     return this.down.has('KeyK');
   }
 
+  /** The context key is down (the hold of a craft step, and the line of a fish). */
+  contextHeld(): boolean {
+    return this.down.has('KeyE');
+  }
+
   /** Technique slots currently held. */
   held(): ButtonId[] {
     return (['Digit1', 'Digit2', 'Digit3', 'Digit4'] as const)

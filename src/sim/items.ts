@@ -27,6 +27,7 @@ import type { Inventory, ItemStack, SimState, Storage } from './state';
 import { activeMods, applyMods, modPct, stackMods } from './mods';
 import { contextTarget } from './systems/interact';
 import { pressGather, startGather } from './gathering';
+import { setReel } from './fishing';
 import { crafting, holdStep, repair, startCraft, tapStep, tracePoint } from './crafting';
 import { STATIONS } from '../content/items/stations';
 import { FIXTURES } from '../content/world/fixtures';
@@ -590,6 +591,9 @@ export function applyItemCommand(state: SimState, who: EntityId, c: Command): vo
       return;
     case 'craftHold':
       holdStep(state, who, c.on);
+      return;
+    case 'reel':
+      setReel(state, who, c.on);
       return;
     case 'repair':
       repair(state, who, c.slot);

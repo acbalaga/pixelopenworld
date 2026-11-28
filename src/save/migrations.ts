@@ -757,6 +757,15 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 36, sim: serializeState(s) };
   },
+  /**
+   * 36 to 37 (M6-05): the sim gains `fishing`, the records page and the legend flag. A save made
+   * before has landed nothing by the new rules, so there are no records and Old Gnarl is still out
+   * there. Fish already in the bag were made by the ledger and stay.
+   */
+  36: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 37, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */

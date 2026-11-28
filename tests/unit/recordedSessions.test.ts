@@ -4,6 +4,7 @@ import { spawnNode } from '../../src/sim/items';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { tamper } from '../support/saves';
 import { BOAR, BOSS, MOSSLING, Run, SPITBLOOM, TPS } from '../support/bots';
+import { playCast } from '../support/reelBot';
 
 /** 30 simulated minutes, the shortest session the ticket asks for. */
 const MINUTES_30 = 30 * 60 * TPS;
@@ -123,12 +124,9 @@ describe('recorded sessions: honest play is never flagged', () => {
       run.stand(x + 1, y, 6);
       run.tick({ type: 'interact' });
       if (swings === 0) {
-        // Fishing: wait for the bite, then tap inside its window.
-        for (let i = 0; i < 300 && run.s.entities.comps.gather[run.me]; i++) {
-          run.run(1);
-          const g = run.s.entities.comps.gather[run.me];
-          if (g && g.t === g.wait && loops % 2 === 0) run.tick({ type: 'interact' });
-        }
+        // Fishing: wait for the bite, tap it and hold the line; every other cast lets the bite go.
+        if (loops % 2 === 0) playCast(run.s, run.me, (...c) => run.tick(...c));
+        else for (let i = 0; i < 400 && run.s.entities.comps.gather[run.me]; i++) run.run(1);
       } else {
         for (let k = 0; k < swings; k++) {
           run.run(15);

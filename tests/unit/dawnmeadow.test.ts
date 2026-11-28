@@ -295,7 +295,7 @@ describe('the discoverable check (M4-11)', () => {
     placements: DAWNMEADOW.placements.filter(
       (p) =>
         !DAWNMEADOW_CLUSTERS.includes(p) &&
-        !(p.kind === 'node.fishing_spot' && !(p.x === 238 && p.y === 170)) &&
+        !(p.kind.startsWith('node.fishing_') && !(p.x === 238 && p.y === 170)) &&
         // The first iron vein, at 185,75, is old.
         !(p.kind === 'node.iron_vein' && !(p.x === 185 && p.y === 75)),
     ),

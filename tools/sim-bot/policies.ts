@@ -1,7 +1,9 @@
 import { MOSSLING, Run } from '../../tests/support/bots';
 import { withRustySword } from '../../tests/support/oldKit';
+import { FISHING } from '../../src/content/balance/fishing';
 import { SKILLS_BALANCE } from '../../src/content/balance/skills';
 import { TIME } from '../../src/content/balance/time';
+import { FISH as FISH_LIST } from '../../src/content/fishing/fish';
 import { spawnNode } from '../../src/sim/items';
 import { spawnFixture } from '../../src/sim/systems/fixtures';
 import { spawnNpc } from '../../src/sim/systems/npcs';
@@ -201,19 +203,22 @@ export const FISH_SPOTS: readonly [number, number][] = [
   [45, 49],
 ];
 
+/** Every fish the river bank gives, for the bot to sell. */
+const FISH_ITEM_IDS = FISH_LIST.filter((f) => f.water.includes('river')).map((f) => f.item);
+
 /** Casts at the spot, waits for the bite and takes it. */
 function fish(run: Run, n: number): void {
   const [x, y] = FISH_SPOTS[n % FISH_SPOTS.length] as [number, number];
   run.stand(x + 1, y, 6);
   run.tick({ type: 'interact' });
-  const g = (): { t: number; wait: number } | null | undefined =>
-    run.s.entities.comps.gather[run.me];
-  for (let i = 0; i < 400; i++) {
-    const c = g();
-    if (!c || c.t >= c.wait) break;
-    run.tick();
+  // Wait for the bite, tap it, and hold the line by where the marker is (M6-05).
+  for (let i = 0; i < 1200 && run.s.entities.comps.gather[run.me]; i++) {
+    const f = run.s.entities.comps.gather[run.me]?.fish;
+    if (f?.phase === 'bite') run.tick({ type: 'interact' });
+    else if (f?.phase === 'reel')
+      run.tick({ type: 'reel', on: f.m + f.v * FISHING.bot.lead < FISHING.center });
+    else run.tick();
   }
-  run.tick({ type: 'interact' });
   run.run(30);
 }
 
@@ -228,7 +233,7 @@ export const FISH: Policy = {
   },
   step(run, n) {
     fish(run, n);
-    if (n % 10 === 9) sellAll(run, ['item.fish_river', 'item.fish_silver']);
+    if (n % 10 === 9) sellAll(run, FISH_ITEM_IDS);
   },
 };
 

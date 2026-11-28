@@ -73,10 +73,9 @@ export const ITEMS_BALANCE = {
     toolWindowTicks: 1,
     /** Chance of Fine on a sweet hit, percent per skill point. Rolled on the `loot` stream. */
     finePctPerPoint: 1,
-    /** Fishing placeholder: a bite comes after this many ticks (2 to 6 seconds), and holds this long. */
+    /** Fishing: a bite comes after this many ticks (2 to 6 seconds). The fight is `balance/fishing.ts`. */
     fishWaitMin: 60,
     fishWaitMax: 180,
-    fishBiteTicks: 15,
   },
   cook: {
     maxIngredients: 3,

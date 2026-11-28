@@ -5,6 +5,8 @@ import type { NodeDef, SweepDef, YieldDef } from '../content/items/types';
 import { getComp, setComp, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
 import { int, weighted } from './kernel/rng';
+import { FISHING as FISH } from '../content/balance/fishing';
+import { bite, castWait, hook, land, lose, newFight, reelStep } from './fishing';
 import { give, useTool } from './items';
 import { pointsOf } from './skills';
 import { activeMods, modAdd } from './mods';
@@ -101,14 +103,16 @@ export function startGather(state: SimState, who: EntityId, target: EntityId): b
   const inv = getComp(state.entities, who, 'inventory');
   if (!node || !def || !inv || !nodeReady(state, target)) return false;
   const tool = def.tool ? bestTool(inv, def.tool) : null;
-  const wait = def.fishing ? int(state.rng.world, B.gather.fishWaitMin, B.gather.fishWaitMax) : 0;
+  // A cast waits for a bite, with a minnow on the hook if there is one (M6-05).
+  const cast = def.fishing ? castWait(state, who) : null;
   setComp(state.entities, who, 'gather', {
     node: target,
     t: 0,
     swing: 0,
     hits: 0,
     tool: tool?.slot ?? -1,
-    wait,
+    wait: cast?.wait ?? 0,
+    ...(cast ? { fish: newFight(cast.bait) } : {}),
   });
   emit(state.events, { type: 'gatherStarted', id: who, node: target });
   return true;
@@ -120,8 +124,8 @@ export function pressGather(state: SimState, who: EntityId): void {
   const s = gatherSweep(state, who);
   if (!g || !s) return;
   if (s.def.fishing) {
-    // Before the bite a press does nothing: there is nothing to land yet.
-    if (g.t >= g.wait && g.t < g.wait + B.gather.fishBiteTicks) finishSweep(state, who, true);
+    // Before the bite a press does nothing. On the bite it hooks the fish; the fight is held, not tapped.
+    hook(state, who, g);
     return;
   }
   finishSweep(state, who, g.t >= s.sweep.sweetFrom && g.t <= s.sweep.sweetTo);
@@ -132,13 +136,22 @@ export function tickGather(state: SimState, who: EntityId): void {
   const g = getComp(state.entities, who, 'gather');
   const s = gatherSweep(state, who);
   if (!g || !s) return;
-  g.t++;
   if (s.def.fishing) {
-    if (g.t === g.wait) emit(state.events, { type: 'gatherBite', id: who, node: g.node });
-    // A bite let go still lands the common catch.
-    if (g.t >= g.wait + B.gather.fishBiteTicks) finishSweep(state, who, false);
+    // A cast saved before the minigame has no fight: it starts again as a plain wait.
+    const f = (g.fish ??= newFight(false));
+    if (f.phase === 'reel') {
+      const r = reelStep(state, f);
+      if (r === 'landed') land(state, who, g, s.def);
+      else if (r === 'lost') lose(state, who, g.node, 'tired');
+      return;
+    }
+    g.t++;
+    if (f.phase === 'wait' && g.t >= g.wait) bite(state, who, g, s.def, yieldsFor(s.def, state));
+    // A bite not answered in time lets go.
+    else if (f.phase === 'bite' && g.t >= g.wait + FISH.biteTicks) lose(state, who, g.node, 'slow');
     return;
   }
+  g.t++;
   // Running out the sweep still yields, with no bonus.
   if (g.t >= s.sweep.ticks) finishSweep(state, who, false);
 }

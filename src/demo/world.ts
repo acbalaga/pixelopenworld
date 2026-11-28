@@ -66,9 +66,12 @@ import {
 } from '../platform/clock';
 import { worldTickAt } from '../sim/time';
 import { gatherSweep } from '../sim/gathering';
+import { FISHING as FISH_BAL } from '../content/balance/fishing';
+import { FISH_STRINGS } from '../content/strings/fishing';
 import { drawCraftStep } from '../render/craftStep';
 import {
   drawGatherMeter,
+  drawReelMeter,
   faded,
   meterRect,
   stepPoint,
@@ -843,6 +846,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
   const stepPtr = { down: false, x: 0, y: 0 };
   let stepGeom: { x: number; y: number; w: number; h: number; k: number } | null = null;
   let holdSent = false;
+  let reelSent = false;
   let lastMeter: { draw: (r: Draws) => void; until: number } | null = null;
   let kbCursor = { x: 500, y: 500 };
   const setPtr = (e: PointerEvent, down: boolean): void => {
@@ -1623,7 +1627,7 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             else if (kb.x !== 0 || kb.y !== 0)
               pendingCommands.push({ type: 'craftPoint', x: kbCursor.x, y: kbCursor.y });
           } else if (st0.step === 'hold') {
-            const want = stepPtr.down || input.sampler.keyboard.held().includes('context');
+            const want = stepPtr.down || input.sampler.keyboard.contextHeld();
             if (want !== holdSent) {
               holdSent = want;
               pendingCommands.push({ type: 'craftHold', on: want });
@@ -1632,6 +1636,24 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         } else {
           holdSent = false;
           kbCursor = { x: 500, y: 500 };
+        }
+        // A fish on the line (M6-05): the pointer anywhere, or the context key, holds the line.
+        // The walk, the flick and the lock are off while it fights, so a thumb on the screen only reels.
+        const fish0 = state.entities.comps.gather[who]?.fish;
+        if (fish0 && fish0.phase === 'reel') {
+          rec.move = { x: 0, y: 0 };
+          rec.moveDir = null;
+          rec.full = false;
+          rec.dodge = null;
+          rec.targetTap = null;
+          const want = stepPtr.down || input.sampler.keyboard.contextHeld();
+          if (want !== reelSent) {
+            reelSent = want;
+            pendingCommands.push({ type: 'reel', on: want });
+          }
+        } else if (reelSent) {
+          reelSent = false;
+          pendingCommands.push({ type: 'reel', on: false });
         }
         mapper.syncGuard(state.entities.comps.fighter[who]?.guard === true);
         if (rec.menu) menu.toggle();
@@ -1842,6 +1864,24 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
               amount: e.qty,
             });
           else if (e.type === 'gatherResolved' && e.id === who) lastGatherQty = e.qty;
+          else if (e.type === 'gatherBite' && e.id === who)
+            notices.toast(FISH_STRINGS.bite, 'fish.bite');
+          else if (e.type === 'fishHooked' && e.id === who)
+            notices.toast(FISH_STRINGS.hooked, 'fish.hooked');
+          else if (e.type === 'fishBaited' && e.id === who)
+            notices.toast(FISH_STRINGS.baited, 'fish.baited');
+          else if (e.type === 'fishLost' && e.id === who)
+            notices.toast(
+              e.reason === 'slow' ? FISH_STRINGS.lostSlow : FISH_STRINGS.lostTired,
+              'fish.lost',
+            );
+          else if (e.type === 'fishLanded' && e.id === who && e.record)
+            notices.toast(
+              FISH_STRINGS.newBest
+                .replace('{item}', itemName(e.item))
+                .replace('{cm}', String(e.size)),
+              `fish.best.${e.item}`,
+            );
           else if (e.type === 'gathered' && e.id === who)
             notices.toast(
               (e.tag === 'fishing' ? W_STR.caught : W_STR.gathered)
@@ -2451,20 +2491,34 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         const gat = state.entities.comps.gather[who];
         const gs = gat ? gatherSweep(state, who) : null;
         if (gat && gs) {
-          const bal = ITEMS_BALANCE.gather;
-          // A sweep shows its sweet window. Fishing fills while it waits, then the bite window is gold.
-          const total = gs.def.fishing ? gat.wait + bal.fishBiteTicks : gs.sweep.ticks;
           const r = meterRect(anchor, mvp, 'track');
-          const view = {
-            total,
-            from: gs.def.fishing ? gat.wait : gs.sweep.sweetFrom,
-            to: gs.def.fishing ? total - 1 : gs.sweep.sweetTo,
-            t: gat.t,
-            swing: gat.swing,
-            swings: gs.sweep.swings,
-          };
-          draw = (rr) =>
-            drawGatherMeter(rr, r, view, { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46' });
+          const fight = gat.fish;
+          if (fight && fight.phase === 'reel') {
+            // The fight (M6-05): the band, the marker and the catch bar.
+            const view = {
+              track: FISH_BAL.track,
+              center: FISH_BAL.center,
+              band: fight.band,
+              m: fight.m,
+              fill: fight.fill,
+              full: FISH_BAL.fill.full,
+            };
+            draw = (rr) =>
+              drawReelMeter(rr, r, view, { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46' });
+          } else {
+            // A cast fills while it waits, then the bite window is gold.
+            const total = gs.def.fishing ? gat.wait + FISH_BAL.biteTicks : gs.sweep.ticks;
+            const view = {
+              total,
+              from: gs.def.fishing ? gat.wait : gs.sweep.sweetFrom,
+              to: gs.def.fishing ? total - 1 : gs.sweep.sweetTo,
+              t: gat.t,
+              swing: gat.swing,
+              swings: gs.sweep.swings,
+            };
+            draw = (rr) =>
+              drawGatherMeter(rr, r, view, { ink: INK, dark: DARK, gold: GOLD, track: '#3a3f46' });
+          }
         }
         const cs = state.entities.comps.craft[who];
         const st = cs ? STATIONS[cs.station] : undefined;

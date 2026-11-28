@@ -1,3 +1,4 @@
+import { FISH, type Water } from '../fishing/fish';
 import { DISH_RECIPES } from './dishes';
 import type { NodeDef, RecipeDef } from './types';
 
@@ -397,6 +398,29 @@ export function recipeFor(station: string, units: readonly string[]): RecipeDef 
 
 const MIN = 30 * 60;
 
+/** A fishing spot on `water`: its yields are the fish that live there. */
+function fishingNode(id: string, water: Water): NodeDef {
+  return {
+    id,
+    tag: 'fishing',
+    workAnim: 'work_cast',
+    tier: 1,
+    tool: 'rod',
+    water,
+    yields: FISH.filter((f) => f.water.includes(water) && !f.legend).map((f) => ({
+      item: f.item,
+      weight: f.weight,
+      ...(f.phases ? { phases: f.phases } : {}),
+      ...(f.seasons ? { seasons: f.seasons } : {}),
+      ...(f.weather ? { weather: f.weather } : {}),
+    })),
+    respawn: 3 * MIN,
+    fishing: true,
+    sweep: { baseMin: 1, baseMax: 1, sweetBonus: 1 },
+    sprite: { ready: 'icon.node_fish', spent: 'icon.node_fish_spent' },
+  };
+}
+
 /** Gathering nodes. Common ones come back in minutes (design/05). */
 export const NODES: Record<string, NodeDef> = {
   'node.herb_patch': {
@@ -476,23 +500,12 @@ export const NODES: Record<string, NodeDef> = {
     sweep: { swings: 3, baseMin: 1, baseMax: 2 },
     sprite: { ready: 'icon.node_ash_tall', spent: 'icon.node_stump_ash' },
   },
-  // Fishing placeholder until M6-05: cast, wait, tap on the bite. A miss still lands the catch.
-  'node.fishing_spot': {
-    id: 'node.fishing_spot',
-    tag: 'fishing',
-    workAnim: 'work_cast',
-    tier: 1,
-    tool: 'rod',
-    yields: [
-      { item: 'item.fish_river', weight: 5 },
-      // The silver ones rise at the edges of the day.
-      { item: 'item.fish_silver', weight: 2, phases: ['dawn', 'dusk'] },
-    ],
-    respawn: 3 * MIN,
-    fishing: true,
-    sweep: { baseMin: 1, baseMax: 1, sweetBonus: 1 },
-    sprite: { ready: 'icon.node_fish', spent: 'icon.node_fish_spent' },
-  },
+  // Fishing (M6-05): one node kind per water. The yields are the species table, so the ledger
+  // and the bounds see every fish; the fight itself is `sim/fishing.ts`.
+  'node.fishing_spot': fishingNode('node.fishing_spot', 'river'),
+  'node.fishing_pond': fishingNode('node.fishing_pond', 'pond'),
+  'node.fishing_marsh': fishingNode('node.fishing_marsh', 'marsh'),
+  'node.fishing_estuary': fishingNode('node.fishing_estuary', 'estuary'),
   // ---- Whisperwood supply (M3-12): tier 2 materials, placed by that region's map, not the first one. ----
   'node.flax_patch': {
     id: 'node.flax_patch',

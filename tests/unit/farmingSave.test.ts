@@ -91,6 +91,7 @@ describe('the save (M6-02)', () => {
     expect(s.farm).toEqual(newFarm());
     expect(needOf(CROPS['crop.turnip']!)).toBe(DAY_TICKS * F.unitsPerTick);
     delete (s as { farm?: unknown }).farm;
+    delete (s as { fishing?: unknown }).fishing;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

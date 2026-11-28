@@ -53,6 +53,8 @@ export type Command =
   | { type: 'craftPoint'; x: number; y: number }
   /** A hold step's pointer goes down or up. */
   | { type: 'craftHold'; on: boolean }
+  /** Fishing (M6-05): the line is held (reeling up) or let go. */
+  | { type: 'reel'; on: boolean }
   /** Repair the gear in bag slot `slot` at the anvil in front. */
   | { type: 'repair'; slot: number }
   /**
@@ -255,6 +257,9 @@ export function validateCommand(raw: unknown): Validated {
     case 'craftHold':
       if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad hold' };
       return { ok: true, command: { type: 'craftHold', on: r.on } };
+    case 'reel':
+      if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad reel' };
+      return { ok: true, command: { type: 'reel', on: r.on } };
     case 'repair':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 255)
         return { ok: false, reason: 'bad slot' };

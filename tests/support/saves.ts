@@ -165,6 +165,7 @@ export function asSchema5(s: SimState): SimState {
   delete (s as { market?: unknown }).market;
   delete (s as { calendar?: unknown }).calendar;
   delete (s as { farm?: unknown }).farm;
+  delete (s as { fishing?: unknown }).fishing;
   delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
   delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
   // Schema 24: the map (fog, notes, rumors).

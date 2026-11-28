@@ -137,6 +137,19 @@ export type SimEvent =
   | { type: 'gatherSwing'; id: number; node: number; sweet: boolean }
   /** A fish took the bait: the window to tap opens. */
   | { type: 'gatherBite'; id: number; node: number }
+  /** Fishing (M6-05): a minnow went on the hook, the bite was tapped, the fish got away, the fish was landed. */
+  | { type: 'fishBaited'; id: number }
+  | { type: 'fishHooked'; id: number; node: number; item: string }
+  | { type: 'fishLost'; id: number; node: number; reason: string }
+  | {
+      type: 'fishLanded';
+      id: number;
+      item: string;
+      /** Length in cm, the place it came from, and whether it is the species' best so far. */
+      size: number;
+      place: string;
+      record: boolean;
+    }
   | {
       type: 'gatherResolved';
       id: number;

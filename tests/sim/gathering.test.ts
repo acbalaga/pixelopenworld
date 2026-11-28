@@ -17,6 +17,7 @@ import {
 } from '../../src/sim/state';
 import { stepWorld } from '../../src/sim/step';
 import { dayPhase, seasonOf } from '../../src/sim/time';
+import { playCast } from '../support/reelBot';
 
 const OPEN = { solidAt: (): number => 0 };
 
@@ -250,8 +251,8 @@ describe('logging takes three swings', () => {
   });
 });
 
-describe('fishing placeholder', () => {
-  it('waits two to six seconds for a bite, ignores a press before it, and a tap in the window is sweet', () => {
+describe('fishing: the cast and the bite (M6-05)', () => {
+  it('waits two to six seconds for a bite, ignores a press before it, and a tap on the bite hooks the fish', () => {
     const r = rig(3);
     give(r.s, r.me, 'item.rod_ash', 1, 'start');
     nodeAhead(r, 'node.fishing_spot');
@@ -261,28 +262,28 @@ describe('fishing placeholder', () => {
     expect(g.wait).toBeLessThanOrEqual(B.gather.fishWaitMax);
     // A press before the bite does nothing.
     r.tick({ type: 'interact' });
-    expect(r.s.entities.comps.gather[r.me]).not.toBeNull();
-    while (r.s.entities.comps.gather[r.me]!.t < g.wait) r.tick();
+    expect(r.s.entities.comps.gather[r.me]?.fish?.phase).toBe('wait');
+    while (r.s.entities.comps.gather[r.me]!.fish!.phase === 'wait') r.tick();
     expect(ofType(r.events, 'gatherBite')).toHaveLength(1);
     r.tick({ type: 'interact' });
-    const e = ofType(r.events, 'gatherResolved')[0]!;
-    expect(e.sweet).toBe(true);
-    expect(e.qty).toBe(2);
-    expect(['item.fish_river', 'item.fish_silver']).toContain(e.item);
+    expect(r.s.entities.comps.gather[r.me]!.fish!.phase).toBe('reel');
+    expect(ofType(r.events, 'fishHooked')).toHaveLength(1);
   });
-  it('a missed bite still lands the common catch, never a failure', () => {
+  it('a bite not answered lets go: the spot stays ready and nothing is lost but the bait', () => {
     const r = rig(4);
-    nodeAhead(r, 'node.fishing_spot');
-    const e = work(r, null)!;
-    expect(e.sweet).toBe(false);
-    expect(e.item).toBe('item.fish_river');
-    expect(e.qty).toBe(1);
-    expect(held(r, 'item.fish_river')).toBe(1);
+    const id = nodeAhead(r, 'node.fishing_spot');
+    r.tick({ type: 'interact' });
+    for (let i = 0; i < 400 && r.s.entities.comps.gather[r.me]; i++) r.tick();
+    expect(ofType(r.events, 'fishLost')[0]?.reason).toBe('slow');
+    expect(ofType(r.events, 'gatherResolved')).toHaveLength(0);
+    expect(r.s.entities.comps.node[id]!.readyAt).toBeLessThanOrEqual(r.s.worldTick);
+    expect(held(r, 'item.fish_river')).toBe(0);
   });
-  it('casting with a rod or without both work: the placeholder needs the bite, not the tier', () => {
+  it('casting with a rod or without both work: the rod widens the band, it does not gate the cast', () => {
     const r = rig(5);
     nodeAhead(r, 'node.fishing_spot');
-    expect(work(r, null)).toBeDefined();
+    r.tick({ type: 'interact' });
+    expect(r.s.entities.comps.gather[r.me]).not.toBeNull();
   });
 });
 
@@ -351,24 +352,26 @@ describe('variants: day phase, season, weather', () => {
     s.worldTick = find((t) => dayPhase(t) === 'night');
     expect(items(s)).not.toContain('item.fish_silver');
   });
-  it('and it is what a gather at dusk can land, through the real loop', () => {
+  it('and it is what a cast at dusk can land, through the real loop', () => {
     const r = rig();
     const id = nodeAhead(r, 'node.fishing_spot');
+    const landed = (): string[] => {
+      const seen: string[] = [];
+      for (let i = 0; i < 40; i++) {
+        r.s.entities.comps.node[id]!.readyAt = 0;
+        r.events.length = 0;
+        r.tick({ type: 'interact' });
+        playCast(r.s, r.me, r.tick);
+        const e = ofType(r.events, 'gatherResolved').at(-1);
+        if (e) seen.push(e.item);
+      }
+      return seen;
+    };
     r.offset = find((t) => dayPhase(t) === 'dusk') - r.s.tick;
-    const seen = new Set<string>();
-    for (let i = 0; i < 30; i++) {
-      r.s.entities.comps.node[id]!.readyAt = 0;
-      seen.add(work(r, null)!.item);
-    }
-    expect(seen.has('item.fish_silver')).toBe(true);
+    expect(landed()).toContain('item.fish_trout');
     r.offset = find((t) => dayPhase(t) === 'day') - r.s.tick;
-    seen.clear();
-    for (let i = 0; i < 30; i++) {
-      r.s.entities.comps.node[id]!.readyAt = 0;
-      seen.add(work(r, null)!.item);
-    }
-    expect(seen.has('item.fish_silver')).toBe(false);
-  });
+    expect(landed()).not.toContain('item.fish_trout');
+  }, 60_000);
   it('a season restricts a yield, and weather is clear for now', () => {
     const s = createDemoState(1, 0);
     s.worldTick = find((t) => seasonOf(t) === 'winter');

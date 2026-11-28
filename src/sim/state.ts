@@ -16,6 +16,7 @@ import { newGuildState, type GuildState } from './guild';
 import { newMarket, type MarketState } from './market';
 import { newCalendar, type CalendarState, type WorldEventsState } from './worldEvents';
 import { newFarm, normalFarm, type FarmState } from './farmState';
+import { newFishing, normalFishing, type Fight, type FishingState } from './fishState';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
 import type { Crowd } from './travelers/crowd';
@@ -193,6 +194,8 @@ export interface Gather {
   tool: number;
   /** Fishing: ticks until the bite. 0 for a sweep. */
   wait: number;
+  /** Fishing: the fight, from the cast to the landing (M6-05). Absent for a sweep. */
+  fish?: Fight;
 }
 
 /** A craft under way at a station: the recipe, the manual step so far, and what the inputs were worth. */
@@ -681,6 +684,8 @@ export interface SimState {
   calendar: CalendarState;
   /** The reeve's field, the seeds the player knows, the water in the can (M6-02). Saved. */
   farm: FarmState;
+  /** What the player has landed, and whether Old Gnarl is caught (M6-05). */
+  fishing: FishingState;
   /** Transient. World events running now (M5-11): rebuilt from the calendar after a load. */
   worldEvents?: WorldEventsState | undefined;
   /** Transient. A market day is on (M5-11 sets it): more demand and more Traveler stock. */
@@ -770,6 +775,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     market: newMarket(),
     calendar: newCalendar(),
     farm: newFarm(),
+    fishing: newFishing(),
     events: createEventQueue(),
     world: null,
   };
@@ -836,6 +842,7 @@ function persistent(state: SimState): Omit<
     market: state.market,
     calendar: state.calendar,
     farm: state.farm,
+    fishing: state.fishing,
   };
 }
 
@@ -859,6 +866,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     market?: MarketState;
     calendar?: CalendarState;
     farm?: FarmState;
+    fishing?: FishingState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -887,6 +895,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     calendar: raw.calendar ?? newCalendar(),
     // A state from before farming has an unleased, untilled field and a full can.
     farm: normalFarm(raw.farm),
+    // A state from before the minigame has landed nothing and met no legend.
+    fishing: normalFishing(raw.fishing),
     events: createEventQueue(),
     world,
   };

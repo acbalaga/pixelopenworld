@@ -228,6 +228,7 @@ describe('the save', () => {
     delete (back as { market?: unknown }).market;
     delete (back as { calendar?: unknown }).calendar;
     delete (back as { farm?: unknown }).farm;
+    delete (back as { fishing?: unknown }).fishing;
     expect(hashState(back)).toBe(f.expectedHash);
   });
 

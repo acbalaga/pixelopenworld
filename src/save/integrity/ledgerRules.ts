@@ -6,6 +6,8 @@ import { REQUESTS } from '../../content/requests';
 import { RECIPES } from '../../content/items/recipes';
 import { SINGULARS } from '../../content/singulars';
 import { ITEMS } from '../../content/items';
+import { FISH_BY_ITEM } from '../../content/fishing/fish';
+import { FISH_PLACES } from '../../content/fishing/places';
 import { buyPrice, lowestBuy } from '../../sim/economy';
 import { MAX_STANDING_COIN } from '../../sim/requestGen';
 import { xpToNext } from '../../sim/skills';
@@ -60,6 +62,25 @@ export function ledgerRules(v: View): Reason[] {
   const milled = ledger.itemsMade.mill?.['item.flour'] ?? 0;
   if (milled * COOKING.mill.fee !== (ledger.coinSpent.mill ?? 0))
     fail('MILL_MISMATCH', `${milled} flour, ${ledger.coinSpent.mill ?? 0} coin paid`);
+
+  // Fishing (M6-05): each record names a species, a place, and a length inside that species'
+  // range, and counts no more fish than gathering made. Old Gnarl is landed once, and the flag and
+  // her record agree.
+  const fishing = v.sim.fishing;
+  for (const [item, r] of Object.entries(fishing.records)) {
+    const fd = FISH_BY_ITEM[item];
+    const gathered = ledger.itemsMade.gather?.[item] ?? 0;
+    if (!fd) fail('FISH_RECORD', `${item} is not a fish`);
+    else if (!(r.best >= fd.size[0] && r.best <= fd.size[1]))
+      fail('FISH_RECORD', `${item} ${r.best} cm outside ${fd.size[0]} to ${fd.size[1]}`);
+    else if (!Number.isInteger(r.n) || r.n < 1 || r.n > gathered)
+      fail('FISH_RECORD', `${item} landed ${r.n}, gathered ${gathered}`);
+    else if (!FISH_PLACES.some((p) => p.id === r.where))
+      fail('FISH_RECORD', `${item} from ${r.where}`);
+    else if (fd.legend && r.n > 1) fail('FISH_RECORD', `${item} landed ${r.n} times`);
+  }
+  if (fishing.gnarl !== (fishing.records['item.old_gnarl'] !== undefined))
+    fail('FISH_RECORD', 'Old Gnarl flag and record disagree');
 
   // Every affix on a held piece came from an enchant: no more of them than Enchanting crafts made.
   let affixes = 0;
