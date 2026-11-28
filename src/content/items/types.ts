@@ -1,4 +1,5 @@
 import type { Craft } from './stations';
+import type { Water } from '../fishing/fish';
 import type { DayPhase, Season, Weather } from '../balance/time';
 import type {
   BottomStyle,
@@ -172,8 +173,10 @@ export interface NodeDef {
   /** World ticks until the node can be worked again. */
   respawn: number;
   sweep?: Partial<SweepDef>;
-  /** Fishing placeholder (M6-05 replaces it): cast, wait for a bite, tap inside the window. */
+  /** A fishing spot (M6-05): cast, wait for a bite, tap to hook it, then hold to reel. */
   fishing?: true;
+  /** The water a fishing spot sits on. It picks the fish table. */
+  water?: Water;
   /** Sprite ids for a ready and a spent node. */
   sprite: { ready: string; spent: string };
 }

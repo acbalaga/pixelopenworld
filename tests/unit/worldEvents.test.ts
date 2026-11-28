@@ -335,6 +335,7 @@ describe('the save', () => {
     expect(s.calendar).toEqual(newCalendar());
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
+    delete (s as { fishing?: unknown }).fishing;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

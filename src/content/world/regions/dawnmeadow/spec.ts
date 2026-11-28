@@ -246,9 +246,14 @@ const placements: Placement[] = [
   at('node.fishing_spot', 243, 157),
   at('node.fishing_spot', 241, 166),
   at('node.fishing_spot', 245, 176),
-  at('node.fishing_spot', 296, 244),
-  at('node.fishing_spot', 351, 110),
-  at('node.fishing_spot', 144, 312),
+  // M6-05: each spot sits on a water. Reedmouth and the coast are estuary, the Millbrook shore is
+  // pond (where Old Gnarl lives), and the reed banks at Reedmouth are marsh.
+  at('node.fishing_estuary', 296, 244),
+  at('node.fishing_pond', 351, 110),
+  at('node.fishing_pond', 352, 114),
+  at('node.fishing_estuary', 144, 312),
+  at('node.fishing_marsh', 307, 247),
+  at('node.fishing_marsh', 307, 250),
 
   // Camps (POW-M4-23C): a bedroll each, outside every settlement. The Fernside climb has two more.
   at('fixture.rest_point', 140, 235), // meadow, south

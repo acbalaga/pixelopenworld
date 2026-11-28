@@ -40,6 +40,8 @@ import {
 import { MAP_STRINGS } from '../../content/strings/map';
 import { MapPane, type MapPaneDeps } from './mapPane';
 import { bestiaryView } from '../menu/bestiaryModel';
+import { fishView } from '../menu/fishModel';
+import { FISH_STRINGS } from '../../content/strings/fishing';
 import { chronicleLines } from '../menu/singularModel';
 import { finished, knownRecipes, underWay } from '../menu/journalModel';
 import { mapPercentOf } from '../menu/mapModel';
@@ -576,10 +578,11 @@ export class MenuSheet {
     const recipes = knownRecipes(state, who);
     const lines = chronicleLines(state, who);
     const bestiary = bestiaryView(state, who);
+    const fishes = fishView(state);
     put(this.body, header(S.tabs.chronicle));
     const nUnder = now.requests.length + now.trials.length;
     const nDone = done.requests.length + done.trials.length;
-    if (nUnder + nDone + recipes.length + lines.length + bestiary.rows.length === 0) {
+    if (nUnder + nDone + recipes.length + lines.length + bestiary.rows.length + fishes.rows.length === 0) {
       put(this.body, emptyState(S.chronicleEmpty));
       return;
     }
@@ -664,6 +667,21 @@ export class MenuSheet {
           el('span', 'pow-bestiary-line', r.temperament),
         );
         put(li, this.deps.drawCreature ? pic : null, text);
+        put(ul, li);
+      }
+      put(this.body, ul);
+    }
+    if (fishes.rows.length > 0) {
+      put(this.body, header(FISH_STRINGS.title), el('p', 'pow-bestiary-count', fishes.count));
+      const ul = el('ul', 'pow-fish-records');
+      for (const r of fishes.rows) {
+        const li = el('li', 'pow-fish-row');
+        put(
+          li,
+          this.icon(r.icon),
+          el('span', 'pow-fish-name', r.name),
+          el('span', 'pow-fish-line', r.line),
+        );
         put(ul, li);
       }
       put(this.body, ul);

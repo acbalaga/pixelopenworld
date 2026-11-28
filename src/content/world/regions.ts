@@ -46,6 +46,9 @@ export const REGIONS: readonly RegionDef[] = [
         'node.oak_tree',
         'node.ash_tree',
         'node.fishing_spot',
+        'node.fishing_pond',
+        'node.fishing_marsh',
+        'node.fishing_estuary',
       ],
       spawners: [
         'spawner.training_dummy',

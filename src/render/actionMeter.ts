@@ -138,6 +138,63 @@ export function drawGatherMeter(
     );
 }
 
+/** The reel of a fish on the line (M6-05), all on the 0 to 1000 track. */
+export interface ReelMeterView {
+  track: number;
+  center: number;
+  band: number;
+  /** The marker, and the catch bar with the value that means landed. */
+  m: number;
+  fill: number;
+  full: number;
+}
+
+/**
+ * Draws the fight in `r` (a `track` rect): the band in gold, the marker in ink, and the catch bar
+ * in the tail under it. The same bar every fish uses, so a player reads it once.
+ */
+export function drawReelMeter(
+  renderer: Draws,
+  r: MeterRect,
+  view: ReelMeterView,
+  c: GatherMeterColors,
+  alpha = 1,
+): void {
+  const k = r.w / view.track;
+  renderer.drawRect(Layer.Hud, r.x - 1, r.y - 1, r.w + 2, r.h + 2, c.dark, alpha);
+  renderer.drawRect(Layer.Hud, r.x, r.y, r.w, r.h, c.track, alpha);
+  const from = Math.round((view.center - view.band / 2) * k);
+  renderer.drawRect(
+    Layer.Hud,
+    r.x + Math.max(0, from),
+    r.y,
+    Math.max(1, Math.min(r.w, Math.round(view.band * k))),
+    r.h,
+    c.gold,
+    alpha,
+  );
+  renderer.drawRect(
+    Layer.Hud,
+    r.x + Math.min(r.w - 2, Math.max(0, Math.round(view.m * k) - 1)),
+    r.y - 1,
+    2,
+    r.h + 2,
+    c.ink,
+    alpha,
+  );
+  // The catch bar.
+  renderer.drawRect(Layer.Hud, r.x - 1, r.y + r.h + 1, r.w + 2, 5, c.dark, alpha);
+  renderer.drawRect(
+    Layer.Hud,
+    r.x,
+    r.y + r.h + 2,
+    Math.round((Math.max(0, view.fill) / view.full) * r.w),
+    3,
+    c.gold,
+    alpha,
+  );
+}
+
 /**
  * A pointer position in CSS px to the trace step's 1000 by 1000 space, through the same rect the
  * trace is drawn in. `k` is logical px per CSS px. The world reads input here and `drawTrace`

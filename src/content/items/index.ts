@@ -2,6 +2,7 @@ import type { ItemDef } from './types';
 import { ARMOR_ITEMS } from './armor';
 import { DISH_ITEMS } from './dishes';
 import { FARMING_ITEMS } from './farming';
+import { FISH_ITEMS } from './fish';
 import { FOOD_ITEMS } from './food';
 import { MANUAL_ITEMS } from './manuals';
 import { MATERIAL_ITEMS } from './materials';
@@ -28,6 +29,7 @@ const LIST: readonly ItemDef[] = [
   ...MANUAL_ITEMS,
   ...FARMING_ITEMS,
   ...DISH_ITEMS,
+  ...FISH_ITEMS,
 ];
 
 /** Things a crow likes (M4-20). Tagged here so the item tables stay as they were. */

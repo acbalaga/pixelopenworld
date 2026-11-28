@@ -33,6 +33,7 @@ describe('schema 20 to 21 migration (chunk deltas)', () => {
     delete (s as { market?: unknown }).market;
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
+    delete (s as { fishing?: unknown }).fishing;
     delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
     delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
@@ -77,6 +78,7 @@ describe('schema 21 to 22 migration (dungeons and bosses)', () => {
     delete (s as { market?: unknown }).market;
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
+    delete (s as { fishing?: unknown }).fishing;
     delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
     delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);

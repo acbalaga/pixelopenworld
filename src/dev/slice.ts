@@ -67,6 +67,8 @@ export interface PowDevApi {
    * ripe, one wet, so a screenshot shows every stage. Gives a hoe, a can and seeds.
    */
   stageField(): void;
+  /** Dev only (M6-05): the fight on the line right now, or null when nothing is cast. For a bot that plays a catch. */
+  fishing(): { phase: string; m: number; v: number; band: number; fill: number; item: string } | null;
   /** Dev only: puts the player in a guild, as if they had joined (M5-08). */
   joinGuild(id: number): void;
   /** The party (M5-07): member handles, and the listings on the finder. */
@@ -165,6 +167,12 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         recipes: [...(inv?.recipes ?? [])],
         held,
       };
+    },
+    fishing() {
+      const f = getComp(state.entities, who, 'gather')?.fish;
+      return f
+        ? { phase: f.phase, m: f.m, v: f.v, band: f.band, fill: f.fill, item: f.item }
+        : null;
     },
     giveItem(item, qty, q = 0, dur) {
       const inv = getComp(state.entities, who, 'inventory');

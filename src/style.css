@@ -2812,3 +2812,27 @@ canvas {
   opacity: 0.8;
   font-size: 0.85em;
 }
+
+/* Fishing records in the Chronicle (M6-05). */
+.pow-fish-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pow-fish-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+.pow-fish-row .pow-icon {
+  grid-row: span 2;
+}
+.pow-fish-name {
+  font-weight: 600;
+}
+.pow-fish-line {
+  opacity: 0.8;
+  font-size: 0.9em;
+}

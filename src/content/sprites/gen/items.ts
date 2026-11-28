@@ -674,6 +674,24 @@ const BASE_ICONS: readonly SpriteDef[] = [
   }),
   icon('fish_river', (im) => fishShape(im, WATER, CREAM[3])),
   icon('fish_silver', (im) => fishShape(im, STEEL, CREAM[3])),
+  icon('fish_minnow', (im) => fishShape(im, STEEL, STEEL[3])),
+  icon('fish_trout', (im) => fishShape(im, WOOD, ROSE[3])),
+  icon('fish_chub', (im) => fishShape(im, LEAF, CREAM[3])),
+  icon('fish_perch', (im) => fishShape(im, GOLD, LEAF[3])),
+  icon('fish_carp', (im) => fishShape(im, BRONZE, CREAM[3])),
+  icon('fish_tench', (im) => fishShape(im, LEAF, GOLD[3])),
+  icon('fish_golden_carp', (im) => fishShape(im, GOLD, GOLD[3])),
+  icon('fish_pike', (im) => fishShape(im, STONE, CREAM[3])),
+  icon('fish_bog_loach', (im) => fishShape(im, LEATHER, LEATHER[3])),
+  icon('fish_reed_eel', (im) => fishShape(im, VIOLET, STONE[3])),
+  icon('fish_flounder', (im) => fishShape(im, COPPER, CREAM[3])),
+  icon('fish_sea_bass', (im) => fishShape(im, METAL, CREAM[3])),
+  icon('old_gnarl', (im) => {
+    fishShape(im, STONE, GOLD[3]);
+    // A scar across the flank, and a gold eye.
+    im.rect(5, 5, 7, 5, CREAM[3]);
+    im.set(2, 5, GOLD[2]);
+  }),
   // Gathering nodes as they stand in the world.
   icon('node_vein_copper', (im) => {
     im.rect(1, 3, 10, 10, STONE[1]);

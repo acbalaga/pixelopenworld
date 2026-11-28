@@ -282,6 +282,7 @@ describe('the save', () => {
     delete (before as { market?: unknown }).market;
     delete (before as { calendar?: unknown }).calendar;
     delete (before as { farm?: unknown }).farm;
+    delete (before as { fishing?: unknown }).fishing;
     // Newer than the fixture too: the Pit counts (M5-30).
     delete (before.mail.duels as { pit?: number }).pit;
     delete (before.mail.duels as { honor?: number }).honor;
