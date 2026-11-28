@@ -101,11 +101,12 @@ test('the first hint appears on its own, is one line, and is not a dialog', asyn
   // The notice lane is the live region (role=status) that holds it.
   expect(await page.locator('.pow-notices').getAttribute('role')).toBe('status');
   await shot(page, 'frontend-hint');
-  // Doing the thing clears it.
+  // Doing the thing clears it. Walking can bring a node or a creature into reach, and then the next
+  // hint (gather, lock) may show: only the move hint has to be gone.
   await page.keyboard.down('KeyD');
   await page.waitForTimeout(1500);
   await page.keyboard.up('KeyD');
-  await expect(hint).toHaveCount(0);
+  await expect(hint.filter({ hasText: 'Drag on the lower left' })).toHaveCount(0);
 });
 
 test('settings outlive Log Out: muted audio stays muted on the next login', async ({ page }) => {
