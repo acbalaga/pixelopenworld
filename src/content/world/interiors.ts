@@ -91,8 +91,8 @@ export const INN_ROOM = defineInterior({
   col: 0,
   row: 0,
   door: { x: 1 },
-  // Hearthford's origin is (164, 164): the stair arch stands in the inn yard at (8, 48).
-  outside: { x: 172, y: 212 },
+  // Hearthford's origin is (164, 164): the stair arch stands east of the inn yard at (19, 50).
+  outside: { x: 183, y: 214 },
   kinds: { out: 'fixture.innroom_stairs', in: 'fixture.innroom_exit' },
 });
 

@@ -297,7 +297,9 @@ describe('storage chest', () => {
 describe('item set', () => {
   it('has about 120 items split into the target kinds', () => {
     // The farming (M6-02), cooking (M6-04) and fish (M6-05) items are counted on their own below.
-    const farm = new Set([...FARMING_ITEMS, ...DISH_ITEMS, ...FISH_ITEMS, ...FURNITURE_ITEMS].map((i) => i.id));
+    const farm = new Set(
+      [...FARMING_ITEMS, ...DISH_ITEMS, ...FISH_ITEMS, ...FURNITURE_ITEMS].map((i) => i.id),
+    );
     const all = Object.values(ITEMS).filter((i) => !farm.has(i.id));
     expect(all.length).toBeGreaterThanOrEqual(110);
     expect(all.length).toBeLessThanOrEqual(180);

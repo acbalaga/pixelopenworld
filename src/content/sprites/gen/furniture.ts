@@ -101,7 +101,7 @@ const ART: Readonly<Record<string, Art>> = {
     im.rect(4, 2, w - 5, h - 3, STEEL[3]);
     im.rect(5, 3, 6, 5, CREAM[3]);
   },
-  clock: (im, w, h) => {
+  clock: (im) => {
     disc(im, 7, 7, 6, WOOD);
     disc(im, 7, 7, 4, CREAM);
     line(im, 7, 7, 7, 3, STONE[0]);

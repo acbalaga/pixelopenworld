@@ -7,6 +7,8 @@ import { validateSave } from '../../src/save/integrity';
 import { MIGRATIONS, migrate } from '../../src/save/migrations';
 import { CURRENT_SCHEMA, type SavePlain } from '../../src/save/types';
 import { createAvatar, feetAt } from '../../src/sim/avatar';
+import { lowestBuy } from '../../src/sim/economy';
+import { earnCoin, spendCoin } from '../../src/sim/ledger';
 import { doorTiles } from '../../src/sim/home';
 import { newHome } from '../../src/sim/homeState';
 import { addItem, give } from '../../src/sim/items';
@@ -26,8 +28,11 @@ describe('Room integrity (M6-07)', () => {
     const f = feetAt(20, 20);
     const me = createAvatar(s, f.x, f.y);
     // A crafted stool, placed; a bought lantern held in the bag.
-    give(s, me, 'item.furn_stool', 1, 'craft');
-    give(s, me, 'item.furn_lantern', 1, 'craft');
+    // Both bought from Pell, at the lowest price a haggle can reach.
+    earnCoin(s, me, 1000, 'seed');
+    give(s, me, 'item.furn_stool', 1, 'shop');
+    give(s, me, 'item.furn_lantern', 1, 'shop');
+    spendCoin(s, me, lowestBuy('item.furn_stool') + lowestBuy('item.furn_lantern'), 'purchase');
     const bag = s.entities.comps.inventory[me]!;
     const slot = bag.slots.findIndex((x) => x?.item === 'item.furn_stool');
     bag.slots[slot] = null;
@@ -66,7 +71,7 @@ describe('Room integrity (M6-07)', () => {
     const bad = (push: { piece: string; x: number; y: number; rot: number }): string[] =>
       codes(
         tamper(honest(), (s, me) => {
-          give(s, me, `item.furn_${push.piece}`, 1, 'craft');
+          give(s, me, `item.furn_${push.piece}`, 1, 'shop');
           s.home.rooms['interior.inn_room']!.push({ ...push, e: 0 });
         }),
       );

@@ -44,6 +44,8 @@ export function normalHome(raw: HomeState | undefined): HomeState {
   if (!raw || typeof raw.rooms !== 'object' || raw.rooms === null) return newHome();
   const rooms: Record<string, Placed[]> = {};
   for (const [id, list] of Object.entries(raw.rooms))
-    rooms[id] = Array.isArray(list) ? list.map((p) => ({ ...p, e: p.e ?? 0, rot: p.rot ?? 0 })) : [];
+    rooms[id] = Array.isArray(list)
+      ? list.map((p) => ({ ...p, e: p.e ?? 0, rot: p.rot ?? 0 }))
+      : [];
   return { rooms };
 }

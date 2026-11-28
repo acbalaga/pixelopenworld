@@ -68,8 +68,8 @@ export interface PowDevApi {
    * ripe, one wet, so a screenshot shows every stage. Gives a hoe, a can and seeds.
    */
   stageField(): void;
-  /** Dev only (M6-07): fills the inn room with all twelve pieces, for a screenshot. */
-  furnishRoom(): void;
+  /** Dev only (M6-07): fills the inn room with all twelve pieces, or empties it, for a screenshot. */
+  furnishRoom(full: boolean): void;
   /** Dev only (M6-05): the fight on the line right now, or null when nothing is cast. For a bot that plays a catch. */
   fishing(): {
     phase: string;
@@ -178,14 +178,16 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         held,
       };
     },
-    furnishRoom() {
-      state.home.rooms['interior.inn_room'] = FULL_INN_LAYOUT.map(([piece, x, y, rot]) => ({
-        piece,
-        x,
-        y,
-        rot,
-        e: 0,
-      }));
+    furnishRoom(full) {
+      state.home.rooms['interior.inn_room'] = (full ? FULL_INN_LAYOUT : []).map(
+        ([piece, x, y, rot]) => ({
+          piece,
+          x,
+          y,
+          rot,
+          e: 0,
+        }),
+      );
     },
     fishing() {
       const f = getComp(state.entities, who, 'gather')?.fish;

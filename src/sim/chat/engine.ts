@@ -2,6 +2,7 @@ import { CHAT, PIT_RUMOR_BIAS, SCENES as SCENE_BALANCE } from '../../content/bal
 import { FIGHT_AREAS } from '../../content/balance/travelers';
 import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
+import { FURNITURE_ITEMS } from '../../content/items/furniture';
 import { NODES, RECIPES } from '../../content/items/recipes';
 import { DUNGEON_NAMES, PLACE_NAMES, TIME_WORDS } from '../../content/chat/names';
 import { RUMORS } from '../../content/chat/rumors';
@@ -151,8 +152,10 @@ function diceFor(state: SimState, chat: ChatState, salt: number): () => number {
   return () => hash01(seed, salt, base, k++);
 }
 
+// Furniture (M6-07) is not something Travelers talk about yet.
+const FURNITURE_RESULTS = new Set(FURNITURE_ITEMS.map((i) => i.id));
 const craftResults = Object.values(RECIPES)
-  .filter((r) => !r.enchant && r.result !== '')
+  .filter((r) => !r.enchant && r.result !== '' && !FURNITURE_RESULTS.has(r.result))
   .map((r) => ({ item: r.result, craft: `skill.${r.craft}` }));
 const gatherItems = Object.values(NODES).flatMap((n) =>
   n.yields.map((y) => ({ item: y.item, skill: `skill.${n.tag}` })),

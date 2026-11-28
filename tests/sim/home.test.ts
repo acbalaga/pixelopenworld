@@ -180,9 +180,9 @@ describe('the placement rules', () => {
     expect(can('stool', 1, 0, 0, [stool])).toBeNull();
     const rug = piece('rug_red', 0, 0);
     expect(can('stool', 1, 1, 0, [rug])).toBeNull();
-    expect(can('rug_blue', 1, 1, 0, [stool])).toBeNull();
+    expect(can('rug_blue', 1, 0, 0, [stool])).toBeNull();
     // But never rug on rug.
-    expect(can('rug_blue', 1, 1, 0, [rug])).toBe('taken');
+    expect(can('rug_blue', 1, 0, 0, [rug])).toBe('taken');
   });
 
   it('wall pieces go on the wall row only, one to a tile, and are never turned', () => {
@@ -229,8 +229,8 @@ describe('the commands', () => {
     const o = placedIn(s, room.id)[i]!;
     const entity = o.e;
     expect(s.entities.comps.fixture[entity]).toBeDefined();
-    tick({ type: 'home', op: 'move', room: room.id, i, x: 1, y: 2 });
-    expect(placedIn(s, room.id)[i]).toMatchObject({ x: 1, y: 2 });
+    tick({ type: 'home', op: 'move', room: room.id, i, x: 2, y: 2 });
+    expect(placedIn(s, room.id)[i]).toMatchObject({ x: 2, y: 2 });
     tick({ type: 'home', op: 'store', room: room.id, i });
     expect(placedIn(s, room.id)).toHaveLength(before);
     expect(bag.slots.some((x) => x?.item === 'item.furn_stool')).toBe(true);
@@ -241,8 +241,10 @@ describe('the commands', () => {
     const { s, events, tick } = inRoom();
     const list = placedIn(s, room.id);
     const bed = list.findIndex((p) => p.piece === 'straw_bed');
+    // Along the back wall it has no room to lie across, so it is moved to open floor first.
+    tick({ type: 'home', op: 'move', room: room.id, i: bed, x: 0, y: 0 });
     tick({ type: 'home', op: 'rotate', room: room.id, i: bed });
-    expect(list[bed]!.rot).toBe(1);
+    expect(list[bed]).toMatchObject({ x: 0, y: 0, rot: 1 });
     const at = { ...list[bed]! };
     events.length = 0;
     tick({ type: 'home', op: 'move', room: room.id, i: bed, x: 9, y: 9 });
