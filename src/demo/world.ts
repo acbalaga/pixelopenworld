@@ -68,6 +68,8 @@ import { worldTickAt } from '../sim/time';
 import { gatherSweep } from '../sim/gathering';
 import { FISHING as FISH_BAL } from '../content/balance/fishing';
 import { FISH_STRINGS } from '../content/strings/fishing';
+import { FURNITURE_STRINGS } from '../content/strings/furniture';
+import { PIECE_BY_ID } from '../content/furniture/pieces';
 import { drawCraftStep } from '../render/craftStep';
 import {
   drawGatherMeter,
@@ -956,7 +958,8 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
         def.type === 'plate' ||
         def.type === 'vent' ||
         (def.type === 'door' && frame === 'open') ||
-        (def.type === 'element' && f.open && !def.hidden)
+        (def.type === 'element' && f.open && !def.hidden) ||
+        (def.type === 'decor' && !def.size)
           ? Layer.Detail
           : Layer.Objects;
       renderer.drawSprite(layer, spriteFrame(def.sprite, frame), x, y);
@@ -1868,6 +1871,27 @@ export async function startWorldDemo(canvas: HTMLCanvasElement): Promise<void> {
             notices.toast(FISH_STRINGS.bite, 'fish.bite');
           else if (e.type === 'fishHooked' && e.id === who)
             notices.toast(FISH_STRINGS.hooked, 'fish.hooked');
+          else if (e.type === 'furnitureDenied' && e.id === who)
+            notices.toast(
+              FURNITURE_STRINGS.denied[e.reason] ?? FURNITURE_STRINGS.denied.taken ?? '',
+              'furniture.denied',
+            );
+          else if (e.type === 'furniturePlaced' && e.id === who)
+            notices.toast(
+              FURNITURE_STRINGS.placedToast.replace(
+                '{item}',
+                itemName(PIECE_BY_ID[e.piece]?.item ?? ''),
+              ),
+              'furniture.placed',
+            );
+          else if (e.type === 'furnitureStored' && e.id === who)
+            notices.toast(
+              FURNITURE_STRINGS.storedToast.replace(
+                '{item}',
+                itemName(PIECE_BY_ID[e.piece]?.item ?? ''),
+              ),
+              'furniture.stored',
+            );
           else if (e.type === 'fishBaited' && e.id === who)
             notices.toast(FISH_STRINGS.baited, 'fish.baited');
           else if (e.type === 'fishLost' && e.id === who)

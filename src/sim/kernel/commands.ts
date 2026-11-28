@@ -55,6 +55,17 @@ export type Command =
   | { type: 'craftHold'; on: boolean }
   /** Fishing (M6-05): the line is held (reeling up) or let go. */
   | { type: 'reel'; on: boolean }
+  /** Furniture (M6-07): place the piece in bag slot `slot`, or move, turn or store piece `i`, in room `room`. */
+  | {
+      type: 'home';
+      op: 'place' | 'move' | 'rotate' | 'store';
+      room: string;
+      slot?: number;
+      i?: number;
+      x?: number;
+      y?: number;
+      rot?: number;
+    }
   /** Repair the gear in bag slot `slot` at the anvil in front. */
   | { type: 'repair'; slot: number }
   /**
@@ -257,6 +268,32 @@ export function validateCommand(raw: unknown): Validated {
     case 'craftHold':
       if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad hold' };
       return { ok: true, command: { type: 'craftHold', on: r.on } };
+    case 'home': {
+      const ints = (...ks: string[]): boolean =>
+        ks.every(
+          (k) => r[k] === undefined || (Number.isInteger(r[k]) && Math.abs(r[k] as number) < 1000),
+        );
+      if (
+        !['place', 'move', 'rotate', 'store'].includes(r.op as string) ||
+        typeof r.room !== 'string' ||
+        !/^interior\.[a-z0-9_]{1,40}$/.test(r.room) ||
+        !ints('slot', 'i', 'x', 'y', 'rot')
+      )
+        return { ok: false, reason: 'bad home command' };
+      return {
+        ok: true,
+        command: {
+          type: 'home',
+          op: r.op as 'place' | 'move' | 'rotate' | 'store',
+          room: r.room,
+          ...(r.slot !== undefined ? { slot: r.slot as number } : {}),
+          ...(r.i !== undefined ? { i: r.i as number } : {}),
+          ...(r.x !== undefined ? { x: r.x as number } : {}),
+          ...(r.y !== undefined ? { y: r.y as number } : {}),
+          ...(r.rot !== undefined ? { rot: r.rot as number } : {}),
+        },
+      };
+    }
     case 'reel':
       if (typeof r.on !== 'boolean') return { ok: false, reason: 'bad reel' };
       return { ok: true, command: { type: 'reel', on: r.on } };

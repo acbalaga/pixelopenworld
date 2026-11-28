@@ -149,7 +149,8 @@ function hearthford(): StampV2 {
   part('inn_yard', 'inn', 3, 47, 15, 7);
   // The cellar hatch (mini-dungeon m1, POW-M4-11): planks in the corner of the yard.
   b.rect(15, 51, 2, 2, Terrain.Planks);
-  b.place('fixture.bed', 6, 50);
+  // The stair to the inn room (POW-M6-07): an arch beside the yard. The bed that stood in the yard is upstairs now.
+  b.object(19, 50, 'tile.cave_arch');
   b.place('fixture.mailbox', 4, 50);
   b.place('fixture.storage', 9, 50);
   b.place('prop.camp_pot', 12, 50);

@@ -62,7 +62,7 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
   setComp(state.entities, id, 'body', {
     w: size,
     h: size,
-    solid: def.hidden !== true && def.arenaDoor !== true,
+    solid: def.hidden !== true && def.arenaDoor !== true && !(def.type === 'decor' && !def.size),
   });
   if (def.arenaDoor) f0open(state, id);
   // Everything with a body can be used from the front. Element pieces answer to elements only.
@@ -70,6 +70,7 @@ export function spawnFixture(state: SimState, kind: string, tx: number, ty: numb
     def.type !== 'gate' &&
     def.type !== 'element' &&
     def.type !== 'wall' &&
+    def.type !== 'decor' &&
     def.type !== 'breakable'
   )
     setComp(state.entities, id, 'interactable', { kind });

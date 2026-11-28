@@ -40,6 +40,7 @@ import { pitBoutSystem } from './pitBouts';
 import { marketSystem } from './market';
 import { worldEventsSystem } from './worldEvents';
 import { farmSystem } from './farming';
+import { homeSystem } from './home';
 import { pitSystem } from './travelers/pit';
 import { rankingsSystem } from './rankings/system';
 import { snareSystem } from './gadgets';
@@ -96,6 +97,7 @@ export const WORLD_SYSTEMS: readonly System<SimState>[] = [
   guildSystem,
   worldEventsSystem,
   farmSystem,
+  homeSystem,
   marketSystem,
   chatSystem,
   rankingsSystem,

@@ -1,5 +1,6 @@
 import { dishIcons } from './dishIcons';
 import { farmIcons } from './farmIcons';
+import { furnitureSprites } from './furniture';
 import type { SpriteDef } from '../types';
 import { Img, toSprite } from './img';
 import { DISTINCT_ICONS } from './itemsDistinct';
@@ -1128,4 +1129,5 @@ export const ITEM_ICONS: readonly SpriteDef[] = [
   ...DISTINCT_ICONS,
   ...farmIcons(),
   ...dishIcons(),
+  ...furnitureSprites(),
 ];

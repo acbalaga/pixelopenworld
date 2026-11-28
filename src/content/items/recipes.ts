@@ -1,4 +1,5 @@
 import { FISH, type Water } from '../fishing/fish';
+import { PIECES } from '../furniture/pieces';
 import { DISH_RECIPES } from './dishes';
 import type { NodeDef, RecipeDef } from './types';
 
@@ -182,6 +183,12 @@ const LIST: readonly RecipeDef[] = [
   make('cooking', POT, 1, 'item.dish_bread', [['item.flax_fiber', 2], ['item.salt']]),
   // Cooking in full (M6-04): 85 dishes from the dish table, at the pot and the oven.
   ...DISH_RECIPES,
+  // Furniture (M6-07): wood at the workbench, cloth at the loom. Known from the start.
+  ...PIECES.filter((p) => p.made).map((p) =>
+    p.layer === 'rug'
+      ? make('tailoring', LOOM, 1, p.item, p.made ?? [], 'start')
+      : make('woodworking', BENCH, 1, p.item, p.made ?? [], 'start'),
+  ),
   make('cooking', POT, 2, 'item.silver_chowder', [
     ['item.fish_silver'],
     ['item.salt'],

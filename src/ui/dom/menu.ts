@@ -47,6 +47,8 @@ import { finished, knownRecipes, underWay } from '../menu/journalModel';
 import { mapPercentOf } from '../menu/mapModel';
 import { factsOf } from '../../sim/rankings/system';
 import { FriendsPanel } from './friendsPanel';
+import { RoomPanel } from './roomPanel';
+import { homeView } from '../menu/homeModel';
 import { RankingsPanel } from './rankingsPanel';
 
 export const TAB_IDS = [
@@ -411,6 +413,7 @@ export class MenuSheet {
       case 'bag':
         return JSON.stringify([
           bagView(state, who, { filter: this.bagFilter, sort: this.bagSort }),
+          homeView(state, who),
           this.detail?.kind === 'item' ? this.detail.id : '',
         ]);
       case 'social':
@@ -1249,6 +1252,13 @@ export class MenuSheet {
         },
       ]),
     );
+    // Inside one of the player's rooms, the room comes first (POW-M6-07).
+    this.roomPanel ??= new RoomPanel({
+      read: () => this.deps.read(),
+      send: (c) => this.deps.send(c),
+      drawIcon: (c, id) => this.deps.drawIcon(c, id),
+    });
+    if (this.roomPanel.render()) this.body.appendChild(this.roomPanel.root);
     this.body.appendChild(
       el(
         'p',
@@ -1288,6 +1298,7 @@ export class MenuSheet {
     if (v.slots.every((s) => !s.item)) this.body.appendChild(emptyState(S.bagNothingHere));
   }
 
+  private roomPanel: RoomPanel | null = null;
   private bagFilter: BagFilterId = 'all';
   private bagSort: BagSortId | null = null;
 

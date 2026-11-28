@@ -25,6 +25,7 @@ import {
 import { CREATURES } from '../../content/creatures';
 import { ITEMS } from '../../content/items';
 import { NODES, RECIPES } from '../../content/items/recipes';
+import { FURNITURE_ITEMS } from '../../content/items/furniture';
 import { FARMING_ITEMS } from '../../content/items/farming';
 import { DISH_ITEMS } from '../../content/items/dishes';
 import { PLACES } from '../../content/people/places';
@@ -192,7 +193,7 @@ const gatherSkills = new Set(nodeIds.map(nodeSkill).filter((i) => i >= 0));
 // Travelers craft the recipe set they had before M6. They do not farm (POW-M6-02: no new
 // Traveler activity), so the field's tools and compost are not theirs to make, and the dishes of
 // POW-M6-04 stay out of their pool until their crafting is tuned for them.
-const NEWER = new Set([...FARMING_ITEMS, ...DISH_ITEMS].map((i) => i.id));
+const NEWER = new Set([...FARMING_ITEMS, ...DISH_ITEMS, ...FURNITURE_ITEMS].map((i) => i.id));
 const craftRecipes = Object.values(RECIPES).filter(
   (r) => !r.enchant && r.result !== '' && !NEWER.has(r.result),
 );

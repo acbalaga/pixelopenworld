@@ -266,6 +266,7 @@ describe('integrity and the save', () => {
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
     delete (s as { fishing?: unknown }).fishing;
+    delete (s as { home?: unknown }).home;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

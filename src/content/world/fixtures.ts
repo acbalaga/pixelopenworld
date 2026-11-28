@@ -5,6 +5,8 @@
 
 import { MANUALS } from '../items/manuals';
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { INTERIORS } from './interiors';
+import { FURNITURE_FIXTURES } from '../furniture/fixtures';
 import { REQUEST_FIXTURES } from '../pois/requestSites';
 import { SIGN_FIXTURES } from '../pois/signs';
 import { SECRET_FIXTURES } from '../pois/secrets';
@@ -64,7 +66,9 @@ export type FixtureType =
   /** A guild's hall post: its banner, stash and goal board (POW-M5-08). `hall` says whose. */
   | 'guildHall'
   /** A plot of the reeve's field (POW-M6-02): 2 x 3 tiles from its top left. `plot` says which. */
-  | 'plot';
+  | 'plot'
+  /** A placed piece of furniture with no use of its own (POW-M6-07): it blocks, unless its size is 0. */
+  | 'decor';
 
 /** What can press a plate (M4-08). The default is a block alone, as in the first cave. */
 export type PlateHolder = 'avatar' | 'creature' | 'block' | 'wall';
@@ -611,6 +615,8 @@ export const FIXTURES: Readonly<Record<string, FixtureDef>> = Object.fromEntries
     ...SIGN_FIXTURES,
     ...REQUEST_FIXTURES,
     ...BUILT_DUNGEONS.flatMap((d) => [...d.fixtures(), ...d.parts()]),
+    ...INTERIORS.flatMap((i) => i.fixtures()),
+    ...FURNITURE_FIXTURES,
   ].map((f) => [f.kind, f]),
 );
 

@@ -11,6 +11,7 @@ import { DEEPS_MOUTH } from '../../dungeons/deeps';
 import { UNDERMILL_MOUTH } from '../../dungeons/undermill';
 import { CLIMB_TOP, LANDING, LANDING_SPOTS } from '../../dungeons/west';
 import { BUILT_DUNGEONS } from '../../dungeons/registry';
+import { INTERIORS } from '../../interiors';
 import { HEARTHFORD_SIZE, TOWN_PARTS } from '../../stamps/hearthford';
 import { DAWNMEADOW_WAKE_POINTS, WAKE_IDS } from '../../wake';
 import { WAYSTONES } from '../../waystones';
@@ -194,6 +195,8 @@ const placements: Placement[] = [
   // mouths, with a stamp to mark each mini-dungeon's.
   ...BUILT_DUNGEONS.flatMap((d) => d.placements().map((r) => stamp(r.stamp, r.x, r.y))),
   ...BUILT_DUNGEONS.flatMap((d) => d.outside().map((o) => at(o.kind, o.x, o.y))),
+  ...INTERIORS.flatMap((i) => i.placements().map((r) => stamp(r.stamp, r.x, r.y))),
+  ...INTERIORS.flatMap((i) => i.outside().map((o) => at(o.kind, o.x, o.y))),
   // The closed yard at the far west, and the ends of the climb.
   stamp(LANDING.stamp, LANDING.x, LANDING.y),
   at('fixture.fc_top', CLIMB_TOP.x, CLIMB_TOP.y),

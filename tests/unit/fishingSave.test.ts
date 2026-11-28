@@ -118,6 +118,7 @@ describe('the save (M6-05)', () => {
     const s = deserializeState(at37.sim);
     expect(s.fishing).toEqual(newFishing());
     delete (s as { fishing?: unknown }).fishing;
+    delete (s as { home?: unknown }).home;
     expect(hashState(s)).toBe(f.expectedHash);
   });
 

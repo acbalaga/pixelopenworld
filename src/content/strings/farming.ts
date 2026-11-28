@@ -96,6 +96,7 @@ export const FARM_DIALOGUE_STRINGS: Readonly<Record<string, string>> = {
   'dlg.reeve.leased':
     'Done. The ground wants breaking first. Brin sells a hoe, and a can for the watering.',
   'dlg.miller.c_shop': 'Do you sell seed grain?',
+  'dlg.carpenter.c_shop': 'Do you have furniture for sale?',
   'dlg.farmer.c_shop': 'Have you seeds to spare?',
   'dlg.hermit.c_shop': 'What grows up here?',
   'dlg.hesper.c_shop': 'Any seeds from the kitchen garden?',

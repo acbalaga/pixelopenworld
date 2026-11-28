@@ -30,6 +30,7 @@ describe('schema 23 to 24 migration (the map)', () => {
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
     delete (s as { fishing?: unknown }).fishing;
+    delete (s as { home?: unknown }).home;
     delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
     delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
@@ -64,6 +65,7 @@ describe('schema 24 to 25 migration (attuned Waystones)', () => {
     delete (s as { calendar?: unknown }).calendar;
     delete (s as { farm?: unknown }).farm;
     delete (s as { fishing?: unknown }).fishing;
+    delete (s as { home?: unknown }).home;
     delete (s.mail?.duels as { pit?: number } | undefined)?.pit;
     delete (s.mail?.duels as { honor?: number } | undefined)?.honor;
     expect(hashState(s)).toBe(f.expectedHash);
