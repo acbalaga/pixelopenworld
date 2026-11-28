@@ -254,6 +254,19 @@ export const PLACE_SPOTS: Readonly<Record<string, PlaceSpot>> = {
       [217, 142],
     ],
   },
+  // The woods-edge rest point (POW-M6-23), 79 walking tiles from the square (the camp ring is 80).
+  'wayside.woods_camp': {
+    rect: { x: 126, y: 174, w: 7, h: 6 },
+    focus: [129, 177],
+    slots: [
+      [127, 177],
+      [131, 177],
+      [129, 175],
+      [129, 179],
+      [127, 175],
+      [131, 175],
+    ],
+  },
   // The Pit (POW-M5-29), east of the quarry crane. The first two slots are the fighters' marks at
   // the middle of the ring, the rest are where spectators stand along the rim.
   'stonecrop.pit': {
