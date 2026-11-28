@@ -1,3 +1,4 @@
+import { COOK_STRINGS } from '../../content/strings/farming';
 import { GUILDS } from '../../content/travelers/guilds';
 import { SKILLS } from '../../content/skills';
 import { FRIEND_STRINGS as F } from '../../content/strings/friends';
@@ -33,6 +34,10 @@ export class TravelerCard {
       onGuildAsk?: (slot: number) => void;
       /** The player's own guild id now, 0 for none (M5-08). */
       myGuild?: () => number;
+      /** Shares a dish from the Bag with the Traveler (M6-04). Shown only if the Bag holds one. */
+      onShareFood?: (slot: number) => void;
+      /** True if the Bag holds a dish to share. */
+      hasDish?: () => boolean;
     },
   ) {}
 
@@ -66,6 +71,7 @@ export class TravelerCard {
         el('p', 'pow-part-sheet-desc', F.card.regard.replace('{tier}', F.tiers[card.tier] ?? '')),
         ...this.historyBlock(card, state),
         ...this.pokeBlock(card),
+        ...this.shareBlock(card),
         ...this.duelBlock(card),
         ...this.guildBlock(card),
         ...this.friendBlock(card),
@@ -88,6 +94,18 @@ export class TravelerCard {
       el('h4', 'pow-card-history-title', F.card.history),
       lines.length > 0 ? ul : el('p', 'pow-part-sheet-desc', F.card.noHistory),
     ];
+  }
+
+  /** A dish from the Bag can be shared with anyone here: a gift they remember (M6-04). */
+  private shareBlock(card: ProfileCard): HTMLElement[] {
+    if (!this.opts.onShareFood || !this.opts.hasDish?.()) return [];
+    const b = el('button', 'pow-button pow-card-action', COOK_STRINGS.shareFood);
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      this.opts.onShareFood?.(card.slot);
+      this.close();
+    });
+    return [b];
   }
 
   /** Anyone the player has met can be challenged to a duel. They answer by temper and regard. */

@@ -334,6 +334,21 @@ const LIST: readonly FixtureDef[] = [
     size: 12,
     loot: { items: [{ item: 'item.old_key', qty: 1 }] },
   },
+  // Found cookbooks (POW-M6-04): one at the shepherd hut, one at Reedmouth.
+  {
+    kind: 'fixture.chest_cookbook_old',
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: { items: [{ item: 'item.cookbook_old', qty: 1 }] },
+  },
+  {
+    kind: 'fixture.chest_cookbook_coast',
+    type: 'chest',
+    sprite: 'prop.chest',
+    size: 12,
+    loot: { items: [{ item: 'item.cookbook_coast', qty: 1 }] },
+  },
   {
     kind: 'fixture.chest_side',
     type: 'chest',
@@ -384,6 +399,8 @@ const LIST: readonly FixtureDef[] = [
   },
   // Crafting stations in the square (M3-07). The camp pot is a prop with its own kind.
   { kind: 'fixture.anvil', type: 'station', sprite: 'prop.anvil', size: 12 },
+  // The inn's oven (POW-M6-04).
+  { kind: 'fixture.oven', type: 'station', sprite: 'prop.oven', size: 14 },
   { kind: 'fixture.workbench', type: 'station', sprite: 'prop.workbench', size: 14 },
   // Crafting II stations in the square (M3-14).
   { kind: 'fixture.loom', type: 'station', sprite: 'prop.loom', size: 14 },

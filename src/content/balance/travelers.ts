@@ -693,6 +693,7 @@ export const STATION_PLACES: Record<string, string> = {
   'fixture.tinker_bench': 'hearthford.tinker_shed',
   'fixture.rune_stone': 'hearthford.rune_house',
   camp_pot: 'hearthford.inn',
+  'fixture.oven': 'hearthford.inn',
 };
 
 /** Creature areas Travelers fight in, with the creature of each. Creature ids are from content. */
@@ -847,5 +848,6 @@ export const BEHAVIOR = {
     'fixture.tinker_bench': 'work_hands',
     'fixture.rune_stone': 'work_hands',
     camp_pot: 'work_stir',
+    'fixture.oven': 'work_hands',
   } as Record<string, string>,
 } as const;

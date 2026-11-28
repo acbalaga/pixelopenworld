@@ -1,3 +1,4 @@
+import { DISH_RECIPES } from './dishes';
 import type { NodeDef, RecipeDef } from './types';
 
 type Ing = readonly [item: string, qty?: number];
@@ -178,6 +179,8 @@ const LIST: readonly RecipeDef[] = [
     'find',
   ),
   make('cooking', POT, 1, 'item.dish_bread', [['item.flax_fiber', 2], ['item.salt']]),
+  // Cooking in full (M6-04): 85 dishes from the dish table, at the pot and the oven.
+  ...DISH_RECIPES,
   make('cooking', POT, 2, 'item.silver_chowder', [
     ['item.fish_silver'],
     ['item.salt'],

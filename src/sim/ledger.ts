@@ -66,7 +66,15 @@ export type CoinSource =
   | 'marketSale'
   | 'eventReward';
 export type CoinSink =
-  'purchase' | 'echo' | 'repair' | 'buyback' | 'recipe' | 'marketFee' | 'marketBuy' | 'lease';
+  | 'purchase'
+  | 'echo'
+  | 'repair'
+  | 'buyback'
+  | 'recipe'
+  | 'marketFee'
+  | 'marketBuy'
+  | 'lease'
+  | 'mill';
 export type ItemSource =
   | 'start'
   | 'loot'
@@ -83,6 +91,7 @@ export type ItemSource =
   | 'guildRequest'
   | 'market'
   | 'harvest'
+  | 'mill'
   | 'seed';
 
 /** An empty ledger. */

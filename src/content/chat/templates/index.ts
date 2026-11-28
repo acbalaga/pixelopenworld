@@ -10,6 +10,7 @@ import { TALK } from './talk';
 import { TRADE } from './trade';
 import { WEATHER } from './weather';
 import { SEASON } from './season';
+import { MEAL } from './meal';
 import { REACTIONS } from './reactions';
 import { SOCIAL } from './social';
 import { CAMP } from './camp';
@@ -28,6 +29,7 @@ export const TEMPLATES: readonly ChatTemplate[] = [
   ...QA,
   ...WEATHER,
   ...SEASON,
+  ...MEAL,
   ...TALK,
   ...DEEDS,
   ...INDIVIDUALS,

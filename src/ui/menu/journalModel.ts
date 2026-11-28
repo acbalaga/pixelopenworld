@@ -109,6 +109,11 @@ export interface RecipeGroup {
   craft: Craft;
   label: string;
   rows: RecipeRow[];
+  /**
+   * Cooking only (M6-04): the known rows again, by tier, with how many of each tier are still
+   * unknown, shown as silhouettes. Unknown recipes are counted, never named.
+   */
+  tiers?: { label: string; rows: RecipeRow[]; unknown: number }[];
 }
 
 /** The recipes the avatar knows, by craft in the fixed order. A craft with none is left out. */
@@ -125,7 +130,18 @@ export function knownRecipes(state: SimState, who: number): RecipeGroup[] {
         icon: r.result ? (ITEMS[r.result]?.icon ?? null) : null,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-    if (rows.length > 0) out.push({ craft, label: S.journal.crafts[craft] ?? craft, rows });
+    if (rows.length === 0) continue;
+    const group: RecipeGroup = { craft, label: S.journal.crafts[craft] ?? craft, rows };
+    if (craft === 'cooking') {
+      const all = Object.values(RECIPES).filter((r) => r.craft === 'cooking');
+      const tiers = [...new Set(all.map((r) => r.tier))].sort((a, b) => a - b);
+      group.tiers = tiers.map((t) => ({
+        label: S.journal.cookTier.replace('{n}', String(t)),
+        rows: rows.filter((row) => RECIPES[row.id]?.tier === t),
+        unknown: all.filter((r) => r.tier === t && !known.has(r.id)).length,
+      }));
+    }
+    out.push(group);
   }
   return out;
 }

@@ -3,7 +3,13 @@ import { WEAPONS } from '../content/combat/attacks';
 import { ITEMS } from '../content/items';
 import type { StatusId } from '../content/combat/statuses';
 import { NODES, RECIPES } from '../content/items/recipes';
-import { EQUIP_SLOTS, type EquipSlot, type ItemDef, type Quality } from '../content/items/types';
+import {
+  EQUIP_SLOTS,
+  taughtBy,
+  type EquipSlot,
+  type ItemDef,
+  type Quality,
+} from '../content/items/types';
 import type { DropDef } from '../content/creatures/types';
 import { destroy, getComp, query, setComp, spawn, type EntityId } from './kernel/entities';
 import { emit } from './kernel/events';
@@ -466,17 +472,21 @@ export function eat(state: SimState, who: EntityId, slot: number): boolean {
   return true;
 }
 
-/** Reads a recipe scroll from a bag slot: learns its recipe and uses the scroll up. */
+/**
+ * Reads a recipe scroll or a cookbook from a bag slot: learns every recipe it teaches that is not
+ * known yet and uses it up. One that teaches nothing new is kept.
+ */
 export function readScroll(state: SimState, who: EntityId, slot: number): boolean {
   const inv = getComp(state.entities, who, 'inventory');
   const stack = inv?.slots[slot];
-  const teaches = stack ? ITEMS[stack.item]?.teaches : undefined;
-  if (!inv || !stack || !teaches) return false;
+  const teaches = taughtBy(stack ? ITEMS[stack.item] : undefined);
+  if (!inv || !stack || teaches.length === 0) return false;
   if (getComp(state.entities, who, 'fighter')?.state === 'dead') return false;
-  if (!learnRecipe(state, who, teaches)) return false;
+  const learned = teaches.filter((r) => learnRecipe(state, who, r));
+  if (learned.length === 0) return false;
   stack.qty--;
   if (stack.qty === 0) inv.slots[slot] = null;
-  emit(state.events, { type: 'recipeDiscovered', id: who, recipe: teaches });
+  for (const recipe of learned) emit(state.events, { type: 'recipeDiscovered', id: who, recipe });
   return true;
 }
 

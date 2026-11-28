@@ -1,3 +1,4 @@
+import { COOKING } from '../../content/balance/cooking';
 import { CRAFTING } from '../../content/balance/crafting';
 import { ITEMS_BALANCE } from '../../content/balance/items';
 import { REQUEST_BALANCE as RB } from '../../content/balance/requests';
@@ -54,6 +55,11 @@ export function ledgerRules(v: View): Reason[] {
   for (const [item, n] of Object.entries(held))
     if (n > (made[item] ?? 0))
       fail('ITEMS_EXCEED_MADE', `${item} held ${n}, made ${made[item] ?? 0}`);
+
+  // Milling (M6-04): every sack of flour was paid for at the mill, at the mill's fee.
+  const milled = ledger.itemsMade.mill?.['item.flour'] ?? 0;
+  if (milled * COOKING.mill.fee !== (ledger.coinSpent.mill ?? 0))
+    fail('MILL_MISMATCH', `${milled} flour, ${ledger.coinSpent.mill ?? 0} coin paid`);
 
   // Every affix on a held piece came from an enchant: no more of them than Enchanting crafts made.
   let affixes = 0;

@@ -1,3 +1,4 @@
+import { DISHES } from '../../src/content/items/dishes';
 import { describe, expect, it } from 'vitest';
 import { COMBAT as C } from '../../src/content/balance/combat';
 import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
@@ -533,9 +534,13 @@ describe('cooking and experiments', () => {
     expect(countItem(inv(r), 'item.sunwort')).toBe(1);
     expect(ofType(r.events, 'craftFailed')).toHaveLength(0);
   });
-  it('all fifteen cooking recipes work at the pot, and cooking pays Cooking skill XP', () => {
+  it('all fifteen slice cooking recipes work at the pot, and cooking pays Cooking skill XP', () => {
     const r = atPot();
-    const cooking = Object.values(RECIPES).filter((x) => x.craft === 'cooking');
+    // The dishes of M6-04 are covered by tests/unit/cooking.test.ts.
+    const dishes = new Set(DISHES.map((d) => `recipe.${d.key}`));
+    const cooking = Object.values(RECIPES).filter(
+      (x) => x.craft === 'cooking' && !dishes.has(x.id),
+    );
     expect(cooking).toHaveLength(15);
     for (const rec of cooking) {
       const units = expand(rec.ingredients);

@@ -95,6 +95,8 @@ export type Command =
       plot: number;
       slot?: number;
     }
+  /** Share a dish from the Bag with a Traveler here (M6-04, the "Share food" chip). */
+  | { type: 'shareFood'; slot: number }
   /** Challenge a Traveler to a duel (M5-12). */
   | { type: 'duel'; slot: number }
   /** Poke a sleeping Traveler awake (M5-31). */
@@ -348,6 +350,10 @@ export function validateCommand(raw: unknown): Validated {
         command: { type: 'farm', op, plot: r.plot as number, slot: r.slot as number },
       };
     }
+    case 'shareFood':
+      if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
+        return { ok: false, reason: 'bad traveler' };
+      return { ok: true, command: { type: 'shareFood', slot: r.slot as number } };
     case 'guildAsk':
       if (!Number.isInteger(r.slot) || (r.slot as number) < 0 || (r.slot as number) > 4095)
         return { ok: false, reason: 'bad traveler' };

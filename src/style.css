@@ -2790,3 +2790,25 @@ canvas {
 .pow-calendar-name {
   font-weight: 600;
 }
+
+/* Chronicle recipes by tier (POW-M6-04): the dishes still to find, as silhouettes. */
+.pow-recipe-tier {
+  margin: 0.6em 0 0.2em;
+  font-size: 0.9em;
+}
+.pow-recipe-unknown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  align-items: center;
+  margin: 0.2em 0 0.6em;
+}
+.pow-recipe-silhouettes {
+  opacity: 0.35;
+  letter-spacing: 0.15em;
+  word-break: break-all;
+}
+.pow-recipe-unknown-n {
+  opacity: 0.8;
+  font-size: 0.85em;
+}

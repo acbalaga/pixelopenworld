@@ -75,6 +75,8 @@ function reedmouth(): StampV2 {
   b.rect(11, 8, 3, 9, Terrain.Planks);
   b.place('fixture.waystone', 12, 15);
   b.place('npc.fisher', 12, 10);
+  // A sea chest on the boards by the second hut, with a notebook of fish recipes (POW-M6-04).
+  b.place('fixture.chest_cookbook_coast', 15, 7);
   return b.toStamp('reedmouth');
 }
 
@@ -151,6 +153,8 @@ function shepherdHut(): StampV2 {
   b.fence(7, 6, 13, 6);
   b.fence(7, 1, 7, 6);
   b.fence(13, 1, 13, 6);
+  // A box by the hut door with an old cookbook in it (POW-M6-04).
+  b.place('fixture.chest_cookbook_old', 1, 5);
   return b.toStamp('shepherd_hut');
 }
 function milestone(): StampV2 {

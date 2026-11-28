@@ -492,6 +492,15 @@ function fromEvent(c: Ctx, e: SimEvent, index: number): void {
       say(who, e.to > e.from ? 'price.up' : 'price.down', { item: name, price: String(e.to) });
     return;
   }
+  // A camp meal (M6-04): one of the party who ate says something about it.
+  if (e.type === 'campMeal') {
+    const fed = e.slots.filter((s) => canSpeak(c, s));
+    const pick = fed[Math.floor(hash01(state.seed, 0xf00d, state.tick, index) * fed.length)];
+    const who = pick === undefined ? undefined : c.ids[pick];
+    const name = itemName(e.item);
+    if (who && name) say(who, 'party.meal', { item: name });
+    return;
+  }
   if (!('slot' in e) || typeof e.slot !== 'number') return;
   const t = c.ids[e.slot];
   if (!t) return;

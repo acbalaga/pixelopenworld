@@ -2,6 +2,8 @@ import { COLD_OVEN_FLAGS } from '../singulars';
 import { EVERY } from '../requests/dawnmeadow';
 import { AUTHORED_TRIALS } from '../skills/dawnmeadowTrials';
 import { FARMING } from '../balance/farming';
+import { COOKING } from '../balance/cooking';
+import { COOKBOOKS, DISHES } from '../items/dishes';
 import { CROP_LIST } from '../farming/crops';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
 
@@ -335,6 +337,8 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
       { item: 'item.hoe', max: 2 },
       { item: 'item.watering_can', max: 2 },
       ...seedStock('shop.brin'),
+      // Cooking (POW-M6-04): a cheap book of stall food.
+      { item: COOKBOOKS.market, max: 1 },
     ],
   },
   // Tier 1 trade for the new item set. Purses are small and capped, so no one buys without end.
@@ -404,7 +408,12 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
     ['food', 'materials'],
     [{ item: 'item.compost', max: 10 }],
   ),
-  'shop.hesper': seedShop('shop.hesper', 'npc.cook', ['food']),
+  'shop.hesper': seedShop(
+    'shop.hesper',
+    'npc.cook',
+    ['food'],
+    [{ item: COOKBOOKS.hearth, max: 1 }],
+  ),
   'shop.fen': seedShop('shop.fen', 'npc.hermit', ['materials']),
 };
 
@@ -1171,4 +1180,74 @@ function withAuthored(base: Readonly<Record<string, Dialogue>>): Record<string, 
   return out;
 }
 
-export const DIALOGUES: Readonly<Record<string, Dialogue>> = withAuthored(BASE_DIALOGUES);
+/** Where each teacher's "Could you teach me a dish?" door goes (Hesper's menu is full). */
+const COOK_HOSTS: Readonly<Record<string, readonly string[]>> = {
+  'npc.cook': ['lesson'],
+  'npc.shopkeeper': ['greet', 'again'],
+};
+
+/**
+ * Cooking in full (M6-04): each person who teaches dishes gets a page of them (four to a page),
+ * each offered until it is known, and Aldo mills wheat to flour for a fee.
+ */
+function withCooking(base: Readonly<Record<string, Dialogue>>): Record<string, Dialogue> {
+  const out: Record<string, Dialogue> = { ...base };
+  const teachers = [...new Set(DISHES.filter((d) => d.learn === 'teach').map((d) => d.from!))];
+  for (const npc of teachers) {
+    const d = out[npc];
+    if (!d) continue;
+    const nodes: Record<string, DialogueNode> = { ...d.nodes };
+    const dishes = DISHES.filter((x) => x.learn === 'teach' && x.from === npc);
+    const pages = Math.ceil(dishes.length / 4);
+    for (let p = 0; p < pages; p++) {
+      const id = p === 0 ? 'cook_teach' : `cook_teach${p + 1}`;
+      nodes[id] = {
+        id,
+        text: 'dlg.cook.teach',
+        choices: [
+          ...dishes.slice(p * 4, p * 4 + 4).map((x): Choice => ({
+            text: `dlg.cook.t_${x.key}`,
+            next: 'cook_taught',
+            if: [{ recipe: `recipe.${x.key}`, not: true }],
+            do: [{ learnRecipe: `recipe.${x.key}` }],
+          })),
+          ...(p + 1 < pages ? [{ text: 'dlg.c_more', next: `cook_teach${p + 2}` }] : []),
+          { text: 'dlg.c_bye', next: null },
+        ],
+      };
+    }
+    nodes['cook_taught'] = { id: 'cook_taught', text: 'dlg.cook.taught', next: null };
+    const door: Choice = { text: 'dlg.cook.c_teach', next: 'cook_teach' };
+    for (const h of COOK_HOSTS[npc] ?? ['greet']) {
+      const n = nodes[h];
+      if (!n?.choices) continue;
+      const at = n.choices.length - 1;
+      nodes[h] = { ...n, choices: [...n.choices.slice(0, at), door, ...n.choices.slice(at)] };
+    }
+    out[npc] = { ...d, nodes };
+  }
+  // Aldo's mill: two wheat and a few coin for a sack of flour.
+  const aldo = out['npc.miller'];
+  if (aldo) {
+    const greet = aldo.nodes['greet']!;
+    const millChoice: Choice = {
+      text: 'dlg.miller.c_mill',
+      next: 'milled',
+      if: [{ item: 'item.wheat', atLeast: COOKING.mill.wheat }, { coin: COOKING.mill.fee }],
+      do: [{ mill: true }],
+    };
+    out['npc.miller'] = {
+      ...aldo,
+      nodes: {
+        ...aldo.nodes,
+        greet: { ...greet, choices: [millChoice, ...(greet.choices ?? [])] },
+        milled: { id: 'milled', text: 'dlg.miller.milled', next: null },
+      },
+    };
+  }
+  return out;
+}
+
+export const DIALOGUES: Readonly<Record<string, Dialogue>> = withAuthored(
+  withCooking(BASE_DIALOGUES),
+);

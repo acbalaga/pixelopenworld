@@ -1,15 +1,19 @@
-// CLI: `tsx tools/item-sheet/index.ts [outDir]`. Every item icon at 4x with its name under it,
-// grouped by category: the evidence sheets for POW-M4-22F.
+// CLI: `tsx tools/item-sheet/index.ts [outDir] [--dishes]`. Every item icon at 4x with its name
+// under it, grouped by category: the evidence sheets for POW-M4-22F. `--dishes` draws only the
+// items POW-M6-04 adds (the dishes, flour, animal goods and cookbooks).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ITEMS } from '../../src/content/items';
+import { DISH_ITEMS } from '../../src/content/items/dishes';
 import { SPRITES } from '../../src/content/sprites';
 import { PALETTE } from '../../src/content/sprites/palette';
 import { ITEM_STRINGS } from '../../src/content/strings/items';
 import { encodePng, fill, hex, newImage } from '../bake-assets/png';
 import { renderFrame, text } from '../bake-assets/sheets';
 
-const out = process.argv[2] ?? 'docs/ops/evidence/pow-m4-22f';
+const args = process.argv.slice(2).filter((a) => a !== '--dishes');
+const only = process.argv.includes('--dishes') ? new Set(DISH_ITEMS.map((i) => i.id)) : null;
+const out = args[0] ?? 'docs/ops/evidence/pow-m4-22f';
 mkdirSync(out, { recursive: true });
 const byId = new Map(SPRITES.map((s) => [s.id, s]));
 const SCALE = 4;
@@ -20,7 +24,7 @@ const BG = hex('#2c3a47');
 
 const groups = new Map<string, (typeof ITEMS)[string][]>();
 for (const i of Object.values(ITEMS))
-  groups.set(i.category, [...(groups.get(i.category) ?? []), i]);
+  if (!only || only.has(i.id)) groups.set(i.category, [...(groups.get(i.category) ?? []), i]);
 
 for (const [cat, list] of groups) {
   list.sort((a, b) => a.id.localeCompare(b.id));

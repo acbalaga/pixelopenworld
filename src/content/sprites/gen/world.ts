@@ -931,6 +931,20 @@ function chest(): SpriteDef {
   });
 }
 
+/** The inn's bread oven (POW-M6-04): a stone dome with a glowing mouth and a chimney. */
+function oven(): SpriteDef {
+  const im = new Img(16, 16);
+  im.rect(2, 7, 13, 14, STONE[1]);
+  im.rect(3, 5, 12, 6, STONE[1]);
+  im.rect(5, 3, 10, 4, STONE[2]);
+  im.rect(3, 5, 5, 9, STONE[3]);
+  im.rect(5, 10, 10, 14, DARK);
+  im.rect(6, 12, 9, 14, FIRE[1]);
+  im.rect(7, 13, 8, 14, FIRE[3]);
+  im.rect(11, 0, 12, 3, STONE[0]);
+  return toSprite('prop.oven', 'core', ORIGIN_FEET, { base: outlined(im) });
+}
+
 function anvil(): SpriteDef {
   const im = new Img(16, 16);
   im.rect(3, 12, 12, 14, WOOD[1]);
@@ -1018,6 +1032,7 @@ export function worldSprites(): SpriteDef[] {
     block(),
     chest(),
     anvil(),
+    oven(),
     workbench(),
     tablet(),
     brushWall(),
