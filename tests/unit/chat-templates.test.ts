@@ -5,19 +5,33 @@ import { EXCHANGES, TEMPLATES } from '../../src/content/chat/templates';
 import { validateShippedChat } from '../../src/content/chat/validate';
 import { HAND_TUNED } from '../../src/content/travelers/handTuned';
 import { createAvatar } from '../../src/sim/avatar';
-import { chatSystem } from '../../src/sim/chat/engine';
+import { chatSystem, pairPool, templatesFor } from '../../src/sim/chat/engine';
+import { PLACE_SPOTS } from '../../src/content/people/placeSpots';
+import { TIME, type Weather } from '../../src/content/balance/time';
 import type { SimEvent } from '../../src/sim/kernel/events';
 import { px } from '../../src/sim/kernel/fixed';
 import { findAvatar } from '../../src/shared/summary';
 import { createDemoState, type SimState } from '../../src/sim/state';
 import { travelersSystem } from '../../src/sim/travelers/crowd';
 import { identitiesOf } from '../../src/sim/travelers/generate';
+import { hold, stagedSeeds, type Cast } from '../support/stage';
 
 /**
  * The full chat template set (POW-M5-15): its size and spread, the lines only one Traveler says,
  * the exchanges for the standing ties, the deed reactions, and how an evening hour in Hearthford
  * reads with all of it (design/12 4.4 and 4.8).
  */
+/**
+ * Rate checks (POW-M6-20): the own-lines and pair-exchange coverage sweeps run the whole crowd over
+ * a real day on many seeds with no staging. They measure how often the dice reach those lines on
+ * their own, so they move when a chat rate or roll changes, and only then. The staged tests at the
+ * bottom prove every own line and every pair exchange works, whatever the dice.
+ */
+const RATE = {
+  own: { seeds: [3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181], need: 8 },
+  pair: { seeds: [3, 5, 8, 13, 21, 34, 55, 89], need: 1 },
+} as const;
+
 const MON = 19_000 - ((((19_000 + 4) % 7) - 1 + 7) % 7);
 
 function world(seed: number, hour: number, day = 2): SimState {
@@ -31,7 +45,12 @@ function world(seed: number, hour: number, day = 2): SimState {
 
 type Spoke = Extract<SimEvent, { type: 'travelerSpoke' }>;
 
-function run(s: SimState, minutes: number, inject?: (m: number) => SimEvent[]): Spoke[] {
+function run(
+  s: SimState,
+  minutes: number,
+  inject?: (m: number) => SimEvent[],
+  cast?: Cast,
+): Spoke[] {
   const base = s.clock!.nowMs;
   const out: Spoke[] = [];
   for (let m = 0; m < minutes; m++) {
@@ -39,12 +58,30 @@ function run(s: SimState, minutes: number, inject?: (m: number) => SimEvent[]): 
     s.worldTick += 60;
     s.clock = { ...s.clock!, nowMs: base + m * 60_000 };
     s.events.list.length = 0;
+    if (cast) hold(s, cast);
     travelersSystem(s);
     for (const e of inject?.(m) ?? []) s.events.list.push(e);
     chatSystem(s);
     for (const e of s.events.list) if (e.type === 'travelerSpoke') out.push(e);
   }
   return out;
+}
+
+/** The next world tick after `from` that falls in the middle of a phase of the in-game day. */
+function phaseTick(phase: string, from: number): number {
+  const cycle = TIME.phases.reduce((n, p) => n + p.minutes, 0) * TIME.ticksPerMinute;
+  let start = 0;
+  for (const p of TIME.phases) {
+    if (p.phase === phase) {
+      // Cycle offset of the phase's middle, then back to a tick (tick 0 is `startMinute` in).
+      const mid = (start + p.minutes / 2 - TIME.startMinute) * TIME.ticksPerMinute;
+      let t = Math.floor(from / cycle) * cycle + (((mid % cycle) + cycle) % cycle);
+      while (t <= from) t += cycle;
+      return t;
+    }
+    start += p.minutes;
+  }
+  throw new Error(phase);
 }
 
 const own = (l: Spoke): boolean => !l.reply && !l.template.startsWith('exchange.');
@@ -132,10 +169,10 @@ describe('an evening hour in Hearthford with the full set', () => {
 });
 
 describe('the engine reads the new fields', () => {
-  it('has a Traveler say their own lines, and only they do', () => {
+  it(`rate check: own lines from at least ${RATE.own.need} templates over ${RATE.own.seeds.length} seeds, only by their owners`, () => {
     const seen = new Set<string>();
     // Camps (M5-26) move some of the crowd off the square at dusk and night, so more seeds keep the coverage.
-    for (const seed of [3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]) {
+    for (const seed of RATE.own.seeds) {
       const ids = identitiesOf(seed);
       const s = world(seed, 6);
       for (const l of run(s, 24 * 60)) {
@@ -149,12 +186,12 @@ describe('the engine reads the new fields', () => {
         }
       }
     }
-    expect(seen.size).toBeGreaterThanOrEqual(8);
+    expect(seen.size).toBeGreaterThanOrEqual(RATE.own.need);
   });
 
-  it('keeps a pair exchange between its own two, a side each, in order', () => {
+  it(`rate check: a pair exchange between its own two, in order, over ${RATE.pair.seeds.length} seeds`, () => {
     const seen = new Set<string>();
-    for (const seed of [3, 5, 8, 13, 21, 34, 55, 89]) {
+    for (const seed of RATE.pair.seeds) {
       const ids = identitiesOf(seed);
       const s = world(seed, 6);
       const lines = run(s, 24 * 60).filter((l) => l.template.startsWith('exchange.'));
@@ -172,7 +209,7 @@ describe('the engine reads the new fields', () => {
         seen.add(x.id);
       }
     }
-    expect(seen.size).toBeGreaterThanOrEqual(1);
+    expect(seen.size).toBeGreaterThanOrEqual(RATE.pair.need);
   });
 
   it('remarks on the avatar deeds, each from its own event, and not on anyone else', () => {
@@ -199,6 +236,77 @@ describe('the engine reads the new fields', () => {
       }
       expect(said, trigger).toBeGreaterThan(0);
       expect(other, `${trigger} for someone else`).toBe(0);
+    }
+  });
+});
+
+/**
+ * Staged lines (POW-M6-20). Each test puts its own cast online for a whole real day and nobody else,
+ * so what it checks does not hang on who a seed's dice happened to log in. `STAGED_SEEDS=20` runs
+ * each on twenty seeds.
+ */
+describe('staged own lines and pair exchanges', () => {
+  const owners = [...new Set(TEMPLATES.flatMap((t) => t.when?.handle ?? []))];
+  const slotOf = (handle: string): number => HAND_TUNED.findIndex((h) => h.handle === handle);
+
+  it('has every own line open to its owner, staged in its weather and phase, and to nobody else', () => {
+    const own = TEMPLATES.filter((t) => t.when?.handle);
+    expect(owners.length).toBeGreaterThanOrEqual(8);
+    const square = PLACE_SPOTS['hearthford.square']!.rect;
+    for (const seed of stagedSeeds()) {
+      for (const handle of owners) {
+        const slot = slotOf(handle);
+        expect(slot, handle).toBeGreaterThanOrEqual(0);
+        const other = identitiesOf(seed).find((t) => t.slot >= 24)!.slot;
+        // The owner and one other Traveler, at the square where the player stands, so Local works.
+        const s = world(seed, 20);
+        const me = findAvatar(s)!;
+        const pos = s.entities.comps.pos[me]!;
+        pos.x = px((square.x + (square.w >> 1)) * 16 + 8);
+        pos.y = px((square.y + (square.h >> 1)) * 16 + 8);
+        s.weatherOverride = 'clear';
+        const cast: Cast = { slots: [slot, other], place: 'hearthford.square' };
+        run(s, 20, undefined, cast);
+        for (const tpl of own.filter((t) => t.when!.handle!.includes(handle))) {
+          s.weatherOverride = (tpl.when!.weather?.[0] ?? 'clear') as Weather;
+          if (tpl.when!.phase) s.worldTick = phaseTick(tpl.when!.phase[0]!, s.worldTick);
+          run(s, 1, undefined, cast);
+          // Said already in the warm-up (a login greeting, say)? Clear its cooldown and window first.
+          s.chat!.cooldown.delete(`${slot}|${tpl.id}`);
+          for (const ch of ['world', 'local'] as const)
+            s.chat!.recent[ch] = s.chat!.recent[ch].filter((id) => id !== tpl.id);
+          const where = `seed ${seed} ${tpl.id}`;
+          expect(templatesFor(s, slot, tpl.trigger), where).toContain(tpl.id);
+          expect(templatesFor(s, other, tpl.trigger), `${where} for another`).not.toContain(tpl.id);
+        }
+      }
+    }
+  });
+
+  it('has every named pair exchange open to its own two, through their tie, and to no other pair', () => {
+    const named = EXCHANGES.filter((x) => x.between);
+    expect(named.length).toBeGreaterThan(0);
+    for (const seed of stagedSeeds()) {
+      const ids = identitiesOf(seed);
+      for (const x of named) {
+        const [h1, h2] = x.between!;
+        const a = ids[slotOf(h1)]!;
+        const b = ids[slotOf(h2)]!;
+        // The pair holds the tie the exchange is for, so the engine can pick them as a pair.
+        const tie = [...a.ties, ...b.ties].some(
+          (t) => (t.slot === a.slot || t.slot === b.slot) && t.kind === x.tie,
+        );
+        expect(tie, `seed ${seed} ${x.id} tie`).toBe(true);
+        expect(pairPool(x.tie, h1, h2), `seed ${seed} ${x.id}`).toContain(x);
+        expect(pairPool(x.tie, h2, h1), `seed ${seed} ${x.id} either way`).toContain(x);
+        // Anyone else with that tie to either of them never gets it.
+        for (const t of [...a.ties, ...b.ties].filter((y) => y.kind === x.tie)) {
+          const other = ids[t.slot]!.handle;
+          if (other === h1 || other === h2) continue;
+          expect(pairPool(x.tie, h1, other), `seed ${seed} ${x.id} with ${other}`).not.toContain(x);
+          expect(pairPool(x.tie, h2, other), `seed ${seed} ${x.id} with ${other}`).not.toContain(x);
+        }
+      }
     }
   });
 });

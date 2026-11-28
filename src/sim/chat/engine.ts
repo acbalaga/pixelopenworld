@@ -655,6 +655,16 @@ function witnessOrAny(c: Ctx, not: number, d: () => number): TravelerIdentity | 
   return pool.length === 0 ? null : (pool[Math.floor(d() * pool.length)] as TravelerIdentity);
 }
 
+/**
+ * The exchanges a pair with a tie of this kind can hold: the generic ones for the tie, and the named
+ * ones only between their own two. Pure in its inputs, and exported as a test hook (POW-M6-20).
+ */
+export function pairPool(kind: string, a: string, b: string): readonly ChatExchange[] {
+  return EXCHANGES.filter(
+    (x) => x.tie === kind && (!x.between || (x.between.includes(a) && x.between.includes(b))),
+  );
+}
+
 /** Pairs with a standing tie sometimes talk to each other: a short exchange, a minute apart. */
 function exchanges(c: Ctx): void {
   const { state, chat } = c;
@@ -676,11 +686,7 @@ function exchanges(c: Ctx): void {
   if (free.length === 0) return;
   const pair = free[Math.floor(d() * free.length)] as (typeof pairs)[number];
   chat.cooldown.set(`pair|${pair.a.slot}|${pair.b.slot}`, c.minute + 90);
-  const pool: readonly ChatExchange[] = EXCHANGES.filter(
-    (x) =>
-      x.tie === pair.kind &&
-      (!x.between || (x.between.includes(pair.a.handle) && x.between.includes(pair.b.handle))),
-  );
+  const pool = pairPool(pair.kind, pair.a.handle, pair.b.handle);
   if (pool.length === 0) return;
   const total = pool.reduce((a, x) => a + x.weight, 0);
   let r = d() * total;
@@ -892,6 +898,20 @@ function contextOf(state: SimState, chat: ChatState, minute: number): Ctx {
     real: local,
     day: dayIndexOf(local),
   };
+}
+
+/**
+ * Test hook (POW-M6-20): the ids of the templates a Traveler could say for a trigger right now,
+ * before any dice are rolled. Read only: it changes no chat or sim state. Staged tests use it to
+ * prove a line is reachable without depending on which roll picks it.
+ */
+export function templatesFor(state: SimState, slot: number, trigger: Trigger): string[] {
+  const crowd = state.crowd;
+  if (!crowd || !state.clock) return [];
+  const c = contextOf(state, state.chat ?? newChatState(), crowd.lastMinute);
+  const t = c.ids[slot];
+  if (!t) return [];
+  return (BY_TRIGGER.get(trigger) ?? []).filter((tpl) => eligible(c, t, tpl)).map((tpl) => tpl.id);
 }
 
 /**
