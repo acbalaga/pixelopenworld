@@ -4,6 +4,7 @@
  * `import.meta.env.DEV`, so none of it reaches the production bundle (tools/check-dev-absent.ts).
  */
 
+import { FULL_INN_LAYOUT } from '../content/furniture/pieces';
 import './dev.css';
 import type { ControlScheme, SettingsStore } from '../platform/settings';
 import { CROP_LIST } from '../content/farming/crops';
@@ -67,6 +68,8 @@ export interface PowDevApi {
    * ripe, one wet, so a screenshot shows every stage. Gives a hoe, a can and seeds.
    */
   stageField(): void;
+  /** Dev only (M6-07): fills the inn room with all twelve pieces, for a screenshot. */
+  furnishRoom(): void;
   /** Dev only (M6-05): the fight on the line right now, or null when nothing is cast. For a bot that plays a catch. */
   fishing(): {
     phase: string;
@@ -174,6 +177,15 @@ export function installSliceHooks(ctx: SliceHookContext): void {
         recipes: [...(inv?.recipes ?? [])],
         held,
       };
+    },
+    furnishRoom() {
+      state.home.rooms['interior.inn_room'] = FULL_INN_LAYOUT.map(([piece, x, y, rot]) => ({
+        piece,
+        x,
+        y,
+        rot,
+        e: 0,
+      }));
     },
     fishing() {
       const f = getComp(state.entities, who, 'gather')?.fish;

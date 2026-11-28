@@ -3,6 +3,7 @@ import { EVERY } from '../requests/dawnmeadow';
 import { AUTHORED_TRIALS } from '../skills/dawnmeadowTrials';
 import { FARMING } from '../balance/farming';
 import { COOKING } from '../balance/cooking';
+import { PIECES } from '../furniture/pieces';
 import { COOKBOOKS, DISHES } from '../items/dishes';
 import { CROP_LIST } from '../farming/crops';
 import type { Choice, Cond, Dialogue, DialogueNode, NpcDef, ShopDef } from './types';
@@ -415,6 +416,16 @@ export const SHOPS: Readonly<Record<string, ShopDef>> = {
     [{ item: COOKBOOKS.hearth, max: 1 }],
   ),
   'shop.fen': seedShop('shop.fen', 'npc.hermit', ['materials']),
+  // Pell sells the first twelve pieces of furniture (POW-M6-07, design/13 section 6).
+  'shop.pell': {
+    id: 'shop.pell',
+    region: 'dawnmeadow',
+    npc: 'npc.carpenter',
+    buys: ['other'],
+    firmness: 25,
+    purse: { start: 60, max: 120 },
+    stock: PIECES.map((p) => ({ item: p.item, max: 3 })),
+  },
 };
 
 /**
@@ -958,7 +969,10 @@ const BASE_DIALOGUES: Readonly<Record<string, Dialogue>> = {
       greet: {
         id: 'greet',
         text: 'dlg.carpenter.greet',
-        choices: [{ text: 'dlg.c_bye', next: null }],
+        choices: [
+          { text: 'dlg.carpenter.c_shop', next: null, do: [{ openShop: 'shop.pell' }] },
+          { text: 'dlg.c_bye', next: null },
+        ],
       },
     },
   },

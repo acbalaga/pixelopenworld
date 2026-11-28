@@ -139,6 +139,9 @@ export type SimEvent =
   | { type: 'gatherBite'; id: number; node: number }
   /** Fishing (M6-05): a minnow went on the hook, the bite was tapped, the fish got away, the fish was landed. */
   | { type: 'fishBaited'; id: number }
+  /** Furniture (M6-07): a piece placed, moved or stored, or a move the rules refused. */
+  | { type: 'furniturePlaced' | 'furnitureMoved' | 'furnitureStored'; id: number; piece: string }
+  | { type: 'furnitureDenied'; id: number; reason: string }
   | { type: 'fishHooked'; id: number; node: number; item: string }
   | { type: 'fishLost'; id: number; node: number; reason: string }
   | {

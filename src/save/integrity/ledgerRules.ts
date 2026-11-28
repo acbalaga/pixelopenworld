@@ -6,6 +6,8 @@ import { REQUESTS } from '../../content/requests';
 import { RECIPES } from '../../content/items/recipes';
 import { SINGULARS } from '../../content/singulars';
 import { ITEMS } from '../../content/items';
+import { INTERIOR_BY_ID, whyNot } from '../../sim/home';
+import { PIECE_BY_ID, STARTER_PIECES } from '../../content/furniture/pieces';
 import { FISH_BY_ITEM } from '../../content/fishing/fish';
 import { FISH_PLACES } from '../../content/fishing/places';
 import { buyPrice, lowestBuy } from '../../sim/economy';
@@ -46,7 +48,18 @@ export function ledgerRules(v: View): Reason[] {
   for (const s of inv.slots) if (s) held[s.item] = (held[s.item] ?? 0) + s.qty;
   for (const s of storage.slots) if (s) held[s.item] = (held[s.item] ?? 0) + s.qty;
   for (const s of Object.values(inv.equipment)) if (s) held[s.item] = (held[s.item] ?? 0) + 1;
+  // Furniture standing in a room is still held (M6-07), and the inn room's own bed and chest are
+  // made by the room: they are the pieces it starts with.
+  for (const list of Object.values(v.sim.home.rooms))
+    for (const o of list) {
+      const item = PIECE_BY_ID[o.piece]?.item;
+      if (item) held[item] = (held[item] ?? 0) + 1;
+    }
   const made: Record<string, number> = {};
+  for (const id of STARTER_PIECES) {
+    const item = PIECE_BY_ID[id]?.item;
+    if (item) made[item] = 1;
+  }
   for (const [src, items] of Object.entries(ledger.itemsMade)) {
     for (const [item, n] of Object.entries(items)) {
       made[item] = (made[item] ?? 0) + n;
@@ -81,6 +94,21 @@ export function ledgerRules(v: View): Reason[] {
   }
   if (fishing.gnarl !== (fishing.records['item.old_gnarl'] !== undefined))
     fail('FISH_RECORD', 'Old Gnarl flag and record disagree');
+
+  // Rooms (M6-07): every piece is a known piece in a room that exists, standing where the rules
+  // of the room let it stand, given the pieces before it in the list.
+  for (const [room, list] of Object.entries(v.sim.home.rooms)) {
+    const r = INTERIOR_BY_ID[room];
+    if (!r) {
+      fail('HOME_LAYOUT', `no room ${room}`);
+      continue;
+    }
+    list.forEach((o, i) => {
+      const p = PIECE_BY_ID[o.piece];
+      const why = p ? whyNot(r, p, o.x, o.y, o.rot, list.slice(0, i)) : 'unknown piece';
+      if (why) fail('HOME_LAYOUT', `${room} ${o.piece} at ${o.x},${o.y}: ${why}`);
+    });
+  }
 
   // Every affix on a held piece came from an enchant: no more of them than Enchanting crafts made.
   let affixes = 0;

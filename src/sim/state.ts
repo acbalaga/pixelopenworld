@@ -16,6 +16,7 @@ import { newGuildState, type GuildState } from './guild';
 import { newMarket, type MarketState } from './market';
 import { newCalendar, type CalendarState, type WorldEventsState } from './worldEvents';
 import { newFarm, normalFarm, type FarmState } from './farmState';
+import { newHome, normalHome, type HomeState } from './homeState';
 import { newFishing, normalFishing, type Fight, type FishingState } from './fishState';
 import { livesFromText, livesToText } from './travelers/codec';
 import type { TravelerLife } from './travelers/types';
@@ -686,6 +687,8 @@ export interface SimState {
   farm: FarmState;
   /** What the player has landed, and whether Old Gnarl is caught (M6-05). */
   fishing: FishingState;
+  /** The furniture standing in the player's rooms (M6-07). */
+  home: HomeState;
   /** Transient. World events running now (M5-11): rebuilt from the calendar after a load. */
   worldEvents?: WorldEventsState | undefined;
   /** Transient. A market day is on (M5-11 sets it): more demand and more Traveler stock. */
@@ -776,6 +779,7 @@ export function createDemoState(seed: number, entityCount: number): SimState {
     calendar: newCalendar(),
     farm: newFarm(),
     fishing: newFishing(),
+    home: newHome(),
     events: createEventQueue(),
     world: null,
   };
@@ -843,6 +847,7 @@ function persistent(state: SimState): Omit<
     calendar: state.calendar,
     farm: state.farm,
     fishing: state.fishing,
+    home: state.home,
   };
 }
 
@@ -867,6 +872,7 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     calendar?: CalendarState;
     farm?: FarmState;
     fishing?: FishingState;
+    home?: HomeState;
   };
   if (
     typeof raw?.tick !== 'number' ||
@@ -897,6 +903,8 @@ export function deserializeState(text: string, world: CollisionGrid | null = nul
     farm: normalFarm(raw.farm),
     // A state from before the minigame has landed nothing and met no legend.
     fishing: normalFishing(raw.fishing),
+    // A state from before rooms has the inn room as it begins: a bed and a chest.
+    home: normalHome(raw.home),
     events: createEventQueue(),
     world,
   };

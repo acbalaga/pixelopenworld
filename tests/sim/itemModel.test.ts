@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FARMING_ITEMS } from '../../src/content/items/farming';
 import { FISH_ITEMS } from '../../src/content/items/fish';
+import { FURNITURE_ITEMS } from '../../src/content/items/furniture';
 import { DISH_ITEMS } from '../../src/content/items/dishes';
 import { ITEMS_BALANCE as B } from '../../src/content/balance/items';
 import { AFFIXES } from '../../src/content/items/affixes';
@@ -296,7 +297,7 @@ describe('storage chest', () => {
 describe('item set', () => {
   it('has about 120 items split into the target kinds', () => {
     // The farming (M6-02), cooking (M6-04) and fish (M6-05) items are counted on their own below.
-    const farm = new Set([...FARMING_ITEMS, ...DISH_ITEMS, ...FISH_ITEMS].map((i) => i.id));
+    const farm = new Set([...FARMING_ITEMS, ...DISH_ITEMS, ...FISH_ITEMS, ...FURNITURE_ITEMS].map((i) => i.id));
     const all = Object.values(ITEMS).filter((i) => !farm.has(i.id));
     expect(all.length).toBeGreaterThanOrEqual(110);
     expect(all.length).toBeLessThanOrEqual(180);

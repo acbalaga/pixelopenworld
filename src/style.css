@@ -2813,6 +2813,31 @@ canvas {
   font-size: 0.85em;
 }
 
+/* The room panel at the top of the Bag tab (M6-07). */
+.pow-room-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.pow-room-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  padding: 4px 0;
+}
+.pow-room-name {
+  font-weight: 600;
+  flex: 1 1 8em;
+}
+.pow-room-where {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
+.pow-room-sub {
+  margin: 8px 0 2px;
+}
+
 /* Fishing records in the Chronicle (M6-05). */
 .pow-fish-records {
   list-style: none;

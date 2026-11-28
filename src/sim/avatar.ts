@@ -29,6 +29,7 @@ import { bedNear, sleep } from './systems/fixtures';
 import { newJournal } from './journal';
 import { applyItemCommand, newInventory, newStorage, recomputeGear } from './items';
 import { madeItems } from './ledger';
+import { homeCommand } from './home';
 import { DEFAULT_ORIGIN } from '../content/world/origins';
 
 /** Creates the avatar standing at a feet position (sub-pixel units), facing south. Returns its id. */
@@ -109,6 +110,7 @@ export function applyAvatarCommand(state: SimState, who: EntityId, c: Command): 
       interactTraveler(state, who);
     }
   } else if (c.type === 'farm') farmCommand(state, who, c);
+  else if (c.type === 'home') homeCommand(state, who, c);
   else if (c.type === 'shareFood') shareFood(state, who, c.slot);
   else if (c.type === 'hint') hintSeen(state, who, c.id);
   else if (c.type === 'mail') {

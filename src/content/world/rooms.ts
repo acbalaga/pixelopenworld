@@ -1,4 +1,5 @@
 import { BUILT_DUNGEONS } from './dungeons/registry';
+import { INTERIORS } from './interiors';
 import type { RoomDef } from './fixtures';
 
 /**
@@ -46,7 +47,9 @@ export function roomsOf(region: string): readonly RoomDef[] {
     outdoors: true,
   };
   const rooms =
-    region === 'dawnmeadow' ? [...BUILT_DUNGEONS.flatMap((d) => d.rooms()), open] : [open];
+    region === 'dawnmeadow'
+      ? [...BUILT_DUNGEONS.flatMap((d) => d.rooms()), ...INTERIORS.flatMap((i) => i.rooms()), open]
+      : [open];
   return (REGION_ROOMS[region] = rooms);
 }
 

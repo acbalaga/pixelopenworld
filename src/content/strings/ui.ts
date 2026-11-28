@@ -639,6 +639,7 @@ export const UI_STRINGS = {
       ITEMS_EXCEED_MADE: 'The bag holds more of an item than was ever made.',
       HARVEST_IMPLAUSIBLE: 'More was harvested than the field could have grown.',
       MILL_MISMATCH: 'The flour milled does not match what the mill was paid.',
+      HOME_LAYOUT: 'The furniture in a room breaks the rules of the room.',
       FISH_RECORD: 'The fishing records do not match the fish landed.',
       ITEM_SOURCE_LOCKED: 'An item is recorded as coming from somewhere it cannot come from.',
       LOOT_WITHOUT_KILL: 'An item that creatures drop is recorded without the kills to drop it.',

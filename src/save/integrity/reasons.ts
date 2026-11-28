@@ -65,6 +65,7 @@ export const REASON_CODES = [
   'HARVEST_IMPLAUSIBLE',
   'MILL_MISMATCH',
   'FISH_RECORD',
+  'HOME_LAYOUT',
   // Snapshots.
   'CHAIN_BROKEN',
 ] as const;

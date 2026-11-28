@@ -766,6 +766,15 @@ export const MIGRATIONS: Record<number, (old: SavePlain) => SavePlain> = {
     const s = deserializeState(old.sim);
     return { ...old, schema: 37, sim: serializeState(s) };
   },
+  /**
+   * 37 to 38 (M6-07): the sim gains `home`, the pieces standing in the player's rooms. A save made
+   * before has the inn room as it begins, a straw bed and a small chest, and the integrity rules
+   * count that pair as made, so nothing the save holds is touched.
+   */
+  37: (old) => {
+    const s = deserializeState(old.sim);
+    return { ...old, schema: 38, sim: serializeState(s) };
+  },
 };
 
 /** Every hint that existed in schema 2, marked as seen for a save made before hints existed. */
