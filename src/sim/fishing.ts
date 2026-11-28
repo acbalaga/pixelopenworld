@@ -245,6 +245,6 @@ export function land(
   });
   give(state, who, f.item, 1, 'gather', q ? { q } : {});
   if (g.tool >= 0) useTool(state, who, g.tool, def.tag);
-  const tier = fd?.legend ? 3 : (fd?.difficulty ?? 1) >= 3 ? 2 : 1;
+  const tier = fd?.legend ? 3 : 1;
   emit(state.events, { type: 'gathered', id: who, tag: def.tag, item: f.item, tier, qty: 1 });
 }

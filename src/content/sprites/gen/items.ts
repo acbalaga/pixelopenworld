@@ -674,23 +674,126 @@ const BASE_ICONS: readonly SpriteDef[] = [
   }),
   icon('fish_river', (im) => fishShape(im, WATER, CREAM[3])),
   icon('fish_silver', (im) => fishShape(im, STEEL, CREAM[3])),
-  icon('fish_minnow', (im) => fishShape(im, STEEL, STEEL[3])),
-  icon('fish_trout', (im) => fishShape(im, WOOD, ROSE[3])),
-  icon('fish_chub', (im) => fishShape(im, LEAF, CREAM[3])),
-  icon('fish_perch', (im) => fishShape(im, GOLD, LEAF[3])),
-  icon('fish_carp', (im) => fishShape(im, BRONZE, CREAM[3])),
-  icon('fish_tench', (im) => fishShape(im, LEAF, GOLD[3])),
-  icon('fish_golden_carp', (im) => fishShape(im, GOLD, GOLD[3])),
-  icon('fish_pike', (im) => fishShape(im, STONE, CREAM[3])),
-  icon('fish_bog_loach', (im) => fishShape(im, LEATHER, LEATHER[3])),
-  icon('fish_reed_eel', (im) => fishShape(im, VIOLET, STONE[3])),
-  icon('fish_flounder', (im) => fishShape(im, COPPER, CREAM[3])),
-  icon('fish_sea_bass', (im) => fishShape(im, METAL, CREAM[3])),
+  // Each fish has its own silhouette and marks, so no two icons look alike (POW-M4-22F).
+  icon('fish_minnow', (im) => {
+    im.rect(3, 5, 7, 6, STEEL[2]);
+    im.rect(4, 4, 6, 4, STEEL[3]);
+    im.set(8, 5, STEEL[1]);
+    im.set(9, 4, STEEL[1]);
+    im.set(9, 7, STEEL[1]);
+    im.set(4, 5, STEEL[0]);
+  }),
+  icon('fish_trout', (im) => {
+    fishShape(im, WOOD, ROSE[3]);
+    for (const [x, y] of [
+      [4, 4],
+      [6, 5],
+      [5, 6],
+      [7, 4],
+      [8, 6],
+    ] as const)
+      im.set(x, y, ROSE[2]);
+  }),
+  icon('fish_chub', (im) => {
+    fishShape(im, LEAF, CREAM[3]);
+    im.rect(4, 2, 7, 2, LEAF[1]);
+    im.rect(4, 9, 7, 9, LEAF[1]);
+    im.rect(3, 4, 8, 4, LEAF[2]);
+  }),
+  icon('fish_perch', (im) => {
+    fishShape(im, GOLD, LEAF[3]);
+    for (const x of [4, 6, 8]) im.rect(x, 4, x, 7, LEAF[0]);
+    im.rect(5, 9, 6, 9, FIRE[2]);
+    im.rect(4, 1, 8, 2, GOLD[1]);
+    im.set(9, 1, GOLD[2]);
+  }),
+  icon('fish_carp', (im) => {
+    fishShape(im, BRONZE, CREAM[3]);
+    im.rect(3, 2, 9, 2, BRONZE[1]);
+    im.rect(3, 9, 9, 9, BRONZE[2]);
+    im.set(1, 7, STONE[2]);
+    im.set(1, 8, STONE[2]);
+  }),
+  icon('fish_tench', (im) => {
+    fishShape(im, LEAF, GOLD[3]);
+    im.rect(6, 3, 7, 3, LEAF[0]);
+    for (const [x, y] of [
+      [4, 8],
+      [6, 9],
+      [8, 8],
+    ] as const)
+      im.set(x, y, FIRE[2]);
+  }),
+  icon('fish_golden_carp', (im) => {
+    fishShape(im, GOLD, GOLD[3]);
+    im.rect(3, 2, 9, 2, GOLD[2]);
+    for (const [x, y] of [
+      [0, 0],
+      [11, 1],
+      [0, 10],
+      [11, 11],
+    ] as const)
+      im.set(x, y, CREAM[3]);
+  }),
+  icon('fish_pike', (im) => {
+    im.rect(1, 5, 9, 6, STONE[2]);
+    im.rect(2, 4, 8, 4, STONE[3]);
+    im.rect(2, 7, 8, 7, CREAM[3]);
+    im.rect(10, 4, 10, 8, STONE[1]);
+    im.set(0, 6, CREAM[3]);
+    im.set(1, 7, CREAM[3]);
+    im.set(2, 5, 0);
+    for (const x of [4, 6, 8]) im.set(x, 5, STONE[1]);
+  }),
+  icon('fish_bog_loach', (im) => {
+    im.rect(2, 6, 9, 7, LEATHER[2]);
+    im.rect(3, 5, 8, 5, LEATHER[3]);
+    im.rect(10, 6, 10, 7, LEATHER[1]);
+    for (const [x, y] of [
+      [0, 5],
+      [0, 8],
+      [1, 9],
+    ] as const)
+      im.set(x, y, LEATHER[1]);
+    im.set(2, 6, 0);
+  }),
+  icon('fish_reed_eel', (im) => {
+    const wave = [4, 4, 5, 6, 7, 7, 6, 5, 4, 4, 5];
+    wave.forEach((y, x) => {
+      im.set(x, y, VIOLET[2]);
+      im.set(x, y + 1, VIOLET[1]);
+    });
+    im.set(0, 4, STONE[3]);
+  }),
+  icon('fish_flounder', (im) => {
+    im.rect(3, 2, 8, 9, COPPER[2]);
+    im.rect(2, 4, 9, 7, COPPER[2]);
+    im.rect(4, 3, 7, 3, COPPER[3]);
+    im.rect(10, 5, 11, 6, COPPER[1]);
+    for (const [x, y] of [
+      [4, 5],
+      [6, 7],
+      [7, 4],
+    ] as const)
+      im.set(x, y, COPPER[0]);
+    im.set(3, 3, CREAM[3]);
+    im.set(4, 3, 0);
+  }),
+  icon('fish_sea_bass', (im) => {
+    fishShape(im, METAL, CREAM[3]);
+    im.rect(3, 6, 8, 6, STEEL[3]);
+    im.rect(5, 2, 8, 2, METAL[1]);
+    im.set(10, 3, METAL[1]);
+  }),
   icon('old_gnarl', (im) => {
-    fishShape(im, STONE, GOLD[3]);
-    // A scar across the flank, and a gold eye.
-    im.rect(5, 5, 7, 5, CREAM[3]);
-    im.set(2, 5, GOLD[2]);
+    im.rect(0, 4, 9, 7, STONE[2]);
+    im.rect(1, 3, 8, 3, STONE[1]);
+    im.rect(1, 8, 8, 8, GOLD[3]);
+    im.rect(10, 3, 11, 9, STONE[1]);
+    im.rect(3, 5, 7, 5, CREAM[3]);
+    im.rect(6, 1, 7, 2, STONE[1]);
+    im.set(1, 5, GOLD[2]);
+    im.set(0, 8, CREAM[3]);
   }),
   // Gathering nodes as they stand in the world.
   icon('node_vein_copper', (im) => {

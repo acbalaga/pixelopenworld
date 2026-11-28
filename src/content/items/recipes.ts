@@ -414,7 +414,7 @@ function fishingNode(id: string, water: Water): NodeDef {
       ...(f.seasons ? { seasons: f.seasons } : {}),
       ...(f.weather ? { weather: f.weather } : {}),
     })),
-    respawn: MIN,
+    respawn: 3 * MIN,
     fishing: true,
     sweep: { baseMin: 1, baseMax: 1, sweetBonus: 1 },
     sprite: { ready: 'icon.node_fish', spent: 'icon.node_fish_spent' },
